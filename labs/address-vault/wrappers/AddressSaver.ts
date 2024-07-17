@@ -13,11 +13,12 @@ import { randomAddress } from '@ton/test-utils';
 import { TonClient } from '@ton/ton';
 
 export type AddressSaverConfig = {
-    manager: Address
+    manager: Address,
+    initialAddress: Address
 };
 
 export function addressSaverConfigToCell(config: AddressSaverConfig): Cell {
-    return beginCell().storeAddress(config.manager).storeAddress(randomAddress()).endCell();
+    return beginCell().storeAddress(config.manager).storeAddress(config.initialAddress).endCell();
 }
 
 export class AddressSaver implements Contract {
