@@ -48,6 +48,6 @@ slice parse_sender_address(cell in_msg_full) inline {
     }
 }
 
-(slice, slice) get_data() method_id {
-    return load_data();
-}
+;; (slice, slice) get_data() method_id {
+;;     return load_data();
+;; }
