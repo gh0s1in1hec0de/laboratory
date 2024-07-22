@@ -19,7 +19,14 @@ slice parse_sender_address(cell in_msg_full) inline {
 
 
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
-    ;; TODO figure out the standard for op and query_id types
+    ;; Uncomment to be ablt to accept simple transfers without any errors
+    ;; if (in_msg_body.slice_empty?()) { ;; ignore empty messages
+    ;;     return ();
+    ;; }
+    ;;
+    ;; Second approach (doesn't work with code helpers)
+    ;; throw_if(0, msg::op == 0 | msg::bounced?); ;; ignore simple transfers or bounced
+
     int op = in_msg_body~load_uint(32);
     int query_id = in_msg_body~load_uint(64);
     slice sender_address = parse_sender_address(in_msg_full);
