@@ -55,58 +55,116 @@ export async function run(provider: NetworkProvider) {
 
   console.log(transactions);
 
-  function parseBodyInternalInMessage(slice: Slice, sender: Address, value: bigint): void {
-    console.log(`SLICE remainingBits: ${slice.remainingBits}`)
+  function parseBodyInternalMessage(slice: Slice, sender: Address, value: bigint): void {
+    console.log("START PARSE BODY OF 'Internal Message'...")
+    console.log(`BODY remainingBits: ${slice.remainingBits}`)
     if (slice.remainingBits < 32) {
       // if slice doesn't have opcode: it's a simple message without comment
       console.log(`Simple transfer from ${sender} with value ${fromNano(value)} TON`);
     } else {
       const op = slice.loadUint(32);
-      console.log(op)
+      const queryId = slice.loadUint(64);
+      console.log(`OP: ${op}`)
+      console.log(`QUERY ID: ${queryId}`)
 
-      // Basic transfer with comment
-      if (op === 0) {
-        const comment = slice.loadStringTail();
-        console.log(`Transfer Comment: ${comment}`);
+
+      let memorizedAddress;
+      let managerAddress;
+      if (op === 3) {
+        memorizedAddress = slice.loadAddress();
+        managerAddress = slice.loadAddress();
+      }
+      console.log(`managerAddress: ${managerAddress}`)
+      console.log(`memorizedAddress: ${memorizedAddress}`)
+
+
+      console.log("END PARSE BODY OF 'Internal Message'...")
+    }
+  }
+
+  function parseBodyExternalInMessage(slice: Slice) {
+    console.log("START PARSE BODY OF 'ExternalIn Message'...")
+    console.log(`'ExternalIn' BODY remainingBits: ${slice.remainingBits}`)
+    if (slice.remainingBits < 32) {
+      console.log("BODY DON`T HAVE OP CODE");
+      return;
+    } else {
+      const op = slice.loadUint(32); // Load the operation code (32 bits)
+      const queryId = slice.loadUint(64); // Load the query ID (64 bits)
+      console.log(`OP: ${op}`)
+      console.log(`QUERY ID: ${queryId}`)
+
+      /*
+       Если входящее сообщение имеет "op === 1", то вызвалась функция sendChangeAddress,
+       которая в свою очередь должна содержать новый op, queryId и address для обновления
+       */
+      let newAddress;
+      if (op === 1) {
+        // Example case where additional parameters are loaded for op = 1
+        newAddress = slice.loadAddress(); // Next field: new Address
+        console.log(`NEW ADDRESS: ${newAddress}`)
+        return {op, queryId, newAddress};
+      } else if (op === 2) {
+        /*
+       Если входящее сообщение имеет "op === 2", то вызвалась функция sendRequestAddress,
+       которая в свою очередь должна содержать op и queryId
+       */
+        return {op, queryId};
+      }
+
+      console.log("END PARSE BODY OF 'ExternalIn Message'...")
+
+      return {
+        op,
+        queryId,
+        newAddress: newAddress || null
       }
     }
   }
+
 
   for (const tx of transactions) {
     console.log("------------------------------------------------------------------------")
     const inMessage = tx.inMessage;
     const outMessages = tx.outMessages;
+    console.log("IN MESSAGE:")
     console.log(inMessage)
     console.log("===========================================")
+    console.log("OUT MESSAGES:")
     console.log(outMessages);
-    console.log("===========================================")
-    // outMessages.values().map(msg => {
-    //   console.log(msg);
-    //   // console.log(msg.in)
-    //   // console.log(msg.info)
-    // })
+    outMessages.values().map(msg => {
+      console.log(msg);
+    })
 
+    // parse "InMessage" - external-in
+    if (inMessage?.info.type == 'external-in') {
+      const slice = inMessage.body.beginParse().clone();
+      // TODO хуйня
+      parseBodyExternalInMessage(slice);
+
+      outMessages.values().map(msg => {
+        // if transaction have internal message in "outMessages"
+        if (msg?.info.type == 'internal') {
+          const sender = msg.info.src;
+          const value = msg.info.value.coins;
+          const slice = msg.body.beginParse().clone();
+          parseBodyInternalMessage(slice, sender, value);
+        }
+
+        if (msg?.info.type == 'external-out') {
+
+        }
+      })
+    }
+
+    // parse "InMessage" - internal
     if (inMessage?.info.type == 'internal') {
       const sender = inMessage.info.src;
       const value = inMessage.info.value.coins;
 
       // Convert the body from its hex representation to a Cell
       const slice = inMessage.body.beginParse().clone();
-      parseBodyInternalInMessage(slice, sender, value);
-    }
-
-    if (inMessage?.info.type == 'external-in') {
-      outMessages.values().map(msg => {
-        console.log(msg);
-        // console.log(msg.in)
-        // console.log(msg.info)
-        if (msg?.info.type == 'internal') {
-          const sender = msg.info.src;
-          const value = msg.info.value.coins;
-          const slice = msg.body.beginParse().clone();
-          parseBodyInternalInMessage(slice, sender, value);
-        }
-      })
+      parseBodyInternalMessage(slice, sender, value);
     }
   }
 }

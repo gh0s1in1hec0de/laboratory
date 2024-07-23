@@ -36,8 +36,6 @@ export function SendTransaction() {
     ]
   }
 
-
-
   const onClick = async () => {
     if (!wallet) {
       await tonConnectUI.openModal();
