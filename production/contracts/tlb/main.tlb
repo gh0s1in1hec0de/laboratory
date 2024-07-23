@@ -1,0 +1,11 @@
+// Schemas of messages inside contracts periphery
+// Shemas splitted on 3 major groups, relaited to the contract layers
+
+// === CORE ===
+storage#_ status:uint4 = CoreStorage;
+
+// === LAUNCH ===
+storage#_ status:uint32 = LaunchStorage;
+
+// === LAUNCH USER'S BALANCE ===
+storage#_ status:uint32 = LaunchUserBalanceStorage;
