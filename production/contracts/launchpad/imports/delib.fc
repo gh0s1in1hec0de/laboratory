@@ -16,7 +16,7 @@
 
 #pragma version ^0.3.0;
 
-#include "./stdlib.fc"; ;; func stdlib is required
+#include "stdlib.fc"; ;; func stdlib is required
 
 slice   delib::ES()           asm "<b b> <s PUSHSLICE";         ;; creates an empty slice
 cell    delib::EC()           asm "<b b> PUSHREF";              ;; creates an empty cell

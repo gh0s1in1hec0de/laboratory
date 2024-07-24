@@ -1,0 +1,110 @@
+#include "op-codes.fc";
+#include "imports/stdlib.fc";
+#include "workchain.fc";
+
+{-
+  Storage
+  TODO Will we do custom suplly or not?
+
+  sale_config# owner_round_end: int32 owner_price: uint32
+  int32 wl_round_end: int32 hamster_round_end: int32 = SaleConfig;
+
+  storage#0ac94266 balance:Coins chief:MsgAddressInt creator: MsgAddressInt
+  sale_config: ^SaleConfig metadata_uri: ^Cell = LaunchStorage;
+
+-}
+
+cell build_content_cell(slice metadata_uri) inline {
+    cell content_dict = new_dict();
+    content_dict~set_token_snake_metadata_entry("uri"H, metadata_uri);
+    content_dict~set_token_snake_metadata_entry("decimals"H, "6");
+    return create_token_onchain_metadata(content_dict);
+}
+
+(int, slice, slice, cell, cell) load_data() inline {
+    slice ds = get_data().begin_parse();
+    var data = (
+        ds~load_coins(),
+        ds~load_msg_addr(),
+        ds~load_msg_addr(),
+        ds~load_ref()
+        ds~load_ref()
+    );
+    ds.end_parse();
+    return data;
+}
+
+() save_data(int balance, slice chief, slice creator, cell stages_config, cell metadata_uri) impure inline {
+    ;; Don't forget about cell upper bound - 1023 bits
+    set_data(
+        begin_cell()
+            .store_coins(balance)     ;; VarUinteger16
+            .store_slice(chief)       ;; Address(267 bits - common size) todo - prove it
+            .store_slice(creator)     ;; Address
+            .store_ref(stages_config) ;; SaleConfig Cell
+            .store_ref(metadata_uri)  ;; Metadata Cell
+            .end_cell()
+    );
+}
+
+() initialize(slice msg_body) {
+    ;; TODO load metadata from incoming messages
+    ;; TODO load rounds' durations from incoming messages
+    slice address_dummy = begin_cell().store_int(0, 2).end_cell().begin_parse();
+
+    int current_time = now();
+    cell stages_config = begin_cell()
+        .store_int(0, 32)
+        .store_uint(0, 32)
+        .store_int(0, 32)
+        .store_int(0, 32)
+        .end_cell();
+
+    save_data(0, address_dummy, address_dummy, stages_config, begin_cell().end_cell());
+}
+
+() on_bounce(slice in_msg_body) impure inline {
+    ;; Gonna be filled in later
+}
+
+() recv_internal(int contract_balance, int attached_value, cell msg_full, slice msg_body) impure {
+    if (msg_body.slice_empty?() | msg_body.slice_bits() < 32) {
+        ;; TODO is `msg_body.slice_bits() < 32` really necessary?
+        ;; Logic for simple transfers
+    }
+    slice in_msg_full_slice = msg_full.begin_parse();
+    int msg_flags = in_msg_full_slice~load_msg_flags();
+
+    if (msg_flags & 1) {
+        ;; is bounced
+        on_bounce(msg_body);
+        return ();
+    }
+
+    slice sender_address = in_msg_full_slice~load_msg_addr();
+
+    ;; Purified forward fee of incoming message
+    ;; int fwd_fee_from_in_msg = in_msg_full_slice~retrieve_fwd_fee();
+    ;; int fwd_fee = get_original_fwd_fee(MY_WORKCHAIN, fwd_fee_from_in_msg);
+
+    int op = msg_body~load_op();
+    (int balance, slice chief, slice creator, cell sale_config, cell metadata_uri) = load_data();
+
+    if (op == op::creator_buyout) {
+        throw_unless(error::not_owner, sender_address == creator);
+        ;; Parse value, count tokens we need to send this guy and fucking send it, well?
+        ;; TODO Do some assy-bitchie mechanism for token limit control
+    }
+    if (op == op::transfer_notification) {
+        ;; In fact, WL buy
+    }
+    if (op::hamster_buy) {
+
+    }
+
+    if (op == op::excesses) {
+        {- ??? -}
+    }
+
+    throw(error::wrong_op);
+}

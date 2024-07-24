@@ -1,0 +1,14 @@
+// Schemas of messages inside contracts periphery
+// Shemas splitted on 3 major groups, relaited to the contract layers
+
+// ! === WARNING - CONSTRUCTOR PREFIX CODE MAY BE SHITTY === !
+
+// === CORE ===
+storage# status:uint4 = CoreStorage;
+
+// === LAUNCH ===
+  stages# owner_round_end: int32 wl_round_end: int32 hamster_round_end: int32 = Stages;
+  storage#0ac94266 balance:Coins chief:MsgAddressInt creator: MsgAddressInt metadata_uri: ^Cell stages_config: ^Stages = LaunchStorage;
+
+// === LAUNCH USER'S BALANCE ===
+storage# status:uint32 = LaunchUserBalanceStorage;

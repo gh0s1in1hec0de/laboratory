@@ -1,0 +1,15 @@
+;; Transfer OPs
+const op::transfer_notification = 0x7362d09c; ;;
+const op::excesses = 0xd53276db;
+const op::burn_notification = 0x7bdd97de;
+
+;; Contract-realted OPs
+const op::creator_buyout = "creator_buyout"c;
+;; `op::transfer_notification` in fact is responsible for WL buy
+const op::hamster_buy = "hamster_buy"c;
+
+const error::invalid_op = 72;
+const error::wrong_op = 0xffff;
+const error::not_owner = 73;
+const error::not_valid_wallet = 74;
+const error::wrong_workchain = 333;
