@@ -2,6 +2,10 @@ import {Address, fromNano, Slice, toNano, Transaction} from '@ton/core';
 import {AddressSaver} from '../wrappers/AddressSaver';
 import {compile, NetworkProvider} from '@ton/blueprint';
 import {TonClient} from '@ton/ton';
+import {log} from "node:util";
+import {randomAddress} from "@ton/test-utils";
+import {parseBodyInternalMessage} from "./utils/parseBodyInternalMessage";
+import {parseBodyExternalInMessage} from "./utils/parseBodyExternalInMessage";
 
 // function parseInternalMessageBody(slice: Slice): void {
 //   if (slice.remainingBits >= 32) {
@@ -42,7 +46,9 @@ export async function run(provider: NetworkProvider) {
 
   // await provider.waitForDeploy(addressSaver.address);
 
-  await addressSaver.sendRequestAddress(provider.sender(), toNano(0.02), 12345n);
+  const randomAddr = Address.parse("EQAgGgnGzKreSLnpZHxM3mFUa2r6CKeuzHdWC6W1p89KmsJT");
+  // await addressSaver.sendRequestAddress(provider.sender(), toNano(0.02), 12345n);
+  await addressSaver.sendChangeAddress(provider.sender(), toNano(0.02), 12345n, randomAddr);
 
   const client = new TonClient({
     endpoint: 'https://testnet.toncenter.com/api/v2/jsonRPC',
@@ -50,109 +56,42 @@ export async function run(provider: NetworkProvider) {
   });
 
   const transactions: Transaction[] = await client.getTransactions(senderAddress, {
-    limit: 2,
+    // if call sendChangeAddress
+    limit: 1,
+    // if call sendRequestAddress
+    // limit: 2,
   });
 
   console.log(transactions);
 
-  function parseBodyInternalMessage(slice: Slice, sender: Address, value: bigint): void {
-    console.log("START PARSE BODY OF 'Internal Message'...")
-    console.log(`BODY remainingBits: ${slice.remainingBits}`)
-    if (slice.remainingBits < 32) {
-      // if slice doesn't have opcode: it's a simple message without comment
-      console.log(`Simple transfer from ${sender} with value ${fromNano(value)} TON`);
-    } else {
-      const op = slice.loadUint(32);
-      const queryId = slice.loadUint(64);
-      console.log(`OP: ${op}`)
-      console.log(`QUERY ID: ${queryId}`)
-
-
-      let memorizedAddress;
-      let managerAddress;
-      if (op === 3) {
-        memorizedAddress = slice.loadAddress();
-        managerAddress = slice.loadAddress();
-      }
-      console.log(`managerAddress: ${managerAddress}`)
-      console.log(`memorizedAddress: ${memorizedAddress}`)
-
-
-      console.log("END PARSE BODY OF 'Internal Message'...")
-    }
-  }
-
-  function parseBodyExternalInMessage(slice: Slice) {
-    console.log("START PARSE BODY OF 'ExternalIn Message'...")
-    console.log(`'ExternalIn' BODY remainingBits: ${slice.remainingBits}`)
-    if (slice.remainingBits < 32) {
-      console.log("BODY DON`T HAVE OP CODE");
-      return;
-    } else {
-      const op = slice.loadUint(32); // Load the operation code (32 bits)
-      const queryId = slice.loadUint(64); // Load the query ID (64 bits)
-      console.log(`OP: ${op}`)
-      console.log(`QUERY ID: ${queryId}`)
-
-      /*
-       Если входящее сообщение имеет "op === 1", то вызвалась функция sendChangeAddress,
-       которая в свою очередь должна содержать новый op, queryId и address для обновления
-       */
-      let newAddress;
-      if (op === 1) {
-        // Example case where additional parameters are loaded for op = 1
-        newAddress = slice.loadAddress(); // Next field: new Address
-        console.log(`NEW ADDRESS: ${newAddress}`)
-        return {op, queryId, newAddress};
-      } else if (op === 2) {
-        /*
-       Если входящее сообщение имеет "op === 2", то вызвалась функция sendRequestAddress,
-       которая в свою очередь должна содержать op и queryId
-       */
-        return {op, queryId};
-      }
-
-      console.log("END PARSE BODY OF 'ExternalIn Message'...")
-
-      return {
-        op,
-        queryId,
-        newAddress: newAddress || null
-      }
-    }
-  }
-
-
   for (const tx of transactions) {
-    console.log("------------------------------------------------------------------------")
+    console.log("-----------------------------------------------------------------------------")
+    console.log("Start parsing transactions...")
     const inMessage = tx.inMessage;
     const outMessages = tx.outMessages;
     console.log("IN MESSAGE:")
     console.log(inMessage)
-    console.log("===========================================")
-    console.log("OUT MESSAGES:")
-    console.log(outMessages);
+    console.log(`OUT MESSAGES COUNT: ${outMessages.values().length}`)
     outMessages.values().map(msg => {
       console.log(msg);
     })
 
     // parse "InMessage" - external-in
     if (inMessage?.info.type == 'external-in') {
-      const slice = inMessage.body.beginParse().clone();
-      // TODO хуйня
-      parseBodyExternalInMessage(slice);
+      const resultParse = parseBodyExternalInMessage(inMessage);
+      console.log(resultParse)
 
       outMessages.values().map(msg => {
         // if transaction have internal message in "outMessages"
         if (msg?.info.type == 'internal') {
           const sender = msg.info.src;
           const value = msg.info.value.coins;
-          const slice = msg.body.beginParse().clone();
-          parseBodyInternalMessage(slice, sender, value);
+          const resultParse = parseBodyInternalMessage(msg, sender, value);
+          console.log(resultParse)
         }
 
         if (msg?.info.type == 'external-out') {
-
+          // todo
         }
       })
     }
@@ -161,10 +100,8 @@ export async function run(provider: NetworkProvider) {
     if (inMessage?.info.type == 'internal') {
       const sender = inMessage.info.src;
       const value = inMessage.info.value.coins;
-
-      // Convert the body from its hex representation to a Cell
-      const slice = inMessage.body.beginParse().clone();
-      parseBodyInternalMessage(slice, sender, value);
+      const resultParse = parseBodyInternalMessage(inMessage, sender, value);
+      console.log(resultParse)
     }
   }
 }
