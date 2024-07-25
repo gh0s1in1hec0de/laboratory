@@ -62,10 +62,7 @@ export async function run(provider: NetworkProvider) {
   });
 
   const transactions: Transaction[] = await client.getTransactions(senderAddress, {
-    // if call sendChangeAddress
     limit: limit,
-    // if call sendRequestAddress
-    // limit: 2,
   });
 
   console.log(transactions);
