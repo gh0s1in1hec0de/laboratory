@@ -1,4 +1,4 @@
-import {Address, fromNano, Message} from "@ton/core";
+import {Address, fromNano, Message, Slice} from "@ton/core";
 
 interface InternalMessageParams {
   op: number;

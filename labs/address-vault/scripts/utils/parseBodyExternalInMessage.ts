@@ -51,22 +51,7 @@ export function parseBodyExternalInMessage(message: Message): ExternalInParams {
     console.log("All Refs of 'ExternalIn Message' detected!")
   }
 
-  if (refsArray){
-    console.log("END PARSE BODY OF 'ExternalIn Message'...")
-    return {
-      signature,
-      subwallet_id,
-      valid_until,
-      seqno,
-      op,
-      mode,
-      remainingBits,
-      refs: refsArray
-    }
-  }
-
   console.log("END PARSE BODY OF 'ExternalIn Message'...")
-  // If no refs
   return {
     signature,
     subwallet_id,
@@ -75,6 +60,6 @@ export function parseBodyExternalInMessage(message: Message): ExternalInParams {
     op,
     mode,
     remainingBits,
-    refs: null
+    refs: refsArray ? refsArray : null
   }
 }

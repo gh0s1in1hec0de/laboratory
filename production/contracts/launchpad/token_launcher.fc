@@ -1,16 +1,18 @@
-#include "op-codes.fc";
 #include "imports/stdlib.fc";
+
+#include "op-codes.fc";
 #include "workchain.fc";
+#include "context.fc";
 
 {-
-  Storage
   TODO Will we do custom suplly or not?
 
-  sale_config# owner_round_end: int32 owner_price: uint32
-  int32 wl_round_end: int32 hamster_round_end: int32 = SaleConfig;
+  TODO - find out, how to handle decimals (see STON.fi core)
+  sale_data# owner_round_end_time:int32 owner_token_price:uint32 owner_balance:Coins
+  wl_round_end_time:int32 hamster_round_end_time:int32 = SaleData;
 
-  storage#0ac94266 balance:Coins chief:MsgAddressInt creator: MsgAddressInt
-  sale_config: ^SaleConfig metadata_uri: ^Cell = LaunchStorage;
+  storage# balance:Coins chief:MsgAddressInt creator: MsgAddressInt
+  sale_data: ^SaleData metadata_uri: ^Cell = LaunchStorage;
 
 -}
 
@@ -21,46 +23,61 @@ cell build_content_cell(slice metadata_uri) inline {
     return create_token_onchain_metadata(content_dict);
 }
 
-(int, slice, slice, cell, cell) load_data() inline {
+(int, int, int, slice, slice, cell, cell, cell) load_data() inline_ref {
     slice ds = get_data().begin_parse();
-    var data = (
-        ds~load_coins(),
-        ds~load_msg_addr(),
-        ds~load_msg_addr(),
-        ds~load_ref()
-        ds~load_ref()
-    );
+    this::is_initialized = ds~load_int(1);
+    this::total_supply = ds~load_coins();
+    this::cur_balance = ds~load_coins();
+    this::chief = ds~load_msg_addr();
+    this::creator = ds~load_msg_addr();
+
+    cell sale_config = ds~load_ref();
+    sale_config::owner_balance = sale_config~load_coins();
+    sale_config::owner_token_price = sale_config~load_uint(32);
+    sale_config::owner_round_end_time = sale_config~load_int(32);
+    sale_config::wl_round_end_time = sale_config~load_int(32);
+    sale_config::hamster_round_end_time = sale_config~load_int(32);
+
+    this::metadata = ds~load_ref();
+    this::balance_keeper_code = ds~load_ref();
     ds.end_parse();
-    return data;
 }
 
-() save_data(int balance, slice chief, slice creator, cell stages_config, cell metadata_uri) impure inline {
+() save_data(int is_inititialized, int contract_balance, int total_supply, slice chief, slice creator, cell sale_data, cell metadata_uri, cell balance_keeper_code) impure inline_ref {
     ;; Don't forget about cell upper bound - 1023 bits
-    set_data(
-        begin_cell()
-            .store_coins(balance)     ;; VarUinteger16
-            .store_slice(chief)       ;; Address(267 bits - common size) todo - prove it
-            .store_slice(creator)     ;; Address
-            .store_ref(stages_config) ;; SaleConfig Cell
-            .store_ref(metadata_uri)  ;; Metadata Cell
-            .end_cell()
-    );
+
+    cell sale_data = begin_cell()
+        .store_coins(sale_config::owner_balance)
+        .store_uint(sale_config::owner_token_price)
+        .store_int(sale_config::owner_round_end_time)
+        .store_int(sale_config::wl_round_end_time)
+        .store_int(sale_config::hamster_round_end_time)
+    .end_cell();
+
+    cell data = begin_cell()
+        .store_int(this::is_initialized, 1)
+        .store_coins(this::total_supply)        ;; VarUinteger16
+        .store_coins(this::cur_balance)         ;; VarUinteger16
+        .store_slice(chief)                     ;; Address(267 bits - common size) todo - prove it
+        .store_slice(creator)                     ;; Address
+        .store_ref(metadata_uri)        ;; Metadata Cell
+        .store_ref(balance_keeper_code) ;; Metadata Cell
+    .end_cell();
+    
+    set_data(data);
 }
 
-() initialize(slice msg_body) {
-    ;; TODO load metadata from incoming messages
-    ;; TODO load rounds' durations from incoming messages
-    slice address_dummy = begin_cell().store_int(0, 2).end_cell().begin_parse();
-
-    int current_time = now();
-    cell stages_config = begin_cell()
-        .store_int(0, 32)
-        .store_uint(0, 32)
-        .store_int(0, 32)
-        .store_int(0, 32)
-        .end_cell();
-
-    save_data(0, address_dummy, address_dummy, stages_config, begin_cell().end_cell());
+() initialize(slice msg_body) impure {
+    int total_supply = msg_body~load_coins();
+    save_data(-1,
+        total_supply,
+        total_supply,
+        msg_body~load_msg_addr(),
+        msg_body~load_msg_addr(),
+        msg_body~load_ref(),
+        msg_body~load_ref(),
+        msg_body~load_ref()
+    );
 }
 
 () on_bounce(slice in_msg_body) impure inline {
@@ -88,17 +105,32 @@ cell build_content_cell(slice metadata_uri) inline {
     ;; int fwd_fee = get_original_fwd_fee(MY_WORKCHAIN, fwd_fee_from_in_msg);
 
     int op = msg_body~load_op();
-    (int balance, slice chief, slice creator, cell sale_config, cell metadata_uri) = load_data();
+    (
+        int is_initialized,
+        int balance,
+        int total_supply,
+        slice chief,
+        slice creator,
+        cell sale_data,
+        cell metadata_uri,
+        cell balance_keeper_code
+    ) = load_data();
 
+    if (op == op::init) {
+        ;; TODO Maybe add caller constraint?
+        throw_if(error::already_initialized, is_initialized);
+        initialize(msg_body);
+        return ();
+    }
     if (op == op::creator_buyout) {
         throw_unless(error::not_owner, sender_address == creator);
-        ;; Parse value, count tokens we need to send this guy and fucking send it, well?
+        ;; Parse value, lock value we need to pay fees, count tokens we need to send this guy and fucking send it, well?
         ;; TODO Do some assy-bitchie mechanism for token limit control
     }
     if (op == op::transfer_notification) {
         ;; In fact, WL buy
     }
-    if (op::hamster_buy) {
+    if (op::public_buy) {
 
     }
 
@@ -107,4 +139,10 @@ cell build_content_cell(slice metadata_uri) inline {
     }
 
     throw(error::wrong_op);
+}
+
+(int, int, slice, cell, cell) get_launch_data() method_id {
+    ;; TODO
+    (int total_supply, slice admin_address, slice next_admin_address, cell jetton_wallet_code, cell metadata_uri) = load_data();
+    return (total_supply, TRUE, admin_address, build_content_cell(metadata_uri.begin_parse()), jetton_wallet_code);
 }

@@ -1,0 +1,11 @@
+#include "imports/stdlib.fc";
+
+(int, int, int, int) parse_sale_config(cell sale_cofig) {
+    slice ds = sale_cofig.begin_parse();
+    int owner_round_end_time = ds~load_int(32);
+    int owner_token_price = ds~load_uint(32);
+    int wl_round_end_time = ds~load_int(32);
+    int hamster_round_end_time = ds~load_int(32);
+
+    return (owner_round_end_time, owner_token_price, wl_round_end_time, hamster_round_end_time);
+}
