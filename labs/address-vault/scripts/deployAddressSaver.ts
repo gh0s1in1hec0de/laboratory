@@ -46,8 +46,14 @@ export async function run(provider: NetworkProvider) {
 
   // await provider.waitForDeploy(addressSaver.address);
 
-  const randomAddr = Address.parse("EQAgGgnGzKreSLnpZHxM3mFUa2r6CKeuzHdWC6W1p89KmsJT");
+  let limit;
+
   // await addressSaver.sendRequestAddress(provider.sender(), toNano(0.02), 12345n);
+  // limit = 2;
+
+
+  limit = 1;
+  const randomAddr = Address.parse("EQAgGgnGzKreSLnpZHxM3mFUa2r6CKeuzHdWC6W1p89KmsJT");
   await addressSaver.sendChangeAddress(provider.sender(), toNano(0.02), 12345n, randomAddr);
 
   const client = new TonClient({
@@ -57,16 +63,16 @@ export async function run(provider: NetworkProvider) {
 
   const transactions: Transaction[] = await client.getTransactions(senderAddress, {
     // if call sendChangeAddress
-    limit: 1,
+    limit: limit,
     // if call sendRequestAddress
     // limit: 2,
   });
 
   console.log(transactions);
 
+
   for (const tx of transactions) {
     console.log("-----------------------------------------------------------------------------")
-    console.log("Start parsing transactions...")
     const inMessage = tx.inMessage;
     const outMessages = tx.outMessages;
     console.log("IN MESSAGE:")
@@ -75,6 +81,7 @@ export async function run(provider: NetworkProvider) {
     outMessages.values().map(msg => {
       console.log(msg);
     })
+    console.log("-----------------------------------------------------------------------------")
 
     // parse "InMessage" - external-in
     if (inMessage?.info.type == 'external-in') {
