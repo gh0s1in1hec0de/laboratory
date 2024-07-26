@@ -4,6 +4,7 @@ global int   this::cur_balance;
 global slice this::chief;
 global slice this::creator;
 
+global int   sale_config::owner_limit_pct;
 global int   sale_config::owner_balance;
 global int   sale_config::owner_token_price;
 global int   sale_config::owner_round_end_time;
@@ -11,4 +12,4 @@ global int   sale_config::wl_round_end_time;
 global int   sale_config::hamster_round_end_time;
 
 global cell  this::metadata;
-global cell  this::balance_keeper_code;
+global cell  this::user_vault_code;

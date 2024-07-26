@@ -865,6 +865,8 @@ const int RESERVE_REGULAR = 0;
 ;;; Creates an output action which would reserve at most x nanograms (if y = 2).
 ;;; Bit +2 in y means that the external action does not fail if the specified amount cannot be reserved; instead, all remaining balance is reserved.
 const int RESERVE_AT_MOST = 2;
+;;;  Creates an output action which would reserve (x + contract_balance_before_compute_phase).
+const int RESERVE_WITH_CONTRACT_BALANCE = 4;
 ;;; in the case of action fail - bounce transaction. No effect if RESERVE_AT_MOST (+2) is used. TVM UPGRADE 2023-07. https://docs.ton.org/learn/tvm-instructions/tvm-upgrade-2023-07#sending-messages
 const int RESERVE_BOUNCE_ON_ACTION_FAIL = 16;
 

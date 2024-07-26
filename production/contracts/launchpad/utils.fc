@@ -1,11 +1,42 @@
 #include "imports/stdlib.fc";
+#include "context.fc";
 
-(int, int, int, int) parse_sale_config(cell sale_cofig) {
+const MY_WORKCHAIN = BASECHAIN;
+
+(int, int, int, int, int) load_sale_config(cell sale_cofig) {
     slice ds = sale_cofig.begin_parse();
-    int owner_round_end_time = ds~load_int(32);
-    int owner_token_price = ds~load_uint(32);
-    int wl_round_end_time = ds~load_int(32);
-    int hamster_round_end_time = ds~load_int(32);
+    sale_config::owner_limit_pct = ds~load_uint(8);
+    sale_config::owner_balance = ds~load_coins();
+    sale_config::owner_token_price = ds~load_uint(32);
+    sale_config::owner_round_end_time = ds~load_int(32);
+    sale_config::wl_round_end_time = ds~load_int(32);
+    sale_config::hamster_round_end_time = ds~load_int(32);
+}
 
-    return (owner_round_end_time, owner_token_price, wl_round_end_time, hamster_round_end_time);
+(int, slice, int, int) extract_full_msg_data(cell in_msg_full) {
+    slice in_msg_full_slice = in_msg_full.begin_parse();
+    int msg_flags = in_msg_full_slice~load_msg_flags();
+    slice sender_address = in_msg_full_slice~load_msg_addr();
+    in_msg_full_slice~load_msg_addr();
+    int value = in_msg_full_slice~load_coins();
+    in_msg_full_slice~skip_dict(); ;; skip extracurrency collection
+    in_msg_full_slice~load_coins(); ;; skip ihr_fee
+    int fwd_fee = in_msg_full_slice~load_coins();
+    return (msg_flags, sender_address, value, fwd_fee);
+}
+
+slice calculate_user_vault_address(cell state_init) inline {
+    {-
+    https://github.com/ton-blockchain/ton/blob/8a9ff339927b22b72819c5125428b70c406da631/crypto/block/block.tlb#L105
+    addr_std$10 anycast:(Maybe Anycast) workchain_id:int8 address:bits256  = MsgAddressInt;
+    -}
+    return begin_cell()
+        .store_uint(4, 3) ;; 0b100 = addr_std$10 tag; No anycast
+        .store_int(MY_WORKCHAIN, 8)
+        .store_uint(cell_hash(state_init), 256)
+        .end_cell()
+        .begin_parse();
+    ;; Pay attention to amount of bits in address - 267.
+    ;; All is needed - to find out concrete cases, where it can differ.
+    ;; After that we can be sure in our address size
 }

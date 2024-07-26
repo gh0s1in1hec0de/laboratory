@@ -1,4 +1,4 @@
-;; Transfer OPs
+;; Jetton Startndard OPs
 const op::transfer_notification = 0x7362d09c; ;;
 const op::excesses = 0xd53276db;
 const op::burn_notification = 0x7bdd97de;
@@ -14,5 +14,4 @@ const error::wrong_op = 0xffff;
 const error::not_owner = 73;
 const error::not_valid_wallet = 74;
 const error::wrong_workchain = 333;
-
 const error::already_initialized = 201;
