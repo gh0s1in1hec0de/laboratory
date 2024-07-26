@@ -1,13 +1,12 @@
-#include "imports/stdlib.fc";
+#include "../imports/stdlib.fc";
+#include "../op-codes.fc";
+#include "../workchain.fc";
+#include "../utils.fc";
 
-#include "op-codes.fc";
-#include "workchain.fc";
-#include "context.fc";
-#include "utils.fc";
+#include "tl_context.fc";
+
 
 {-
-  TODO Will we do custom suplly or not?
-
   TODO - find out, how to handle decimals (see STON.fi core)
 
   sale_data# owner_limit_pct:uint8 owner_balance:Coins owner_token_price:uint32 owner_round_end_time:int32
@@ -40,13 +39,13 @@ cell build_content_cell(slice metadata_uri) inline {
     sale_config::wl_round_end_time = sale_config~load_int(32);
     sale_config::hamster_round_end_time = sale_config~load_int(32);
 
-    this::metadata = ds~load_ref();
+    this::metadata_uri = ds~load_ref();
     this::user_vault_code = ds~load_ref();
     ds.end_parse();
 }
 
 () save_data() impure inline_ref {
-    ;; Don't forget about cell upper bound - 1023 bits
+    ;; don't forget about cell upper bound - 1023 bits
     cell sale_data = begin_cell()
         .store_uint(sale_config::owner_token_price, 8)
         .store_coins(sale_config::owner_balance)
@@ -62,7 +61,7 @@ cell build_content_cell(slice metadata_uri) inline {
         .store_coins(this::cur_balance)         ;; VarUinteger16
         .store_slice(this::chief)               ;; Address(267 bits - common size) todo - prove it
         .store_slice(this::creator)             ;; Address
-        .store_ref(this::metadata)              ;; Metadata Cell
+        .store_ref(this::metadata_uri)              ;; Metadata Cell
         .store_ref(this::user_vault_code)       ;; Metadata Cell
         .end_cell();
 
@@ -78,20 +77,20 @@ cell build_content_cell(slice metadata_uri) inline {
     this::creator = msg_body~load_msg_addr();
 
     load_sale_config(msg_body~load_ref());
-    this::metadata = msg_body~load_ref();
+    this::metadata_uri = msg_body~load_ref();
     this::user_vault_code = msg_body~load_ref();
 
     save_data();
 }
 
 () on_bounce(slice in_msg_body) impure inline {
-    ;; Gonna be filled in later
+    ;; gonna be filled in later
 }
 
 () recv_internal(int contract_balance, int attached_value, cell in_msg_full, slice in_msg_body) impure {
     if (in_msg_body.slice_empty?() | in_msg_body.slice_bits() < 32) {
         ;; TODO is `msg_body.slice_bits() < 32` really necessary?
-        ;; Logic for simple transfers
+        ;; logic for simple transfers
     }
     (int msg_flags, slice sender_address, int attached_value, int fwd_fee_from_in_msg) = extract_full_msg_data(in_msg_full);
     (int op, int query_id) = in_msg_body~load_op_and_query_id();
@@ -101,39 +100,35 @@ cell build_content_cell(slice metadata_uri) inline {
         return ();
     }
 
-    ;; Purified forward fee of incoming message
+    ;; purified forward fee of incoming message
     ;; int fwd_fee = get_original_fwd_fee(MY_WORKCHAIN, fwd_fee_from_in_msg);
     load_data(); ;; Now we have our contract data available in globals
 
-    if (op == op::init) {
+    if (op == op::tl::init) {
         throw_if(error::already_initialized, this::is_initialized);
         initialize(in_msg_body);
         return ();
     }
-    if (op == op::creator_buyout) {
+    ;; we can't perform any operations before initialization
+    throw_unless(error::uninitialized, this::is_initialized);
+    if (op == op::tl::creator_buyout) {
         throw_unless(error::not_owner, sender_address == this::creator);
-        ;; Do we really need to reserve contract funds? I mean we can just check if message value is enogh to fullfill our needs
-        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL); ;; Seems like second one is unnecessary
+        ;; do we really need to reserve contract funds? I mean we can just check if message value is enogh to fullfill our needs
+        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL); ;; seems like second one is unnecessary
 
-        ;; Parse value, lock value we need to pay fees, count tokens we need to send this guy and fucking send it, well?
+        ;; parse value, lock value we need to pay fees, count tokens we need to send this guy and fucking send it, well?
         ;; TODO Do some assy-bitchie mechanism for token limit control
     }
-    if (op == op::transfer_notification) {
-        ;; In fact, WL buy
-    }
-    if (op::public_buy) {
+    if (op == op::transfer_notification) { {- In fact, WL buy -} }
+    if (op == op::tl::public_buy) { }
 
-    }
-
-    if (op == op::excesses) {
-        {- ??? -}
-    }
+    if (op == op::excesses) { {- ??? -} }
 
     throw(error::wrong_op);
 }
 
-(int, int, slice, cell, cell) get_launch_data() method_id {
-    ;; TODO
-    (int total_supply, slice admin_address, slice next_admin_address, cell jetton_wallet_code, cell metadata_uri) = load_data();
-    return (total_supply, TRUE, admin_address, build_content_cell(metadata_uri.begin_parse()), jetton_wallet_code);
+(int, slice, cell, cell) get_launch_data() method_id {
+    load_data();
+    throw_unless(error::uninitialized, this::is_initialized);
+    return (this::total_supply, this::creator, build_content_cell(this::metadata_uri.begin_parse()), this::user_vault_code);
 }

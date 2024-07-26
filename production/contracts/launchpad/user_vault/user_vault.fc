@@ -1,0 +1,60 @@
+#include "../imports/stdlib.fc";
+#include "../op-codes.fc";
+#include "../workchain.fc";
+#include "../utils.fc";
+
+#include "uv_context.fc";
+
+
+(int, int, int, slice, slice, cell, cell, cell) load_data() inline_ref {
+    slice ds = get_data().begin_parse();
+    this::owner = ds~load_msg_addr();
+    this::wl_invested = ds~load_coins();
+    this::public_invested = ds~load_coins();
+    this::token_balance = ds~load_coins();
+    ds.end_parse();
+}
+
+;; TODO do we actually need initialization flag?
+() save_data() impure inline_ref {
+    set_data(
+        begin_cell()
+            .store_slice(this::owner)
+            .store_coins(this::wl_invested)
+            .store_coins(this::public_invested)
+            .store_coins(this::token_balance)
+        .end_cell()
+    );
+}
+
+() on_bounce(slice in_msg_body) impure inline {
+    ;; gonna be filled in later
+}
+
+() recv_internal(int contract_balance, int attached_value, cell in_msg_full, slice in_msg_body) impure {
+    if (in_msg_body.slice_empty?() | in_msg_body.slice_bits() < 32) {
+        ;; TODO is `msg_body.slice_bits() < 32` really necessary?
+        ;; logic for simple transfers
+    }
+    (int msg_flags, slice sender_address, int attached_value, int fwd_fee_from_in_msg) = extract_full_msg_data(in_msg_full);
+    (int op, int query_id) = in_msg_body~load_op_and_query_id();
+
+    if (msg_flags & 1) { ;; is bounced
+        on_bounce(in_msg_body);
+        return ();
+    }
+
+    ;; purified forward fee of incoming message
+    ;; int fwd_fee = get_original_fwd_fee(MY_WORKCHAIN, fwd_fee_from_in_msg);
+    load_data(); ;; Now we have our contract data available in globals
+
+    if (op == op::uv::balance_update) { }
+
+    throw(error::wrong_op);
+}
+
+(int, slice, cell, cell) get_user_data() method_id {
+    load_data();
+    ;; should return owner, all balance-related data
+    return ();
+}

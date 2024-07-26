@@ -1,0 +1,4 @@
+global int this::owner;
+global int this::wl_invested;
+global int this::public_invested;
+global int this::token_balance;

@@ -1,4 +1,6 @@
+#include "imports/stdlib.fc";
 #include "workchain.fc";
+#include "op-codes.fc";
 
 const ONE_TON = 1000000000;
 
@@ -6,56 +8,40 @@ const MIN_STORAGE_DURATION = 180 * 24 * 3600; ;; half a year
 
 ;; TODO Change almost everything with dummies and real fee computation formulas
 
-;;# Precompiled constants
-;;
-;;All of the contents are result of contract emulation tests
-;;
+;; precompiled constants
+;; all of the contents are result of contract emulation tests
 
-;;## Minimal fees
-;;  TODO Replace with actual contract calls
-;;- Transfer [/sandbox_tests/JettonWallet.spec.ts#L935](L935) `0.028627415` TON
-;;- Burn [/sandbox_tests/JettonWallet.spec.ts#L1185](L1185) `0.016492002` TON
+;; minimal fees
+;; balance update [/sandbox_tests/file#L`line_num`](L`line_num`) `x` TON
+
+;; storage todo ?
+;; get calculated in a separate test file [/sandbox_tests/StateInit.spec.ts](StateInit.spec.ts)
+
+;; `USER_VAULT_BITS` [/sandbox_tests/file#L`line_num`](L`line_num`)
+const USER_VAULT_BITS  = 1;
+;; `USER_VAULT_CELLS`: [/sandbox_tests/file#L`line_num`](L`line_num`)
+const USER_VAULT_CELLS = 1;
 
 
-;;## Storage
-;;
-;;Get calculated in a separate test file [/sandbox_tests/StateInit.spec.ts](StateInit.spec.ts)
-
-;;- `JETTON_WALLET_BITS` [/sandbox_tests/StateInit.spec.ts#L92](L92)
-const USER_VAULT_BITS  = 1033;
-
-;;- `JETTON_WALLET_CELLS`: [/sandbox_tests/StateInit.spec.ts#L92](L92)
-const USER_VAULT_CELLS = 3;
-
-;; difference in JETTON_WALLET_BITS/JETTON_WALLET_INITSTATE_BITS is difference in
-;; StateInit and AccountStorage (https://github.com/ton-blockchain/ton/blob/master/crypto/block/block.tlb)
-;; we count bits as if balances are max possible
-;;- `JETTON_WALLET_INITSTATE_BITS` [/sandbox_tests/StateInit.spec.ts#L95](L95)
-const USER_VAULT_INITSTATE_BITS  = 931;
-;;- `JETTON_WALLET_INITSTATE_CELLS` [/sandbox_tests/StateInit.spec.ts#L95](L95)
-const USER_VAULT_INITSTATE_CELLS = 3;
+;; `USER_VAULT_INITSTATE_BITS` [/sandbox_tests/file#L`line_num`](L`line_num`)
+const USER_VAULT_INITSTATE_BITS  = 1;
+;; `USER_VAULT_INITSTATE_CELLS` [/sandbox_tests/file#L`line_num`](L`line_num`)
+const USER_VAULT_INITSTATE_CELLS = 1;
 
 ;; jetton-wallet.fc#L163 - maunal bits counting
-const BURN_NOTIFICATION_BITS = 754; ;; body = 32+64+124+(3+8+256)+(3+8+256)
-const BURN_NOTIFICATION_CELLS = 1; ;; body always in ref
+const BALANCE_UPDATE_BITS = 1; ;; body = 32+64+124+(3+8+256)+(3+8+256)
+const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
 
-;;## Gas
-;;
-;;Gas constants are calculated in the main test suite.
-;;First the related transaction is found, and then it's
-;;resulting gas consumption is printed to the console.
+;; gas
+;; gas constants are calculated in the main test suite.
+;; first the related transaction is found, and then it's
+;; resulting gas consumption is printed to the console.
 
-;;- `SEND_TRANSFER_GAS_CONSUMPTION` [/sandbox_tests/JettonWallet.spec.ts#L853](L853)
-const SEND_TRANSFER_GAS_CONSUMPTION    = 9255;
+;; TODO link gas measurement code line
+const SEND_BALANCE_UPDATE_CONSUMPTION    = 1;
 
-;;- `RECEIVE_TRANSFER_GAS_CONSUMPTION` [/sandbox_tests/JettonWallet.spec.ts#L862](L862)
-const RECEIVE_TRANSFER_GAS_CONSUMPTION = 10355;
-
-;;- `SEND_BURN_GAS_CONSUMPTION` [/sandbox_tests/JettonWallet.spec.ts#L1154](L1154)
-const SEND_BURN_GAS_CONSUMPTION    = 5791;
-
-;;- `RECEIVE_BURN_GAS_CONSUMPTION` [/sandbox_tests/JettonWallet.spec.ts#L1155](L1155)
-const RECEIVE_BURN_GAS_CONSUMPTION = 6775;
+;; TODO link gas measurement code line
+const RECEIVE_BALANCE_UPDATE_CONSUMPTION = 1;
 
 int calculate_jetton_wallet_min_storage_fee() inline {
     return get_storage_fee(MY_WORKCHAIN, MIN_STORAGE_DURATION, USER_VAULT_BITS, USER_VAULT_CELLS);
@@ -66,6 +52,11 @@ int forward_init_state_overhead() inline {
 }
 
 
-() check_amount_is_enough_for_owner_buyout() {
-
+() check_amount_is_enough_for_owner_buyout(int msg_value) {
+    ;; TODO Add state init count
+    throw_unless(error::not_enough_gas,
+        msg_value > get_forward_fee(MY_WORKCHAIN, BALANCE_UPDATE_BITS, BALANCE_UPDATE_CELLS)
+        + get_compute_fee(MY_WORKCHAIN, SEND_BALANCE_UPDATE_CONSUMPTION)
+        + get_compute_fee(MY_WORKCHAIN, RECEIVE_BALANCE_UPDATE_CONSUMPTION)
+    );
 }

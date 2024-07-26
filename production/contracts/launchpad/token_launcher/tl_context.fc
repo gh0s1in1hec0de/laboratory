@@ -11,5 +11,5 @@ global int   sale_config::owner_round_end_time;
 global int   sale_config::wl_round_end_time;
 global int   sale_config::hamster_round_end_time;
 
-global cell  this::metadata;
+global cell  this::metadata_uri;
 global cell  this::user_vault_code;
