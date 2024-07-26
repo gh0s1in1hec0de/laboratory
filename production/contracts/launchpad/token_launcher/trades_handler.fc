@@ -1,3 +1,16 @@
-() handle_owner_buyout() {
+#include "../gas.fc";
+#include "../op-codes.fc";
+#include "tl_context.fc";
 
+() handle_owner_buyout(msg_value) {
+    int val_left = check_amount_is_enough_for_owner_buyout(msg_value);
+    (int tokens_amount, int remainder) = divmod(val_left, sale_config::creator_token_price);
+
+    if (tokens_amount > 0) {
+        int creator_token_limit  = muldiv(sale_config::creator_limit_pct, this::total_supply, 100);
+        throw_if(error::balance_overlimit, sale_config::creator_balance + tokens_amount > creator_token_limit);
+        sale_config::creator_balance += tokens_amount;
+    }
+    ;; TODO - if remainder is more than returning excesses message fee - than send excesses to owner
+    if (remainder > 0) { }
 }

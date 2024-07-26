@@ -5,9 +5,9 @@ const MY_WORKCHAIN = BASECHAIN;
 
 (int, int, int, int, int) load_sale_config(cell sale_config) inline_ref {
     slice sale_conf_slice = sale_config.begin_parse();
-    sale_config::owner_limit_pct = sale_conf_slice~load_uint(8);
-    sale_config::owner_balance = sale_conf_slice~load_coins();
-    sale_config::owner_token_price = sale_conf_slice~load_uint(32);
+    sale_config::creator_limit_pct = sale_conf_slice~load_uint(8);
+    sale_config::creator_balance = sale_conf_slice~load_coins();
+    sale_config::creator_token_price = sale_conf_slice~load_uint(32);
     sale_config::owner_round_end_time = sale_conf_slice~load_int(32);
     sale_config::wl_round_end_time = sale_conf_slice~load_int(32);
     sale_config::hamster_round_end_time = sale_conf_slice~load_int(32);
@@ -39,4 +39,9 @@ slice calculate_user_vault_address(cell state_init) inline {
     ;; pay attention to amount of bits in address - 267.
     ;; all is needed - to find out concrete cases, where it can differ.
     ;; after that we can be sure in our address size
+}
+
+;; TODO
+() get_amount_out(int amount_in, int reserve_in, int reserve_out) inline {
+    int base_out = (amount_in * reserve_out) / reserve_in;
 }

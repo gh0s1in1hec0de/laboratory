@@ -20,3 +20,4 @@ const error::wrong_workchain = 333;
 
 const error::uninitialized = 404;
 const error::already_initialized = 423;
+const error::balance_overlimit = 411;
