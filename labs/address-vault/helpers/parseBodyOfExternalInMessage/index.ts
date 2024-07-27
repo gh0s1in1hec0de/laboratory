@@ -1,0 +1,1 @@
+export { parseBodyOfExternalInMessage } from "./parseBodyOfExternalInMessage";

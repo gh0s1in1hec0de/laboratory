@@ -1,31 +1,10 @@
-import {Address, fromNano, Slice, toNano, Transaction} from '@ton/core';
+import {Address, toNano, Transaction} from '@ton/core';
 import {AddressSaver} from '../wrappers/AddressSaver';
 import {compile, NetworkProvider} from '@ton/blueprint';
 import {TonClient} from '@ton/ton';
-import {log} from "node:util";
-import {randomAddress} from "@ton/test-utils";
-import {parseBodyInternalMessage} from "./utils/parseBodyInternalMessage";
-import {parseBodyExternalInMessage} from "./utils/parseBodyExternalInMessage";
-
-// function parseInternalMessageBody(slice: Slice): void {
-//   if (slice.remainingBits >= 32) {
-//     const op = slice.loadUint(32);
-//     console.log(`Operation Code: ${op.toString(16)}`);
-//
-//     if (op === 0x7362d09c) { // Jetton transfer notification
-//       parseJettonTransfer(slice);
-//     } else if (op === 0x05138d91) { // NFT transfer notification
-//       parseNftTransfer(slice);
-//     } else if (op === 0) { // Basic transfer with comment
-//       const comment = slice.loadStringTail();
-//       console.log(`Transfer Comment: ${comment}`);
-//     } else {
-//       console.log(`Unknown operation code: ${op.toString(16)}`);
-//     }
-//   } else {
-//     console.log('Body does not contain an operation code.');
-//   }
-// }
+import {parseBodyOfExternalInMessage, parseBodyOfInternalMessage} from "../helpers";
+import {InternalMessageActions} from "../helpers/parseBodyOfInternalMessage/types";
+import {ExternalInMessageActions} from "../helpers/parseBodyOfExternalInMessage/types";
 
 export async function run(provider: NetworkProvider) {
   const providerAddress = provider.sender().address;
@@ -43,14 +22,14 @@ export async function run(provider: NetworkProvider) {
   ));
 
   // await addressSaver.sendDeploy(provider.sender(), toNano('0.05'));
-
   // await provider.waitForDeploy(addressSaver.address);
+
 
   let limit;
 
+
   // await addressSaver.sendRequestAddress(provider.sender(), toNano(0.02), 12345n);
   // limit = 2;
-
 
   limit = 1;
   const randomAddr = Address.parse("EQAgGgnGzKreSLnpZHxM3mFUa2r6CKeuzHdWC6W1p89KmsJT");
@@ -67,9 +46,10 @@ export async function run(provider: NetworkProvider) {
 
   console.log(transactions);
 
+  // todo TEST THIS
 
   for (const tx of transactions) {
-    console.log("-----------------------------------------------------------------------------")
+    console.debug("-----------------------------------------------------------------------------")
     const inMessage = tx.inMessage;
     const outMessages = tx.outMessages;
     console.log("IN MESSAGE:")
@@ -78,24 +58,27 @@ export async function run(provider: NetworkProvider) {
     outMessages.values().map(msg => {
       console.log(msg);
     })
-    console.log("-----------------------------------------------------------------------------")
+    console.debug("-----------------------------------------------------------------------------")
 
     // parse "InMessage" - external-in
     if (inMessage?.info.type == 'external-in') {
-      const resultParse = parseBodyExternalInMessage(inMessage);
+      const resultParse = parseBodyOfExternalInMessage(inMessage);
       console.log(resultParse)
 
-      outMessages.values().map(msg => {
+      outMessages.values().map(message => {
         // if transaction have internal message in "outMessages"
-        if (msg?.info.type == 'internal') {
-          const sender = msg.info.src;
-          const value = msg.info.value.coins;
-          const resultParse = parseBodyInternalMessage(msg, sender, value);
+        if (message?.info.type == 'internal') {
+          const sender = message.info.src;
+          const value = message.info.value.coins;
+          const resultParse = parseBodyOfInternalMessage(message, sender, value);
+          if (resultParse.info.action === InternalMessageActions.UnknownStructureCalled){
+            resultParse.info
+          }
           console.log(resultParse)
         }
 
-        if (msg?.info.type == 'external-out') {
-          // todo
+        if (message?.info.type == 'external-out') {
+          // todo optional
         }
       })
     }
@@ -104,7 +87,7 @@ export async function run(provider: NetworkProvider) {
     if (inMessage?.info.type == 'internal') {
       const sender = inMessage.info.src;
       const value = inMessage.info.value.coins;
-      const resultParse = parseBodyInternalMessage(inMessage, sender, value);
+      const resultParse = parseBodyOfInternalMessage(inMessage, sender, value);
       console.log(resultParse)
     }
   }
