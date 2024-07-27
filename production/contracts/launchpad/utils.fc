@@ -10,7 +10,7 @@ const MY_WORKCHAIN = BASECHAIN;
     sale_config::creator_token_price = sale_conf_slice~load_uint(32);
     sale_config::owner_round_end_time = sale_conf_slice~load_int(32);
     sale_config::wl_round_end_time = sale_conf_slice~load_int(32);
-    sale_config::hamster_round_end_time = sale_conf_slice~load_int(32);
+    sale_config::public_round_end_time = sale_conf_slice~load_int(32);
 }
 
 (int, slice, int, int) extract_full_msg_data(cell in_msg_full) inline_ref {
@@ -19,8 +19,8 @@ const MY_WORKCHAIN = BASECHAIN;
     slice sender_address = in_msg_full_slice~load_msg_addr();
     in_msg_full_slice~load_msg_addr();
     int value = in_msg_full_slice~load_coins();
-    in_msg_full_slice~skip_dict(); ;; skip extracurrency collection
-    in_msg_full_slice~load_coins(); ;; skip ihr_fee
+    in_msg_full_slice~skip_dict();                            ;; skip extracurrency collection
+    in_msg_full_slice~load_coins();                           ;; skip ihr_fee
     int fwd_fee = in_msg_full_slice~load_coins();
     return (msg_flags, sender_address, value, fwd_fee);
 }
@@ -34,7 +34,7 @@ slice calculate_user_vault_address(cell state_init) inline {
         .store_uint(4, 3) ;; 0b100 = addr_std$10 tag; No anycast
         .store_int(MY_WORKCHAIN, 8)
         .store_uint(cell_hash(state_init), 256)
-        .end_cell()
+        .end_cell() ;; can we optimize it?
         .begin_parse();
     ;; pay attention to amount of bits in address - 267.
     ;; all is needed - to find out concrete cases, where it can differ.
