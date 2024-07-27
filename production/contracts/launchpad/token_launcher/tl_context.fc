@@ -1,4 +1,4 @@
-global int   this::is_initialized;
+global int   this::is_initialized?;
 global int   this::total_supply;
 global int   this::cur_balance;
 global slice this::chief;
@@ -9,7 +9,7 @@ global int   sale_config::creator_balance;
 global int   sale_config::creator_token_price;
 global int   sale_config::owner_round_end_time;
 global int   sale_config::wl_round_end_time;
-global int   sale_config::hamster_round_end_time;
+global int   sale_config::public_round_end_time;
 
 global cell  this::metadata_uri;
 global cell  this::user_vault_code;

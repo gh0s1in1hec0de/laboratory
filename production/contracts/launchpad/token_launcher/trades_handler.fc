@@ -14,3 +14,11 @@
     ;; TODO - if remainder is more than returning excesses message fee - than send excesses to owner
     if (remainder > 0) { }
 }
+
+() handle_wl_purchase(msg_value) {
+
+}
+
+() handle_public_purchase() {
+
+}
