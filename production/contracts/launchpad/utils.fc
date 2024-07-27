@@ -1,3 +1,4 @@
+#include "op-codes.fc";
 #include "imports/stdlib.fc";
 #include "token_launcher/tl_context.fc";
 
@@ -5,11 +6,18 @@ const MY_WORKCHAIN = BASECHAIN;
 
 (int, int, int, int, int) load_sale_config(cell sale_config) inline_ref {
     slice sale_conf_slice = sale_config.begin_parse();
-    sale_config::creator_limit_pct = sale_conf_slice~load_uint(8);
+    sale_config::creator_limit_pct = sale_conf_slice~load_uint(8)
     sale_config::creator_balance = sale_conf_slice~load_coins();
     sale_config::creator_token_price = sale_conf_slice~load_uint(32);
-    sale_config::owner_round_end_time = sale_conf_slice~load_int(32);
+    sale_config::creator_round_end_time = sale_conf_slice~load_int(32);
+
+    sale_config::wl_tokens_share = sale_conf_slice~load_uint(8);
+    sale_config::wl_ton_limit_pct = sale_conf_slice~load_uint(8);
+    sale_config::wl_ton_invested_total = sale_conf_slice~load_coins();
     sale_config::wl_round_end_time = sale_conf_slice~load_int(32);
+
+    sale_config::public_synthetic_reserve_a = sale_conf_slice~load_coins();
+    sale_config::public_synthetic_reserve_b = sale_conf_slice~load_coins();
     sale_config::public_round_end_time = sale_conf_slice~load_int(32);
 }
 
@@ -25,7 +33,27 @@ const MY_WORKCHAIN = BASECHAIN;
     return (msg_flags, sender_address, value, fwd_fee);
 }
 
-slice calculate_user_vault_address(cell state_init) inline {
+(int) get_amount_out(int amount_in, int reserve_in, int reserve_out) inline {
+    ;; we calculate K according to AMM (Automatic Meow-Meow) formula x*y<=K, where x and y are assets' amounts
+    int k = reserve_in * reserve_out; ;; TODO does overflow possible?
+    ;; new amount of first asset, that should be in pool
+    int new_reserve_in = reserve_in + amount_in;
+    ;; we calculate second asset value to have our x*y<=K stay correct,
+    ;; `/` division rounds `new_reserve_out` to the lower bound
+    int new_reserve_out = k / new_reserve_in;
+    int amount_out = reserve_out - new_reserve_out;
+
+    throw_if(error::unreachable, amount_out < 0);
+    return amount_out;
+}
+
+{-
+   code utils related to smart contracts addresses calculations;
+   for this contract it is crucial mechanics as we need to determine
+   addresses of user vaults and jetton wallet address correctness
+-}
+
+slice calculate_contract_address(cell state_init) inline_ref {
     {-
     https://github.com/ton-blockchain/ton/blob/8a9ff339927b22b72819c5125428b70c406da631/crypto/block/block.tlb#L105
     addr_std$10 anycast:(Maybe Anycast) workchain_id:int8 address:bits256  = MsgAddressInt;
@@ -41,7 +69,44 @@ slice calculate_user_vault_address(cell state_init) inline {
     ;; after that we can be sure in our address size
 }
 
-;; TODO
-() get_amount_out(int amount_in, int reserve_in, int reserve_out) inline {
-    int base_out = (amount_in * reserve_out) / reserve_in;
+{-
+    jetton wallet address calculatiuon
+-}
+
+const int STATUS_SIZE = 4;
+
+cell pack_jetton_wallet_data(int status, int balance, slice owner_address, slice jetton_master_address) inline {
+    return begin_cell()
+        .store_uint(status, STATUS_SIZE)
+        .store_coins(balance)
+        .store_slice(owner_address)
+        .store_slice(jetton_master_address)
+        .end_cell();
 }
+
+cell calculate_jetton_wallet_state_init(slice owner_address, slice jetton_master_address, cell jetton_wallet_code) inline {
+    {-
+    https://github.com/ton-blockchain/ton/blob/8a9ff339927b22b72819c5125428b70c406da631/crypto/block/block.tlb#L144
+    _ split_depth:(Maybe (## 5)) special:(Maybe TickTock)
+    code:(Maybe ^Cell) data:(Maybe ^Cell)
+    library:(Maybe ^Cell) = StateInit;
+  -}
+    return begin_cell()
+        .store_uint(0, 2) ;; 0b00 - No split_depth; No special
+        .store_maybe_ref(jetton_wallet_code)
+        .store_maybe_ref(
+            pack_jetton_wallet_data(
+                0, ;; status
+                0, ;; balance
+                owner_address,
+                jetton_master_address)
+        )
+        .store_uint(0, 1) ;; Empty libraries
+        .end_cell();
+}
+
+slice calculate_user_jetton_wallet_address(slice owner_address, slice jetton_master_address, cell jetton_wallet_code) inline {
+    return calculate_contract_address(calculate_jetton_wallet_state_init(owner_address, jetton_master_address, jetton_wallet_code));
+}
+
+

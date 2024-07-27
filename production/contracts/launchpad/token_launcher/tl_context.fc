@@ -4,11 +4,19 @@ global int   this::cur_balance;
 global slice this::chief;
 global slice this::creator;
 
+
 global int   sale_config::creator_limit_pct;
 global int   sale_config::creator_balance;
 global int   sale_config::creator_token_price;
-global int   sale_config::owner_round_end_time;
+global int   sale_config::creator_round_end_time;
+
+global int   sale_config::wl_tokens_share;
+global int   sale_config::wl_ton_limit_pct;
+global int   sale_config::wl_ton_invested_total;
 global int   sale_config::wl_round_end_time;
+
+global int   sale_config::public_synthetic_reserve_a;
+global int   sale_config::public_synthetic_reserve_b;
 global int   sale_config::public_round_end_time;
 
 global cell  this::metadata_uri;

@@ -6,11 +6,10 @@
 #include "tl_context.fc";
 #include "trades_handler.fc";
 
-
 {-
-  TODO - find out, how to handle decimals (see STON.fi core)
+  TODO are we doing this ton-jetton processing the correct way? mhm?
 
-  Owner round - fixed token price | fixed token limit | remainder goes to public phase
+  owner round - fixed token price | fixed token limit | remainder goes to public phase
   WL Round    - firlaunch
 
   sale_data# owner_limit_pct:uint8 owner_balance:Coins owner_token_price:uint32 owner_round_end_time:int32
@@ -29,7 +28,8 @@ cell build_content_cell(slice metadata_uri) inline {
     return create_token_onchain_metadata(content_dict);
 }
 
-;; TODO add following options: buys freeze, sells freeeze
+;; TODO add following admin options: buys freeze, sells freeeze
+;; TODO should I add our jetton wallet address caching?
 () load_data() inline_ref {
     slice ds = get_data().begin_parse();
     this::is_initialized? = ds~load_int(1);
@@ -38,11 +38,20 @@ cell build_content_cell(slice metadata_uri) inline {
     this::chief = ds~load_msg_addr();
     this::creator = ds~load_msg_addr();
 
+    ;; TODO replace with load_sale_config?
     cell sale_config = ds~load_ref();
+    sale_config::creator_limit_pct = sale_config~load_uint(8)
     sale_config::creator_balance = sale_config~load_coins();
     sale_config::creator_token_price = sale_config~load_uint(32);
-    sale_config::owner_round_end_time = sale_config~load_int(32);
+    sale_config::creator_round_end_time = sale_config~load_int(32);
+
+    sale_config::wl_tokens_share = sale_config~load_uint(8);
+    sale_config::wl_ton_limit_pct = sale_config~load_uint(8);
+    sale_config::wl_ton_invested_total = sale_config~load_coins();
     sale_config::wl_round_end_time = sale_config~load_int(32);
+
+    sale_config::public_synthetic_reserve_a = sale_config~load_coins();
+    sale_config::public_synthetic_reserve_b = sale_config~load_coins();
     sale_config::public_round_end_time = sale_config~load_int(32);
 
     this::metadata_uri = ds~load_ref();
@@ -52,14 +61,19 @@ cell build_content_cell(slice metadata_uri) inline {
 
 () save_data() impure inline_ref {
     ;; don't forget about cell upper bound - 1023 bits
-
-    ;; TODO - to add value, that stores amount of nanotoncoins, that was invested in WL phase
     cell sale_data = begin_cell()
-        .store_uint(sale_config::creator_token_price, 8)
+        .store_uint(sale_config::creator_limit_pct, 8)
         .store_coins(sale_config::creator_balance)
         .store_uint(sale_config::creator_token_price, 32)
-        .store_int(sale_config::owner_round_end_time, 32)
+        .store_int(sale_config::creator_round_end_time, 32)
+
+        .store_uint(sale_config::wl_tokens_share, 8)
+        .store_uint(sale_config::wl_ton_limit_pct, 8)
+        .store_coins(sale_config::wl_ton_invested_total)
         .store_int(sale_config::wl_round_end_time, 32)
+
+        .store_coins(sale_config::public_synthetic_reserve_a)
+        .store_coins(sale_config::public_synthetic_reserve_b)
         .store_int(sale_config::public_round_end_time, 32)
         .end_cell();
 
@@ -77,6 +91,7 @@ cell build_content_cell(slice metadata_uri) inline {
 }
 
 () initialize(slice msg_body) impure inline {
+    ;; TODO early version, now does not work propoerly, rewrite at the end
     int total_supply = msg_body~load_coins();
     this::total_supply = total_supply;
     this::cur_balance = total_supply;
@@ -127,7 +142,12 @@ cell build_content_cell(slice metadata_uri) inline {
         save_data();
         return ();
     }
-    if (op == op::transfer_notification) { {- In fact, WL buy -} }
+    if (op == op::transfer_notification) {
+        ;; in fact, it is OUR wallet notification about incoming jetton transfer
+        ;; for buy we will use forward ton amount, it should include fees for all the operations and the rest will be spent on investment
+        ;; to use it correctly, we should approve, that this message was spent from jetton wallet contract, responsible for this address' balance
+
+    }
     if (op == op::tl::public_buy) { }
 
     if (op == op::excesses) { {- ??? -} }
