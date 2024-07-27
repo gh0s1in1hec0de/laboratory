@@ -25,20 +25,20 @@ export function parseBodyOfExternalInMessage(message: Message): ParsingBodyOfExt
   const op = bodyToParse.loadBits(8)
   const mode = bodyToParse.loadBits(8)
 
-  const refsArray: RefInfo[] = [];
+  const refs: RefInfo[] = [];
 
-  try {
-    while (true) {
+  while (true){
+    try {
       const refBody = bodyToParse.loadRef().beginParse()
       const additionalInfo = refBody.loadBits(6);
       const destAddress = Address.parse(refBody.loadAddress().toString());
-      refsArray.push({
-        destAddress: destAddress,
-        additionalInfo: additionalInfo
+      refs.push({
+        destAddress,
+        additionalInfo
       });
+    } catch {
+      break;
     }
-  } catch (e) {
-    console.log("All Refs of 'ExternalIn Message' are processed")
   }
 
   console.log("End parsing body of 'ExternalIn Message'")
@@ -51,7 +51,7 @@ export function parseBodyOfExternalInMessage(message: Message): ParsingBodyOfExt
       seqno,
       op: Number(op),
       mode: Number(mode),
-      refs: refsArray ? refsArray : null
+      refs: refs.length ? refs : null
     },
     allBitsCount,
     remainingBitsCount: bodyToParse.remainingBits
