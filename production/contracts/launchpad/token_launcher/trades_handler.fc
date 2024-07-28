@@ -1,8 +1,9 @@
 #include "../gas.fc";
 #include "../op-codes.fc";
 #include "tl_context.fc";
+#include "../imports/stdlib.fc";
 
-() handle_owner_buyout(msg_value) {
+() handle_owner_buyout(int msg_value) {
     int val_left = check_amount_is_enough_for_owner_buyout(msg_value);
     (int tokens_amount, int remainder) = divmod(val_left, sale_config::creator_token_price);
 
@@ -15,7 +16,36 @@
     if (remainder > 0) { }
 }
 
-() handle_wl_purchase(msg_value) {
+() handle_wl_purchase(int query_id, int jetton_amount, int msg_value, slice sender_address, slice initiator) inline {
+    int val_left = check_amount_is_enough_for_wl_purchase(msg_value);
+    ;; it should work like: if even one of them is true - we'll try to return sender's tokens back
+    if (sender_address != this::util_jetton_wal_addr | jetton_amount <= sale_config::wl_pass_min_token_amount | val_left < 0) {
+        ;; To figure out - what gonna happen, if we run out of gas? At my opinion we have 2 variants:
+        ;; - we still have enough gas to perform the cashback operartion -> code stops at return(), we also have no data to save
+        ;; - we just run out of gas and being stopped at random place, what will cause, that tokens will be left on this contract balance,
+        ;;   but, at least, we will not face inconsistent state, or something like that
+
+        ;; does it built the correct way?
+        cell msg_body = begin_cell()
+            .store_op(op::transfer)
+            .store_query_id(query_id)
+            .store_coins(jetton_amount)
+            .store_slice(initiator) ;; to
+            .store_slice(my_address()) ;; ??? response_address
+            .store_coins(val_left > 0 ? val_left : 0) ;; is it legal? :)
+            ;; .store_slice(either_forward_payload) TODO how to avoid saving it at all? Like that?
+            .end_cell();
+
+        ;; build MessageRelaxed, see TL-B layout in stdlib.fc#L733
+        cell msg = begin_cell()
+            .store_msg_flags_and_address_none(BOUNCEABLE)
+            .store_slice(this::util_jetton_wal_addr)
+            .store_coins(0)
+            .store_statinit_ref_and_body_ref(this::util_jetton_wal_stateinit, msg_body)
+            .end_cell();
+        send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+        return();
+    }
 
 }
 

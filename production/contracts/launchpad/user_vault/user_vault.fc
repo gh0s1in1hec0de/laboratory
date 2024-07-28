@@ -15,7 +15,6 @@
     ds.end_parse();
 }
 
-;; TODO do we actually need initialization flag?
 () save_data() impure inline_ref {
     set_data(
         begin_cell()

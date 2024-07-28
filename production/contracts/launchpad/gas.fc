@@ -60,10 +60,16 @@ int forward_init_state_overhead() inline {
 
 }
 
-;;; Returns difference between attached value and gas spendings
 (int) check_amount_is_enough_for_owner_buyout(int msg_value) {
     int required_gas = get_purchase_base_gas();
     throw_unless(error::not_enough_gas, msg_value > required_gas);
+    return msg_value - required_gas;
+}
+
+(int) check_amount_is_enough_for_wl_purchase(int msg_value) {
+    ;; TODO count token transfers
+    int required_gas = get_purchase_base_gas();
+    ;; don't use throw here as we shouldn't throw shit in wl buys
     return msg_value - required_gas;
 }
 

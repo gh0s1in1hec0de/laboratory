@@ -1,4 +1,4 @@
-#include "imports/stdlib.fc";
+#include "../launchpad/imports/stdlib.fc";
 
 () recv_internal(int contract_balance, int attached_value, cell msg_full, slice msg_body) impure {
     ;; Wish me luck ;w

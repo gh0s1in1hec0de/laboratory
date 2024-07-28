@@ -1,4 +1,5 @@
 ;; jetton Startndard OPs
+const op::transfer = 0xf8a7ea5;
 const op::transfer_notification = 0x7362d09c; ;;
 const op::excesses = 0xd53276db;
 const op::burn_notification = 0x7bdd97de;
@@ -18,7 +19,8 @@ const error::not_owner = 73;
 const error::not_valid_wallet = 74;
 const error::wrong_workchain = 333;
 
+const error::unreachable = 666;
 const error::uninitialized = 404;
 const error::already_initialized = 423;
 const error::balance_overlimit = 411;
-const error::unreachable = 666;
+const error::tokens_lack = 433;

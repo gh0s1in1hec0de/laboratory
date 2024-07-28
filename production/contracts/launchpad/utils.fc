@@ -4,7 +4,7 @@
 
 const MY_WORKCHAIN = BASECHAIN;
 
-(int, int, int, int, int) load_sale_config(cell sale_config) inline_ref {
+() load_sale_config(cell sale_config) inline_ref {
     slice sale_conf_slice = sale_config.begin_parse();
     sale_config::creator_limit_pct = sale_conf_slice~load_uint(8)
     sale_config::creator_balance = sale_conf_slice~load_coins();
@@ -19,6 +19,7 @@ const MY_WORKCHAIN = BASECHAIN;
     sale_config::public_synthetic_reserve_a = sale_conf_slice~load_coins();
     sale_config::public_synthetic_reserve_b = sale_conf_slice~load_coins();
     sale_config::public_round_end_time = sale_conf_slice~load_int(32);
+    sale_conf_slice.end_parse();
 }
 
 (int, slice, int, int) extract_full_msg_data(cell in_msg_full) inline_ref {
@@ -72,9 +73,7 @@ slice calculate_contract_address(cell state_init) inline_ref {
 {-
     jetton wallet address calculatiuon
 -}
-
 const int STATUS_SIZE = 4;
-
 cell pack_jetton_wallet_data(int status, int balance, slice owner_address, slice jetton_master_address) inline {
     return begin_cell()
         .store_uint(status, STATUS_SIZE)
@@ -84,7 +83,7 @@ cell pack_jetton_wallet_data(int status, int balance, slice owner_address, slice
         .end_cell();
 }
 
-cell calculate_jetton_wallet_state_init(slice owner_address, slice jetton_master_address, cell jetton_wallet_code) inline {
+cell calculate_jetton_wallet_state_init(slice owner_address, slice jetton_master_address, cell jetton_wallet_code) inline_ref {
     {-
     https://github.com/ton-blockchain/ton/blob/8a9ff339927b22b72819c5125428b70c406da631/crypto/block/block.tlb#L144
     _ split_depth:(Maybe (## 5)) special:(Maybe TickTock)
@@ -99,7 +98,8 @@ cell calculate_jetton_wallet_state_init(slice owner_address, slice jetton_master
                 0, ;; status
                 0, ;; balance
                 owner_address,
-                jetton_master_address)
+                jetton_master_address
+            )
         )
         .store_uint(0, 1) ;; Empty libraries
         .end_cell();
