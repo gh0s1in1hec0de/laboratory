@@ -13,19 +13,21 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
 
 () load_sale_config(cell sale_config) inline_ref {
     slice sale_conf_slice = sale_config.begin_parse();
-    sale_config::creator_limit_pct = sale_conf_slice~load_uint(8)
-    sale_config::creator_balance = sale_conf_slice~load_coins();
-    sale_config::creator_token_price = sale_conf_slice~load_uint(32);
-    sale_config::creator_round_end_time = sale_conf_slice~load_int(32);
+    creator_round::const::jet_limit = sale_conf_slice~load_uint(8)
+    creator_round::creator_jet_balance = sale_conf_slice~load_coins();
+    creator_round::const::jet_price = sale_conf_slice~load_uint(32);
+    creator_round::const::end_time = sale_conf_slice~load_int(32);
 
-    sale_config::wl_tokens_share = sale_conf_slice~load_uint(8);
-    sale_config::wl_ton_limit_pct = sale_conf_slice~load_uint(8);
-    sale_config::wl_ton_invested_total = sale_conf_slice~load_coins();
-    sale_config::wl_round_end_time = sale_conf_slice~load_int(32);
+    wl_round::const::jet_limit = sale_conf_slice~load_uint(8);
+    wl_round::const::ton_limit = sale_conf_slice~load_uint(8);
+    wl_round::const::pass_min_util_jet_amount = sale_conf_slice~load_coins();
+    wl_round::const::burn_util_jet_amount = sale_conf_slice~load_coins();
+    wl_round::ton_invested_total = sale_conf_slice~load_coins();
+    wl_round::const::end_time = sale_conf_slice~load_int(32);
 
-    sale_config::public_synthetic_reserve_a = sale_conf_slice~load_coins();
-    sale_config::public_synthetic_reserve_b = sale_conf_slice~load_coins();
-    sale_config::public_round_end_time = sale_conf_slice~load_int(32);
+    public_round::synthetic_jet_reserve = sale_conf_slice~load_coins();
+    public_round::synthetic_ton_reserve = sale_conf_slice~load_coins();
+    public_round::const::end_time = sale_conf_slice~load_int(32);
     sale_conf_slice.end_parse();
 }
 
@@ -41,7 +43,9 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
     return (msg_flags, sender_address, value, fwd_fee);
 }
 
-;; TODO end up building this util later due to `either_forward_payload`
+;;; TODO end up building this util later due to `either_forward_payload`
+;;;
+;;; Now works only with utility token
 (cell) build_jetton_transfer_msg(int query_id, int jetton_amount, slice recepient, int forward_ton_amount) {
     cell msg_body = begin_cell()
         .store_op(op::transfer)
@@ -56,9 +60,9 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     cell msg = begin_cell()
         .store_msg_flags_and_address_none(NON_BOUNCEABLE) ;; As this code itself  is fallback - we don't care about that
-        .store_slice(this::util_jetton_wal_addr)
+        .store_slice(this::const::util_jetton_wal_addr)
         .store_coins(0)
-        .store_statinit_ref_and_body_ref(this::util_jetton_wal_stateinit, msg_body)
+        .store_statinit_ref_and_body_ref(this::const::util_jetton_wal_stateinit, msg_body)
         .end_cell();
 }
 

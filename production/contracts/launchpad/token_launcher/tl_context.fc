@@ -1,32 +1,56 @@
-;; === general information ===
+{-
+    Contract state represented in global variables for boilerplate reduce and code conciseness.
+    `const` keywoard mean that variable represents value, that is being set only once
+    in moment of initialization.
 
-global int   this::is_initialized?;
-global int   this::total_supply;
+    Glossary:
+    - `jet` means jetton
+    - `pct` means percentage
+    - `util_jet` means utility platform jetton
+-}
+
+;; === general information ===
+global int   this::const::is_initialized?;
+global int   this::const::total_supply;
 global int   this::cur_balance;
-global slice this::chief;
-global slice this::creator;
+global slice this::const::chief;
+global slice this::const::creator;
 
 ;; === sale config ===
 
-global int   sale_config::creator_limit_pct;
-global int   sale_config::creator_balance;
-global int   sale_config::creator_token_price;
-global int   sale_config::creator_round_end_time;
+;; Percent of supply, that owner can buy back
+global int   creator_round::const::jet_limit;
+global int   creator_round::creator_jet_balance;
+global int   creator_round::const::jet_price;
+global int   creator_round::const::end_time;
 
-global int   sale_config::wl_tokens_share;
-global int   sale_config::wl_ton_limit_pct;
-global int   sale_config::wl_pass_min_util_jet_amount;
-global int   sale_config::wl_burn_util_jet_amount;
-global int   sale_config::wl_ton_invested_total;
-global int   sale_config::wl_round_end_time;
+;; Percent from supply, that can be sold through WL round
+global int   wl_round::const::jet_limit;
+;; Maximum of TONs, that can be invested through WL round
+global int   wl_round::const::ton_limit;
+;; Minimum amount of tokens, that should be received by contract to provide WL pass
+global int   wl_round::const::pass_min_util_jet_amount;
+;; Amount of tokens, that must be burned for WL pass. It is being burned only the first time.
+global int   wl_round::const::burn_util_jet_amount;
+;; Total amount of TONs, invested in WL round. Later used for price determination.
+global int   wl_round::ton_invested_total;
+global int   wl_round::const::end_time;
 
-global int   sale_config::public_synthetic_reserve_a;
-global int   sale_config::public_synthetic_reserve_b;
-global int   sale_config::public_round_end_time;
+;; Part
+global int   public_round::const::jet_limit;
+global int   public_round::jet_sold;
+;; Synthetic reserves used to start dinamic determiantion of public round price
+;; from the point we we want it to start - last WL pirce?
+;; public_synthetic_jet_reserve should be equaled to wl_jet_limit_pct in moment of initialization.
+;; Then is starts to change only in public phase
+global int   public_round::synthetic_jet_reserve;
+;; Equals to `wl_ton_invested_total` until public phase
+global int   public_round::synthetic_ton_reserve;
+global int   public_round::const::end_time;
 
 ;; === tools that is necessary for correct contract operability ===
 
-global slice this::util_jetton_wal_addr;
-global cell  this::util_jetton_wal_stateinit;
-global cell  this::metadata_uri;
-global cell  this::user_vault_code;
+global slice this::const::util_jetton_wal_addr;
+global cell  this::const::util_jetton_wal_stateinit;
+global cell  this::const::metadata_uri;
+global cell  this::const::user_vault_code;
