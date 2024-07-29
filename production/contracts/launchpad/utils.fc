@@ -4,6 +4,13 @@
 
 const MY_WORKCHAIN = BASECHAIN;
 
+const BALANCE_UPD_MODE_SIZE = 4;
+const BALANCE_UPD_WL_DEPOSIT = 1;
+const BALANCE_UPD_PUB_DEPOSIT = 2;
+const BALANCE_UPD_WL_WITHDRAWAL = 3;
+const BALANCE_UPD_WL_WITHDRAWAL = 4;
+const BALANCE_UPD_WITHDRAWAL_ALL = 5;
+
 () load_sale_config(cell sale_config) inline_ref {
     slice sale_conf_slice = sale_config.begin_parse();
     sale_config::creator_limit_pct = sale_conf_slice~load_uint(8)
@@ -35,14 +42,14 @@ const MY_WORKCHAIN = BASECHAIN;
 }
 
 ;; TODO end up building this util later due to `either_forward_payload`
-(cell) build_jetton_transfer(int query_id, int jetton_amount, slice recepient, int forward_ton_amount) {
+(cell) build_jetton_transfer_msg(int query_id, int jetton_amount, slice recepient, int forward_ton_amount) {
     cell msg_body = begin_cell()
         .store_op(op::transfer)
         .store_query_id(query_id)
         .store_coins(jetton_amount)
         .store_slice(recepient) ;; To
         .store_slice(my_address()) ;; Address, that will get excesses after operation
-        .store_coins(forward_ton_amount > 0 ? forward_ton_amount : 0) ;; Is it legal? :)
+        .store_coins(forward_ton_amount)
     ;; .store_slice(either_forward_payload) TODO how to avoid saving it at all? Like that?
         .end_cell();
 
@@ -75,6 +82,21 @@ const MY_WORKCHAIN = BASECHAIN;
    addresses of user vaults and jetton wallet address correctness
 -}
 
+cell calculate_contract_state_init(cell code, cell data) inline_ref {
+    {-
+    https://github.com/ton-blockchain/ton/blob/8a9ff339927b22b72819c5125428b70c406da631/crypto/block/block.tlb#L144
+    _ split_depth:(Maybe (## 5)) special:(Maybe TickTock)
+    code:(Maybe ^Cell) data:(Maybe ^Cell)
+    library:(Maybe ^Cell) = StateInit;
+  -}
+    return begin_cell()
+        .store_uint(0, 2) ;; 0b00 - No split_depth; No special
+        .store_maybe_ref(code)
+        .store_maybe_ref(data)
+        .store_uint(0, 1) ;; Empty libraries
+        .end_cell();
+}
+
 slice calculate_contract_address(cell state_init) inline_ref {
     {-
     https://github.com/ton-blockchain/ton/blob/8a9ff339927b22b72819c5125428b70c406da631/crypto/block/block.tlb#L105
@@ -91,11 +113,18 @@ slice calculate_contract_address(cell state_init) inline_ref {
     ;; after that we can be sure in our address size
 }
 
-{-
-    Jetton wallet address determination is crucial part of token laucnher contract mechanics.
-    We need it when:
-    - determinening sender of tokens, we get transfer_notification about
--}
+cell pack_user_vault_data(slice owner_address, slice launch_contract_address, int wl_jet_pass_burnt, int wl_invested, int public_invested, int token_balance) inline {
+    return begin_cell()
+        .store_slice(owner_address)
+        .store_slice(launch_contract_address)
+        .store_bool(wl_jet_pass_burnt)
+        .store_coins(wl_invested)
+        .store_coins(public_invested)
+        .store_coins(token_balance)
+        .end_cell();
+}
+
+;; Syntax sugar for jetton wallets and user vaults
 
 const int STATUS_SIZE = 4;
 cell pack_jetton_wallet_data(int status, int balance, slice owner_address, slice jetton_master_address) inline {
@@ -107,30 +136,13 @@ cell pack_jetton_wallet_data(int status, int balance, slice owner_address, slice
         .end_cell();
 }
 
-cell calculate_jetton_wallet_state_init(slice owner_address, slice jetton_master_address, cell jetton_wallet_code) inline_ref {
-    {-
-    https://github.com/ton-blockchain/ton/blob/8a9ff339927b22b72819c5125428b70c406da631/crypto/block/block.tlb#L144
-    _ split_depth:(Maybe (## 5)) special:(Maybe TickTock)
-    code:(Maybe ^Cell) data:(Maybe ^Cell)
-    library:(Maybe ^Cell) = StateInit;
-  -}
-    return begin_cell()
-        .store_uint(0, 2) ;; 0b00 - No split_depth; No special
-        .store_maybe_ref(jetton_wallet_code)
-        .store_maybe_ref(
-            pack_jetton_wallet_data(
-                0, ;; status
-                0, ;; balance
-                owner_address,
-                jetton_master_address
-            )
-        )
-        .store_uint(0, 1) ;; Empty libraries
-        .end_cell();
-}
-
 slice calculate_user_jetton_wallet_address(slice owner_address, slice jetton_master_address, cell jetton_wallet_code) inline {
-    return calculate_contract_address(calculate_jetton_wallet_state_init(owner_address, jetton_master_address, jetton_wallet_code));
+    cell jetton_wallet_init_data = pack_jetton_wallet_data(
+        0, ;; status
+        0, ;; balance
+        owner_address,
+        jetton_master_address
+    );
+    return calculate_contract_address(calculate_contract_state_init(jetton_wallet_code, jetton_wallet_init_data));
 }
-
 

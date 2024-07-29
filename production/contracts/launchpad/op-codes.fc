@@ -15,7 +15,7 @@ const op::uv::balance_update = "balance_upddate"c;
 const error::not_enough_gas = 48;
 const error::invalid_op = 72;
 const error::wrong_op = 0xffff;
-const error::not_owner = 73;
+const error::unauthorized_access = 73;
 const error::not_valid_wallet = 74;
 const error::wrong_workchain = 333;
 

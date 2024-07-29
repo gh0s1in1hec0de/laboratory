@@ -41,4 +41,4 @@ public_buy# op:uint32 query_id:uint64 = LauchIncomingMessage;
 
 storage# owner:MsgAddressInt wl_invested:Coins public_invested:Coins token_balance:Coins = UserVaultStorage;
 
-balance_update# is_deposit:Bool is_wl:Bool tons:Coins tokens:Coins = BalanceUpdate;
+balance_update# op:uint32 query_id:uint64 mode:uint4 tons:Coins tokens:Coins = BalanceUpdate;

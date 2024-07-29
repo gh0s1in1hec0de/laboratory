@@ -57,7 +57,6 @@ int forward_init_state_overhead() inline {
     return get_forward_fee(MY_WORKCHAIN, BALANCE_UPDATE_BITS, BALANCE_UPDATE_CELLS)
     + get_compute_fee(MY_WORKCHAIN, SEND_BALANCE_UPDATE_CONSUMPTION)
     + get_compute_fee(MY_WORKCHAIN, RECEIVE_BALANCE_UPDATE_CONSUMPTION);
-
 }
 
 (int) check_amount_is_enough_for_owner_buyout(int msg_value) {
@@ -67,9 +66,15 @@ int forward_init_state_overhead() inline {
 }
 
 (int) check_amount_is_enough_for_wl_purchase(int msg_value) {
-    ;; TODO count token transfers
+    ;; TODO count token transfers and burn validation
     int required_gas = get_purchase_base_gas();
     ;; Don't use throw here as we shouldn't throw shit in wl buys
+    return msg_value - required_gas;
+}
+
+(int) check_amount_is_enough_for_owner_buyout(int msg_value) {
+    int required_gas = get_purchase_base_gas();
+    throw_unless(error::not_enough_gas, msg_value > required_gas);
     return msg_value - required_gas;
 }
 

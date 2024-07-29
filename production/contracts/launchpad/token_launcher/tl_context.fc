@@ -15,8 +15,8 @@ global int   sale_config::creator_round_end_time;
 
 global int   sale_config::wl_tokens_share;
 global int   sale_config::wl_ton_limit_pct;
-global int   sale_config::wl_pass_min_token_amount;
-global int   sale_config::wl_burn_token_amount;
+global int   sale_config::wl_pass_min_util_jet_amount;
+global int   sale_config::wl_burn_util_jet_amount;
 global int   sale_config::wl_ton_invested_total;
 global int   sale_config::wl_round_end_time;
 

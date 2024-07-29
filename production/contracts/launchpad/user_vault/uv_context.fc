@@ -1,4 +1,6 @@
-global int this::owner;
+global slice this::owner_addr;
+global slice this::token_launch_addr;
+
 global int this::wl_jet_pass_burnt;
 global int this::wl_invested;
 global int this::public_invested;

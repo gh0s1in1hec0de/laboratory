@@ -54,6 +54,7 @@ cell build_content_cell(slice metadata_uri) inline {
 
 () save_data() impure inline_ref {
     ;; Don't forget about cell upper bound - 1023 bits
+    ;; TODO - compress integers, where it is possible
     cell sale_data = begin_cell()
         .store_uint(sale_config::creator_limit_pct, 8)
         .store_coins(sale_config::creator_balance)
@@ -138,8 +139,8 @@ cell build_content_cell(slice metadata_uri) inline {
     ;; We can't perform any operations before initialization
     throw_unless(error::uninitialized, this::is_initialized?);
     if (op == op::tl::creator_buyout) {
-        throw_unless(error::not_owner, sender_address == this::creator);
-        ;; Do we really need to reserve contract funds? I mean we can just check if message value is enogh to fullfill our needs
+        throw_unless(error::unauthorized_access, sender_address == this::creator);
+        ;; Do we really need to reserve contract funds? I mean we can just check if message value is enough to fullfill our needs
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL); ;; Seems like second one is unnecessary, I mean what is the case of fail?
         handle_owner_buyout(attached_value);
         save_data();
