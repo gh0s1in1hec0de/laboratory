@@ -1,10 +1,10 @@
-;; jetton Startndard OPs
+;; Jetton Startndard OPs
 const op::transfer = 0xf8a7ea5;
 const op::transfer_notification = 0x7362d09c; ;;
 const op::excesses = 0xd53276db;
 const op::burn_notification = 0x7bdd97de;
 
-;; contract-realted OPs
+;; Contract-realted OPs
 ;; TODO Imo should be replaced with strict CRC32 following the rule req/req difference
 const op::tl::init = "init"c;
 const op::tl::creator_buyout = "creator_buyout"c;

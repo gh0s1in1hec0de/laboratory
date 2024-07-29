@@ -8,14 +8,14 @@ const MIN_STORAGE_DURATION = 180 * 24 * 3600; ;; half a year
 
 ;; TODO Change almost everything with dummies and real fee computation formulas
 
-;; precompiled constants
-;; all of the contents are result of contract emulation tests
+;; Precompiled constants
+;; All of the contents are result of contract emulation tests
 
-;; minimal fees
-;; balance update [/sandbox_tests/file#L`line_num`](L`line_num`) `x` TON
+;; Minimal fees
+;; Balance update [/sandbox_tests/file#L`line_num`](L`line_num`) `x` TON
 
-;; storage todo ?
-;; get calculated in a separate test file [/sandbox_tests/StateInit.spec.ts](StateInit.spec.ts)
+;; Storage todo ?
+;; Get calculated in a separate test file [/sandbox_tests/StateInit.spec.ts](StateInit.spec.ts)
 
 ;; `USER_VAULT_BITS` [/sandbox_tests/file#L`line_num`](L`line_num`)
 const USER_VAULT_BITS  = 1;
@@ -32,9 +32,9 @@ const USER_VAULT_INITSTATE_CELLS = 1;
 const BALANCE_UPDATE_BITS = 1; ;; body = 32+64+124+(3+8+256)+(3+8+256)
 const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
 
-;; gas
-;; gas constants are calculated in the main test suite.
-;; first the related transaction is found, and then it's
+;; Gas
+;; Gas constants are calculated in the main test suite.
+;; First the related transaction is found, and then it's
 ;; resulting gas consumption is printed to the console.
 
 ;; TODO link gas measurement code line
@@ -69,7 +69,7 @@ int forward_init_state_overhead() inline {
 (int) check_amount_is_enough_for_wl_purchase(int msg_value) {
     ;; TODO count token transfers
     int required_gas = get_purchase_base_gas();
-    ;; don't use throw here as we shouldn't throw shit in wl buys
+    ;; Don't use throw here as we shouldn't throw shit in wl buys
     return msg_value - required_gas;
 }
 

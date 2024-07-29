@@ -34,12 +34,33 @@ const MY_WORKCHAIN = BASECHAIN;
     return (msg_flags, sender_address, value, fwd_fee);
 }
 
+;; TODO end up building this util later due to `either_forward_payload`
+(cell) build_jetton_transfer(int query_id, int jetton_amount, slice recepient, int forward_ton_amount) {
+    cell msg_body = begin_cell()
+        .store_op(op::transfer)
+        .store_query_id(query_id)
+        .store_coins(jetton_amount)
+        .store_slice(recepient) ;; To
+        .store_slice(my_address()) ;; Address, that will get excesses after operation
+        .store_coins(forward_ton_amount > 0 ? forward_ton_amount : 0) ;; Is it legal? :)
+    ;; .store_slice(either_forward_payload) TODO how to avoid saving it at all? Like that?
+        .end_cell();
+
+    ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
+    cell msg = begin_cell()
+        .store_msg_flags_and_address_none(NON_BOUNCEABLE) ;; As this code itself  is fallback - we don't care about that
+        .store_slice(this::util_jetton_wal_addr)
+        .store_coins(0)
+        .store_statinit_ref_and_body_ref(this::util_jetton_wal_stateinit, msg_body)
+        .end_cell();
+}
+
 (int) get_amount_out(int amount_in, int reserve_in, int reserve_out) inline {
-    ;; we calculate K according to AMM (Automatic Meow-Meow) formula x*y<=K, where x and y are assets' amounts
+    ;; We calculate K according to AMM (Automatic Meow-Meow) formula x*y<=K, where x and y are assets' amounts
     int k = reserve_in * reserve_out; ;; TODO does overflow possible?
-    ;; new amount of first asset, that should be in pool
+    ;; New amount of first asset, that should be in pool
     int new_reserve_in = reserve_in + amount_in;
-    ;; we calculate second asset value to have our x*y<=K stay correct,
+    ;; We calculate second asset value to have our x*y<=K stay correct,
     ;; `/` division rounds `new_reserve_out` to the lower bound
     int new_reserve_out = k / new_reserve_in;
     int amount_out = reserve_out - new_reserve_out;
@@ -49,8 +70,8 @@ const MY_WORKCHAIN = BASECHAIN;
 }
 
 {-
-   code utils related to smart contracts addresses calculations;
-   for this contract it is crucial mechanics as we need to determine
+   Code utils related to smart contracts addresses calculations;
+   For this contract it is crucial mechanics as we need to determine
    addresses of user vaults and jetton wallet address correctness
 -}
 
@@ -65,14 +86,17 @@ slice calculate_contract_address(cell state_init) inline_ref {
         .store_uint(cell_hash(state_init), 256)
         .end_cell() ;; can we optimize it?
         .begin_parse();
-    ;; pay attention to amount of bits in address - 267.
-    ;; all is needed - to find out concrete cases, where it can differ.
+    ;; Pay attention to amount of bits in address - 267.
+    ;; All is needed - to find out concrete cases, where it can differ -
     ;; after that we can be sure in our address size
 }
 
 {-
-    jetton wallet address calculatiuon
+    Jetton wallet address determination is crucial part of token laucnher contract mechanics.
+    We need it when:
+    - determinening sender of tokens, we get transfer_notification about
 -}
+
 const int STATUS_SIZE = 4;
 cell pack_jetton_wallet_data(int status, int balance, slice owner_address, slice jetton_master_address) inline {
     return begin_cell()

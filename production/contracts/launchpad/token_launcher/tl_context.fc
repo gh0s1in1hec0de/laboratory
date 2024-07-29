@@ -1,4 +1,4 @@
-;; general information
+;; === general information ===
 
 global int   this::is_initialized?;
 global int   this::total_supply;
