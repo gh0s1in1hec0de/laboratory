@@ -5,8 +5,6 @@
 #include "../utils.fc";
 
 #include "uv_context.fc";
-#include "../token_launcher/trades_handler.fc";
-#include "../../../../labs/address-vault/contracts/imports/stdlib.fc";
 
 () load_data() inline_ref {
     slice ds = get_data().begin_parse();
@@ -53,7 +51,7 @@
     load_data(); ;; Now we have our contract data available in globals
 
     if (op == op::uv::balance_update) {
-        throw_unless(error::unauthorized_access, equal_slices(sender_address, this::token_launch_addr));
+        throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::token_launch_addr));
         handle_balance_update(
             in_msg_body~load_uint(4),
             in_msg_body~load_coins(),
