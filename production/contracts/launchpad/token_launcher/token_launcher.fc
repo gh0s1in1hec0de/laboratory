@@ -5,6 +5,7 @@
 
 #include "tl_context.fc";
 #include "trades_handler.fc";
+#include "../../../../labs/address-vault/contracts/imports/stdlib.fc";
 
 {-
   TODO are we doing this ton-jetton processing the correct way? mhm?
@@ -112,10 +113,9 @@ cell build_content_cell(slice metadata_uri) inline {
 }
 
 () on_bounce(slice in_msg_body) impure inline {
-    ;; Gonna be filled in later
+    ;; All balance operations revertions
 }
 
-;; TODO add time constraints
 () recv_internal(int contract_balance, int attached_value, cell in_msg_full, slice in_msg_body) impure {
     if (in_msg_body.slice_empty?() | in_msg_body.slice_bits() < 32) {
         ;; TODO is `msg_body.slice_bits() < 32` really necessary?
@@ -139,10 +139,12 @@ cell build_content_cell(slice metadata_uri) inline {
         initialize(in_msg_body);
         return ();
     }
+
     ;; We can't perform any operations before initialization
     throw_unless(error::uninitialized, this::const::is_initialized?);
+
     if (op == op::tl::creator_buyout) {
-        throw_unless(error::unauthorized_access, sender_address == this::const::creator);
+        throw_unless(error::unauthorized_access, equal_slices(sender_address, this::const::creator));
         ;; Do we really need to reserve contract funds? I mean we can just check if message value is enough to fullfill our needs
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         handle_owner_buyout(attached_value);
@@ -153,6 +155,12 @@ cell build_content_cell(slice metadata_uri) inline {
         ;; Verify, that sender is our utility token wallet and no one other
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE); ;; Transfer notification can't be bounced back
         handle_wl_purchase(query_id, in_msg_body~load_coins(), attached_value, sender_address, in_msg_body~load_msg_addr());
+        save_data();
+        return ();
+    }
+    if (op == op::tl::wl_callback) {
+        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE);
+        handle_wl_callback();
         save_data();
         return ();
     }

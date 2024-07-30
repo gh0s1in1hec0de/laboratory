@@ -8,6 +8,7 @@ const op::burn_notification = 0x7bdd97de;
 ;; TODO Imo should be replaced with strict CRC32 following the rule req/req difference
 const op::tl::init = "init"c;
 const op::tl::creator_buyout = "creator_buyout"c;
+const op::tl::wl_callback = "wl_callback"c;
 ;; `op::transfer_notification` in fact is responsible for WL buy
 const op::tl::public_buy = "public_buy"c;
 const op::tl::claim_jettons = "claim_jettons"c;

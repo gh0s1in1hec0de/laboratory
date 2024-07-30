@@ -6,6 +6,7 @@
 
 #include "uv_context.fc";
 #include "../token_launcher/trades_handler.fc";
+#include "../../../../labs/address-vault/contracts/imports/stdlib.fc";
 
 () load_data() inline_ref {
     slice ds = get_data().begin_parse();
@@ -30,7 +31,7 @@
 }
 
 () on_bounce(slice in_msg_body) impure inline {
-    ;; Gonna be filled in later
+    ;; Here should be bad refunds/claims revertions
 }
 
 () recv_internal(int contract_balance, int attached_value, cell in_msg_full, slice in_msg_body) impure {
@@ -52,7 +53,7 @@
     load_data(); ;; Now we have our contract data available in globals
 
     if (op == op::uv::balance_update) {
-        throw_unless(error::unauthorized_access, sender_address == this::token_launch_addr);
+        throw_unless(error::unauthorized_access, equal_slices(sender_address, this::token_launch_addr));
         handle_balance_update(
             in_msg_body~load_uint(4),
             in_msg_body~load_coins(),

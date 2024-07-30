@@ -4,12 +4,31 @@
 #include "../utils.fc";
 
 #include "uv_context.fc";
+#include "../token_launcher/tl_context.fc";
 
 (cell) build_refund_message(int tons, int jettons) {
     cell msg_body = begin_cell()
         .store_op(op::tl::refund_confirmation)
         .store_coins(tons)
         .store_coins(jettons)
+        .store_slice(this::owner_addr)
+        .end_cell();
+
+    ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
+    cell msg = begin_cell()
+        .store_msg_flags_and_address_none(BOUNCEABLE)
+        .store_slice(this::token_launch_addr)
+        .store_coins(0)
+        .store_only_body_ref(msg_body)
+        .end_cell();
+    return msg;
+}
+
+;; TODO bring some optimizations later
+(cell) build_wl_callback(int should_burn?) {
+    cell msg_body = begin_cell()
+        .store_op(op::tl::wl_callback)
+        .store_bool(should_burn?)
         .store_slice(this::owner_addr)
         .end_cell();
 
@@ -23,16 +42,18 @@
     return msg;
 }
 
+;; TODO to add balance update
 ;;; We repeat `save_data` here as we want to exlude completely an opportuninty of infinite refund attack through
 ;;; lack of attached gas or sth. It is just safer, albeit not as concise.
 () handle_balance_update(int mode, int ton_balance_update, int jetton_balance_update) {
     if (mode == BALANCE_UPD_WL_DEPOSIT) {
         throw_if(error::unreachable, jetton_balance_update > 0);
-        if (this::wl_ton_balance == 0) {
-            ;; TODO send token-burn message
-        }
+        cell wl_callback = build_wl_callback(this::wl_ton_balance == 0 ? TRUE : FALSE);
+
         this::wl_ton_balance += ton_balance_update;
         save_data();
+
+        send_raw_message(wl_callback, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
     }
     if (mode == BALANCE_UPD_PUB_DEPOSIT) {
         ;; TODO ???
