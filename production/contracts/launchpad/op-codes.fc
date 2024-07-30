@@ -10,6 +10,9 @@ const op::tl::init = "init"c;
 const op::tl::creator_buyout = "creator_buyout"c;
 ;; `op::transfer_notification` in fact is responsible for WL buy
 const op::tl::public_buy = "public_buy"c;
+const op::tl::claim_jettons = "claim_jettons"c;
+const op::tl::refund_request = "refund_request"c;
+const op::tl::refund_confirmation = "refund_confirmation"c;
 const op::uv::balance_update = "balance_upddate"c;
 
 const error::not_enough_gas = 48;
@@ -23,4 +26,7 @@ const error::unreachable = 666;
 const error::uninitialized = 404;
 const error::already_initialized = 423;
 const error::balance_overlimit = 411;
+const error::balance_lack = 417;
+const error::bad_request = 400;
 const error::tokens_lack = 433;
+const error::wrong_time = 434;

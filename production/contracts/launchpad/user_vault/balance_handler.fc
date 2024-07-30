@@ -1,0 +1,75 @@
+#include "user_vault.fc";
+#include "../imports/stdlib.fc";
+#include "../op-codes.fc";
+#include "../utils.fc";
+
+#include "uv_context.fc";
+
+(cell) build_refund_message(int tons, int jettons) {
+    cell msg_body = begin_cell()
+        .store_op(op::tl::refund_confirmation)
+        .store_coins(tons)
+        .store_coins(jettons)
+        .store_slice(this::owner_addr)
+        .end_cell();
+
+    ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
+    cell msg = begin_cell()
+        .store_msg_flags_and_address_none(NON_BOUNCEABLE) ;; As this code itself  is fallback - we don't care about that
+        .store_slice(this::token_launch_addr)
+        .store_coins(0)
+        .store_only_body_ref(msg_body)
+        .end_cell();
+    return msg;
+}
+
+;;; We repeat `save_data` here as we want to exlude completely an opportuninty of infinite refund attack through
+;;; lack of attached gas or sth. It is just safer, albeit not as concise.
+() handle_balance_update(int mode, int ton_balance_update, int jetton_balance_update) {
+    if (mode == BALANCE_UPD_WL_DEPOSIT) {
+        throw_if(error::unreachable, jetton_balance_update > 0);
+        if (this::wl_ton_balance == 0) {
+            ;; TODO send token-burn message
+        }
+        this::wl_ton_balance += ton_balance_update;
+        save_data();
+    }
+    if (mode == BALANCE_UPD_PUB_DEPOSIT) {
+        ;; TODO ???
+        this::public_ton_balance += ton_balance_update;
+        this::jetton_balance += ton_balance_update;
+        save_data();
+    }
+    if (mode == BALANCE_UPD_WL_WITHDRAWAL) {
+        throw_if(error::balance_lack, ton_balance_update > this::wl_ton_balance);
+        this::wl_ton_balance -= ton_balance_update;
+        save_data();
+
+        cell msg = build_refund_message(ton_balance_update, 0);
+        send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    }
+    if (mode == BALANCE_UPD_PUB_WITHDRAWAL) {
+        throw_if(error::balance_lack, this::public_ton_balance > 0);
+        int tons_to_refund = this::public_ton_balance;
+        int jettons_to_take = this::jetton_balance;
+
+        this::public_ton_balance = 0;
+        this::jetton_balance = 0;
+        save_data();
+
+        cell msg = build_refund_message(tons_to_refund, jettons_to_take);
+        send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    }
+    if (mode == BALANCE_UPD_WITHDRAWAL_ALL) {
+        throw_if(error::balance_lack, this::wl_ton_balance + this::public_ton_balance = 0);
+        int all_tons = this::wl_ton_balance + this::public_ton_balance;
+        int all_jettons_to_restore = this::jetton_balance;
+        this::wl_ton_balance = 0;
+        this::public_ton_balance = 0;
+        this::jetton_balance = 0;
+        save_data();
+
+        cell msg = build_refund_message(all_tons, all_jettons_to_restore);
+        send_raw_message(msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    }
+}

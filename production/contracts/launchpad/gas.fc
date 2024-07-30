@@ -51,29 +51,38 @@ int forward_init_state_overhead() inline {
     return get_simple_forward_fee(MY_WORKCHAIN, USER_VAULT_INITSTATE_BITS, USER_VAULT_INITSTATE_CELLS);
 }
 
+;; TODO Warning! Gas counting is dummy now!
+
 ;;; Returns difference between attached value and gas spendings
-(int) get_purchase_base_gas() {
-    ;; TODO Add state init count
+(int) get_balance_update_gas() {
+    ;; TODO Count state init for user vault
     return get_forward_fee(MY_WORKCHAIN, BALANCE_UPDATE_BITS, BALANCE_UPDATE_CELLS)
     + get_compute_fee(MY_WORKCHAIN, SEND_BALANCE_UPDATE_CONSUMPTION)
     + get_compute_fee(MY_WORKCHAIN, RECEIVE_BALANCE_UPDATE_CONSUMPTION);
 }
 
-(int) check_amount_is_enough_for_owner_buyout(int msg_value) {
-    int required_gas = get_purchase_base_gas();
+(int) check_amount_is_enough_for_creator_buyout(int msg_value) {
+    ;; It does not use balance update at all, so it should be changed in general
+    int required_gas = get_balance_update_gas();
     throw_unless(error::not_enough_gas, msg_value > required_gas);
     return msg_value - required_gas;
 }
 
 (int) check_amount_is_enough_for_wl_purchase(int msg_value) {
-    ;; TODO count token transfers and burn validation
-    int required_gas = get_purchase_base_gas();
+    ;; TODO count 2 utility jetton transfers and burn validation message
+    int required_gas = get_balance_update_gas();
     ;; Don't use throw here as we shouldn't throw shit in wl buys
     return msg_value - required_gas;
 }
 
-(int) check_amount_is_enough_for_owner_buyout(int msg_value) {
-    int required_gas = get_purchase_base_gas();
+(int) check_amount_is_enough_for_public_purchase(int msg_value) {
+    int required_gas = get_balance_update_gas();
+    throw_unless(error::not_enough_gas, msg_value > required_gas);
+    return msg_value - required_gas;
+}
+
+(int) check_amount_is_enough_for_refund(int msg_value) {
+    int required_gas = get_balance_update_gas();
     throw_unless(error::not_enough_gas, msg_value > required_gas);
     return msg_value - required_gas;
 }

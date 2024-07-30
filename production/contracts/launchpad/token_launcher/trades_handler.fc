@@ -1,12 +1,13 @@
 #include "../gas.fc";
+#include "../utils.fc";
 #include "../op-codes.fc";
 #include "../imports/stdlib.fc";
 
 #include "tl_context.fc";
-#include "../utils.fc";
 
 () handle_owner_buyout(int msg_value) {
-    int val_left = check_amount_is_enough_for_owner_buyout(msg_value);
+    throw_unless(error::wrong_time, now() < creator_round::const::end_time);
+    int val_left = check_amount_is_enough_for_creator_buyout(msg_value);
     (int tokens_amount, int remainder) = divmod(val_left, creator_round::const::jet_price);
 
     if (tokens_amount > 0) {
@@ -14,16 +15,18 @@
         creator_round::creator_jet_balance += tokens_amount;
     }
     ;; TODO - if remainder is more than returning excesses message fee - than send excesses to owner
-    if (remainder > 0) { }
+    if (remainder > 0) {
+    }
 }
 
-() handle_wl_purchase(int query_id, int jetton_amount, int msg_value, slice sender_address, slice initiator) inline {
-    int user_value_after_fee = check_amount_is_enough_for_wl_purchase(msg_value);
+() handle_wl_purchase(int query_id, int jetton_amount, int attached_value, slice sender_address, slice initiator) inline {
+    throw_if(error::wrong_time, now() < creator_round::const::end_time | now() > wl_round::const::end_time);
+    int user_value_after_fee = check_amount_is_enough_for_wl_purchase(attached_value);
     ;; TODO to add contracint, that we are not out off ton investment limit bounds
     ;; It should work like: if even one of them is true - we'll try to return sender's tokens back
     if (jetton_amount < wl_round::const::pass_min_util_jet_amount
-       | user_value_after_fee < 0 | sender_address != this::const::util_jetton_wal_addr
-       | wl_round::ton_invested_total + user_value_after_fee <= wl_round::const::ton_limit ) {
+    | user_value_after_fee < 0 | sender_address != this::const::util_jetton_wal_addr
+    | wl_round::ton_invested_total + user_value_after_fee <= wl_round::const::ton_limit) {
         ;; To figure out - what gonna happen, if we run out of gas? At my opinion we have 2 variants:
         ;; - we still have enough gas to perform the cashback operartion -> code stops at return(), we also have no data to save
         ;; - we just run out of gas and being stopped at random place,so the tokens will be left on this contract's balance,
@@ -32,49 +35,79 @@
 
         ;; Taking all the value remains from transfer notification to attach
         send_raw_message(chargeback_transfer_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
-        return();
+        return ();
     }
-
-    cell user_vault_stateinit = calculate_contract_state_init(
-        this::const::user_vault_code,
-      pack_user_vault_data(
-          sender_address,
-          my_address(),
-          FALSE,
-          0,
-          0,
-          0
-      )
-    );
-    slice user_vault_address = calculate_contract_address(user_vault_stateinit);
-
     ;; Send back all the jettons except burn amount
     ;; If bounced - tokens stays on our balance
     cell return_transfer_msg = build_jetton_transfer_msg(query_id, jetton_amount - wl_round::const::burn_util_jet_amount, initiator, 0);
     send_raw_message(return_transfer_msg, 0);
 
-    ;; Send balance update
-    cell msg_body = begin_cell()
-        .store_op(op::uv::balance_update)
-        .store_query_id(query_id)
-        .store_uint(BALANCE_UPD_WL_DEPOSIT, BALANCE_UPD_MODE_SIZE)
-        .store_coins(user_value_after_fee)
-        .store_coins(0)
-        .end_cell();
+    {-
+      Dummy value here should include:
+      - fwd_fee for balance update message
+      - computational fee for balance update on vault's side
+      - fwd_fee and computational fees for burn confirmation/reject
 
-    cell msg = begin_cell()
-        .store_msg_flags_and_address_none(BOUNCEABLE)
-        .store_slice(user_vault_address)
-        .store_coins(0) ;; Must be rewritten by message mode
-        .store_statinit_ref_and_body_ref(user_vault_stateinit, msg_body)
-        .end_cell();
+      Invested TONs stays on this contract!
+    -}
+    int dummy_value = 1; ;; TODO
+    cell msg = build_balance_update_message(
+        query_id,
+        dummy_value,
+        sender_address,
+        BALANCE_UPD_WL_DEPOSIT,
+        user_value_after_fee,
+        0
+    );
 
     send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     wl_round::ton_invested_total += user_value_after_fee;
-    ;; TODO - add explanation
+    {-
+       As out WL phase is fairlaunch - we have static amount of jettons to distribute
+       and dynamic value of TON, that can be invested in this round (due to our guarantees to WL investors).
+       So, we need to start public sale price from last WL price, than we need to be aware about
+       WL round stats changes every time. Then synthetic reserves will continue to change in public round and
+       this is the reason, why we don't use `ton_invested_total` for that purposes.
+    -}
     public_round::synthetic_ton_reserve += user_value_after_fee;
 }
 
-() handle_public_purchase(msg_value) {
+() handle_public_purchase(int query_id, int attached_value, slice sender_address) {
+    throw_if(error::wrong_time, now() < wl_round::const::end_time | now() > public_round::const::end_time);
+    ;; `user_value_after_fee` is always more than 0
+    int user_value_after_fee = check_amount_is_enough_for_public_purchase(attached_value);
+    int res_jettons = get_amount_out(user_value_after_fee, public_round::synthetic_ton_reserve, public_round::synthetic_jet_reserve);
+    throw_if(error::unreachable, res_jettons <= 0);
 
+    public_round::synthetic_ton_reserve += attached_value;
+    public_round::synthetic_jet_reserve -= res_jettons;
+
+    ;; Only fee for forwarding and execution balance update
+    int dummy_value = 1;
+    cell msg = build_balance_update_message(
+        query_id,
+        dummy_value,
+        sender_address,
+        BALANCE_UPD_PUB_DEPOSIT,
+        user_value_after_fee,
+        res_jettons
+    );
+    send_raw_message(msg, SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+}
+
+() handle_refund_request(int query_id, int attached_value, slice sender_address, int mode, int refund_value) {
+    throw_if(error::wrong_time, now() < creator_round::const::end_time | now() > public_round::const::end_time);
+    throw_unless(error::bad_request, mode == 3 | mode == 4 | mode == 5);
+    ;; We don't actually care about leftovers
+    (int _user_value_after_fee) = check_amount_is_enough_for_refund(attached_value);
+
+    cell msg = build_balance_update_message(
+        query_id,
+        0, ;; Should be rewritten by message sending mode
+        sender_address,
+        mode,
+        refund_value,
+        0
+    );
+    send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }

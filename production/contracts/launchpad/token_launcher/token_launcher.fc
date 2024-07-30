@@ -158,13 +158,28 @@ cell build_content_cell(slice metadata_uri) inline {
     }
     if (op == op::tl::public_buy) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
-        handle_public_purchase(attached_value);
+        handle_public_purchase(query_id, attached_value, sender_address);
+        save_data();
+        return ();
+    }
+    if (op == op::tl::refund_request) {
+        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        handle_refund_request(query_id, attached_value, sender_address, in_msg_body~load_uint(4), in_msg_body~load_coins());
+        return ();
+    }
+    if (op == op::tl::refund_confirmation) {
+        handle_refund_request(query_id, attached_value, sender_address, in_msg_body~load_uint(4), in_msg_body~load_coins());
         save_data();
         return ();
     }
 
+    if (op == op::tl::claim_jettons) {
+
+    }
+
+    ;; Should I change it somehow?
     if (op == op::excesses) {
-        {- ??? -}
+        return ();
     }
 
     throw(error::wrong_op);

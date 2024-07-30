@@ -3,12 +3,12 @@
 #include "token_launcher/tl_context.fc";
 
 const MY_WORKCHAIN = BASECHAIN;
-
 const BALANCE_UPD_MODE_SIZE = 4;
+
 const BALANCE_UPD_WL_DEPOSIT = 1;
 const BALANCE_UPD_PUB_DEPOSIT = 2;
 const BALANCE_UPD_WL_WITHDRAWAL = 3;
-const BALANCE_UPD_WL_WITHDRAWAL = 4;
+const BALANCE_UPD_PUB_WITHDRAWAL = 4;
 const BALANCE_UPD_WITHDRAWAL_ALL = 5;
 
 () load_sale_config(cell sale_config) inline_ref {
@@ -46,12 +46,12 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
 ;;; TODO end up building this util later due to `either_forward_payload`
 ;;;
 ;;; Now works only with utility token
-(cell) build_jetton_transfer_msg(int query_id, int jetton_amount, slice recepient, int forward_ton_amount) {
+(cell) build_jetton_transfer_msg(int query_id, int jetton_amount, slice recipient, int forward_ton_amount) {
     cell msg_body = begin_cell()
         .store_op(op::transfer)
         .store_query_id(query_id)
         .store_coins(jetton_amount)
-        .store_slice(recepient) ;; To
+        .store_slice(recipient) ;; To
         .store_slice(my_address()) ;; Address, that will get excesses after operation
         .store_coins(forward_ton_amount)
     ;; .store_slice(either_forward_payload) TODO how to avoid saving it at all? Like that?
@@ -128,6 +128,22 @@ cell pack_user_vault_data(slice owner_address, slice launch_contract_address, in
         .end_cell();
 }
 
+(cell, slice) calculate_user_vault_data(slice sender_address) {
+    cell user_vault_stateinit = calculate_contract_state_init(
+        this::const::user_vault_code,
+        pack_user_vault_data(
+            sender_address,
+            my_address(),
+            FALSE,
+            0,
+            0,
+            0
+        )
+    );
+    slice user_vault_address = calculate_contract_address(user_vault_stateinit);
+    return (user_vault_stateinit, user_vault_address);
+}
+
 ;; Syntax sugar for jetton wallets and user vaults
 
 const int STATUS_SIZE = 4;
@@ -148,5 +164,23 @@ slice calculate_user_jetton_wallet_address(slice owner_address, slice jetton_mas
         jetton_master_address
     );
     return calculate_contract_address(calculate_contract_state_init(jetton_wallet_code, jetton_wallet_init_data));
+}
+
+cell build_balance_update_message(int query_id, int msg_value, slice user_address, int balance_update_mode, int maybe_tons, int maybe_jettons) inline_ref {
+    (cell user_vault_stateinit, slice user_vault_address) = calculate_user_vault_data(user_address);
+    cell msg_body = begin_cell()
+        .store_op(op::uv::balance_update)
+        .store_query_id(query_id)
+        .store_uint(balance_update_mode, BALANCE_UPD_MODE_SIZE)
+        .store_coins(maybe_tons)
+        .store_coins(maybe_jettons)
+        .end_cell();
+    cell msg = begin_cell()
+        .store_msg_flags_and_address_none(BOUNCEABLE)
+        .store_slice(user_vault_address)
+        .store_coins(msg_value)
+        .store_statinit_ref_and_body_ref(user_vault_stateinit, msg_body)
+        .end_cell();
+    return msg;
 }
 

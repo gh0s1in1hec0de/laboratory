@@ -1,3 +1,4 @@
+// TODO REPLACE `OP` FIELDS WITH ACTUAL CRC32 HASHES IN CONSTRUCTOR TAG
 // TOKEN LAUNCHER
 sale_data# creator_limit_pct:uint8 creator_balance:Coins creator_token_price:uint32 creator_round_end_time:int32
            wl_tokens_share:uint8 wl_ton_limit_pct:uint8 wl_ton_invested_total:Coins wl_round_end_time:int32
@@ -9,7 +10,13 @@ storage# is_initialized:int1 total_supply:Coins cur_balance:Coins
 
 owner_buyout# op:uint32 query_id:uint64 = LauchIncomingMessage;
 public_buy# op:uint32 query_id:uint64 = LauchIncomingMessage;
+// REFUNDS AND CLAIMS
+// There is two global operations - refund and claim. Seems like splitting logic for this two entities is the
+// best way to handle this two mechanics the most safe and concise way.
+refund_request# op:uint32 query_id:uint64 mode:uint4 maybe_tons:Coins = RefundRequestMessage;
+refund_confirmation# op:uint32 query_id:uint64 tons:Coins jettons:Coins to:MsgAddressInt = RefundConfirmationMessage;
 
+move_assets# op:uint32 query_id:uint64 mode:uint4 = UnifiedMoveAssets;
 // USER VAULT
 
 // Storage
@@ -41,4 +48,4 @@ public_buy# op:uint32 query_id:uint64 = LauchIncomingMessage;
 
 storage# owner:MsgAddressInt wl_invested:Coins public_invested:Coins token_balance:Coins = UserVaultStorage;
 
-balance_update# op:uint32 query_id:uint64 mode:uint4 tons:Coins tokens:Coins = BalanceUpdate;
+balance_update# op:uint32 query_id:uint64 mode:uint4 tons:Coins jettons:Coins = BalanceUpdate;
