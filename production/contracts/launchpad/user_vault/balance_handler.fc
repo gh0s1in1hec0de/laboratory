@@ -6,9 +6,10 @@
 #include "uv_context.fc";
 #include "../token_launcher/tl_context.fc";
 
-(cell) build_refund_message(int tons, int jettons) {
+(cell) build_refund_message(int query_id, int tons, int jettons) {
     cell msg_body = begin_cell()
         .store_op(op::tl::refund_confirmation)
+        .store_query_id(query_id)
         .store_coins(tons)
         .store_coins(jettons)
         .store_slice(this::owner_addr)
@@ -24,10 +25,10 @@
     return msg;
 }
 
-;; TODO bring some optimizations later
-(cell) build_wl_callback(int should_burn?) {
+(cell) build_wl_callback(int query_id, int should_burn?) {
     cell msg_body = begin_cell()
         .store_op(op::tl::wl_callback)
+        .store_query_id(query_id)
         .store_bool(should_burn?)
         .store_slice(this::owner_addr)
         .end_cell();
@@ -42,13 +43,12 @@
     return msg;
 }
 
-;; TODO to add balance update
 ;;; We repeat `save_data` here as we want to exlude completely an opportuninty of infinite refund attack through
 ;;; lack of attached gas or sth. It is just safer, albeit not as concise.
-() handle_balance_update(int mode, int ton_balance_update, int jetton_balance_update) {
+() handle_balance_update(int query_id, int mode, int ton_balance_update, int jetton_balance_update) {
     if (mode == BALANCE_UPD_WL_DEPOSIT) {
         throw_if(error::unreachable, jetton_balance_update > 0);
-        cell wl_callback = build_wl_callback(this::wl_ton_balance == 0 ? TRUE : FALSE);
+        cell wl_callback = build_wl_callback(query_id, this::wl_ton_balance == 0 ? TRUE : FALSE);
 
         this::wl_ton_balance += ton_balance_update;
         save_data();
@@ -66,7 +66,7 @@
         this::wl_ton_balance -= ton_balance_update;
         save_data();
 
-        cell msg = build_refund_message(ton_balance_update, 0);
+        cell msg = build_refund_message(query_id, ton_balance_update, 0);
         send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     }
     if (mode == BALANCE_UPD_PUB_WITHDRAWAL) {
@@ -78,7 +78,7 @@
         this::jetton_balance = 0;
         save_data();
 
-        cell msg = build_refund_message(tons_to_refund, jettons_to_take);
+        cell msg = build_refund_message(query_id, tons_to_refund, jettons_to_take);
         send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     }
     if (mode == BALANCE_UPD_WITHDRAWAL_ALL) {
@@ -90,7 +90,7 @@
         this::jetton_balance = 0;
         save_data();
 
-        cell msg = build_refund_message(all_tons, all_jettons_to_restore);
+        cell msg = build_refund_message(query_id, all_tons, all_jettons_to_restore);
         send_raw_message(msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     }
 }

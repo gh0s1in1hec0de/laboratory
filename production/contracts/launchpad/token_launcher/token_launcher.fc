@@ -150,6 +150,8 @@ cell build_content_cell(slice metadata_uri) inline {
         save_data();
         return ();
     }
+    ;; We are interensted in two senders - wallet that is responsible for
+    ;; our utility token and wallet, responsible for token, newly created after public round
     if (op == op::transfer_notification) {
         ;; Verify, that sender is our utility token wallet and no one other
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE); ;; Transfer notification can't be bounced back
@@ -159,8 +161,8 @@ cell build_content_cell(slice metadata_uri) inline {
     }
     if (op == op::tl::wl_callback) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE);
-        handle_wl_callback();
-        save_data();
+        handle_wl_callback(query_id, attached_value, sender_address, in_msg_body~load_bool(), in_msg_body~load_msg_addr());
+        ;; Nothing to save as no changes to state were done
         return ();
     }
     if (op == op::tl::public_buy) {
@@ -175,7 +177,7 @@ cell build_content_cell(slice metadata_uri) inline {
         return ();
     }
     if (op == op::tl::refund_confirmation) {
-        handle_refund_request(query_id, attached_value, sender_address, in_msg_body~load_uint(4), in_msg_body~load_coins());
+        handle_refund_confirmation();
         save_data();
         return ();
     }
