@@ -1,5 +1,5 @@
 #include "../stdlib.fc";
-#include "../workchain.fc.fc";
+#include "../workchain.fc";
 #include "op-codes.fc";
 
 const ONE_TON = 1000000000;
@@ -13,6 +13,7 @@ const MIN_STORAGE_DURATION = 180 * 24 * 3600; ;; half a year
 
 ;; Minimal fees
 ;; Balance update [/sandbox_tests/file#L`line_num`](L`line_num`) `x` TON
+const JETTON_MIN_TRANSFER_FEE = 30000000; ;; Actuallly 28627415, but rounded
 
 ;; Storage todo ?
 ;; Get calculated in a separate test file [/sandbox_tests/StateInit.spec.ts](StateInit.spec.ts)
@@ -21,7 +22,6 @@ const MIN_STORAGE_DURATION = 180 * 24 * 3600; ;; half a year
 const USER_VAULT_BITS  = 1;
 ;; `USER_VAULT_CELLS`: [/sandbox_tests/file#L`line_num`](L`line_num`)
 const USER_VAULT_CELLS = 1;
-
 
 ;; `USER_VAULT_INITSTATE_BITS` [/sandbox_tests/file#L`line_num`](L`line_num`)
 const USER_VAULT_INITSTATE_BITS  = 1;
@@ -87,3 +87,20 @@ int forward_init_state_overhead() inline {
     return msg_value - required_gas;
 }
 
+(int) check_amount_is_enough_for_jetton_deploy(int msg_value) {
+    {-
+       This fee consists of 4 actions:
+       - Sending mint request (there is all the validations on the minter's side,
+         so, we can include its cost just by including `JETTON_MIN_TRANSFER_FEE`)
+       - Accepting tokens by receiving transfer_notification from our wallet
+       - Creating fucking pool - now it just represented via `DUMMY_POOL_CREATION_FEES`,
+         but later it should be split in pool creation message forward fees, compute fees on our's side and pool's side, delivering stateinit or sth
+    -}
+    int required_gas = JETTON_MIN_TRANSFER_FEE;
+    throw_unless(error::not_enough_gas, msg_value > required_gas);
+    return msg_value - required_gas;
+}
+
+(int) calc_pool_creation_fee() {
+    return 1;
+}

@@ -18,19 +18,17 @@
     if (remainder > 0) { }
 }
 
-() handle_wl_purchase(int query_id, int jetton_amount, int attached_value, slice sender_address, slice initiator) inline {
+() handle_wl_purchase(int query_id, int attached_value, slice sender_address, slice initiator) inline {
     throw_if(error::wrong_time, now() < creator_round::const::end_time | now() > wl_round::const::end_time);
     int user_value_after_fee = check_amount_is_enough_for_wl_purchase(attached_value);
-    ;; TODO to add contracint, that we are not out off ton investment limit bounds
+
     ;; It should work like: if even one of them is true - we'll try to return sender's tokens back
-    if (jetton_amount < wl_round::const::pass_min_util_jet_amount
-    | user_value_after_fee < 0 | ~ equal_slices_bits(sender_address, jet_tools::const::util_jet_wal_addr)
-    | wl_round::ton_invested_total + user_value_after_fee <= wl_round::const::ton_limit) {
+    if (user_value_after_fee < 0 | wl_round::ton_invested_total + user_value_after_fee <= wl_round::const::ton_limit) {
         ;; TODO To figure out - what gonna happen, if we run out of gas? At my opinion we have 2 variants:
         ;; - we still have enough gas to perform the cashback operartion -> code stops at return(), we also have no data to save
         ;; - we just run out of gas and being stopped at random place,so the tokens will be left on this contract's balance,
         ;;   but, at least, we will not face any inconsistent state, or something like that
-        cell chargeback_transfer_msg = build_util_jet_transfer_msg(query_id, jetton_amount, initiator, user_value_after_fee > 0 ? user_value_after_fee : 0); ;; Is it legal? :)
+        cell chargeback_transfer_msg = build_util_jet_transfer_msg(query_id, wl_round::const::pass_util_jet_amount, initiator, user_value_after_fee > 0 ? user_value_after_fee : 0); ;; Is it legal? :)
 
         ;; Taking all the value remains from transfer notification to attach
         send_raw_message(chargeback_transfer_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
@@ -38,7 +36,7 @@
     }
     ;; Send back all the jettons except burn amount
     ;; If bounced - tokens stays on our balance
-    cell return_transfer_msg = build_util_jet_transfer_msg(query_id, jetton_amount - wl_round::const::burn_util_jet_amount, initiator, 0);
+    cell return_transfer_msg = build_util_jet_transfer_msg(query_id, wl_round::const::pass_util_jet_amount - wl_round::const::burn_util_jet_amount, initiator, 0);
     send_raw_message(return_transfer_msg, 0);
 
     {-

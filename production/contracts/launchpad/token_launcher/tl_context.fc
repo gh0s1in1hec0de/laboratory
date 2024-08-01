@@ -13,11 +13,16 @@
 global int   this::const::is_initialized?;
 global int   this::const::fut_jet_total_supply;
 global int   this::fut_jet_cur_balance;
-global int   this::const::min_ton_for_sale_success; ;; TODO include in state
+global int   this::const::min_ton_for_sale_success;
 global slice this::const::chief_address;
 global slice this::const::creator_address;
 
 ;; === SALE CONFING ===
+;; State markers
+global int   sale_state::const::reward_util_jets_deposited?;
+global int   sale_state::const::fut_jet_deployed?;
+global int   sale_state::const::pool_deployed?;
+
 ;; Percent of supply, that creator can buy back
 global int   creator_round::const::fut_jet_limit;
 ;; Amount of tokens, that creator bought back
@@ -30,7 +35,7 @@ global int   wl_round::const::fut_jet_limit;
 ;; Maximum of TONs, that can be invested through WL round
 global int   wl_round::const::ton_limit;
 ;; Minimum amount of tokens, that should be received by contract to provide WL pass
-global int   wl_round::const::pass_min_util_jet_amount;
+global int   wl_round::const::pass_util_jet_amount;
 ;; Amount of tokens, that must be burned for WL pass. It is being burned only the first time.
 global int   wl_round::const::burn_util_jet_amount;
 ;; Total amount of TONs, invested in WL round. Later used for price determination.
