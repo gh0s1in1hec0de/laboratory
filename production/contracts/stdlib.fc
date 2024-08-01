@@ -862,6 +862,8 @@ const int SEND_MODE_ESTIMATE_FEE_ONLY = 1024;
 
 ;;; Creates an output action which would reserve exactly x nanograms (if y = 0).
 const int RESERVE_REGULAR = 0;
+;;; Creates an output action which would reserve contract balance - x nanograms.
+const int RESERVE_ALL_BUT_AMOUNT = 1;
 ;;; Creates an output action which would reserve at most x nanograms (if y = 2).
 ;;; Bit +2 in y means that the external action does not fail if the specified amount cannot be reserved; instead, all remaining balance is reserved.
 const int RESERVE_AT_MOST = 2;

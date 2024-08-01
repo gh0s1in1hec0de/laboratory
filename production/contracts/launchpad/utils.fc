@@ -1,5 +1,5 @@
 #include "op-codes.fc";
-#include "imports/stdlib.fc";
+#include "../stdlib.fc";
 #include "token_launcher/tl_context.fc";
 
 const MY_WORKCHAIN = BASECHAIN;
@@ -13,12 +13,12 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
 
 () load_sale_config(cell sale_config) inline_ref {
     slice sale_conf_slice = sale_config.begin_parse();
-    creator_round::const::jet_limit = sale_conf_slice~load_uint(8)
-    creator_round::creator_jet_balance = sale_conf_slice~load_coins();
-    creator_round::const::jet_price = sale_conf_slice~load_uint(32);
+    creator_round::const::fut_jet_limit = sale_conf_slice~load_uint(8)
+    creator_round::creator_fut_jet_balance = sale_conf_slice~load_coins();
+    creator_round::const::fut_jet_price = sale_conf_slice~load_uint(32);
     creator_round::const::end_time = sale_conf_slice~load_int(32);
 
-    wl_round::const::jet_limit = sale_conf_slice~load_uint(8);
+    wl_round::const::fut_jet_limit = sale_conf_slice~load_uint(8);
     wl_round::const::ton_limit = sale_conf_slice~load_uint(8);
     wl_round::const::pass_min_util_jet_amount = sale_conf_slice~load_coins();
     wl_round::const::burn_util_jet_amount = sale_conf_slice~load_coins();
@@ -28,6 +28,7 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
     public_round::synthetic_jet_reserve = sale_conf_slice~load_coins();
     public_round::synthetic_ton_reserve = sale_conf_slice~load_coins();
     public_round::const::end_time = sale_conf_slice~load_int(32);
+    this::const::user_vault_code = sale_conf_slice~load_ref();
     sale_conf_slice.end_parse();
 }
 
@@ -35,7 +36,7 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
     slice in_msg_full_slice = in_msg_full.begin_parse();
     int msg_flags = in_msg_full_slice~load_msg_flags();
     slice sender_address = in_msg_full_slice~load_msg_addr();
-    in_msg_full_slice~load_msg_addr();
+    in_msg_full_slice~load_msg_addr();                        ;; As recepient is our contarct
     int value = in_msg_full_slice~load_coins();
     in_msg_full_slice~skip_dict();                            ;; skip extracurrency collection
     in_msg_full_slice~load_coins();                           ;; skip ihr_fee
@@ -59,9 +60,9 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     return begin_cell()
         .store_msg_flags_and_address_none(NON_BOUNCEABLE) ;; As we are not able to handle this situation
-        .store_slice(this::const::util_jetton_wal_addr)
+        .store_slice(jet_tools::const::util_jet_wal_addr)
         .store_coins(0)
-        .store_statinit_ref_and_body_ref(this::const::util_jetton_wal_stateinit, msg_body)
+        .store_only_body_ref(msg_body)
         .end_cell();
 }
 
@@ -77,9 +78,9 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     return begin_cell()
         .store_msg_flags_and_address_none(NON_BOUNCEABLE)
-        .store_slice(this::const::util_jetton_wal_addr)
+        .store_slice(jet_tools::const::util_jet_wal_addr)
         .store_coins(0)
-        .store_statinit_ref_and_body_ref(this::const::util_jetton_wal_stateinit, msg_body)
+        .store_only_body_ref(msg_body)
         .end_cell();
 }
 
@@ -198,5 +199,13 @@ cell build_balance_update_message(int query_id, int msg_value, slice user_addres
         .store_statinit_ref_and_body_ref(user_vault_stateinit, msg_body)
         .end_cell();
     return msg;
+}
+
+;; Jetton deployment related tools
+
+cell pack_jetton_minter_data () inline {
+    return begin_cell()
+        .store_coins()
+        .end_cell();
 }
 
