@@ -5,9 +5,9 @@
 #include "../stdlib.fc";
 #include "../workchain.fc";
 
-#include "jetton-op-codes.fc";
-#include "jetton-utils.fc";
-#include "jetton-gas.fc";
+#include "jetton_op_codes.fc";
+#include "jetton_utils.fc";
+#include "jetton_gas.fc";
 
 ;; storage#_ total_supply:Coins admin_address:MsgAddress next_admin_address:MsgAddress jetton_wallet_code:^Cell metadata_uri:^Cell = Storage;
 (int, slice, slice, cell, cell) load_data() inline {

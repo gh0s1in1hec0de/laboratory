@@ -1,7 +1,7 @@
-#include "imports/stdlib.fc";
-#include "op-codes.fc";
+#include "stdlib.fc";
 
 const MY_WORKCHAIN = BASECHAIN;
+const error::wrong_workchain = 333;
 
 int is_same_workchain(slice addr) inline {
     (int wc, _) = parse_std_addr(addr);

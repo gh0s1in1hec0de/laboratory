@@ -1,5 +1,5 @@
 #include "../workchain.fc";
-#include "jetton-op-codes.fc";
+#include "jetton_op_codes.fc";
 
 cell pack_jetton_wallet_data(int balance, slice owner_address, slice jetton_master_address) inline {
     return begin_cell()

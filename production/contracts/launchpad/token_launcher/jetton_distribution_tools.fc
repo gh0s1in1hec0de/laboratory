@@ -1,0 +1,14 @@
+#include "tl_context.fc";
+#include "../utils.fc";
+#include "../../stdlib.fc";
+
+const int MINT_QUERY_ID = 909;
+() deploy_jetton() {
+    cell jetton_minter_data = pack_jetton_minter_data();
+    cell jetton_minter_stateinit = calculate_contract_state_init(jet_tools::const::fut_jet_wallet_code, jetton_minter_data);
+    slice jetton_minter_address = calculate_contract_address(jetton_minter_stateinit);
+
+    cell msg_body = begin_cell()
+        .store_query_id(MINT_QUERY_ID)
+        .store_slice(my_address())
+}

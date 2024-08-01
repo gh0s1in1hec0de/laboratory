@@ -1,22 +1,21 @@
 #include "../gas.fc";
 #include "../utils.fc";
 #include "../op-codes.fc";
-#include "../imports/stdlib.fc";
+#include "../../stdlib.fc";
 
 #include "tl_context.fc";
 
 () handle_owner_buyout(int msg_value) inline {
     throw_unless(error::wrong_time, now() < creator_round::const::end_time);
     int val_left = check_amount_is_enough_for_creator_buyout(msg_value);
-    (int tokens_amount, int remainder) = divmod(val_left, creator_round::const::jet_price);
+    (int tokens_amount, int remainder) = divmod(val_left, creator_round::const::fut_jet_price);
 
     if (tokens_amount > 0) {
-        throw_if(error::balance_overlimit, creator_round::creator_jet_balance + tokens_amount > creator_round::const::jet_limit);
-        creator_round::creator_jet_balance += tokens_amount;
+        throw_if(error::balance_overlimit, creator_round::creator_fut_jet_balance + tokens_amount > creator_round::const::fut_jet_limit);
+        creator_round::creator_fut_jet_balance += tokens_amount;
     }
     ;; TODO - if remainder is more than returning excesses message fee - than send excesses to owner
-    if (remainder > 0) {
-    }
+    if (remainder > 0) { }
 }
 
 () handle_wl_purchase(int query_id, int jetton_amount, int attached_value, slice sender_address, slice initiator) inline {
@@ -25,9 +24,9 @@
     ;; TODO to add contracint, that we are not out off ton investment limit bounds
     ;; It should work like: if even one of them is true - we'll try to return sender's tokens back
     if (jetton_amount < wl_round::const::pass_min_util_jet_amount
-    | user_value_after_fee < 0 | ~ equal_slices_bits(sender_address, this::const::util_jetton_wal_addr)
+    | user_value_after_fee < 0 | ~ equal_slices_bits(sender_address, jet_tools::const::util_jet_wal_addr)
     | wl_round::ton_invested_total + user_value_after_fee <= wl_round::const::ton_limit) {
-        ;; To figure out - what gonna happen, if we run out of gas? At my opinion we have 2 variants:
+        ;; TODO To figure out - what gonna happen, if we run out of gas? At my opinion we have 2 variants:
         ;; - we still have enough gas to perform the cashback operartion -> code stops at return(), we also have no data to save
         ;; - we just run out of gas and being stopped at random place,so the tokens will be left on this contract's balance,
         ;;   but, at least, we will not face any inconsistent state, or something like that
@@ -119,7 +118,7 @@
     throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, original_user_vault_address));
 
     ;; Return jettons, owned by users
-    this::cur_balance += jettons_to_charge_back;
+    this::fut_jet_cur_balance += jettons_to_charge_back;
 
     cell simple_transfer_message = begin_cell()
         .store_msg_flags_and_address_none(BOUNCEABLE)

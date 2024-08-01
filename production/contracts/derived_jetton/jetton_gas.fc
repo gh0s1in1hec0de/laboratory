@@ -1,4 +1,5 @@
 #include "../workchain.fc";
+#include "jetton_op_codes.fc";
 
 const ONE_TON = 1000000000;
 
@@ -33,7 +34,7 @@ const JETTON_WALLET_INITSTATE_BITS  = 931;
 ;;- `JETTON_WALLET_INITSTATE_CELLS` [/sandbox_tests/StateInit.spec.ts#L95](L95)
 const JETTON_WALLET_INITSTATE_CELLS = 3;
 
-;; jetton-wallet.fc#L163 - maunal bits counting
+;; jetton_wallet.fc#L163 - maunal bits counting
 const BURN_NOTIFICATION_BITS = 754; ;; body = 32+64+124+(3+8+256)+(3+8+256)
 const BURN_NOTIFICATION_CELLS = 1; ;; body always in ref
 

@@ -205,7 +205,11 @@ cell build_balance_update_message(int query_id, int msg_value, slice user_addres
 
 cell pack_jetton_minter_data () inline {
     return begin_cell()
-        .store_coins()
+        .store_coins(this::const::fut_jet_total_supply)
+        .store_slice(my_address())
+        .store_slice(this::const::chief_address) ;; Emergency case
+        .store_ref(jet_tools::const::fut_jet_wallet_code)
+        .store_ref(jet_tools::const::metadata_uri)
         .end_cell();
 }
 

@@ -1,5 +1,5 @@
-#include "imports/stdlib.fc";
-#include "workchain.fc";
+#include "../stdlib.fc";
+#include "../workchain.fc.fc";
 #include "op-codes.fc";
 
 const ONE_TON = 1000000000;
@@ -28,7 +28,7 @@ const USER_VAULT_INITSTATE_BITS  = 1;
 ;; `USER_VAULT_INITSTATE_CELLS` [/sandbox_tests/file#L`line_num`](L`line_num`)
 const USER_VAULT_INITSTATE_CELLS = 1;
 
-;; jetton-wallet.fc#L163 - maunal bits counting
+;; jetton_wallet.fc#L163 - maunal bits counting
 const BALANCE_UPDATE_BITS = 1; ;; body = 32+64+124+(3+8+256)+(3+8+256)
 const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
 

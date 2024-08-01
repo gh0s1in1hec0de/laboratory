@@ -1,7 +1,7 @@
 #include "balance_handler.fc";
-#include "../imports/stdlib.fc";
+#include "../../stdlib.fc";
 #include "../op-codes.fc";
-#include "../workchain.fc";
+#include "../../workchain.fc.fc";
 #include "../utils.fc";
 
 #include "uv_context.fc";

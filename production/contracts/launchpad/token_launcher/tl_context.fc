@@ -5,26 +5,28 @@
 
     Glossary:
     - `jet` means jetton
-    - `util_jet` means utility platform jetton
+    - `util_jet` means utility platform jetton, needed for whitelist functionality
+    - `fut_jet` means jetton, that will be deployed in case of sale success
 -}
 
-;; === general information ===
+;; === GENERAL INFORMATION ===
 global int   this::const::is_initialized?;
-global int   this::const::total_supply;
-global int   this::cur_balance;
-global slice this::const::chief;
-global slice this::const::creator;
+global int   this::const::fut_jet_total_supply;
+global int   this::fut_jet_cur_balance;
+global int   this::const::min_ton_for_sale_success; ;; TODO include in state
+global slice this::const::chief_address;
+global slice this::const::creator_address;
 
-;; === sale config ===
-
-;; Percent of supply, that owner can buy back
-global int   creator_round::const::jet_limit;
-global int   creator_round::creator_jet_balance;
-global int   creator_round::const::jet_price;
+;; === SALE CONFING ===
+;; Percent of supply, that creator can buy back
+global int   creator_round::const::fut_jet_limit;
+;; Amount of tokens, that creator bought back
+global int   creator_round::creator_fut_jet_balance;
+global int   creator_round::const::fut_jet_price;
 global int   creator_round::const::end_time;
 
-;; Percent from supply, that can be sold through WL round
-global int   wl_round::const::jet_limit;
+;; Amount of jettons, that can be sold through WL round
+global int   wl_round::const::fut_jet_limit;
 ;; Maximum of TONs, that can be invested through WL round
 global int   wl_round::const::ton_limit;
 ;; Minimum amount of tokens, that should be received by contract to provide WL pass
@@ -35,9 +37,9 @@ global int   wl_round::const::burn_util_jet_amount;
 global int   wl_round::ton_invested_total;
 global int   wl_round::const::end_time;
 
-;; Part
-global int   public_round::const::jet_limit;
-global int   public_round::jet_sold;
+;; Amount of jettons, that can be sold through public round
+global int   public_round::const::fut_jet_limit;
+global int   public_round::fut_jet_sold;
 ;; Synthetic reserves used to start dinamic determiantion of public round price
 ;; from the point we we want it to start - last WL pirce?
 ;; public_synthetic_jet_reserve should be equaled to wl_jet_limit_pct in moment of initialization.
@@ -46,10 +48,15 @@ global int   public_round::synthetic_jet_reserve;
 ;; Equals to `wl_ton_invested_total` until public phase
 global int   public_round::synthetic_ton_reserve;
 global int   public_round::const::end_time;
-
-;; === tools that is necessary for correct contract operability ===
-
-global slice this::const::util_jetton_wal_addr;
-global cell  this::const::util_jetton_wal_stateinit;
-global cell  this::const::metadata_uri;
 global cell  this::const::user_vault_code;
+
+;; === JETTONS' TOOLS ===
+;; An address of our utility jetton wallet smart contract.
+;; We store it to avoid its calculation every time, it's nice decision to compress data we store and reduce fees.
+;; We also don't need stateinit for it, as we can guarantee, that it will exist on the moment of sale start.
+global slice jet_tools::const::util_jet_wal_addr;
+;; Future jetton metadata, formatted due to TEP-74
+global cell  jet_tools::const::metadata_uri;
+;; Data for jetton deployment in case of successful sale
+global cell  jet_tools::const::fut_jet_minter_code;
+global cell  jet_tools::const::fut_jet_wallet_code;
