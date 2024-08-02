@@ -151,9 +151,8 @@ cell build_content_cell(slice metadata_uri) inline {
 
     if (op == op::tl::creator_buyout) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::creator_address));
-        ;; Do we really need to reserve contract funds? I mean we can just check if message value is enough to fullfill our needs
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
-        handle_owner_buyout(attached_value);
+        handle_owner_buyout(query_id, attached_value);
         save_data();
         return ();
     }
@@ -197,6 +196,7 @@ cell build_content_cell(slice metadata_uri) inline {
     }
 
     if (op == op::tl::deploy_jet) {
+        ;; TODO add accept_message and set new gas limit?
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::chief_address));
         ;; If there is not enough ton for pool deployment
         throw_if(error::balance_lack, contract_balance < this::const::min_ton_for_sale_success + JETTON_MIN_TRANSFER_FEE + calc_pool_creation_fee());

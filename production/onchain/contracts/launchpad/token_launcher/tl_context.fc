@@ -47,7 +47,7 @@ global int   public_round::const::fut_jet_limit;
 global int   public_round::fut_jet_sold;
 ;; Synthetic reserves used to start dinamic determiantion of public round price
 ;; from the point we we want it to start - last WL pirce?
-;; public_synthetic_jet_reserve should be equaled to wl_jet_limit_pct in moment of initialization.
+;; public_synthetic_jet_reserve should be equaled to wl_jet_limit in moment of initialization.
 ;; Then is starts to change only in public phase
 global int   public_round::synthetic_jet_reserve;
 ;; Equals to `wl_ton_invested_total` until public phase

@@ -48,4 +48,5 @@ move_assets# query_id:uint64 mode:uint4 = UnifiedMoveAssets;
 
 storage# owner:MsgAddressInt wl_invested:Coins public_invested:Coins token_balance:Coins = UserVaultStorage;
 
-balance_update# op:uint32 query_id:uint64 mode:uint4 tons:Coins jettons:Coins = BalanceUpdate;
+balance_update# query_id:uint64 mode:uint4 tons:Coins jettons:Coins = BalanceUpdate;
+wl_callback# query_id:uint64 should_burn:int1 owner:MsgAddressInt = WlCallback;

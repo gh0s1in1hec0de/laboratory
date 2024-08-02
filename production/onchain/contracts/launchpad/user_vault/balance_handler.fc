@@ -4,7 +4,6 @@
 #include "../utils.fc";
 
 #include "uv_context.fc";
-#include "../token_launcher/tl_context.fc";
 
 (cell) build_refund_message(int query_id, int tons, int jettons) {
     cell msg_body = begin_cell()
@@ -43,6 +42,8 @@
     return msg;
 }
 
+;; TODO Check for destroy opportunity in all the withdrawal modes
+;; TODO Figure out if we need to choose special places for `save_data` as now
 ;;; We repeat `save_data` here as we want to exlude completely an opportuninty of infinite refund attack through
 ;;; lack of attached gas or sth. It is just safer, albeit not as concise.
 () handle_balance_update(int query_id, int mode, int ton_balance_update, int jetton_balance_update) {
@@ -91,6 +92,6 @@
         save_data();
 
         cell msg = build_refund_message(query_id, all_tons, all_jettons_to_restore);
-        send_raw_message(msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+        send_raw_message(msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_DESTROY | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     }
 }
