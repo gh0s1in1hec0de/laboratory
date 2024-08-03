@@ -3,43 +3,35 @@
 #include "op-codes.fc";
 
 const ONE_TON = 1000000000;
-
-const MIN_STORAGE_DURATION = 180 * 24 * 3600; ;; half a year
-
-;; TODO Change almost everything with dummies and real fee computation formulas
+const MIN_STORAGE_DURATION = 120 * 24 * 3600; ;; 4 months
 
 ;; Precompiled constants
 ;; All of the contents are result of contract emulation tests
 
 ;; Minimal fees
-;; Balance update [/sandbox_tests/file#L`line_num`](L`line_num`) `x` TON
 const JETTON_MIN_TRANSFER_FEE = 30000000; ;; Actuallly 28627415, but rounded
 ;; TODO Here should be also all the operation ton fees
 
-;; Storage todo ?
-;; Get calculated in a separate test file [/sandbox_tests/StateInit.spec.ts](StateInit.spec.ts)
-
-;; `USER_VAULT_BITS` [/sandbox_tests/file#L`line_num`](L`line_num`)
 const USER_VAULT_BITS  = 1;
-;; `USER_VAULT_CELLS`: [/sandbox_tests/file#L`line_num`](L`line_num`)
 const USER_VAULT_CELLS = 1;
 
-;; `USER_VAULT_INITSTATE_BITS` [/sandbox_tests/file#L`line_num`](L`line_num`)
 const USER_VAULT_INITSTATE_BITS  = 1;
-;; `USER_VAULT_INITSTATE_CELLS` [/sandbox_tests/file#L`line_num`](L`line_num`)
 const USER_VAULT_INITSTATE_CELLS = 1;
 
+const JETTON_MINTER_INITSTATE_BITS = 1;
+const JETTON_MINTER_INITSTATE_CELLS = 1;
+
 ;; file#L`line_num` - maunal bits counting
-const BALANCE_UPDATE_BITS = 1;
-const BALANCE_UPDATE_CELLS = 1;
+const BALANCE_UPDATE_MSG_BITS = 1;
+const BALANCE_UPDATE_MSG_CELLS = 1;
 
 ;; file#L`line_num` - maunal bits counting
 const BALANCE_UPDATE_BITS = 1; ;; body = 32+64+124+(3+8+256)+(3+8+256)
 const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
 
 ;; file#L`line_num` - maunal bits counting
-const WL_CALLBACK_BITS = 1; ;; body = 32+64+124+(3+8+256)+(3+8+256)
-const WL_CALLBACK_CELLS = 1; ;; body always in ref
+const WL_CALLBACK_MSG_BITS = 1; ;; body = 32+64+124+(3+8+256)+(3+8+256)
+const WL_CALLBACK_MSG_CELLS = 1; ;; body always in ref
 
 ;; Gas
 ;; Gas constants are calculated in the main test suite.
@@ -56,12 +48,16 @@ int forward_user_vault_init_state_overhead() inline {
     return get_simple_forward_fee(MY_WORKCHAIN, USER_VAULT_INITSTATE_BITS, USER_VAULT_INITSTATE_CELLS);
 }
 
+int forward_jetton_minter_init_state_overhead() inline {
+    return get_simple_forward_fee(MY_WORKCHAIN, JETTON_MINTER_INITSTATE_BITS, JETTON_MINTER_INITSTATE_CELLS);
+}
+
 (int) get_balance_update_gas_cost() inline_ref {
     return
-    get_forward_fee(MY_WORKCHAIN, BALANCE_UPDATE_BITS, BALANCE_UPDATE_CELLS)
+    get_forward_fee(MY_WORKCHAIN, BALANCE_UPDATE_MSG_BITS, BALANCE_UPDATE_MSG_CELLS)
     + forward_user_vault_init_state_overhead()
     ;; + get_compute_fee(MY_WORKCHAIN, SEND_BALANCE_UPDATE_CONSUMPTION)
-    ;; TODO Does it always consumes the same amount of gas? Seems like all the values are close, so take the upper bound
+    ;; TODO Does it always consuMSG the same amount of gas? Seems like all the values are close, so take the upper bound
     + get_compute_fee(MY_WORKCHAIN, RECEIVE_BALANCE_UPDATE_CONSUMPTION)
     + calculate_user_vault_min_storage_fee();
 }
@@ -74,14 +70,13 @@ const CREATOR_BUYOUT_GAS_CONSUMPTION = 1;
     return msg_value - min_value;
 }
 
-;; === WL Purchase ===
-;; TODO Measure this 2 operations
+;; === Whitelist Purchase ===
 const WL_PURCHASE_GAS_CONSUMPTION = 1;
 const WL_CALLBACK_GAS_CONSUMPTION = 1;
 (int) get_wl_purchase_gas_consumption() inline_ref {
     return get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_GAS_CONSUMPTION)
     + get_balance_update_gas_cost()
-    + get_forward_fee(MY_WORKCHAIN, WL_CALLBACK_BITS, WL_CALLBACK_CELLS)
+    + get_forward_fee(MY_WORKCHAIN, WL_CALLBACK_MSG_BITS, WL_CALLBACK_MSG_CELLS)
     + get_compute_fee(MY_WORKCHAIN, WL_CALLBACK_GAS_CONSUMPTION);
 }
 
@@ -97,26 +92,29 @@ const WL_CALLBACK_GAS_CONSUMPTION = 1;
     return msg_value - required_gas;
 }
 
+;; === Refund ===
+;; I think there is no need to account simple transfer message
+const REFUND_CONFIRMATION_MSG_BITS = 1;
+const REFUND_CONFIRMATION_MSG_CELLS = 1;
+const REFUND_CONFIRMATION_GAS_CONSUMPTION = 1;
 (int) check_amount_is_enough_for_refund(int msg_value) {
-    int required_gas = get_balance_update_gas_cost();
+    int required_gas = get_balance_update_gas_cost()
+    + get_forward_fee(MY_WORKCHAIN, REFUND_CONFIRMATION_MSG_BITS, REFUND_CONFIRMATION_MSG_CELLS)
+    + get_compute_fee(MY_WORKCHAIN, REFUND_CONFIRMATION_GAS_CONSUMPTION);
     throw_unless(error::not_enough_gas, msg_value > required_gas);
     return msg_value - required_gas;
 }
 
+;; === Token Deploy ===
+const MINT_MSG_BITS = 1;
+const MINT_MSG_CELLS = 1;
+const MINT_GAS_CONSUMPTION = 1;
 (int) check_amount_is_enough_for_jetton_deploy(int msg_value) {
-    {-
-       This fee consists of 4 actions:
-       - Sending mint request (there is all the validations on the minter's side,
-         so, we can include its cost just by including `JETTON_MIN_TRANSFER_FEE`)
-       - Accepting tokens by receiving transfer_notification from our wallet
-       - Creating fucking pool - now it just represented via `DUMMY_POOL_CREATION_FEES`,
-         but later it should be split in pool creation message forward fees, compute fees on our's side and pool's side, delivering stateinit or sth
-    -}
-    int required_gas = JETTON_MIN_TRANSFER_FEE;
+    int required_gas =
+    get_forward_fee(MY_WORKCHAIN, MINT_MSG_BITS, MINT_MSG_CELLS)
+    + forward_jetton_minter_init_state_overhead()
+    + get_compute_fee(MY_WORKCHAIN, MINT_GAS_CONSUMPTION)
+    + JETTON_MIN_TRANSFER_FEE;
     throw_unless(error::not_enough_gas, msg_value > required_gas);
     return msg_value - required_gas;
-}
-
-(int) calc_pool_creation_fee() {
-    return 1;
 }

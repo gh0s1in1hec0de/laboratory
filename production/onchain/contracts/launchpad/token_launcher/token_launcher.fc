@@ -58,7 +58,6 @@ cell build_content_cell(slice metadata_uri) inline {
 
 () save_data() impure inline_ref {
     ;; Don't forget about cell upper bound - 1023 bits
-    ;; TODO - compress integers, where it is possible
     cell sale_config = begin_cell()
         .store_bool(sale_state::const::reward_util_jets_deposited?)
         .store_bool(sale_state::const::pool_deployed?)
@@ -75,6 +74,8 @@ cell build_content_cell(slice metadata_uri) inline {
         .store_coins(wl_round::ton_invested_total)
         .store_int(wl_round::const::end_time, 32)
 
+        .store_coins(public_round::const::fut_jet_limit)
+        .store_coins(public_round::fut_jet_sold)
         .store_coins(public_round::synthetic_jet_reserve)
         .store_coins(public_round::synthetic_ton_reserve)
         .store_int(public_round::const::end_time, 32)
@@ -189,8 +190,9 @@ cell build_content_cell(slice metadata_uri) inline {
         return ();
     }
     if (op == op::tl::refund_confirmation) {
-        raw_reserve(0,RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
-        handle_refund_confirmation(query_id, sender_address, in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_msg_addr());
+        raw_reserve(0,RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        int tons_to_refund = in_msg_body~load_coins() + in_msg_body~load_coins();
+        handle_refund_confirmation(query_id, sender_address, tons_to_refund, in_msg_body~load_coins(), in_msg_body~load_msg_addr());
         save_data();
         return ();
     }
@@ -199,7 +201,7 @@ cell build_content_cell(slice metadata_uri) inline {
         ;; TODO add accept_message and set new gas limit?
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::chief_address));
         ;; If there is not enough ton for pool deployment
-        throw_if(error::balance_lack, contract_balance < this::const::min_ton_for_sale_success + JETTON_MIN_TRANSFER_FEE + calc_pool_creation_fee());
+        throw_if(error::balance_lack, contract_balance < this::const::min_ton_for_sale_success + JETTON_MIN_TRANSFER_FEE);
         deploy_launch_jetton();
         return ();
     }

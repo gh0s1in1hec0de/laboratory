@@ -79,15 +79,17 @@
     ;; `user_value_after_fee` is always more than 0
     int user_value_after_fee = check_amount_is_enough_for_public_purchase(attached_value);
     int res_jettons = get_amount_out(user_value_after_fee, public_round::synthetic_ton_reserve, public_round::synthetic_jet_reserve);
-    throw_if(error::unreachable, res_jettons <= 0);
-    ;; Does the contract still has tokens for sale
-    throw_if(error::balance_overlimit, this::fut_jet_cur_balance - wl_round::const::fut_jet_limit - creator_round::creator_fut_jet_balance - res_jettons >= 0);
+
+    throw_unless(error::unreachable, res_jettons >= 0);
+    throw_unless(error::balance_overlimit, public_round::const::fut_jet_limit >= public_round::fut_jet_sold + res_jettons);
+    throw_unless(error::balance_overlimit, this::fut_jet_cur_balance - wl_round::const::fut_jet_limit - res_jettons >= 0);
 
     ;; Taking care of our synthetic price controllers
     public_round::synthetic_ton_reserve += attached_value;
     public_round::synthetic_jet_reserve -= res_jettons;
 
     this::fut_jet_cur_balance -= res_jettons;
+    public_round::fut_jet_sold += res_jettons;
 
     int msg_value = get_balance_update_gas_cost();
     cell msg = build_balance_update_message(
@@ -131,10 +133,10 @@
         .store_slice(recipient)
         .store_coins(ton_to_refund)
         .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
-        .store_op(0) ;; Is it allowed to do like that?
+        .store_op(0)
         .store_query_id(query_id)
         .end_cell();
-    send_raw_message(simple_transfer_message, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
+    send_raw_message(simple_transfer_message, SEND_MODE_CARRY_ALL_BALANCE);
 }
 
 () handle_wl_callback(int query_id, int _attached_value, slice sender_address, int should_burn?, int initiator) inline {

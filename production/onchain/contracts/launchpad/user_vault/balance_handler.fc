@@ -19,6 +19,7 @@ int get_refund_message_mode() {
     return msg_mode;
 }
 
+;; TODO Store bodies in cells
 cell build_refund_message(int query_id, int wl_tons, int pub_tons, int jettons) {
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     ;; Bits: 6 + 267 + 16 + 1 + 4 + 4 + 64 + 32 + 1 + 1 + 32 + 64 + 16 + 16 + 16 + 267 = 807 < 1023

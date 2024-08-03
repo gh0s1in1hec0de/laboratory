@@ -29,6 +29,8 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
     wl_round::ton_invested_total = sale_conf_slice~load_coins();
     wl_round::const::end_time = sale_conf_slice~load_int(32);
 
+    public_round::const::fut_jet_limit = sale_conf_slice~load_coins();
+    public_round::fut_jet_sold = sale_conf_slice~load_coins();
     public_round::synthetic_jet_reserve = sale_conf_slice~load_coins();
     public_round::synthetic_ton_reserve = sale_conf_slice~load_coins();
     public_round::const::end_time = sale_conf_slice~load_int(32);
