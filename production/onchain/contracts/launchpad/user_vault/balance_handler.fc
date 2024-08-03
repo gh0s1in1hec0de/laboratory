@@ -19,10 +19,9 @@ int get_refund_message_mode() {
     return msg_mode;
 }
 
-;; TODO Change refund message structure: store tons in split maanner
-cell build_refund_message(int query_id, int tons, int jettons) {
+cell build_refund_message(int query_id, int wl_tons, int pub_tons, int jettons) {
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
-    ;; Bits: 6 + 267 + 16 + 1 + 4 + 4 + 64 + 32 + 1 + 1 + 32 + 64 + 16 + 16 + 267 = 791 < 1023
+    ;; Bits: 6 + 267 + 16 + 1 + 4 + 4 + 64 + 32 + 1 + 1 + 32 + 64 + 16 + 16 + 16 + 267 = 807 < 1023
     cell msg = begin_cell()
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(this::token_launch_addr)
@@ -30,7 +29,8 @@ cell build_refund_message(int query_id, int tons, int jettons) {
         .store_prefix_only_body()
         .store_op(op::tl::refund_confirmation)
         .store_query_id(query_id)
-        .store_coins(tons)
+        .store_coins(wl_tons)
+        .store_coins(pub_tons)
         .store_coins(jettons)
         .store_slice(this::owner_addr)
         .end_cell();
@@ -90,29 +90,31 @@ cell build_wl_callback(int query_id, int should_burn?) {
         throw_if(error::balance_lack, ton_balance_update > this::wl_ton_balance);
         this::wl_ton_balance -= ton_balance_update;
 
-        cell msg = build_refund_message(query_id, ton_balance_update, 0);
+        cell msg = build_refund_message(query_id, ton_balance_update, 0, 0);
         send_raw_message(msg, get_refund_message_mode());
     }
     if (mode == BALANCE_UPD_PUB_WITHDRAWAL) {
         throw_if(error::balance_lack, this::public_ton_balance > 0);
-        int tons_to_refund = this::public_ton_balance;
-        int jettons_to_take = this::jetton_balance;
+        int pub_tons = this::public_ton_balance;
+        int jettons_to_restore = this::jetton_balance;
 
         this::public_ton_balance = 0;
         this::jetton_balance = 0;
 
-        cell msg = build_refund_message(query_id, tons_to_refund, jettons_to_take);
+        cell msg = build_refund_message(query_id, 0, pub_tons, jettons_to_restore);
         send_raw_message(msg, get_refund_message_mode());
     }
     if (mode == BALANCE_UPD_WITHDRAWAL_ALL) {
         throw_if(error::balance_lack, this::wl_ton_balance + this::public_ton_balance = 0);
-        int all_tons = this::wl_ton_balance + this::public_ton_balance;
-        int all_jettons_to_restore = this::jetton_balance;
+        int wl_tons = this::wl_ton_balance;
+        int pub_tons = this::public_ton_balance;
+        int jettons_to_restore = this::jetton_balance;
+
         this::wl_ton_balance = 0;
         this::public_ton_balance = 0;
         this::jetton_balance = 0;
 
-        cell msg = build_refund_message(query_id, all_tons, all_jettons_to_restore);
+        cell msg = build_refund_message(query_id, wl_tons, pub_tons, jettons_to_restore);
         send_raw_message(msg, get_refund_message_mode());
     }
 }

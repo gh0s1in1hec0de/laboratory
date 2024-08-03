@@ -42,7 +42,11 @@
         ifnot (op == op::tl::refund_confirmation) {
             return ();
         }
-        ;; TODO Bounce refunds
+        this::wl_ton_balance += in_msg_body~load_coins();
+        this::public_ton_balance += in_msg_body~load_coins();
+        this::jetton_balance += in_msg_body~load_coins();
+        save_data();
+        return ();
     }
 
     if (op == op::uv::balance_update) {
@@ -60,8 +64,7 @@
     throw(error::wrong_op);
 }
 
-(int, slice, cell, cell) get_user_data() method_id {
+(slice, int, int, int) get_user_data() method_id {
     load_data();
-    ;; TODO Should return owner, all balance-related data
-    return ();
+    return (this::owner_addr, this::wl_ton_balance, this::public_ton_balance, this::jetton_balance);
 }
