@@ -165,6 +165,11 @@ cell pack_user_vault_data(slice owner_address, slice launch_contract_address, in
     return (user_vault_stateinit, user_vault_address);
 }
 
+() verify_user_vault(slice vault_address, slice owner_address) {
+    slice (_user_vault_stateinit, derived_user_vault_address) = calculate_user_vault_data(owner_address);
+    throw_unless(error::unauthorized_access, equal_slices_bits(vault_address, derived_user_vault_address));
+}
+
 ;; Syntax sugar for jetton wallets and user vaults
 cell pack_jetton_wallet_data(int balance, slice owner_address, slice jetton_master_address) inline {
     return begin_cell()

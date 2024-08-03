@@ -3,50 +3,23 @@
 sale_data# creator_limit_pct:uint8 creator_balance:Coins creator_token_price:uint32 creator_round_end_time:int32
            wl_tokens_share:uint8 wl_ton_limit_pct:uint8 wl_ton_invested_total:Coins wl_round_end_time:int32
            public_synthetic_reserve_a:Coins public_synthetic_reserve_b:Coins public_round_end_time:int32 = SaleData;
-
 storage# is_initialized:int1 total_supply:Coins cur_balance:Coins
          chief:MsgAddressInt creator: MsgAddressInt
          sale_data: ^SaleData metadata_uri: ^Cell = LaunchStorage;
-
 owner_buyout# query_id:uint64 = LauchIncomingMessage;
 public_buy# query_id:uint64 = LauchIncomingMessage;
+
 // REFUNDS AND CLAIMS
 // There is two global operations - refund and claim. Seems like splitting logic for this two entities is the
 // best way to handle this two mechanics the most safe and concise way.
 refund_request# query_id:uint64 mode:uint4 maybe_tons:Coins = WithdrawFundsRequest;
 claim_request# query_id:uint64 = WithdrawFundsRequest;
 
-withdraw_confirmation# query_id:uint64 wl_tons:Coins pub_tons:Coins jettons:Coins to:MsgAddressInt = WithdrawFundsResponse;
+// In fact they are the same
+refund_confirmation# query_id:uint64 wl_tons:Coins pub_tons:Coins jettons:Coins to:MsgAddressInt = WithdrawFundsResponse;
+claim_confirmation# query_id:uint64 wl_tons:Coins pub_tons:Coins jettons:Coins to:MsgAddressInt = WithdrawFundsResponse;
 
 // USER VAULT
-
-// Storage
-// wl_invested - tons, that was invested inside WL phase
-// public_invested - tons, that was invested inside public phase
-// token_balace - in fact only public sale buy is able to change this amount
-//
-// There will be 2 options of withdrawal:
-// - withdraw wl tons - just send tons back to owner
-// - withdraw public tokens - refund message gonna be send to main contract as we should charge back token balance
-//
-// Special attention should be paid to WL investment confirmation system. It will work the following way:
-// 1. We notice incoming tokens and do all the necessary validations and stuff
-// 2. We send message to this wallet to write down data about invested TONs
-// 3. When wallet receives it - it will try to set following data:
-//    - Utility jettons for WL investment was burnt - so other WL investment can go without actual burn
-//    - Actual amount of WL-invested TONs
-// Then it will send burn-confirmation in case, if burnt-flag was not set and refund confirmation, if it was.
-// In case of transaction bounce - tokens and other goods will also be refunded. This system will minimize the risk
-// of asset loss at all.
-// P.S.
-// Yes, we'll set `wl_jet_pass_burnt` flag before actual burn, but:
-// - this operation has the lowest risk of fuck-up
-// - even if it will fuck-up, tokens would not be returned to sender, what is not an exploit. This problem
-//   can be fixed later with admin-panel.
-//
-// So BalanceUpdate will have 5 modes, controlled by 1st variable.
-// This 2 bits will be stored in the very beginning of the message.
-
 storage# owner:MsgAddressInt wl_invested:Coins public_invested:Coins token_balance:Coins = UserVaultStorage;
 
 balance_update# query_id:uint64 mode:uint4 tons:Coins fut_jettons:Coins = BalanceUpdate;

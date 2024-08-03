@@ -141,9 +141,7 @@
 }
 
 () handle_wl_callback(int query_id, int _attached_value, slice sender_address, int should_burn?, int initiator) inline {
-    slice (_user_vault_stateinit, original_user_vault_address) = calculate_user_vault_data(initiator);
-    ;; Verify, that the sender is valid user's vault
-    throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, original_user_vault_address));
+    verify_user_vault(sender_address, initiator);
     cell msg = should_burn?
     ? build_util_jet_burn_msg(query_id, wl_round::const::burn_util_jet_amount) ;; 1 nanoton to notify user about tokens
     : build_util_jet_transfer_msg(query_id, wl_round::const::burn_util_jet_amount, initiator, 1);
@@ -151,17 +149,27 @@
     send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
 }
 
-() handle_jetton_claim(int query_id, int attached_value, slice sender_address) {
-    (cell user_vault_stateinit, slice user_vault_address) = calculate_user_vault_data(sender_address);
-
+() handle_jetton_claim_request(int query_id, int attached_value, slice sender_address) {
+    ;; Don't need stateinit as if user vault doesn't exist - there is nothing to claim
+    (cell _user_vault_stateinit, slice user_vault_address) = calculate_user_vault_data(sender_address);
+    ;; We don't care about extra value as final operation (claimed jetton transfer) will take care about excesses
+    int _remainings = check_amount_is_enough_for_jetton_claim(attached_value);
     cell msg_body = begin_cell()
         .store_op(op::uv::claim)
         .store_query_id(query_id)
         .end_cell();
     cell msg = begin_cell()
+        ;; Figure out about fee chargeback in case of bounce
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(user_vault_address)
-        .store_coins(msg_value)
-        .store_statinit_ref_and_body_ref(user_vault_stateinit, msg_body)
+        .store_coins(get_claim_gas_cost())
+        .store_only_body_ref(msg_body)
         .end_cell();
+    send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+}
+
+() handle_jetton_claim_confirmation(int query_id, int attached_value, slice sender_address, int wl_tons, int jettons_to_send, slice recipient) {
+    verify_user_vault(sender_address, recipient);
+
+
 }

@@ -200,7 +200,7 @@ cell build_content_cell(slice metadata_uri) inline {
 
     if (op == op::tl::deploy_jet) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::chief_address));
-        accept_message(); ;; TODO Set gas limit then
+        accept_message(); ;; TODO Set gas limit after tests
         int launch_success_treshold =
         this::const::min_ton_for_sale_success
         + get_jetton_deploy_gas_cost()
@@ -213,8 +213,18 @@ cell build_content_cell(slice metadata_uri) inline {
     if (op == op::tl::jetton_claim_request) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         throw_unless(error::wrong_time, now() > public_round::const::end_time);
-        throw_unless(error::tokens_lack, sale_state::const::fut_jet_deployed?);
-        handle_jetton_claim(query_id, attached_value, sender_address);
+        ;; For successful claim we need both launch jetton to send and utility jetton to reward
+        throw_if(error::tokens_lack, ~ sale_state::const::fut_jet_deployed? | ~ sale_state::const::reward_util_jets_deposited?);
+        handle_jetton_claim_request(query_id, attached_value, sender_address);
+        return ();
+    }
+    if (op == op::tl::jetton_claim_confirmation) {
+        int wl_tons = in_msg_body~load_coins();
+        in_msg_body~load_coins(); ;; Skip public tons
+        int jettons = in_msg_body~load_coins();
+        int recipient = in_msg_body~load_msg_addr();
+        handle_jetton_claim_confirmation(query_id, attached_value, sender_address, wl_tons, jettons, recipient);
+        save_data();
         return ();
     }
 

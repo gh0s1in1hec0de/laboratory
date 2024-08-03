@@ -23,11 +23,18 @@ const USER_VAULT_INITSTATE_CELLS = 1;
 const JETTON_MINTER_INITSTATE_BITS = 1;
 const JETTON_MINTER_INITSTATE_CELLS = 1;
 
-;; file#L`line_num` - maunal bits counting
+;; Message that caontins info about user's balance updates
 const BALANCE_UPDATE_MSG_BITS = 1;
 const BALANCE_UPDATE_MSG_CELLS = 1;
+;; Both - refund and claim confirmation message - they differ by op, but have the same structure and info
+const WITHDRAW_CONFIRMATION_MSG_BITS = 1;
+const WITHDRAW_CONFIRMATION_MSG_CELLS = 1;
+;; Claim request to user vault
+const CLAIM_MSG_BITS = 1;
 const CLAIM_MSG_CELLS = 1;
-const CLAIM_MSG_CELLS = 1;
+;; Jetton Minter mint operation message
+const MINT_MSG_BITS = 1;
+const MINT_MSG_CELLS = 1;
 
 ;; file#L`line_num` - maunal bits counting
 const BALANCE_UPDATE_BITS = 1; ;; body = 32+64+124+(3+8+256)+(3+8+256)
@@ -71,10 +78,10 @@ int get_balance_update_gas_cost() inline_ref {
     + calculate_user_vault_min_storage_fee();
 }
 
+;; Don't need stateinit as if vault doesn't exist, then there is nothing to claim
 int get_claim_gas_cost() inline {
     return
     get_forward_fee(MY_WORKCHAIN, CLAIM_MSG_BITS, CLAIM_MSG_CELLS)
-    + forward_user_vault_init_state_overhead()
     + get_compute_fee(MY_WORKCHAIN, RECEIVE_CLAIM_CONSUMPTION)
     + calculate_user_vault_min_storage_fee();
 }
@@ -112,23 +119,19 @@ int check_amount_is_enough_for_public_purchase(int msg_value) {
 ;; === Refund ===
 ;; I think there is no need to account simple transfer message
 const REFUND_REQUEST_GAS_CONSUMPTION = 1;
-const WITHDRAW_CONFIRMATION_MSG_BITS = 1;
-const WITHDRAW_CONFIRMATION_MSG_CELLS = 1;
-const WITHDRAW_CONFIRMATION_GAS_CONSUMPTION = 1;
+const REFUND_CONFIRMATION_GAS_CONSUMPTION = 1;
 (int) check_amount_is_enough_for_refund(int msg_value) {
     int required_gas =
     get_compute_fee(MY_WORKCHAIN, REFUND_REQUEST_GAS_CONSUMPTION)
     + get_balance_update_gas_cost()
     + get_forward_fee(MY_WORKCHAIN, WITHDRAW_CONFIRMATION_MSG_BITS, WITHDRAW_CONFIRMATION_MSG_CELLS)
-    + get_compute_fee(MY_WORKCHAIN, WITHDRAW_CONFIRMATION_GAS_CONSUMPTION);
+    + get_compute_fee(MY_WORKCHAIN, REFUND_CONFIRMATION_GAS_CONSUMPTION);
     throw_unless(error::not_enough_gas, msg_value > required_gas);
     return msg_value - required_gas;
 }
 
 ;; === Token Deploy ===
 const DEPLOY_JETTON_GAS_CONSUMPTION = 1;
-const MINT_MSG_BITS = 1;
-const MINT_MSG_CELLS = 1;
 const MINT_GAS_CONSUMPTION = 1;
 int get_jetton_deploy_gas_cost() {
     return
@@ -140,15 +143,15 @@ int get_jetton_deploy_gas_cost() {
 }
 
 ;; === Jetton Claim ===
-;; I think there is no need to account simple transfer message
 const CLAIM_GAS_CONSUMPTION = 1;
-const CLAIM_MSG_BITS = 1;
+const CLAIM_CONFIRMATION_GAS_CONSUMPTION = 1;
 int check_amount_is_enough_for_jetton_claim(int msg_value) {
     int required_gas =
     get_compute_fee(MY_WORKCHAIN, CLAIM_GAS_CONSUMPTION)
     + get_claim_gas_cost()
     + get_forward_fee(MY_WORKCHAIN, WITHDRAW_CONFIRMATION_MSG_BITS, WITHDRAW_CONFIRMATION_MSG_CELLS)
-    + get_compute_fee(MY_WORKCHAIN, WITHDRAW_CONFIRMATION_GAS_CONSUMPTION);
+    + get_compute_fee(MY_WORKCHAIN, CLAIM_CONFIRMATION_GAS_CONSUMPTION)
+    + JETTON_MIN_TRANSFER_FEE;
     throw_unless(error::not_enough_gas, msg_value > required_gas);
     return msg_value - required_gas;
 }
