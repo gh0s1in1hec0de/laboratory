@@ -1,49 +1,59 @@
-#include "user_vault.fc";
 #include "../../stdlib.fc";
 #include "../op-codes.fc";
 #include "../utils.fc";
+#include "../gas.fc";
 
 #include "uv_context.fc";
 
-(cell) build_refund_message(int query_id, int tons, int jettons) {
-    cell msg_body = begin_cell()
+int vault_is_empty() {
+    this::wl_ton_balance + this::public_ton_balance + this::jetton_balance == 0 ? TRUE : FALSE;
+}
+
+int get_refund_message_mode() {
+    int msg_mode = SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL;
+    ifnot (vault_is_empty()) {
+        raw_reserve(calculate_user_vault_min_storage_fee(), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+    } else {
+        msg_mode = msg_mode | SEND_MODE_DESTROY;
+    }
+    return msg_mode;
+}
+
+;; TODO Change refund message structure: store tons in split maanner
+cell build_refund_message(int query_id, int tons, int jettons) {
+    ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
+    ;; Bits: 6 + 267 + 16 + 1 + 4 + 4 + 64 + 32 + 1 + 1 + 32 + 64 + 16 + 16 + 267 = 791 < 1023
+    cell msg = begin_cell()
+        .store_msg_flags_and_address_none(BOUNCEABLE)
+        .store_slice(this::token_launch_addr)
+        .store_coins(0)
+        .store_prefix_only_body()
         .store_op(op::tl::refund_confirmation)
         .store_query_id(query_id)
         .store_coins(tons)
         .store_coins(jettons)
         .store_slice(this::owner_addr)
         .end_cell();
-
-    ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
-    cell msg = begin_cell()
-        .store_msg_flags_and_address_none(BOUNCEABLE)
-        .store_slice(this::token_launch_addr)
-        .store_coins(0)
-        .store_only_body_ref(msg_body)
-        .end_cell();
     return msg;
 }
 
-(cell) build_wl_callback(int query_id, int should_burn?) {
-    cell msg_body = begin_cell()
+cell build_wl_callback(int query_id, int should_burn?) {
+    ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
+    ;; Bits: 6 + 267 + 16 + 1 + 4 + 4 + 64 + 32 + 1 + 1 + 32 + 64 + 1 + 267 = 760 < 1023
+    cell msg = begin_cell()
+        ;; There is no sense to handle bouncing of this message as we won't be able to fix this issue directly
+        .store_msg_flags_and_address_none(NON_BOUNCEABLE)
+        .store_slice(this::token_launch_addr)
+        .store_coins(0)
+        .store_prefix_only_body()
         .store_op(op::tl::wl_callback)
         .store_query_id(query_id)
         .store_bool(should_burn?)
         .store_slice(this::owner_addr)
         .end_cell();
-
-    ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
-    cell msg = begin_cell()
-        .store_msg_flags_and_address_none(NON_BOUNCEABLE) ;; As this code itself  is fallback - we don't care about that
-        .store_slice(this::token_launch_addr)
-        .store_coins(0)
-        .store_only_body_ref(msg_body)
-        .end_cell();
     return msg;
 }
 
-;; TODO Check for destroy opportunity in all the withdrawal modes
-;; TODO Figure out if we need to choose special places for `save_data` as now
 ;;; We repeat `save_data` here as we want to exlude completely an opportuninty of infinite refund attack through
 ;;; lack of attached gas or sth. It is just safer, albeit not as concise.
 () handle_balance_update(int query_id, int mode, int ton_balance_update, int jetton_balance_update) {
@@ -52,23 +62,36 @@
         cell wl_callback = build_wl_callback(query_id, this::wl_ton_balance == 0 ? TRUE : FALSE);
 
         this::wl_ton_balance += ton_balance_update;
-        save_data();
-
-        send_raw_message(wl_callback, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
+        {-
+           Making sure that we leave our storage fee TONs on contract, it will be returned after complete withdrawal
+           There is no sense in calculation MYSTORAGEDUE as we attached fixed fee for this operation,
+           and if we overlimit user_vault_min_storage_fee - we'll get DOS XD
+        -}
+        raw_reserve(calculate_user_vault_min_storage_fee(), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        send_raw_message(wl_callback, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     }
     if (mode == BALANCE_UPD_PUB_DEPOSIT) {
-        ;; TODO ???
         this::public_ton_balance += ton_balance_update;
-        this::jetton_balance += ton_balance_update;
-        save_data();
+        this::jetton_balance += jetton_balance_update;
+
+        raw_reserve(calculate_user_vault_min_storage_fee(), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        ;; As we don't send any callbacks - return excesses directly
+        cell msg = begin_cell()
+            .store_msg_flags_and_address_none(NON_BOUNCEABLE)
+            .store_slice(this::owner_addr)
+            .store_coins(0)
+            .store_prefix_only_body()
+            .store_op(op::excesses)
+            .store_query_id(query_id)
+            .end_cell();
+        send_raw_message(msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_IGNORE_ERRORS);
     }
     if (mode == BALANCE_UPD_WL_WITHDRAWAL) {
         throw_if(error::balance_lack, ton_balance_update > this::wl_ton_balance);
         this::wl_ton_balance -= ton_balance_update;
-        save_data();
 
         cell msg = build_refund_message(query_id, ton_balance_update, 0);
-        send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+        send_raw_message(msg, get_refund_message_mode());
     }
     if (mode == BALANCE_UPD_PUB_WITHDRAWAL) {
         throw_if(error::balance_lack, this::public_ton_balance > 0);
@@ -77,10 +100,9 @@
 
         this::public_ton_balance = 0;
         this::jetton_balance = 0;
-        save_data();
 
         cell msg = build_refund_message(query_id, tons_to_refund, jettons_to_take);
-        send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+        send_raw_message(msg, get_refund_message_mode());
     }
     if (mode == BALANCE_UPD_WITHDRAWAL_ALL) {
         throw_if(error::balance_lack, this::wl_ton_balance + this::public_ton_balance = 0);
@@ -89,9 +111,8 @@
         this::wl_ton_balance = 0;
         this::public_ton_balance = 0;
         this::jetton_balance = 0;
-        save_data();
 
         cell msg = build_refund_message(query_id, all_tons, all_jettons_to_restore);
-        send_raw_message(msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_DESTROY | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+        send_raw_message(msg, get_refund_message_mode());
     }
 }
