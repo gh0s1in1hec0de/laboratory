@@ -13,10 +13,11 @@ public_buy# query_id:uint64 = LauchIncomingMessage;
 // REFUNDS AND CLAIMS
 // There is two global operations - refund and claim. Seems like splitting logic for this two entities is the
 // best way to handle this two mechanics the most safe and concise way.
-refund_request# query_id:uint64 mode:uint4 maybe_tons:Coins = RefundRequestMessage;
-refund_confirmation# query_id:uint64 tons:Coins jettons:Coins to:MsgAddressInt = RefundConfirmationMessage;
+refund_request# query_id:uint64 mode:uint4 maybe_tons:Coins = WithdrawFundsRequest;
+claim_request# query_id:uint64 = WithdrawFundsRequest;
 
-move_assets# query_id:uint64 mode:uint4 = UnifiedMoveAssets;
+withdraw_confirmation# query_id:uint64 wl_tons:Coins pub_tons:Coins jettons:Coins to:MsgAddressInt = WithdrawFundsResponse;
+
 // USER VAULT
 
 // Storage
@@ -48,5 +49,5 @@ move_assets# query_id:uint64 mode:uint4 = UnifiedMoveAssets;
 
 storage# owner:MsgAddressInt wl_invested:Coins public_invested:Coins token_balance:Coins = UserVaultStorage;
 
-balance_update# query_id:uint64 mode:uint4 wl_tons:Coins pub_tons:Coins jettons:Coins = BalanceUpdate;
+balance_update# query_id:uint64 mode:uint4 tons:Coins fut_jettons:Coins = BalanceUpdate;
 wl_callback# query_id:uint64 should_burn:int1 owner:MsgAddressInt = WlCallback;

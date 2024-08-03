@@ -14,6 +14,8 @@ const JETTON_MIN_TRANSFER_FEE = 30000000; ;; Actuallly 28627415, but rounded
 
 const USER_VAULT_BITS  = 1;
 const USER_VAULT_CELLS = 1;
+const TOKEN_LAUNCH_BITS  = 1;
+const TOKEN_LAUNCH_CELLS = 1;
 
 const USER_VAULT_INITSTATE_BITS  = 1;
 const USER_VAULT_INITSTATE_CELLS = 1;
@@ -24,6 +26,8 @@ const JETTON_MINTER_INITSTATE_CELLS = 1;
 ;; file#L`line_num` - maunal bits counting
 const BALANCE_UPDATE_MSG_BITS = 1;
 const BALANCE_UPDATE_MSG_CELLS = 1;
+const CLAIM_MSG_CELLS = 1;
+const CLAIM_MSG_CELLS = 1;
 
 ;; file#L`line_num` - maunal bits counting
 const BALANCE_UPDATE_BITS = 1; ;; body = 32+64+124+(3+8+256)+(3+8+256)
@@ -39,9 +43,14 @@ const WL_CALLBACK_MSG_CELLS = 1; ;; body always in ref
 ;; resulting gas consumption is printed to the console.
 
 const RECEIVE_BALANCE_UPDATE_CONSUMPTION = 1;
+const RECEIVE_CLAIM_CONSUMPTION = 1;
 
 int calculate_user_vault_min_storage_fee() inline {
     return get_storage_fee(MY_WORKCHAIN, MIN_STORAGE_DURATION, USER_VAULT_BITS, USER_VAULT_CELLS);
+}
+
+int calculate_token_launch_min_storage_fee() inline {
+    return get_storage_fee(MY_WORKCHAIN, MIN_STORAGE_DURATION, TOKEN_LAUNCH_BITS, TOKEN_LAUNCH_CELLS);
 }
 
 int forward_user_vault_init_state_overhead() inline {
@@ -52,19 +61,27 @@ int forward_jetton_minter_init_state_overhead() inline {
     return get_simple_forward_fee(MY_WORKCHAIN, JETTON_MINTER_INITSTATE_BITS, JETTON_MINTER_INITSTATE_CELLS);
 }
 
-(int) get_balance_update_gas_cost() inline_ref {
+int get_balance_update_gas_cost() inline_ref {
     return
     get_forward_fee(MY_WORKCHAIN, BALANCE_UPDATE_MSG_BITS, BALANCE_UPDATE_MSG_CELLS)
     + forward_user_vault_init_state_overhead()
     ;; + get_compute_fee(MY_WORKCHAIN, SEND_BALANCE_UPDATE_CONSUMPTION)
-    ;; TODO Does it always consuMSG the same amount of gas? Seems like all the values are close, so take the upper bound
+    ;; TODO Does it always consume the same amount of gas? Seems like all the values are close, so we may take the upper bound (but now fees are separate)
     + get_compute_fee(MY_WORKCHAIN, RECEIVE_BALANCE_UPDATE_CONSUMPTION)
+    + calculate_user_vault_min_storage_fee();
+}
+
+int get_claim_gas_cost() inline {
+    return
+    get_forward_fee(MY_WORKCHAIN, CLAIM_MSG_BITS, CLAIM_MSG_CELLS)
+    + forward_user_vault_init_state_overhead()
+    + get_compute_fee(MY_WORKCHAIN, RECEIVE_CLAIM_CONSUMPTION)
     + calculate_user_vault_min_storage_fee();
 }
 
 ;; As we don't have any external calls, we accounting only code execution fees
 const CREATOR_BUYOUT_GAS_CONSUMPTION = 1;
-(int) check_amount_is_enough_for_creator_buyout(int msg_value) inline {
+int check_amount_is_enough_for_creator_buyout(int msg_value) inline {
     int min_value = get_compute_fee(MY_WORKCHAIN, CREATOR_BUYOUT_GAS_CONSUMPTION);
     throw_unless(error::not_enough_gas, msg_value > min_value);
     return msg_value - min_value;
@@ -73,20 +90,20 @@ const CREATOR_BUYOUT_GAS_CONSUMPTION = 1;
 ;; === Whitelist Purchase ===
 const WL_PURCHASE_GAS_CONSUMPTION = 1;
 const WL_CALLBACK_GAS_CONSUMPTION = 1;
-(int) get_wl_purchase_gas_consumption() inline_ref {
+int get_wl_purchase_gas_consumption() inline_ref {
     return get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_GAS_CONSUMPTION)
     + get_balance_update_gas_cost()
     + get_forward_fee(MY_WORKCHAIN, WL_CALLBACK_MSG_BITS, WL_CALLBACK_MSG_CELLS)
     + get_compute_fee(MY_WORKCHAIN, WL_CALLBACK_GAS_CONSUMPTION);
 }
 
-(int) check_amount_is_enough_for_wl_purchase(int msg_value) inline {
+int check_amount_is_enough_for_wl_purchase(int msg_value) inline {
     ;; Don't use throw here as we have to return tokens back in case of errors
     return msg_value - get_wl_purchase_gas_consumption();
 }
 
 ;; === Public Purchase ===
-(int) check_amount_is_enough_for_public_purchase(int msg_value) {
+int check_amount_is_enough_for_public_purchase(int msg_value) {
     int required_gas = get_balance_update_gas_cost();
     throw_unless(error::not_enough_gas, msg_value > required_gas);
     return msg_value - required_gas;
@@ -94,27 +111,44 @@ const WL_CALLBACK_GAS_CONSUMPTION = 1;
 
 ;; === Refund ===
 ;; I think there is no need to account simple transfer message
-const REFUND_CONFIRMATION_MSG_BITS = 1;
-const REFUND_CONFIRMATION_MSG_CELLS = 1;
-const REFUND_CONFIRMATION_GAS_CONSUMPTION = 1;
+const REFUND_REQUEST_GAS_CONSUMPTION = 1;
+const WITHDRAW_CONFIRMATION_MSG_BITS = 1;
+const WITHDRAW_CONFIRMATION_MSG_CELLS = 1;
+const WITHDRAW_CONFIRMATION_GAS_CONSUMPTION = 1;
 (int) check_amount_is_enough_for_refund(int msg_value) {
-    int required_gas = get_balance_update_gas_cost()
-    + get_forward_fee(MY_WORKCHAIN, REFUND_CONFIRMATION_MSG_BITS, REFUND_CONFIRMATION_MSG_CELLS)
-    + get_compute_fee(MY_WORKCHAIN, REFUND_CONFIRMATION_GAS_CONSUMPTION);
+    int required_gas =
+    get_compute_fee(MY_WORKCHAIN, REFUND_REQUEST_GAS_CONSUMPTION)
+    + get_balance_update_gas_cost()
+    + get_forward_fee(MY_WORKCHAIN, WITHDRAW_CONFIRMATION_MSG_BITS, WITHDRAW_CONFIRMATION_MSG_CELLS)
+    + get_compute_fee(MY_WORKCHAIN, WITHDRAW_CONFIRMATION_GAS_CONSUMPTION);
     throw_unless(error::not_enough_gas, msg_value > required_gas);
     return msg_value - required_gas;
 }
 
 ;; === Token Deploy ===
+const DEPLOY_JETTON_GAS_CONSUMPTION = 1;
 const MINT_MSG_BITS = 1;
 const MINT_MSG_CELLS = 1;
 const MINT_GAS_CONSUMPTION = 1;
-(int) check_amount_is_enough_for_jetton_deploy(int msg_value) {
-    int required_gas =
-    get_forward_fee(MY_WORKCHAIN, MINT_MSG_BITS, MINT_MSG_CELLS)
+int get_jetton_deploy_gas_cost() {
+    return
+    get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_GAS_CONSUMPTION)
+    + get_forward_fee(MY_WORKCHAIN, MINT_MSG_BITS, MINT_MSG_CELLS)
     + forward_jetton_minter_init_state_overhead()
     + get_compute_fee(MY_WORKCHAIN, MINT_GAS_CONSUMPTION)
     + JETTON_MIN_TRANSFER_FEE;
+}
+
+;; === Jetton Claim ===
+;; I think there is no need to account simple transfer message
+const CLAIM_GAS_CONSUMPTION = 1;
+const CLAIM_MSG_BITS = 1;
+int check_amount_is_enough_for_jetton_claim(int msg_value) {
+    int required_gas =
+    get_compute_fee(MY_WORKCHAIN, CLAIM_GAS_CONSUMPTION)
+    + get_claim_gas_cost()
+    + get_forward_fee(MY_WORKCHAIN, WITHDRAW_CONFIRMATION_MSG_BITS, WITHDRAW_CONFIRMATION_MSG_CELLS)
+    + get_compute_fee(MY_WORKCHAIN, WITHDRAW_CONFIRMATION_GAS_CONSUMPTION);
     throw_unless(error::not_enough_gas, msg_value > required_gas);
     return msg_value - required_gas;
 }

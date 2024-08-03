@@ -57,7 +57,7 @@
         query_id,
         value,
         sender_address,
-        BALANCE_UPD_WL_DEPOSIT,
+        BALANCE_UPD_DEPOSIT_WL,
         user_value_after_fee,
         0
     );
@@ -91,12 +91,13 @@
     this::fut_jet_cur_balance -= res_jettons;
     public_round::fut_jet_sold += res_jettons;
 
+    ;; Here we attach precise amount of money - as all the remainings gone on ivenstment
     int msg_value = get_balance_update_gas_cost();
     cell msg = build_balance_update_message(
         query_id,
         msg_value,
         sender_address,
-        BALANCE_UPD_PUB_DEPOSIT,
+        BALANCE_UPD_DEPOSIT_PUB,
         user_value_after_fee,
         res_jettons
     );
@@ -107,7 +108,7 @@
     throw_if(error::wrong_time, now() < creator_round::const::end_time | now() > public_round::const::end_time);
     throw_unless(error::bad_request, mode == 3 | mode == 4 | mode == 5);
     ;; We don't actually care about leftovers
-    (int _user_value_after_fee) = check_amount_is_enough_for_refund(attached_value);
+    int _user_value_after_fee = check_amount_is_enough_for_refund(attached_value);
 
     cell msg = build_balance_update_message(
         query_id,
@@ -120,7 +121,7 @@
     send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
-() handle_refund_confirmation(int query_id, slice sender_address, int ton_to_refund, int jettons_to_charge_back, slice recipient) inline {
+() handle_refund_confirmation(int query_id, int attached_value, slice sender_address, int ton_to_refund, int jettons_to_charge_back, slice recipient) inline {
     slice (_user_vault_stateinit, original_user_vault_address) = calculate_user_vault_data(recipient);
     ;; Verify, that the sender is valid user's vault
     throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, original_user_vault_address));
@@ -132,11 +133,11 @@
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(recipient)
         .store_coins(ton_to_refund)
-        .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+        .store_prefix_only_body()
         .store_op(0)
         .store_query_id(query_id)
         .end_cell();
-    send_raw_message(simple_transfer_message, SEND_MODE_CARRY_ALL_BALANCE);
+    send_raw_message(simple_transfer_message, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
 () handle_wl_callback(int query_id, int _attached_value, slice sender_address, int should_burn?, int initiator) inline {
@@ -148,4 +149,19 @@
     : build_util_jet_transfer_msg(query_id, wl_round::const::burn_util_jet_amount, initiator, 1);
 
     send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
+}
+
+() handle_jetton_claim(int query_id, int attached_value, slice sender_address) {
+    (cell user_vault_stateinit, slice user_vault_address) = calculate_user_vault_data(sender_address);
+
+    cell msg_body = begin_cell()
+        .store_op(op::uv::claim)
+        .store_query_id(query_id)
+        .end_cell();
+    cell msg = begin_cell()
+        .store_msg_flags_and_address_none(BOUNCEABLE)
+        .store_slice(user_vault_address)
+        .store_coins(msg_value)
+        .store_statinit_ref_and_body_ref(user_vault_stateinit, msg_body)
+        .end_cell();
 }

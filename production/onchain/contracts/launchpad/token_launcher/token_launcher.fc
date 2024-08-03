@@ -60,8 +60,7 @@ cell build_content_cell(slice metadata_uri) inline {
     ;; Don't forget about cell upper bound - 1023 bits
     cell sale_config = begin_cell()
         .store_bool(sale_state::const::reward_util_jets_deposited?)
-        .store_bool(sale_state::const::pool_deployed?)
-        .store_bool(sale_state::const::pool_deployed?)
+        .store_bool(sale_state::const::fut_jet_deployed?)
         .store_uint(creator_round::const::fut_jet_limit, 8)
         .store_coins(creator_round::creator_fut_jet_balance)
         .store_uint(creator_round::const::fut_jet_price, 32)
@@ -97,7 +96,7 @@ cell build_content_cell(slice metadata_uri) inline {
         .store_coins(this::const::min_ton_for_sale_success)     ;; VarUinteger16
         .store_slice(this::const::chief_address)                ;; address(267 bits - common size) todo - prove it
         .store_slice(this::const::creator_address)              ;; address
-        .store_ref(sale_config)                                   ;; sale parameters cell
+        .store_ref(sale_config)                                 ;; sale parameters cell
         .store_ref(jet_tools)
         .end_cell();
 
@@ -119,27 +118,30 @@ cell build_content_cell(slice metadata_uri) inline {
     save_data();
 }
 
-() on_bounce(slice in_msg_body) impure inline {
-    ;; All balance operations revertions
+() on_bounce(int op, int query_id, int attached_value, slice sender_address, slice in_msg_body) impure inline {
+    if (op == op::uv::balance_update) {
+        int mode = in_msg_body~load_uint(4);
+        ;; If it is not deposit
+        ifnot (mode == BALANCE_UPD_DEPOSIT_WL | mode == BALANCE_UPD_DEPOSIT_PUB) {
+            return ();
+        }
+        int tons_to_refund = in_msg_body~load_coins() + in_msg_body~load_coins();
+        handle_refund_confirmation(query_id, attached_value, sender_address, tons_to_refund, in_msg_body~load_coins(), in_msg_body~load_msg_addr());
+    }
 }
 
 () recv_internal(int contract_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
     if (in_msg_body.slice_empty?() | in_msg_body.slice_bits() < 32) {
-        ;; TODO is `msg_body.slice_bits() < 32` really necessary?
-        ;; Logic for simple transfers
+        return ();
     }
     (int msg_flags, slice sender_address, int attached_value, int fwd_fee_from_in_msg) = extract_full_msg_data(in_msg_full);
     (int op, int query_id) = in_msg_body~load_op_and_query_id();
 
+    load_data(); ;; Now we have our contract data available in globals
     if (msg_flags & 1) {
-        ;; is bounced
-        on_bounce(in_msg_body);
+        on_bounce(op, query_id, attached_value, sender_address, in_msg_body);
         return ();
     }
-
-    ;; Purified forward fee of incoming message
-    ;; int fwd_fee = get_original_fwd_fee(MY_WORKCHAIN, fwd_fee_from_in_msg);
-    load_data(); ;; Now we have our contract data available in globals
 
     if (op == op::tl::init) {
         throw_if(error::already_initialized, this::const::is_initialized?);
@@ -190,23 +192,30 @@ cell build_content_cell(slice metadata_uri) inline {
         return ();
     }
     if (op == op::tl::refund_confirmation) {
-        raw_reserve(0,RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         int tons_to_refund = in_msg_body~load_coins() + in_msg_body~load_coins();
-        handle_refund_confirmation(query_id, sender_address, tons_to_refund, in_msg_body~load_coins(), in_msg_body~load_msg_addr());
+        handle_refund_confirmation(query_id, attached_value, sender_address, tons_to_refund, in_msg_body~load_coins(), in_msg_body~load_msg_addr());
         save_data();
         return ();
     }
 
     if (op == op::tl::deploy_jet) {
-        ;; TODO add accept_message and set new gas limit?
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::chief_address));
-        ;; If there is not enough ton for pool deployment
-        throw_if(error::balance_lack, contract_balance < this::const::min_ton_for_sale_success + JETTON_MIN_TRANSFER_FEE);
+        accept_message(); ;; TODO Set gas limit then
+        int launch_success_treshold =
+        this::const::min_ton_for_sale_success
+        + get_jetton_deploy_gas_cost()
+        + calculate_user_vault_min_storage_fee();
+
+        throw_if(error::balance_lack, contract_balance < launch_success_treshold);
         deploy_launch_jetton();
         return ();
     }
-    if (op == op::tl::claim_jettons) {
-
+    if (op == op::tl::jetton_claim_request) {
+        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        throw_unless(error::wrong_time, now() > public_round::const::end_time);
+        throw_unless(error::tokens_lack, sale_state::const::fut_jet_deployed?);
+        handle_jetton_claim(query_id, attached_value, sender_address);
+        return ();
     }
 
     ;; Should I change it somehow?
@@ -217,8 +226,9 @@ cell build_content_cell(slice metadata_uri) inline {
     throw(error::wrong_op);
 }
 
-(int, slice, cell, cell) get_launch_data() method_id {
+;; TODO Provide more getters
+(int, slice, cell) get_launch_data() method_id {
     load_data();
     throw_unless(error::uninitialized, this::const::is_initialized?);
-    return (this::const::fut_jet_total_supply, this::const::creator_address, build_content_cell(jet_tools::const::metadata_uri.begin_parse()), this::const::user_vault_code);
+    return (this::const::fut_jet_total_supply, this::const::creator_address, build_content_cell(jet_tools::const::metadata_uri.begin_parse()));
 }

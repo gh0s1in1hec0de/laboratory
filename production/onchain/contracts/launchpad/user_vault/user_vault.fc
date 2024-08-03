@@ -61,6 +61,18 @@
         return ();
     }
 
+    if (op == op::uv::balance_update) {
+        throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::token_launch_addr));
+        handle_balance_update(
+            query_id,
+            in_msg_body~load_uint(4),
+            in_msg_body~load_coins(),
+            in_msg_body~load_coins()
+        );
+        save_data();
+        return ();
+    }
+
     throw(error::wrong_op);
 }
 

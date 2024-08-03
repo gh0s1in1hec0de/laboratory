@@ -5,17 +5,16 @@
 const MY_WORKCHAIN = BASECHAIN;
 const BALANCE_UPD_MODE_SIZE = 4;
 
-const BALANCE_UPD_WL_DEPOSIT = 1;
-const BALANCE_UPD_PUB_DEPOSIT = 2;
-const BALANCE_UPD_WL_WITHDRAWAL = 3;
-const BALANCE_UPD_PUB_WITHDRAWAL = 4;
+const BALANCE_UPD_DEPOSIT_WL = 1;
+const BALANCE_UPD_DEPOSIT_PUB = 2;
+const BALANCE_UPD_WITHDRAWAL_WL = 3;
+const BALANCE_UPD_WITHDRAWAL_PUB = 4;
 const BALANCE_UPD_WITHDRAWAL_ALL = 5;
 
 () load_sale_config(cell sale_config) inline_ref {
     slice sale_conf_slice = sale_config.begin_parse();
     sale_state::const::reward_util_jets_deposited? = sale_conf_slice.load_int(1);
     sale_state::const::fut_jet_deployed? = sale_conf_slice.load_int(1);
-    sale_state::const::pool_deployed? = sale_conf_slice.load_int(1);
 
     creator_round::const::fut_jet_limit = sale_conf_slice~load_uint(8)
     creator_round::creator_fut_jet_balance = sale_conf_slice~load_coins();
@@ -50,9 +49,8 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
     return (msg_flags, sender_address, value, fwd_fee);
 }
 
-;; TODO Optimize according to DRY later
-;;; Now works only with utility token
-(cell) build_util_jet_transfer_msg(int query_id, int jetton_amount, slice recipient, int forward_ton_amount) {
+;;; Now works only with utility token; Fuck conciseness btw
+(cell) build_util_jet_transfer_msg(int query_id, int jetton_amount, slice recipient, int forward_ton_amount) inline_ref {
     cell msg_body = begin_cell()
         .store_op(op::transfer)
         .store_query_id(query_id)
@@ -73,7 +71,7 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
 }
 
 ;;; Now works only with utility token
-(cell) build_util_jet_burn_msg(int query_id, int jetton_amount) {
+(cell) build_util_jet_burn_msg(int query_id, int jetton_amount) inline {
     cell msg_body = begin_cell()
         .store_op(op::burn)
         .store_query_id(query_id)
@@ -152,7 +150,7 @@ cell pack_user_vault_data(slice owner_address, slice launch_contract_address, in
         .end_cell();
 }
 
-(cell, slice) calculate_user_vault_data(slice sender_address) {
+(cell, slice) calculate_user_vault_data(slice sender_address) inline_ref {
     cell user_vault_stateinit = calculate_contract_state_init(
         this::const::user_vault_code,
         pack_user_vault_data(
@@ -185,14 +183,14 @@ slice calculate_user_jetton_wallet_address(slice owner_address, slice jetton_mas
     return calculate_contract_address(calculate_contract_state_init(jetton_wallet_code, jetton_wallet_init_data));
 }
 
-cell build_balance_update_message(int query_id, int msg_value, slice user_address, int balance_update_mode, int maybe_tons, int maybe_jettons) inline_ref {
+cell build_balance_update_message(int query_id, int msg_value, slice user_address, int balance_update_mode, int tons, int fut_jettons) inline_ref {
     (cell user_vault_stateinit, slice user_vault_address) = calculate_user_vault_data(user_address);
     cell msg_body = begin_cell()
         .store_op(op::uv::balance_update)
         .store_query_id(query_id)
         .store_uint(balance_update_mode, BALANCE_UPD_MODE_SIZE)
-        .store_coins(maybe_tons)
-        .store_coins(maybe_jettons)
+        .store_coins(tons)
+        .store_coins(fut_jettons)
         .end_cell();
     cell msg = begin_cell()
         .store_msg_flags_and_address_none(BOUNCEABLE)

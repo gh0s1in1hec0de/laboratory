@@ -14,11 +14,13 @@ const op::tl::creator_buyout = "creator_buyout"c;
 const op::tl::wl_callback = "wl_callback"c;
 ;; `op::transfer_notification` in fact is responsible for WL buy
 const op::tl::public_buy = "public_buy"c;
-const op::tl::claim_jettons = "claim_jettons"c;
+const op::tl::jetton_claim_request = "claim_jettons_request"c;
+const op::tl::jetton_claim_confirmation = "claim_jettons_confirmation"c;
 const op::tl::refund_request = "refund_request"c;
 const op::tl::refund_confirmation = "refund_confirmation"c;
 const op::tl::deploy_jet = "deploy_jet"c;
 const op::uv::balance_update = "balance_upddate"c;
+const op::uv::claim = "claim"c;
 
 const error::not_enough_gas = 48;
 const error::invalid_op = 72;

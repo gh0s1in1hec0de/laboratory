@@ -21,7 +21,6 @@ global slice this::const::creator_address;
 ;; State markers
 global int   sale_state::const::reward_util_jets_deposited?;
 global int   sale_state::const::fut_jet_deployed?;
-global int   sale_state::const::pool_deployed?;
 
 ;; Percent of supply, that creator can buy back
 global int   creator_round::const::fut_jet_limit;
