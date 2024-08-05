@@ -1,12 +1,12 @@
-#include "jetton_operating.fc";
 #include "../../workchain.fc";
 #include "../../stdlib.fc";
 #include "../op-codes.fc";
 #include "../utils.fc";
-
-#include "tl_context.fc";
-#include "trades_handler.fc";
 #include "../gas.fc";
+
+#include "jetton_operating.fc";
+#include "trades_handler.fc";
+#include "tl_context.fc";
 
 {-
   TODO are we doing this ton-jetton processing the correct way?
@@ -36,9 +36,13 @@ cell build_content_cell(slice metadata_uri) inline {
 () load_data() inline_ref {
     slice ds = get_data().begin_parse();
     this::const::is_initialized? = ds~load_int(1);
+
     this::const::fut_jet_total_supply = ds~load_coins();
-    this::fut_jet_cur_balance = ds~load_coins();
     this::const::min_ton_for_sale_success = ds~load_coins();
+
+    this::fut_jet_cur_balance = ds~load_coins();
+    this::reward_util_jets_cur_balance = ds~load_coins();
+
     this::const::chief_address = ds~load_msg_addr();
     this::const::creator_address = ds~load_msg_addr();
 
@@ -58,9 +62,10 @@ cell build_content_cell(slice metadata_uri) inline {
 
 () save_data() impure inline_ref {
     ;; Don't forget about cell upper bound - 1023 bits
+    ;; Bits: 16 + 267 + 8 + 16 + 32 + 32 + 8 + 8 + 16 + 16 + 16 + 32 + 16*4 + 32
     cell sale_config = begin_cell()
-        .store_bool(sale_state::const::reward_util_jets_deposited?)
-        .store_bool(sale_state::const::fut_jet_deployed?)
+        .store_coins(sale_state::const::fut_jet_deployed_balance)
+        .store_slice(sale_state::const::fut_jet_wallet_address)
         .store_uint(creator_round::const::fut_jet_limit, 8)
         .store_coins(creator_round::creator_fut_jet_balance)
         .store_uint(creator_round::const::fut_jet_price, 32)
@@ -88,15 +93,20 @@ cell build_content_cell(slice metadata_uri) inline {
         .store_ref(jet_tools::const::fut_jet_wallet_code)
         .end_cell();
 
-    ;; 1 + 16 + 16 + 267 + 267 + 267 < 1023
+    ;; 1 + 16 * 4 + 16 * 2 + 267 + 267 < 1023
     cell data = begin_cell()
         .store_int(this::const::is_initialized?, 1)
-        .store_coins(this::const::fut_jet_total_supply)         ;; VarUinteger16
-        .store_coins(this::fut_jet_cur_balance)                 ;; VarUinteger16
-        .store_coins(this::const::min_ton_for_sale_success)     ;; VarUinteger16
-        .store_slice(this::const::chief_address)                ;; address(267 bits - common size) todo - prove it
-        .store_slice(this::const::creator_address)              ;; address
-        .store_ref(sale_config)                                 ;; sale parameters cell
+        .store_coins(this::const::fut_jet_total_supply)          ;; VarUinteger16
+        .store_coins(this::const::min_ton_for_sale_success)      ;; VarUinteger16
+        .store_coins(this::const::fut_jet_dex_amount)            ;; VarUinteger16
+        .store_coins(this::const::reward_util_jets_total_amount) ;; VarUinteger16
+
+        .store_coins(this::fut_jet_cur_balance)                  ;; VarUinteger16
+        .store_coins(this::reward_util_jets_cur_balance)         ;; VarUinteger16
+
+        .store_slice(this::const::chief_address)                 ;; address(267 bits - common size) todo - prove it
+        .store_slice(this::const::creator_address)               ;; address
+        .store_ref(sale_config)                                  ;; sale parameters cell
         .store_ref(jet_tools)
         .end_cell();
 
@@ -104,16 +114,6 @@ cell build_content_cell(slice metadata_uri) inline {
 }
 
 () initialize(slice msg_body) impure inline {
-    ;; TODO early version, now does not work propoerly, rewrite at the end
-    int total_supply = msg_body~load_coins();
-    this::const::fut_jet_total_supply = total_supply;
-    this::fut_jet_cur_balance = total_supply;
-
-    this::const::chief_address = msg_body~load_msg_addr();
-    this::const::creator_address = msg_body~load_msg_addr();
-
-    load_sale_config(msg_body~load_ref());
-    jet_tools::const::metadata_uri = msg_body~load_ref();
 
     save_data();
 }
@@ -125,8 +125,15 @@ cell build_content_cell(slice metadata_uri) inline {
         ifnot (mode == BALANCE_UPD_DEPOSIT_WL | mode == BALANCE_UPD_DEPOSIT_PUB) {
             return ();
         }
-        int tons_to_refund = in_msg_body~load_coins() + in_msg_body~load_coins();
-        handle_refund_confirmation(query_id, attached_value, sender_address, tons_to_refund, in_msg_body~load_coins(), in_msg_body~load_msg_addr());
+        handle_refund_confirmation(
+            query_id,
+            attached_value,
+            sender_address,
+            in_msg_body~load_coins(),
+            in_msg_body~load_coins(),
+            in_msg_body~load_coins(),
+            in_msg_body~load_msg_addr()
+        );
     }
 }
 
@@ -170,7 +177,7 @@ cell build_content_cell(slice metadata_uri) inline {
         ;; Verify, that sender is our utility token wallet and no one other
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE); ;; Transfer notification can't be bounced back
         ;; handle_wl_purchase(query_id, in_msg_body~load_coins(), attached_value, sender_address, in_msg_body~load_msg_addr());
-        route_incoming_transfer(query_id, attached_value, in_msg_body~load_coins(), sender_address, in_msg_body~load_msg_addr());
+        route_incoming_transfer(query_id, attached_value, sender_address, in_msg_body~load_coins(),  in_msg_body~load_msg_addr(), in_msg_body);
         save_data();
         return ();
     }
@@ -192,8 +199,7 @@ cell build_content_cell(slice metadata_uri) inline {
         return ();
     }
     if (op == op::tl::refund_confirmation) {
-        int tons_to_refund = in_msg_body~load_coins() + in_msg_body~load_coins();
-        handle_refund_confirmation(query_id, attached_value, sender_address, tons_to_refund, in_msg_body~load_coins(), in_msg_body~load_msg_addr());
+        handle_refund_confirmation(query_id, attached_value, sender_address, in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_msg_addr());
         save_data();
         return ();
     }
@@ -214,13 +220,14 @@ cell build_content_cell(slice metadata_uri) inline {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         throw_unless(error::wrong_time, now() > public_round::const::end_time);
         ;; For successful claim we need both launch jetton to send and utility jetton to reward
-        throw_if(error::tokens_lack, ~ sale_state::const::fut_jet_deployed? | ~ sale_state::const::reward_util_jets_deposited?);
+        throw_if(error::tokens_lack, ~ sale_state::const::fut_jet_deployed_balance > 0 | ~ this::reward_util_jets_cur_balance > 0);
         handle_jetton_claim_request(query_id, attached_value, sender_address);
         return ();
     }
     if (op == op::tl::jetton_claim_confirmation) {
+        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         int wl_tons = in_msg_body~load_coins();
-        in_msg_body~load_coins(); ;; Skip public tons
+        in_msg_body~load_coins(); ;; Skip pub_tons
         int jettons = in_msg_body~load_coins();
         int recipient = in_msg_body~load_msg_addr();
         handle_jetton_claim_confirmation(query_id, attached_value, sender_address, wl_tons, jettons, recipient);

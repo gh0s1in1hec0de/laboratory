@@ -13,8 +13,8 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
 
 () load_sale_config(cell sale_config) inline_ref {
     slice sale_conf_slice = sale_config.begin_parse();
-    sale_state::const::reward_util_jets_deposited? = sale_conf_slice.load_int(1);
-    sale_state::const::fut_jet_deployed? = sale_conf_slice.load_int(1);
+    sale_state::const::fut_jet_deployed_balance = sale_conf_slice.load_coins();
+    sale_state::const::fut_jet_wallet_address = sale_conf_slice.load_msg_addr();
 
     creator_round::const::fut_jet_limit = sale_conf_slice~load_uint(8)
     creator_round::creator_fut_jet_balance = sale_conf_slice~load_coins();
@@ -48,9 +48,13 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
     int fwd_fee = in_msg_full_slice~load_coins();
     return (msg_flags, sender_address, value, fwd_fee);
 }
+const BALANCE_UPD_MODE_SIZE = 4;
+
+const UTIL_JET_REWARD_ENROLLMENT = 1;
+const UTIL_JET_WL_PASS = 2;
 
 ;;; Now works only with utility token; Fuck conciseness btw
-(cell) build_util_jet_transfer_msg(int query_id, int jetton_amount, slice recipient, int forward_ton_amount) inline_ref {
+(cell) build_util_jet_transfer_msg(int query_id, int value, int jetton_amount, slice recipient, int forward_ton_amount) inline_ref {
     cell msg_body = begin_cell()
         .store_op(op::transfer)
         .store_query_id(query_id)
@@ -65,7 +69,7 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
     return begin_cell()
         .store_msg_flags_and_address_none(NON_BOUNCEABLE) ;; As we are not able to handle this situation
         .store_slice(jet_tools::const::util_jet_wal_addr)
-        .store_coins(0)
+        .store_coins(value)
         .store_only_body_ref(msg_body)
         .end_cell();
 }
@@ -139,7 +143,6 @@ slice calculate_contract_address(cell state_init) inline_ref {
     ;; after that we can be sure in our address size
 }
 
-;; TODO finalize at the end
 cell pack_user_vault_data(slice owner_address, slice launch_contract_address, int wl_invested, int public_invested, int token_balance) inline {
     return begin_cell()
         .store_slice(owner_address)
@@ -165,7 +168,7 @@ cell pack_user_vault_data(slice owner_address, slice launch_contract_address, in
     return (user_vault_stateinit, user_vault_address);
 }
 
-() verify_user_vault(slice vault_address, slice owner_address) {
+() verify_user_vault(slice vault_address, slice owner_address) inline_ref {
     slice (_user_vault_stateinit, derived_user_vault_address) = calculate_user_vault_data(owner_address);
     throw_unless(error::unauthorized_access, equal_slices_bits(vault_address, derived_user_vault_address));
 }
@@ -222,5 +225,13 @@ cell pack_jetton_master_data() inline {
     cell jetton_master_stateinit = calculate_contract_state_init(jet_tools::const::fut_jet_wallet_code, pack_jetton_master_data());
     slice jetton_master_address = calculate_contract_address(jetton_master_stateinit);
     return (jetton_master_stateinit, jetton_master_address);
+}
+
+slice get_fut_jet_wallet_address() inline {
+    (cell _jetton_master_stateinit, slice jetton_master_address) = calculate_jetton_master_data();
+    slice  our_wallet_address = calculate_user_jetton_wallet_address(
+        my_address(), jetton_master_address, jet_tools::const::fut_jet_wallet_code
+    );
+    return our_wallet_address;
 }
 

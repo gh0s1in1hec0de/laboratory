@@ -37,26 +37,36 @@ const int MINT_QUERY_ID = 27082006;
     send_raw_message(msg, SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
-() route_incoming_transfer(int query_id, int attached_value, int jetton_amount, slice sender_address, slice initiator) impure inline {
-    if (jetton_amount == wl_round::const::pass_util_jet_amount) {
-        if (~ equal_slices_bits(sender_address, jet_tools::const::util_jet_wal_addr)) {
-            ;; It does mean we just got random tokens on equal amount
-            return ();
+() route_incoming_transfer(int query_id, int attached_value, slice sender_address, int jetton_amount, slice initiator, slice maybe_payload) impure inline {
+    if (equal_slices_bits(sender_address, jet_tools::const::util_jet_wal_addr)) {
+        int util_jet_enr_mode = maybe_payload~load_uint(4);
+
+        if (util_jet_enr_mode == UTIL_JET_REWARD_ENROLLMENT) {
+            ;; It does mean, that utility jettons reward amount was already enrolled
+            if(this::reward_util_jets_cur_balance != 0 | this::const::reward_util_jets_total_amount != 0) {
+                cell chargeback_msg = build_util_jet_transfer_msg(query_id, 0, jetton_amount, initiator, 1);
+                send_raw_message(chargeback_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
+                return ();
+            }
+            this::const::reward_util_jets_total_amount += jetton_amount;
+            this::reward_util_jets_cur_balance += jetton_amount;
         }
-        handle_wl_purchase(query_id, attached_value, sender_address, initiator);
-        return ();
+
+        if (util_jet_enr_mode == UTIL_JET_WL_PASS) {
+            if(jetton_amount < wl_round::const::pass_util_jet_amount) {
+                cell chargeback_msg = build_util_jet_transfer_msg(query_id, 0, jetton_amount, initiator, 1);
+                send_raw_message(chargeback_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
+                return ();
+            }
+            handle_wl_purchase(query_id, attached_value, sender_address, initiator);
+        }
     }
+    ;; `ifs` oreder defined this way for reasons of efficiency
     if (jetton_amount == this::const::fut_jet_total_supply) {
-        (cell _jetton_master_stateinit, slice jetton_master_address) = calculate_jetton_master_data();
-        slice  our_wallet_address = calculate_user_jetton_wallet_address(
-            my_address(), jetton_master_address, jet_tools::const::fut_jet_wallet_code
-        );
-        if (~ equal_slices_bits(sender_address, our_wallet_address)) {
+        if (~ equal_slices_bits(sender_address, sale_state::const::fut_jet_wallet_address)) {
             ;; It does mean we just got random tokens on equal amount
             return ();
         }
-        sale_state::const::fut_jet_deployed? = TRUE;
-        ;; TODO Then pool creation logic and pool creation gas measurements
+        sale_state::const::fut_jet_deployed_balance = this::const::fut_jet_total_supply;
     }
-    ;; Also check for init util jettons deposit
 }

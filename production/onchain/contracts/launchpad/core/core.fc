@@ -1,5 +1,46 @@
 #include "../../stdlib.fc";
+#include "../op-codes.fc";
+#include "../utils.fc";
 
-() recv_internal(int contract_balance, int attached_value, cell msg_full, slice msg_body) impure {
-    ;; Wish me luck ;
+{-
+    So, core, right?
+    First of all it should only create new token launches and send util token reward amount there
+    It also should be able to distinguish util token incoming tranfers
+
+    SOUNDS LIKE DAMNS ASS EASYU STUFF YOU KNOW BITTTCCCHHHHHHHHHHHHH
+-}
+() load_data() inline_ref {
+    slice ds = get_data().begin_parse();
+
+    ds.end_parse();
+}
+
+() save_data() impure inline_ref {
+    set_data(
+        begin_cell()
+
+            .end_cell()
+    );
+}
+
+() recv_internal(int contract_balance, int attached_value, cell in_msg_full, slice in_msg_body) impure {
+    if (in_msg_body.slice_empty?() | in_msg_body.slice_bits() < 32) {
+        ;; Logic for simple transfers
+        return ();
+    }
+    (int msg_flags, slice sender_address, int attached_value, int fwd_fee_from_in_msg) = extract_full_msg_data(in_msg_full);
+    (int op, int query_id) = in_msg_body~load_op_and_query_id();
+
+    load_data(); ;; Now we have our contract data available in globals
+
+    if (msg_flags & 1) { ;; Is bounced
+        ;; save_data();
+        return ();
+    }
+
+    throw(error::wrong_op);
+}
+
+(slice, int, int, int) get_user_data() method_id {
+    load_data();
 }
