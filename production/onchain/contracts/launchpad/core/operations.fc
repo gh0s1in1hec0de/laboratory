@@ -1,16 +1,17 @@
 #include "../../stdlib.fc";
+#include "../utils.fc";
+#include "../gas.fc";
+
 #include "core_context.fc";
 
-() handle_incoming_transfer(int query_id, int attached_value, int sender_address,  int jetton_amount, slice initiator, slice maybe_payload) {
-    if (equal_slices_bits(sender_address, this::util_jetton_master_address)) {
-        this::util_jet_cur_balance += jetton_amount;
+() handle_incoming_transfer(int _query_id, int _attached_value, int sender_address,  int jetton_amount, slice _initiator, slice _maybe_payload) {
+    slice our_util_jet_wallet_address = calculate_user_jetton_wallet_address(my_address(), this::util_jetton_master_address, code::jetton_wallet);
+    if (~ equal_slices_bits(sender_address, our_util_jet_wallet_address)) {
+        return ();
     }
+    this::util_jet_cur_balance += jetton_amount;
 }
 
-() route_incoming_transfer(int query_id, int attached_value, slice sender_address, int jetton_amount, slice initiator, slice maybe_payload) impure inline {
-
-}
-
-() create_launch() {
+() create_launch(int query_id, int attached_value, int sender_address) {
 
 }

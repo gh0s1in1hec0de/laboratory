@@ -30,7 +30,7 @@
     code::jetton_launch_user_vault = contarcts_slice~load_ref();
 
     code::derived_jetton_master = contarcts_slice~load_ref();
-    code::derived_jetton_wallet = contarcts_slice~load_ref();
+    code::jetton_wallet = contarcts_slice~load_ref();
     contarcts_slice.end_parse();
 
     ds.end_parse();
@@ -41,7 +41,7 @@
         .store_ref(code::jetton_launch)
         .store_ref(code::jetton_launch_user_vault)
         .store_ref(code::derived_jetton_master)
-        .store_ref(code::derived_jetton_wallet)
+        .store_ref(code::jetton_wallet)
         .end_cell();
     cell launch_config = begin_cell()
         .store_coins(launch_conf::min_ton_for_sale_success)
@@ -78,9 +78,16 @@
     }
 
     if (op == op::core::create_launch) {
+        ;; User pays for everything
+        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         ;; TODO verify that it is enough gas for this stuff
         ;; TODO Do some vaslidations and count some values and than deploy contract
         ;; TODO Than send tokens in callback
+    }
+    if (op == op::core::create_launch) {
+        ;; User pays for everything
+        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
+
     }
     if (op == op::internal_transfer) {
         handle_incoming_transfer(
