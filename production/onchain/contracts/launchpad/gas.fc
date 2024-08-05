@@ -139,7 +139,7 @@ int get_jetton_deploy_gas_cost() {
     + get_forward_fee(MY_WORKCHAIN, MINT_MSG_BITS, MINT_MSG_CELLS)
     + forward_jetton_minter_init_state_overhead()
     + get_compute_fee(MY_WORKCHAIN, MINT_GAS_CONSUMPTION)
-    + JETTON_MIN_TRANSFER_FEE;
+    + JETTON_MIN_TRANSFER_FEE * 2; ;; Multiply on 2 as we send DEX part of tokens to chief in the same operation
 }
 
 ;; === Jetton Claim ===

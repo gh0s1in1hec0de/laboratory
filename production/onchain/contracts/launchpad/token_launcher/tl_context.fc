@@ -33,7 +33,7 @@ global slice this::const::creator_address;
 ;; === SALE CONFING ===
 ;; State markers
 global int   sale_state::const::fut_jet_deployed_balance;
-global int   sale_state::const::fut_jet_wallet_address;
+global int   sale_state::const::fut_jet_wallet_address; ;; TODO Calculate in core
 
 ;; Percent of supply, that creator can buy back
 global int   creator_round::const::fut_jet_limit;
@@ -70,7 +70,6 @@ global cell  this::const::user_vault_code;
 ;; === JETTONS' TOOLS ===
 ;; An address of our utility jetton wallet smart contract.
 ;; We store it to avoid its calculation every time, it's nice decision to compress data we store and reduce fees.
-;; We also don't need stateinit for it, as we can guarantee, that it will exist on the moment of sale start.
 global slice jet_tools::const::util_jet_wal_addr;
 ;; Future jetton metadata, formatted due to TEP-74
 global cell  jet_tools::const::metadata_uri;

@@ -1,0 +1,16 @@
+#include "../../stdlib.fc";
+#include "core_context.fc";
+
+() handle_incoming_transfer(int query_id, int attached_value, int sender_address,  int jetton_amount, slice initiator, slice maybe_payload) {
+    if (equal_slices_bits(sender_address, this::util_jetton_master_address)) {
+        this::util_jet_cur_balance += jetton_amount;
+    }
+}
+
+() route_incoming_transfer(int query_id, int attached_value, slice sender_address, int jetton_amount, slice initiator, slice maybe_payload) impure inline {
+
+}
+
+() create_launch() {
+
+}

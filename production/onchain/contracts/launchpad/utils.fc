@@ -1,6 +1,7 @@
-#include "op-codes.fc";
-#include "../stdlib.fc";
 #include "token_launcher/tl_context.fc";
+#include "../stdlib.fc";
+
+#include "op-codes.fc";
 
 const MY_WORKCHAIN = BASECHAIN;
 const BALANCE_UPD_MODE_SIZE = 4;
@@ -129,8 +130,8 @@ cell calculate_contract_state_init(cell code, cell data) inline_ref {
 
 slice calculate_contract_address(cell state_init) inline_ref {
     {-
-    https://github.com/ton-blockchain/ton/blob/8a9ff339927b22b72819c5125428b70c406da631/crypto/block/block.tlb#L105
-    addr_std$10 anycast:(Maybe Anycast) workchain_id:int8 address:bits256  = MsgAddressInt;
+       https://github.com/ton-blockchain/ton/blob/8a9ff339927b22b72819c5125428b70c406da631/crypto/block/block.tlb#L105
+       addr_std$10 anycast:(Maybe Anycast) workchain_id:int8 address:bits256  = MsgAddressInt;
     -}
     return begin_cell()
         .store_uint(4, 3) ;; 0b100 = addr_std$10 tag; No anycast

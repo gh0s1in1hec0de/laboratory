@@ -2,25 +2,65 @@
 #include "../op-codes.fc";
 #include "../utils.fc";
 
-{-
-    So, core, right?
-    First of all it should only create new token launches and send util token reward amount there
-    It also should be able to distinguish util token incoming tranfers
+#include "core_context.fc";
+#include "operations.fc";
 
-    SOUNDS LIKE DAMNS ASS EASYU STUFF YOU KNOW BITTTCCCHHHHHHHHHHHHH
--}
 () load_data() inline_ref {
     slice ds = get_data().begin_parse();
+    this::chief = ds~load_msg_addr();
+    this::util_jetton_master_address = ds~load_msg_addr();
+    this::util_jet_cur_balance = ds~load_coins();
+
+    cell launch_config = ds~load_ref();
+    slice launch_config_slice = launch_config.begin_parse();
+    launch_conf::min_ton_for_sale_success = launch_config_slice~load_coins();
+    launch_conf::util_jet_reward_amount  = launch_config_slice~load_coins();
+    launch_conf::util_jet_wl_pass_amount  = launch_config_slice~load_coins();
+    launch_conf::util_jet_burn_per_wl_pass_amount  = launch_config_slice~load_coins();
+
+    launch_conf::jet_creator_limit_pct = launch_config_slice~load_uint(16);
+    launch_conf::jet_wl_limit_pct = launch_config_slice~load_uint(16);
+    launch_conf::jet_pub_limit_pct = launch_config_slice~load_uint(16);
+    launch_conf::jet_dex_share_pct = launch_config_slice~load_uint(16);
+    launch_config_slice.end_parse();
+
+    cell contracts = ds~load_ref();
+    slice contarcts_slice = contracts.begin_parse();
+    code::jetton_launch = contarcts_slice~load_ref();
+    code::jetton_launch_user_vault = contarcts_slice~load_ref();
+
+    code::derived_jetton_master = contarcts_slice~load_ref();
+    code::derived_jetton_wallet = contarcts_slice~load_ref();
+    contarcts_slice.end_parse();
 
     ds.end_parse();
 }
 
 () save_data() impure inline_ref {
-    set_data(
-        begin_cell()
-
-            .end_cell()
-    );
+    cell contracts = begin_cell()
+        .store_ref(code::jetton_launch)
+        .store_ref(code::jetton_launch_user_vault)
+        .store_ref(code::derived_jetton_master)
+        .store_ref(code::derived_jetton_wallet)
+        .end_cell();
+    cell launch_config = begin_cell()
+        .store_coins(launch_conf::min_ton_for_sale_success)
+        .store_coins(launch_conf::util_jet_reward_amount)
+        .store_coins(launch_conf::util_jet_wl_pass_amount)
+        .store_coins(launch_conf::util_jet_burn_per_wl_pass_amount)
+        .store_uint(launch_conf::jet_creator_limit_pct, 16)
+        .store_uint(launch_conf::jet_wl_limit_pct, 16)
+        .store_uint(launch_conf::jet_pub_limit_pct, 16)
+        .store_uint(launch_conf::jet_dex_share_pct, 16)
+        .end_cell();
+    cell data = begin_cell()
+        .store_slice(this::chief)
+        .store_slice(this::util_jetton_master_address)
+        .store_coins(this::util_jet_cur_balance)
+        .store_ref(launch_config)
+        .store_ref(contracts)
+        .end_cell();
+    set_data(data);
 }
 
 () recv_internal(int contract_balance, int attached_value, cell in_msg_full, slice in_msg_body) impure {
@@ -34,7 +74,24 @@
     load_data(); ;; Now we have our contract data available in globals
 
     if (msg_flags & 1) { ;; Is bounced
-        ;; save_data();
+        return ();
+    }
+
+    if (op == op::core::create_launch) {
+        ;; TODO verify that it is enough gas for this stuff
+        ;; TODO Do some vaslidations and count some values and than deploy contract
+        ;; TODO Than send tokens in callback
+    }
+    if (op == op::internal_transfer) {
+        handle_incoming_transfer(
+            query_id,
+            attached_value,
+            sender_address,
+            in_msg_body~load_coins(),
+            in_msg_body~load_msg_addr(),
+            in_msg_body
+        );
+        save_data();
         return ();
     }
 

@@ -19,8 +19,12 @@ const op::tl::jetton_claim_confirmation = "claim_jettons_confirmation"c;
 const op::tl::refund_request = "refund_request"c;
 const op::tl::refund_confirmation = "refund_confirmation"c;
 const op::tl::deploy_jet = "deploy_jet"c;
+
 const op::uv::balance_update = "balance_upddate"c;
 const op::uv::claim = "claim"c;
+
+const op::core::create_launch = "create_launch"c;
+const op::core::create_launch = "create_launch_callback"c;
 
 const error::not_enough_gas = 48;
 const error::invalid_op = 72;
