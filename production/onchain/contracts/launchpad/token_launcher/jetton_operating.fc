@@ -9,7 +9,7 @@
 const int MINT_QUERY_ID = 27082006;
 
 () deploy_launch_jetton() inline {
-    (cell jetton_master_stateinit, slice jetton_master_address) = calculate_jetton_master_data();
+    (cell jetton_master_stateinit, slice jetton_master_address) = calculate_fut_jet_master_data();
 
     ;; Internal message for jetton master jetton wallet
     cell master_msg = begin_cell()

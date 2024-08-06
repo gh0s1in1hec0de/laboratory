@@ -35,7 +35,6 @@ global slice this::const::creator_address;
 global int   sale_state::const::fut_jet_deployed_balance;
 global int   sale_state::const::fut_jet_wallet_address; ;; TODO Calculate in core
 
-;; Percent of supply, that creator can buy back
 global int   creator_round::const::fut_jet_limit;
 ;; Amount of tokens, that creator bought back
 global int   creator_round::creator_fut_jet_balance;
@@ -72,7 +71,7 @@ global cell  this::const::user_vault_code;
 ;; We store it to avoid its calculation every time, it's nice decision to compress data we store and reduce fees.
 global slice jet_tools::const::util_jet_wal_addr;
 ;; Future jetton metadata, formatted due to TEP-74
-global cell  jet_tools::const::metadata_uri;
+global cell  jet_tools::const::metadata;
 ;; Data for jetton deployment in case of successful sale
-global cell  jet_tools::const::fut_jet_minter_code;
-global cell  jet_tools::const::fut_jet_wallet_code;
+global cell  jet_tools::const::fut_jet_master_code;
+global cell  jet_tools::const::wallet_code;

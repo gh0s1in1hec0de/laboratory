@@ -80,6 +80,8 @@
     if (op == op::core::create_launch) {
         ;; User pays for everything
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
+
+
         ;; TODO verify that it is enough gas for this stuff
         ;; TODO Do some vaslidations and count some values and than deploy contract
         ;; TODO Than send tokens in callback

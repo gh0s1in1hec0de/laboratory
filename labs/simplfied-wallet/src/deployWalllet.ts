@@ -51,7 +51,6 @@ async function main() {
         .storeUint(1, 1 + 4 + 4 + 64 + 32 + 1 + 1) // We store 1 that means we have body as a reference
         .storeRef(internalMessageBody)
         .endCell();
-
     // transaction for our wallet
     const toSign = beginCell()
         .storeUint(DEFAULT_SUB_WALLET, 32)
@@ -59,13 +58,11 @@ async function main() {
         .storeUint(0, 32) // We put seqno = 0, because after deploying wallet will store 0 as seqno
         .storeUint(3, 8)
         .storeRef(internalMessage);
-
     const signature = sign(toSign.endCell().hash(), keyPair.secretKey);
     const body = beginCell()
         .storeBuffer(signature)
         .storeBuilder(toSign)
         .endCell();
-
     const externalMessage = beginCell()
         .storeUint(0b10, 2) // indicate that it is an incoming external transaction
         .storeUint(0, 2) // src -> addr_none
@@ -77,7 +74,6 @@ async function main() {
         .storeBit(1) // We store Message Body as a reference
         .storeRef(body) // Store Message Body as a reference
         .endCell();
-
     await client.sendFile(externalMessage.toBoc());
 }
 
