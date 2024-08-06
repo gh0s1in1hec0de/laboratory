@@ -1,2 +1,5 @@
 .idea
 node_modules/
+production/onchain/yarn.lock
+production/onchain/.yarnrc.yml
+production/onchain/.yarn
