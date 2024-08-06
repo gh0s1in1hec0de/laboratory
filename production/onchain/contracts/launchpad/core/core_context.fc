@@ -2,6 +2,7 @@
 global slice this::chief;
 global slice this::util_jetton_master_address;
 global int   this::util_jet_cur_balance;
+global cell  this::not_funded_launches;
 
 ;; === LAUNCH CONFIG ===
 ;; Values that creators are not responsible for

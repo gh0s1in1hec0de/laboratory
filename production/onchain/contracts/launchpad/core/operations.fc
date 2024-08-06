@@ -3,6 +3,7 @@
 #include "../gas.fc";
 
 #include "core_context.fc";
+#include "../op-codes.fc";
 
 () handle_incoming_transfer(int _query_id, int _attached_value, int sender_address,  int jetton_amount, slice _initiator, slice _maybe_payload) {
     slice our_util_jet_wallet_address = calculate_user_jetton_wallet_address(my_address(), this::util_jetton_master_address, code::jetton_wallet);
@@ -28,7 +29,7 @@
         .store_address_none()
         .store_coins(creator_buyback_jet_limit)
         .store_coins(0)
-        .store_coins(creator_jet_price) ;; TODO
+        .store_coins(creator_jet_price)
         .store_int(start_time + launch_conf::creator_round_duration_ms, 32)
 
         .store_coins(wl_jet_limit)
@@ -90,5 +91,18 @@
     slice util_jet_wallet_address = calculate_user_jetton_wallet_address(
         token_launch_address, this::util_jetton_master_address, code::jetton_wallet
     );
-
+    int msg_value = get_amount_for_token_launch_deploy();
+    cell msg_body = begin_cell()
+        .store_op(op::tl::init)
+        .store_query_id(query_id)
+        .store_slice(token_launch_fut_jet_wallet_address)
+        .store_slice(util_jet_wallet_address)
+        .end_cell();
+    cell msg = begin_cell()
+        .store_msg_flags_and_address_none(BOUNCEABLE)
+        .store_slice(token_launch_address)
+        .store_coins(msg_value)
+        .store_statinit_ref_and_body_ref(token_launch_stateinit, msg_body)
+        .end_cell();
+    send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }

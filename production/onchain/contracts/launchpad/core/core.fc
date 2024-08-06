@@ -10,6 +10,7 @@
     this::chief = ds~load_msg_addr();
     this::util_jetton_master_address = ds~load_msg_addr();
     this::util_jet_cur_balance = ds~load_coins();
+    this::not_funded_launches = ds~load_dict();
 
     cell launch_config = ds~load_ref();
     slice launch_config_slice = launch_config.begin_parse();
@@ -57,6 +58,7 @@
         .store_slice(this::chief)
         .store_slice(this::util_jetton_master_address)
         .store_coins(this::util_jet_cur_balance)
+        .store_dict(this::not_funded_launches)
         .store_ref(launch_config)
         .store_ref(contracts)
         .end_cell();
@@ -78,18 +80,16 @@
     }
 
     if (op == op::core::create_launch) {
-        ;; User pays for everything
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
-
-
-        ;; TODO verify that it is enough gas for this stuff
-        ;; TODO Do some vaslidations and count some values and than deploy contract
-        ;; TODO Than send tokens in callback
+        throw_unless(error::not_enough_gas, attached_value > get_amount_for_token_launch_deploy());
+        cell metadata_dummy = begin_cell().end_cell();
+        create_launch(query_id, attached_value, sender_address, in_msg_body~load_coins(), metadata_dummy);
+        save_data();
+        return ();
     }
-    if (op == op::core::create_launch) {
-        ;; User pays for everything
+    if (op == op::core::init_callback) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
-
+        ;; TODO Send reward tokens here
     }
     if (op == op::internal_transfer) {
         handle_incoming_transfer(

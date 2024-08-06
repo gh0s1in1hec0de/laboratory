@@ -47,7 +47,7 @@ cell build_content_cell(slice metadata_uri) inline {
 
     cell jet_tools = ds~load_ref();
     slice jet_tools_slice = jet_tools.begin_parse();
-    jet_tools::const::util_jet_wal_addr = jet_tools_slice~load_msg_addr();
+    jet_tools::const::util_jet_wallet_address = jet_tools_slice~load_msg_addr();
     jet_tools::const::metadata = jet_tools_slice~load_ref();
     jet_tools::const::fut_jet_master_code = jet_tools_slice~load_ref();
     jet_tools::const::wallet_code = jet_tools_slice~load_ref();
@@ -83,7 +83,7 @@ cell build_content_cell(slice metadata_uri) inline {
         .end_cell();
 
     cell jet_tools = begin_cell()
-        .store_slice(jet_tools::const::util_jet_wal_addr)
+        .store_slice(jet_tools::const::util_jet_wallet_address)
         .store_ref(jet_tools::const::metadata)
         .store_ref(jet_tools::const::fut_jet_master_code)
         .store_ref(jet_tools::const::wallet_code)
@@ -109,9 +109,24 @@ cell build_content_cell(slice metadata_uri) inline {
     set_data(data);
 }
 
-() initialize(slice msg_body) impure inline {
-
-    save_data();
+() initialize(slice sender_address, slice fut_jet_wallet_address, slice util_jet_wallet_address) impure inline {
+    ;; Here we have our state loaded, but we need to do some initializations manually
+    throw_if(
+        error::unreachable,
+        ~ sale_state::const::fut_jet_wallet_address.is_address_none()
+        | ~ jet_tools::const::util_jet_wallet_address.is_address_none()
+    );
+    sale_state::const::fut_jet_wallet_address = fut_jet_wallet_address;
+    jet_tools::const::util_jet_wallet_address = util_jet_wallet_address;
+    cell msg = begin_cell()
+        .store_msg_flags_and_address_none(BOUNCEABLE)
+        .store_slice(sender_address)
+        .store_coins(0)
+        .store_prefix_only_body()
+        .store_op(op::core::init_callback)
+        .end_cell();
+    ;; Everything except storage fee
+    send_raw_message(msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
 () on_bounce(int op, int query_id, int attached_value, slice sender_address, slice in_msg_body) impure inline {
@@ -148,7 +163,9 @@ cell build_content_cell(slice metadata_uri) inline {
 
     if (op == op::tl::init) {
         throw_if(error::already_initialized, this::const::is_initialized?);
-        initialize(in_msg_body);
+        raw_reserve(calculate_token_launch_min_storage_fee(), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        initialize(sender_address, in_msg_body~load_msg_addr(), in_msg_body~load_msg_addr());
+        save_data();
         return ();
     }
 

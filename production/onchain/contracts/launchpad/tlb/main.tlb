@@ -6,6 +6,8 @@ sale_data# creator_limit_pct:uint8 creator_balance:Coins creator_token_price:uin
 storage# is_initialized:int1 total_supply:Coins cur_balance:Coins
          chief:MsgAddressInt creator: MsgAddressInt
          sale_data: ^SaleData metadata_uri: ^Cell = LaunchStorage;
+
+init# token_launch_fut_jet_wallet_address:MsgAddressInt util_jet_wallet_address:MsgAddressInt = Initialize;
 owner_buyout# query_id:uint64 = LauchIncomingMessage;
 public_buy# query_id:uint64 = LauchIncomingMessage;
 

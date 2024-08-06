@@ -9,7 +9,14 @@
 const int MINT_QUERY_ID = 27082006;
 
 () deploy_launch_jetton() inline {
-    (cell jetton_master_stateinit, slice jetton_master_address) = calculate_fut_jet_master_data();
+    (cell jetton_master_stateinit, slice jetton_master_address) = calculate_fut_jet_master_data(
+        jet_tools::const::fut_jet_master_code,
+        this::const::fut_jet_total_supply,
+        my_address(),
+        this::const::chief_address,
+        jet_tools::const::wallet_code,
+        jet_tools::const::metadata
+    );
 
     ;; Internal message for jetton master jetton wallet
     cell master_msg = begin_cell()
@@ -38,7 +45,7 @@ const int MINT_QUERY_ID = 27082006;
 }
 
 () route_incoming_transfer(int query_id, int attached_value, slice sender_address, int jetton_amount, slice initiator, slice maybe_payload) impure inline {
-    if (equal_slices_bits(sender_address, jet_tools::const::util_jet_wal_addr)) {
+    if (equal_slices_bits(sender_address, jet_tools::const::util_jet_wallet_address)) {
         int util_jet_enr_mode = maybe_payload~load_uint(4);
 
         if (util_jet_enr_mode == UTIL_JET_REWARD_ENROLLMENT) {

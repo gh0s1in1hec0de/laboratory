@@ -5,6 +5,8 @@
 #include "op-codes.fc";
 
 const MY_WORKCHAIN = BASECHAIN;
+const int ADDRESS_SIZE = 264; ;; 256 + 8
+
 const PERCENTAGE_DENOMINATOR = 10000;
 const BALANCE_UPD_MODE_SIZE = 4;
 
@@ -16,6 +18,23 @@ const BALANCE_UPD_WITHDRAWAL_ALL = 5;
 
 const UTIL_JET_REWARD_ENROLLMENT = 1;
 const UTIL_JET_WL_PASS = 2;
+
+slice pack_address(slice address) inline {
+    (int wc, int address_hash) = parse_std_addr(address);
+    return begin_cell().store_int(wc, 8).store_uint(address_hash, 256).end_cell().begin_parse();
+}
+
+(int, slice, int, int) extract_full_msg_data(cell in_msg_full) inline_ref {
+    slice in_msg_full_slice = in_msg_full.begin_parse();
+    int msg_flags = in_msg_full_slice~load_msg_flags();
+    slice sender_address = in_msg_full_slice~load_msg_addr();
+    in_msg_full_slice~load_msg_addr();                        ;; As recepient is our contarct
+    int value = in_msg_full_slice~load_coins();
+    in_msg_full_slice~skip_dict();                            ;; skip extracurrency collection
+    in_msg_full_slice~load_coins();                           ;; skip ihr_fee
+    int fwd_fee = in_msg_full_slice~load_coins();
+    return (msg_flags, sender_address, value, fwd_fee);
+}
 
 () load_sale_config(cell sale_config) inline_ref {
     slice sale_conf_slice = sale_config.begin_parse();
@@ -43,18 +62,6 @@ const UTIL_JET_WL_PASS = 2;
     sale_conf_slice.end_parse();
 }
 
-(int, slice, int, int) extract_full_msg_data(cell in_msg_full) inline_ref {
-    slice in_msg_full_slice = in_msg_full.begin_parse();
-    int msg_flags = in_msg_full_slice~load_msg_flags();
-    slice sender_address = in_msg_full_slice~load_msg_addr();
-    in_msg_full_slice~load_msg_addr();                        ;; As recepient is our contarct
-    int value = in_msg_full_slice~load_coins();
-    in_msg_full_slice~skip_dict();                            ;; skip extracurrency collection
-    in_msg_full_slice~load_coins();                           ;; skip ihr_fee
-    int fwd_fee = in_msg_full_slice~load_coins();
-    return (msg_flags, sender_address, value, fwd_fee);
-}
-
 ;; TODO Rebuild for core
 (cell) build_util_jet_transfer_msg(int query_id, int value, int jetton_amount, slice recipient, int forward_ton_amount) inline_ref {
     cell msg_body = begin_cell()
@@ -70,7 +77,7 @@ const UTIL_JET_WL_PASS = 2;
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     return begin_cell()
         .store_msg_flags_and_address_none(NON_BOUNCEABLE) ;; As we are not able to handle this situation
-        .store_slice(jet_tools::const::util_jet_wal_addr)
+        .store_slice(jet_tools::const::util_jet_wallet_address)
         .store_coins(value)
         .store_only_body_ref(msg_body)
         .end_cell();
@@ -88,7 +95,7 @@ const UTIL_JET_WL_PASS = 2;
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     return begin_cell()
         .store_msg_flags_and_address_none(NON_BOUNCEABLE)
-        .store_slice(jet_tools::const::util_jet_wal_addr)
+        .store_slice(jet_tools::const::util_jet_wallet_address)
         .store_coins(0)
         .store_only_body_ref(msg_body)
         .end_cell();

@@ -10,6 +10,7 @@ const op::burn = 0x595f07bc;
 ;; Contract-realted OPs
 ;; TODO Imo should be replaced with strict CRC32 following the rule req/req difference
 const op::tl::init = "init"c;
+const op::core::init_callback = "init_callback"c;
 const op::tl::creator_buyout = "creator_buyout"c;
 const op::tl::wl_callback = "wl_callback"c;
 ;; `op::transfer_notification` in fact is responsible for WL buy
@@ -24,7 +25,6 @@ const op::uv::balance_update = "balance_upddate"c;
 const op::uv::claim = "claim"c;
 
 const op::core::create_launch = "create_launch"c;
-const op::core::create_launch_callback = "create_launch_callback"c;
 
 const error::not_enough_gas = 48;
 const error::invalid_op = 72;
