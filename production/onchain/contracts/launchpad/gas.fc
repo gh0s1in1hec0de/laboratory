@@ -35,10 +35,6 @@ const WITHDRAW_CONFIRMATION_MSG_CELLS = 1;
 ;; Claim request to user vault
 const CLAIM_MSG_BITS = 1;
 const CLAIM_MSG_CELLS = 1;
-;; Jetton Minter mint operation message
-const MINT_MSG_BITS = 1;
-const MINT_MSG_CELLS = 1;
-
 
 ;; file#L`line_num` - maunal bits counting
 const BALANCE_UPDATE_BITS = 1; ;; body = 32+64+124+(3+8+256)+(3+8+256)
@@ -139,15 +135,26 @@ const REFUND_CONFIRMATION_GAS_CONSUMPTION = 1;
 }
 
 ;; === Token Deploy ===
-const DEPLOY_JETTON_GAS_CONSUMPTION = 1;
+const DEPLOY_JETTON_GAS_CONSUMPTION = 1; ;; This is code we call on token launch's side
+const MINT_MSG_BITS = 1;
+const MINT_MSG_CELLS = 1;
 const MINT_GAS_CONSUMPTION = 1;
+const ACCEPT_MINTED_JETTONS_GAS_CONSUMPTION = 1;
+const JETTON_TRANSFER_FORWARD_PAYLOAD_BITS = 1;
+const JETTON_TRANSFER_FORWARD_PAYLOAD_CELLS = 1;
+const CLAIM_ADMIN_MSG_BITS = 1;
+const CLAIM_ADMIN_MSG_CELLS = 1;
+const CLAIM_ADMIN_GAS_CONSUMPTION = 1;
+
+;;; Warning! This function does not include computation fee on token launch's side
 int get_jetton_deploy_gas_cost() {
-    return
-    get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_GAS_CONSUMPTION)
-    + get_forward_fee(MY_WORKCHAIN, MINT_MSG_BITS, MINT_MSG_CELLS)
+    return get_forward_fee(MY_WORKCHAIN, MINT_MSG_BITS, MINT_MSG_CELLS)
     + forward_jetton_minter_init_state_overhead()
     + get_compute_fee(MY_WORKCHAIN, MINT_GAS_CONSUMPTION)
-    + JETTON_MIN_TRANSFER_FEE * 2; ;; Multiply on 2 as we send DEX part of tokens to chief in the same operation
+    + JETTON_MIN_TRANSFER_FEE * 2 ;; Multiply on 2 as we send DEX part of tokens to chief in the same operation
+    + get_forward_fee(MY_WORKCHAIN, JETTON_TRANSFER_FORWARD_PAYLOAD_BITS, JETTON_TRANSFER_FORWARD_PAYLOAD_CELLS)
+    + get_forward_fee(MY_WORKCHAIN, CLAIM_ADMIN_MSG_BITS, CLAIM_ADMIN_MSG_CELLS)
+    + get_compute_fee(MY_WORKCHAIN, CLAIM_ADMIN_GAS_CONSUMPTION);
 }
 
 ;; === Jetton Claim ===
@@ -172,6 +179,7 @@ const INITIALIZATION_GAS_CONSUMPTION = 1;
 const INIT_CALLBACK_MSG_BITS = 1;
 const INIT_CALLBACK_MSG_CELLS = 1;
 const INIT_CALLBACK_GAS_CONSUMPTION = 1;
+const RECORD_REWARD_JETTONS_ENROLLMENT_GAS_CONSUMPTION = 1;
 int get_amount_for_token_launch_deploy() {
     return get_compute_fee(MY_WORKCHAIN, CREATE_LAUNCH_GAS_CONSUMPTION)
         + get_forward_fee(MY_WORKCHAIN, INIT_MSG_BITS, INIT_MSG_CELLS)
@@ -179,5 +187,6 @@ int get_amount_for_token_launch_deploy() {
         + forward_token_launch_init_state_overhead()
         + get_compute_fee(MY_WORKCHAIN, INITIALIZATION_GAS_CONSUMPTION)
         + get_forward_fee(MY_WORKCHAIN, INIT_CALLBACK_MSG_BITS, INIT_CALLBACK_MSG_CELLS)
-        + JETTON_MIN_TRANSFER_FEE;
+        + JETTON_MIN_TRANSFER_FEE
+        + get_compute_fee(MY_WORKCHAIN, RECORD_REWARD_JETTONS_ENROLLMENT_GAS_CONSUMPTION);
 }

@@ -593,6 +593,7 @@ cell dict_set_builder(cell dict, int key_len, slice index, builder value) asm(va
 (int, slice, int) idict_get_prev?(cell dict, int key_len, int pivot) asm(pivot dict key_len -> 1 0 2) "DICTIGETPREV" "NULLSWAPIFNOT2";
 (int, slice, int) idict_get_preveq?(cell dict, int key_len, int pivot) asm(pivot dict key_len -> 1 0 2) "DICTIGETPREVEQ" "NULLSWAPIFNOT2";
 
+;; My own one for usual dictionaries
 (cell, (slice, int)) ~dict_delete_get?(cell dict, int key_len, int index) asm(index dict key_len) "DICTDELGET" "NULLSWAPIFNOT";
 
 

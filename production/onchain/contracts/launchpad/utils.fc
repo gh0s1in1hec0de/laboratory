@@ -9,6 +9,7 @@ const int ADDRESS_SIZE = 264; ;; 256 + 8
 
 const PERCENTAGE_DENOMINATOR = 10000;
 const BALANCE_UPD_MODE_SIZE = 4;
+const UTIL_JET_SEND_MODE_SIZE = 4;
 
 const BALANCE_UPD_DEPOSIT_WL = 1;
 const BALANCE_UPD_DEPOSIT_PUB = 2;
@@ -38,8 +39,9 @@ slice pack_address(slice address) inline {
 
 () load_sale_config(cell sale_config) inline_ref {
     slice sale_conf_slice = sale_config.begin_parse();
-    sale_state::const::fut_jet_deployed_balance = sale_conf_slice.load_coins();
-    sale_state::const::fut_jet_wallet_address = sale_conf_slice.load_msg_addr();
+    sale::const::fut_jet_deployed_balance = sale_conf_slice.load_coins();
+    sale::const::fut_jet_wallet_address = sale_conf_slice.load_msg_addr();
+    sale::total_tons_collected = sale_conf_slice.load_coins();
 
     creator_round::const::fut_jet_limit = sale_conf_slice~load_coins()
     creator_round::creator_fut_jet_balance = sale_conf_slice~load_coins();
@@ -58,50 +60,62 @@ slice pack_address(slice address) inline {
     public_round::synthetic_jet_reserve = sale_conf_slice~load_coins();
     public_round::synthetic_ton_reserve = sale_conf_slice~load_coins();
     public_round::const::end_time = sale_conf_slice~load_int(32);
-    this::const::user_vault_code = sale_conf_slice~load_ref();
+    sale::const::user_vault_code = sale_conf_slice~load_ref();
     sale_conf_slice.end_parse();
 }
 
-;; TODO Rebuild for core
-(cell) build_util_jet_transfer_msg(int query_id, int value, int jetton_amount, slice recipient, int forward_ton_amount) inline_ref {
+cell build_content_cell(slice metadata_uri) inline {
+    cell content_dict = new_dict();
+    content_dict~set_token_snake_metadata_entry("uri"H, metadata_uri);
+    content_dict~set_token_snake_metadata_entry("decimals"H, "6");
+    return create_token_onchain_metadata(content_dict);
+}
+
+
+cell build_jetton_transfer_msg(
+int query_id,
+int value,
+int jetton_amount,
+slice our_wallet_address,
+slice recipient,
+int forward_ton_amount,
+builder payload
+) inline_ref {
     cell msg_body = begin_cell()
         .store_op(op::transfer)
         .store_query_id(query_id)
         .store_coins(jetton_amount)
         .store_slice(recipient) ;; To
         .store_slice(my_address()) ;; Address, that will get excesses after operation
-        .store_coins(forward_ton_amount)
-        .store_int(0, 1) ;; Either forward payload to avoid TVM exit code 9
+        .store_coins(forward_ton_amount);
+        .store_builder(payload)
         .end_cell();
-
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     return begin_cell()
         .store_msg_flags_and_address_none(NON_BOUNCEABLE) ;; As we are not able to handle this situation
-        .store_slice(jet_tools::const::util_jet_wallet_address)
+        .store_slice(our_wallet_address)
         .store_coins(value)
         .store_only_body_ref(msg_body)
         .end_cell();
 }
 
-;;; Works only inside token launch contract
-(cell) build_util_jet_burn_msg(int query_id, int jetton_amount) inline {
+cell build_jetton_burn_msg(int query_id, int jetton_amount, slice our_wallet_address) inline {
     cell msg_body = begin_cell()
         .store_op(op::burn)
         .store_query_id(query_id)
         .store_coins(jetton_amount)
         .store_slice(my_address()) ;; Address, that will get excesses after operation
         .end_cell();
-
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     return begin_cell()
         .store_msg_flags_and_address_none(NON_BOUNCEABLE)
-        .store_slice(jet_tools::const::util_jet_wallet_address)
+        .store_slice(our_wallet_address)
         .store_coins(0)
         .store_only_body_ref(msg_body)
         .end_cell();
 }
 
-(int) get_amount_out(int amount_in, int reserve_in, int reserve_out) inline {
+int get_amount_out(int amount_in, int reserve_in, int reserve_out) inline {
     ;; We calculate K according to AMM (Automatic Meow-Meow) formula x*y<=K, where x and y are assets' amounts
     int k = reserve_in * reserve_out; ;; TODO does overflow possible? We can replace it with muldiv with div = 1
     ;; New amount of first asset, that should be in pool
@@ -164,7 +178,7 @@ cell pack_user_vault_data(slice owner_address, slice launch_contract_address, in
 
 (cell, slice) calculate_user_vault_data(slice sender_address) inline_ref {
     cell user_vault_stateinit = calculate_contract_state_init(
-        this::const::user_vault_code,
+        sale::const::user_vault_code,
         pack_user_vault_data(
             sender_address,
             my_address(),

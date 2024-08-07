@@ -9,6 +9,7 @@
     slice ds = get_data().begin_parse();
     this::chief = ds~load_msg_addr();
     this::util_jetton_master_address = ds~load_msg_addr();
+    this::util_jetton_wallet_address = ds~load_msg_addr();
     this::util_jet_cur_balance = ds~load_coins();
     this::not_funded_launches = ds~load_dict();
 
@@ -19,7 +20,6 @@
     launch_conf::util_jet_wl_pass_amount  = launch_config_slice~load_coins();
     launch_conf::util_jet_burn_per_wl_pass_amount  = launch_config_slice~load_coins();
 
-    launch_conf::jet_creator_limit_pct = launch_config_slice~load_uint(16);
     launch_conf::jet_wl_limit_pct = launch_config_slice~load_uint(16);
     launch_conf::jet_pub_limit_pct = launch_config_slice~load_uint(16);
     launch_conf::jet_dex_share_pct = launch_config_slice~load_uint(16);
@@ -49,7 +49,6 @@
         .store_coins(launch_conf::util_jet_reward_amount)
         .store_coins(launch_conf::util_jet_wl_pass_amount)
         .store_coins(launch_conf::util_jet_burn_per_wl_pass_amount)
-        .store_uint(launch_conf::jet_creator_limit_pct, 16)
         .store_uint(launch_conf::jet_wl_limit_pct, 16)
         .store_uint(launch_conf::jet_pub_limit_pct, 16)
         .store_uint(launch_conf::jet_dex_share_pct, 16)
@@ -57,6 +56,7 @@
     cell data = begin_cell()
         .store_slice(this::chief)
         .store_slice(this::util_jetton_master_address)
+        .store_slice(this::util_jetton_wallet_address)
         .store_coins(this::util_jet_cur_balance)
         .store_dict(this::not_funded_launches)
         .store_ref(launch_config)
@@ -75,6 +75,14 @@
 
     load_data(); ;; Now we have our contract data available in globals
 
+    ;; Will be computed just once - effecinency increase
+    if (this::util_jetton_wallet_address.is_address_none()) {
+        this::util_jetton_wallet_address = calculate_user_jetton_wallet_address(
+            my_address(),
+            this::util_jetton_master_address,
+            code::jetton_wallet
+        );
+    }
     if (msg_flags & 1) { ;; Is bounced
         return ();
     }
@@ -82,14 +90,15 @@
     if (op == op::core::create_launch) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         throw_unless(error::not_enough_gas, attached_value > get_amount_for_token_launch_deploy());
-        cell metadata_dummy = begin_cell().end_cell();
-        create_launch(query_id, attached_value, sender_address, in_msg_body~load_coins(), metadata_dummy);
+        create_launch(query_id, attached_value, sender_address, in_msg_body~load_coins(), in_msg_body~load_uint(16), in_msg_body~load_ref());
         save_data();
         return ();
     }
     if (op == op::core::init_callback) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
-        ;; TODO Send reward tokens here
+        init_callback(query_id, attached_value, sender_address);
+        save_data();
+        return ();
     }
     if (op == op::internal_transfer) {
         handle_incoming_transfer(
@@ -101,6 +110,15 @@
             in_msg_body
         );
         save_data();
+        return ();
+    }
+
+    if (op == op::upgrade) {
+        throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::chief));
+        (cell new_data, cell new_code) = (in_msg_body~load_ref(), in_msg_body~load_ref());
+        in_msg_body.end_parse();
+        set_data(new_data);
+        set_code(new_code);
         return ();
     }
 

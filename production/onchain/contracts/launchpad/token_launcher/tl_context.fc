@@ -24,6 +24,7 @@ global int   this::const::is_initialized?;
 global int   this::const::fut_jet_total_supply;
 global int   this::const::min_ton_for_sale_success;
 global int   this::const::fut_jet_dex_amount;
+global int   this::const::fut_jet_platform_amount;
 global int   this::const::reward_util_jets_total_amount;
 
 global int   this::fut_jet_cur_balance;
@@ -34,8 +35,9 @@ global slice this::const::creator_address;
 
 ;; === SALE CONFING ===
 ;; State markers
-global int   sale_state::const::fut_jet_deployed_balance;
-global int   sale_state::const::fut_jet_wallet_address; ;; TODO Calculate in core
+global int   sale::const::fut_jet_deployed_balance;
+global slice sale::const::fut_jet_wallet_address;
+global int   sale::total_tons_collected;
 
 global int   creator_round::const::fut_jet_limit;
 ;; Amount of tokens, that creator bought back
@@ -66,12 +68,13 @@ global int   public_round::synthetic_jet_reserve;
 ;; Equals to `wl_ton_invested_total` until public phase
 global int   public_round::synthetic_ton_reserve;
 global int   public_round::const::end_time;
-global cell  this::const::user_vault_code;
+global cell  sale::const::user_vault_code;
 
 ;; === JETTONS' TOOLS ===
 ;; An address of our utility jetton wallet smart contract.
 ;; We store it to avoid its calculation every time, it's nice decision to compress data we store and reduce fees.
 global slice jet_tools::const::util_jet_wallet_address;
+global slice jet_tools::const::fut_jet_master_address;
 ;; Future jetton metadata, formatted due to TEP-74
 global cell  jet_tools::const::metadata;
 ;; Data for jetton deployment in case of successful sale

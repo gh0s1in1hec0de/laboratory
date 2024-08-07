@@ -1,6 +1,7 @@
 ;; === GLOBAL ===
 global slice this::chief;
 global slice this::util_jetton_master_address;
+global slice this::util_jetton_wallet_address;
 global int   this::util_jet_cur_balance;
 global cell  this::not_funded_launches;
 
@@ -8,12 +9,13 @@ global cell  this::not_funded_launches;
 ;; Values that creators are not responsible for
 global int launch_conf::min_ton_for_sale_success;
 global int launch_conf::ton_limit_for_wl_round;
+;; Amount of util jettons per launch, that should be used as rewards to participants
 global int launch_conf::util_jet_reward_amount;
 global int launch_conf::util_jet_wl_pass_amount;
 global int launch_conf::util_jet_burn_per_wl_pass_amount;
 
 ;; As it is impossible to store fractions of percents, than we store percentages as 4-digit integers
-global int launch_conf::jet_creator_limit_pct;
+;; global int launch_conf::jet_creator_limit_pct;
 global int launch_conf::jet_wl_limit_pct;
 global int launch_conf::jet_pub_limit_pct;
 global int launch_conf::jet_dex_share_pct;

@@ -13,7 +13,7 @@ const int MINT_QUERY_ID = 27082006;
         jet_tools::const::fut_jet_master_code,
         this::const::fut_jet_total_supply,
         my_address(),
-        this::const::chief_address,
+        address_none(),
         jet_tools::const::wallet_code,
         jet_tools::const::metadata
     );
@@ -38,7 +38,7 @@ const int MINT_QUERY_ID = 27082006;
     cell msg = begin_cell()
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(jetton_master_address)
-        .store_coins(JETTON_MIN_TRANSFER_FEE + 111) ;; TODO Should we calculate computational fee for op::mint?
+        .store_coins(get_jetton_deploy_gas_cost())
         .store_statinit_ref_and_body_ref(jetton_master_stateinit, msg_body)
         .end_cell();
     send_raw_message(msg, SEND_MODE_BOUNCE_ON_ACTION_FAIL);
@@ -46,12 +46,20 @@ const int MINT_QUERY_ID = 27082006;
 
 () route_incoming_transfer(int query_id, int attached_value, slice sender_address, int jetton_amount, slice initiator, slice maybe_payload) impure inline {
     if (equal_slices_bits(sender_address, jet_tools::const::util_jet_wallet_address)) {
-        int util_jet_enr_mode = maybe_payload~load_uint(4);
+        int util_jet_enr_mode = maybe_payload~load_uint(UTIL_JET_SEND_MODE_SIZE);
 
         if (util_jet_enr_mode == UTIL_JET_REWARD_ENROLLMENT) {
             ;; It does mean, that utility jettons reward amount was already enrolled
             if(this::reward_util_jets_cur_balance != 0 | this::const::reward_util_jets_total_amount != 0) {
-                cell chargeback_msg = build_util_jet_transfer_msg(query_id, 0, jetton_amount, initiator, 1);
+                cell chargeback_msg = build_jetton_transfer_msg(
+                    query_id,
+                    0,
+                    jetton_amount,
+                    jet_tools::const::util_jet_wallet_address,
+                    initiator,
+                    1,
+                    begin_cell().store_uint(0, 1)
+                );
                 send_raw_message(chargeback_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
                 return ();
             }
@@ -61,7 +69,15 @@ const int MINT_QUERY_ID = 27082006;
 
         if (util_jet_enr_mode == UTIL_JET_WL_PASS) {
             if(jetton_amount < wl_round::const::pass_util_jet_amount) {
-                cell chargeback_msg = build_util_jet_transfer_msg(query_id, 0, jetton_amount, initiator, 1);
+                cell chargeback_msg = build_jetton_transfer_msg(
+                    query_id,
+                    0,
+                    jetton_amount,
+                    jet_tools::const::util_jet_wallet_address,
+                    initiator,
+                    1,
+                    begin_cell().store_uint(0, 1)
+                );
                 send_raw_message(chargeback_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
                 return ();
             }
@@ -70,10 +86,33 @@ const int MINT_QUERY_ID = 27082006;
     }
     ;; `ifs` oreder defined this way for reasons of efficiency
     if (jetton_amount == this::const::fut_jet_total_supply) {
-        if (~ equal_slices_bits(sender_address, sale_state::const::fut_jet_wallet_address)) {
+        if (~ equal_slices_bits(sender_address, sale::const::fut_jet_wallet_address)) {
             ;; It does mean we just got random tokens on equal amount
             return ();
         }
-        sale_state::const::fut_jet_deployed_balance = this::const::fut_jet_total_supply;
+        sale::const::fut_jet_deployed_balance = this::const::fut_jet_total_supply;
+
+        ;; We send one jetton transfer with all the
+        ;; TODO fee will be sent here
+        cell tranfer_msg = build_jetton_transfer_msg(
+            query_id,
+            JETTON_MIN_TRANSFER_FEE,
+            this::const::fut_jet_dex_amount + this::const::fut_jet_platform_amount,
+            sale::const::fut_jet_wallet_address,
+            this::chief,
+            this::const::min_ton_for_sale_success,
+            begin_cell().store_coins(this::const::fut_jet_dex_amount).store_coins(this::const::fut_jet_platform_amount)
+        );
+        cell msg = begin_cell()
+            .store_msg_flags_and_address_none(NON_BOUNCEABLE)
+            .store_slice(jet_tools::const::fut_jet_master_address)
+            .store_coins(
+                get_forward_fee(MY_WORKCHAIN, CLAIM_ADMIN_MSG_BITS, CLAIM_ADMIN_MSG_CELLS)
+                + get_compute_fee(MY_WORKCHAIN, CLAIM_ADMIN_GAS_CONSUMPTION)
+            )
+            .store_prefix_only_body()
+            .store_op(op::claim_admin)
+            .end_cell();
+
     }
 }

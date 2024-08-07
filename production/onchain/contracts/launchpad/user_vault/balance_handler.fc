@@ -90,7 +90,7 @@ cell build_wl_callback(int query_id, int should_burn?) {
             .end_cell();
         send_raw_message(msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_IGNORE_ERRORS);
     }
-    if (mode == BALANCE_UPD_WITHDRAWAL_WL) {
+    if (mode == BALANCE_UPD_WITHDRAWAL_WL) { ;; TODO Ignore `ton_balance_update`
         throw_if(error::balance_lack, ton_balance_update > this::wl_ton_balance);
         this::wl_ton_balance -= ton_balance_update;
 
