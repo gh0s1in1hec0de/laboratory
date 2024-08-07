@@ -172,6 +172,7 @@ const INITIALIZATION_GAS_CONSUMPTION = 1;
 const INIT_CALLBACK_MSG_BITS = 1;
 const INIT_CALLBACK_MSG_CELLS = 1;
 const INIT_CALLBACK_GAS_CONSUMPTION = 1;
+const RECORD_REWARD_JETTONS_ENROLLMENT_GAS_CONSUMPTION = 1;
 int get_amount_for_token_launch_deploy() {
     return get_compute_fee(MY_WORKCHAIN, CREATE_LAUNCH_GAS_CONSUMPTION)
         + get_forward_fee(MY_WORKCHAIN, INIT_MSG_BITS, INIT_MSG_CELLS)
@@ -179,5 +180,6 @@ int get_amount_for_token_launch_deploy() {
         + forward_token_launch_init_state_overhead()
         + get_compute_fee(MY_WORKCHAIN, INITIALIZATION_GAS_CONSUMPTION)
         + get_forward_fee(MY_WORKCHAIN, INIT_CALLBACK_MSG_BITS, INIT_CALLBACK_MSG_CELLS)
-        + JETTON_MIN_TRANSFER_FEE;
+        + JETTON_MIN_TRANSFER_FEE
+        + get_compute_fee(MY_WORKCHAIN, RECORD_REWARD_JETTONS_ENROLLMENT_GAS_CONSUMPTION);
 }

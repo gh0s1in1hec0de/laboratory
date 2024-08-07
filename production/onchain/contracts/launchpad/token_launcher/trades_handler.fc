@@ -36,12 +36,15 @@
     int user_value_after_fee = check_amount_is_enough_for_wl_purchase(attached_value);
 
     if (user_value_after_fee < 0 | wl_round::ton_invested_total + user_value_after_fee <= wl_round::const::ton_limit) {
-        cell chargeback_transfer_msg = build_util_jet_transfer_msg(
+        cell chargeback_transfer_msg = build_jetton_transfer_msg(
             query_id,
             0,
             wl_round::const::pass_util_jet_amount,
+            jet_tools::const::util_jet_wallet_address,
             initiator,
-            user_value_after_fee > 0 ? user_value_after_fee : 1
+            user_value_after_fee > 0 ? user_value_after_fee : 1,
+            NO_MODE
+
         );
         ;; Taking all the value remains from transfer notification to attach
         send_raw_message(chargeback_transfer_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
@@ -49,12 +52,14 @@
     }
     ;; Send back all the jettons except burn amount
     ;; If bounced - tokens stays on our balance
-    cell return_transfer_msg = build_util_jet_transfer_msg(
+    cell return_transfer_msg = build_jetton_transfer_msg(
         query_id,
         0,
         wl_round::const::pass_util_jet_amount - wl_round::const::burn_util_jet_amount,
+        jet_tools::const::util_jet_wallet_address,
         initiator,
-        0
+        0,
+        NO_MODE
     );
     send_raw_message(return_transfer_msg, 0);
 
@@ -157,8 +162,8 @@
 () handle_wl_callback(int query_id, int _attached_value, slice sender_address, int should_burn?, int initiator) inline {
     verify_user_vault(sender_address, initiator);
     cell msg = should_burn?
-    ? build_util_jet_burn_msg(query_id, wl_round::const::burn_util_jet_amount) ;; 1 nanoton to notify user about tokens
-    : build_util_jet_transfer_msg(query_id, 0, wl_round::const::burn_util_jet_amount, initiator, 1);
+    ? build_jetton_burn_msg(query_id, wl_round::const::burn_util_jet_amount, jet_tools::const::util_jet_wallet_address) ;; 1 nanoton to notify user about tokens
+    : build_jetton_transfer_msg(query_id, 0, wl_round::const::burn_util_jet_amount, jet_tools::const::util_jet_wallet_address, initiator, 1, NO_MODE);
 
     send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
 }
@@ -212,7 +217,7 @@
     );
 
     this::reward_util_jets_cur_balance -= utility_tokens_to_reward_user;
-    cell util_jet_reward_msg = build_util_jet_transfer_msg(query_id, JETTON_MIN_TRANSFER_FEE, utility_tokens_to_reward_user, recipient, 1);
+    cell util_jet_reward_msg = build_jetton_transfer_msg(query_id, JETTON_MIN_TRANSFER_FEE, utility_tokens_to_reward_user, jet_tools::const::util_jet_wallet_address, recipient, 1, NO_MODE);
 
     sale_state::const::fut_jet_deployed_balance -= total_fut_jet_recipient_amount;
     cell msg_body = begin_cell()

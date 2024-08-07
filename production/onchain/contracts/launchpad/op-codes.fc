@@ -9,6 +9,7 @@ const op::burn = 0x595f07bc;
 
 ;; Contract-realted OPs
 ;; TODO Imo should be replaced with strict CRC32 following the rule req/req difference
+const op::upgrade = 0x2508d66a;
 const op::tl::init = "init"c;
 const op::core::init_callback = "init_callback"c;
 const op::tl::creator_buyout = "creator_buyout"c;

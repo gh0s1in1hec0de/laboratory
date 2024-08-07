@@ -24,6 +24,7 @@ global int   this::const::is_initialized?;
 global int   this::const::fut_jet_total_supply;
 global int   this::const::min_ton_for_sale_success;
 global int   this::const::fut_jet_dex_amount;
+global int   this::const::fut_jet_platform_amount;
 global int   this::const::reward_util_jets_total_amount;
 
 global int   this::fut_jet_cur_balance;
@@ -35,7 +36,7 @@ global slice this::const::creator_address;
 ;; === SALE CONFING ===
 ;; State markers
 global int   sale_state::const::fut_jet_deployed_balance;
-global int   sale_state::const::fut_jet_wallet_address; ;; TODO Calculate in core
+global int   sale_state::const::fut_jet_wallet_address;
 
 global int   creator_round::const::fut_jet_limit;
 ;; Amount of tokens, that creator bought back

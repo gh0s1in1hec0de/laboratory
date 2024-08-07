@@ -36,6 +36,10 @@ cell build_content_cell(slice metadata_uri) inline {
     this::const::fut_jet_total_supply = ds~load_coins();
     this::const::min_ton_for_sale_success = ds~load_coins();
 
+    this::const::fut_jet_dex_amount = ds~load_coins();
+    this::const::fut_jet_platform_amount = ds~load_coins();
+    this::const::reward_util_jets_total_amount = ds~load_coins();
+
     this::fut_jet_cur_balance = ds~load_coins();
     this::reward_util_jets_cur_balance = ds~load_coins();
 
@@ -95,6 +99,7 @@ cell build_content_cell(slice metadata_uri) inline {
         .store_coins(this::const::fut_jet_total_supply)          ;; VarUinteger16
         .store_coins(this::const::min_ton_for_sale_success)      ;; VarUinteger16
         .store_coins(this::const::fut_jet_dex_amount)            ;; VarUinteger16
+        .store_coins(this::const::fut_jet_platform_amount)       ;; VarUinteger16
         .store_coins(this::const::reward_util_jets_total_amount) ;; VarUinteger16
 
         .store_coins(this::fut_jet_cur_balance)                  ;; VarUinteger16

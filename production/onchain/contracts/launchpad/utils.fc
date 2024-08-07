@@ -9,6 +9,7 @@ const int ADDRESS_SIZE = 264; ;; 256 + 8
 
 const PERCENTAGE_DENOMINATOR = 10000;
 const BALANCE_UPD_MODE_SIZE = 4;
+const UTIL_JET_SEND_MODE_SIZE = 4;
 
 const BALANCE_UPD_DEPOSIT_WL = 1;
 const BALANCE_UPD_DEPOSIT_PUB = 2;
@@ -16,6 +17,7 @@ const BALANCE_UPD_WITHDRAWAL_WL = 3;
 const BALANCE_UPD_WITHDRAWAL_PUB = 4;
 const BALANCE_UPD_WITHDRAWAL_ALL = 5;
 
+const NO_MODE = -1;
 const UTIL_JET_REWARD_ENROLLMENT = 1;
 const UTIL_JET_WL_PASS = 2;
 
@@ -62,46 +64,53 @@ slice pack_address(slice address) inline {
     sale_conf_slice.end_parse();
 }
 
-;; TODO Rebuild for core
-(cell) build_util_jet_transfer_msg(int query_id, int value, int jetton_amount, slice recipient, int forward_ton_amount) inline_ref {
+cell build_jetton_transfer_msg(
+    int query_id,
+    int value,
+    int jetton_amount,
+    slice our_wallet_address,
+    slice recipient,
+    int forward_ton_amount,
+    int mode
+) inline_ref {
     cell msg_body = begin_cell()
         .store_op(op::transfer)
         .store_query_id(query_id)
         .store_coins(jetton_amount)
         .store_slice(recipient) ;; To
         .store_slice(my_address()) ;; Address, that will get excesses after operation
-        .store_coins(forward_ton_amount)
-        .store_int(0, 1) ;; Either forward payload to avoid TVM exit code 9
-        .end_cell();
-
+        .store_coins(forward_ton_amount);
+    if (mode == NO_MODE) {
+        msg_body.store_int(0, 1); ;; Either forward payload to avoid TVM exit code 9
+    } else {
+        msg_body.store_uint(mode, UTIL_JET_SEND_MODE_SIZE);
+    }
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     return begin_cell()
         .store_msg_flags_and_address_none(NON_BOUNCEABLE) ;; As we are not able to handle this situation
-        .store_slice(jet_tools::const::util_jet_wallet_address)
+        .store_slice(our_wallet_address)
         .store_coins(value)
-        .store_only_body_ref(msg_body)
+        .store_only_body_ref(msg_body.end_cell())
         .end_cell();
 }
 
-;;; Works only inside token launch contract
-(cell) build_util_jet_burn_msg(int query_id, int jetton_amount) inline {
+cell build_jetton_burn_msg(int query_id, int jetton_amount, slice our_wallet_address) inline {
     cell msg_body = begin_cell()
         .store_op(op::burn)
         .store_query_id(query_id)
         .store_coins(jetton_amount)
         .store_slice(my_address()) ;; Address, that will get excesses after operation
         .end_cell();
-
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     return begin_cell()
         .store_msg_flags_and_address_none(NON_BOUNCEABLE)
-        .store_slice(jet_tools::const::util_jet_wallet_address)
+        .store_slice(our_wallet_address)
         .store_coins(0)
         .store_only_body_ref(msg_body)
         .end_cell();
 }
 
-(int) get_amount_out(int amount_in, int reserve_in, int reserve_out) inline {
+int get_amount_out(int amount_in, int reserve_in, int reserve_out) inline {
     ;; We calculate K according to AMM (Automatic Meow-Meow) formula x*y<=K, where x and y are assets' amounts
     int k = reserve_in * reserve_out; ;; TODO does overflow possible? We can replace it with muldiv with div = 1
     ;; New amount of first asset, that should be in pool
