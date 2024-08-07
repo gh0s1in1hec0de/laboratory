@@ -1,5 +1,15 @@
 import {compile} from "@ton/blueprint";
-import {Address, beginCell, Cell, Dictionary, storeMessage, toNano, Transaction} from "@ton/core";
+import {
+  Address,
+  beginCell,
+  Cell,
+  ContractProvider,
+  Dictionary,
+  OpenedContract,
+  storeMessage,
+  toNano,
+  Transaction
+} from "@ton/core";
 import {Blockchain, internal, SandboxContract, TreasuryContract} from "@ton/sandbox";
 import {
   collectCellStats,
@@ -11,6 +21,9 @@ import {
   StorageStats
 } from "./utils";
 import {TokenLaunch} from '../wrappers/TokenLaunch';
+import {TonClient4, WalletContractV3R2} from "@ton/ton";
+import {Asset, Factory, MAINNET_FACTORY_ADDR} from "@dedust/sdk";
+import {mnemonicToPrivateKey} from "@ton/crypto";
 
 
 describe('TokenLaunch', () => {
@@ -24,10 +37,17 @@ describe('TokenLaunch', () => {
   // let userWallet: (address: Address) => Promise<SandboxContract<JettonWallet>>;
   let walletStats: StorageStats;
   let msgPrices: MsgPrices;
-
   let stateInitStats: StorageStats;
   let storageDuration: number;
   let defaultOverhead: bigint;
+
+  // Dedust related variables
+  let tonClient: TonClient4;
+  let factory: OpenedContract<Factory>;
+  let provider: ContractProvider;
+  let jettonAddress: Address;
+  // let wallet: WalletContractV3R2;
+  // let sender: any;
 
 
   // FUNCTIONS
@@ -76,8 +96,46 @@ describe('TokenLaunch', () => {
     //   )
     // );
 
+
+    // DeDust integration setup
+    // TODO Determine how to store keys
+    // if (!process.env.MNEMONIC) {
+    //   throw new Error("Environment variable MNEMONIC is required.");
+    // }
+    // const mnemonic = process.env.MNEMONIC.split(" ");
+    // const jettonAddress = Address.parse(process.env.JETTON_ADDRESS);;
+
+    const mnemonic = "test mnemonic phrase here".split(" ");
+    jettonAddress = Address.parse("test jetton address here");
+
+    tonClient = new TonClient4({
+      endpoint: "http://localhost:8080", // Replace with your sandbox endpoint
+    });
+
+    factory = tonClient.open(
+      Factory.createFromAddress(MAINNET_FACTORY_ADDR) // You may need a testnet or sandbox factory address
+    );
+
+    const keys = await mnemonicToPrivateKey(mnemonic);
+    const wallet = tonClient.open(
+      WalletContractV3R2.create({
+        workchain: 0,
+        publicKey: keys.publicKey,
+      }),
+    );
+
+    provider = blockchain.provider(wallet.address);
+
+    const sender = wallet.sender(keys.secretKey);
+
+    await factory.sendCreateVault(sender, {
+      asset: Asset.jetton(jettonAddress),
+    });
+
+
+
     // Measures compute fees of a tx
-    printTxGasStats = (name, transaction) => {  // print fees from computePhase of tx
+    printTxGasStats = (name, transaction) => {
       const txComputed = computedGeneric(transaction);
       console.log(`${name} used ${txComputed.gasUsed} gas`);
       console.log(`${name} gas cost: ${txComputed.gasFees}`);
@@ -99,12 +157,6 @@ describe('TokenLaunch', () => {
       return computeFwdFeesVerbose(prices || msgPrices, stats.cells, stats.bits);
     }
 
-    // оценка комиссии за пересылку операции burn
-    estimateBurnFwd = (prices) => {
-      const curPrices = prices || msgPrices;
-      return computeFwdFees(curPrices, 1n, 754n)
-    }
-
     // Jerks
     forwardOverhead = (prices, stats) => {
       // Meh, kinda lazy way of doing that, but tests are bloated enough already
@@ -122,4 +174,19 @@ describe('TokenLaunch', () => {
   })
 
   // TESTS
+  test('should create a vault using DeDust', async () => {
+    // Here, you would add logic to interact with the factory to verify vault creation
+    // Assuming you have a method to get the vaults, or if you need to manually check the state
+    // Replace this with actual interaction logic, e.g., querying a known vault address or state
+
+    // Get the vault address for the jetton
+    const vaultAddress = await factory.getVaultAddress(Asset.jetton(jettonAddress));
+    console.log(`Vault Address: ${Address.normalize(vaultAddress)}`);
+    expect(vaultAddress).toBeDefined(); // Adjust based on the expected structure
+
+    // Optionally, you could also check the state of the vault if needed
+    const vaultState = await blockchain.getContract(vaultAddress);
+    console.log(`Vault State: ${vaultState}`);
+    expect(vaultState).toBeDefined(); // Adjust based on the expected structure
+  });
 })
