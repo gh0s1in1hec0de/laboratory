@@ -20,7 +20,7 @@ describe('TokenLaunch', () => {
   let blockchain: Blockchain;
   let deployer: SandboxContract<TreasuryContract>;
   let tokenLaunch: SandboxContract<TokenLaunch>;
-  // Добавить послке написания wrapper
+  // TODO Build similar one after wrapper accomplishment
   // let userWallet: (address: Address) => Promise<SandboxContract<JettonWallet>>;
   let walletStats: StorageStats;
   let msgPrices: MsgPrices;
@@ -28,7 +28,6 @@ describe('TokenLaunch', () => {
   let stateInitStats: StorageStats;
   let storageDuration: number;
   let defaultOverhead: bigint;
-
 
 
   // FUNCTIONS
@@ -59,7 +58,7 @@ describe('TokenLaunch', () => {
     console.log('jetton wallet code hash = ', tokenLaunchCode.hash().toString('hex'));
     blockchain.now = Math.floor(Date.now() / 1000);
 
-    // Добавить послке написания wrapper
+    // TODO Build similar one after wrapper accomplishment
     // jettonMinter = blockchain.openContract(
     //   JettonMinter.createFromConfig(
     //     {
@@ -77,7 +76,7 @@ describe('TokenLaunch', () => {
     //   )
     // );
 
-    // логирует fee из computePhase транзакиции
+    // Measures compute fees of a tx
     printTxGasStats = (name, transaction) => {  // print fees from computePhase of tx
       const txComputed = computedGeneric(transaction);
       console.log(`${name} used ${txComputed.gasUsed} gas`);
@@ -85,7 +84,7 @@ describe('TokenLaunch', () => {
       return txComputed.gasFees;
     }
 
-    // оценивает стоимость пересылки тела
+    // Measures forward fees of a cell structure
     estimateBodyFee = (body, forceRef, prices) => {
       // const curPrice = prices || msgPrices;
       const mockAddr = new Address(0, Buffer.alloc(32, 'A'));
@@ -106,7 +105,7 @@ describe('TokenLaunch', () => {
       return computeFwdFees(curPrices, 1n, 754n)
     }
 
-    // пидарасы
+    // Jerks
     forwardOverhead = (prices, stats) => {
       // Meh, kinda lazy way of doing that, but tests are bloated enough already
       return computeFwdFees(prices, stats.cells, stats.bits) - prices.lumpPrice;

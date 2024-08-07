@@ -1,12 +1,9 @@
 import {Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode} from "@ton/core";
 import {Slice} from "@ton/ton";
 
-// load_data()
-export type TokenLauncherConfig = {
-  // за что отвечает?
+export type TokenLaunchConfig = {
   futJetTotalSupply: bigint;      // this::const::fut_jet_total_supply
   minTonForSaleSuccess: bigint;   // this::const::min_ton_for_sale_success
-  // кто такой блять ваш начальник???????
   chiefAddress: Address;          // this::const::chief_address
   creatorAddress: Address;        // this::const::creator_address
   utilJetWalletAddress: Address;  // jet_tools::const::util_jet_wallet_address
@@ -15,13 +12,14 @@ export type TokenLauncherConfig = {
   walletCode: Cell;               // jet_tools::const::wallet_code
 };
 
-export function tokenLauncherConfigToCell(config: TokenLauncherConfig): Cell {
+export function tokenLauncherConfigToCell(config: TokenLaunchConfig): Cell {
   return beginCell()
   .storeCoins(config.futJetTotalSupply)
   .storeCoins(config.minTonForSaleSuccess)
   .storeAddress(config.chiefAddress)
   .storeAddress(config.creatorAddress)
   .storeRef(
+      // TODO initialize in a separate variable as it have done in load_data
     beginCell()
     .storeAddress(config.utilJetWalletAddress)
     .storeRef(config.metadata)
@@ -38,7 +36,7 @@ export function endParse(slice: Slice) {
   }
 }
 
-export function parseTokenLauncherData(data: Cell) {
+export function parseTokenLaunchrData(data: Cell) {
   const sc = data.beginParse();
   const parsed = {
     isInitialized: sc.loadInt(1),
@@ -68,7 +66,7 @@ export class TokenLaunch implements Contract {
     return new TokenLaunch(address);
   }
 
-  static createFromConfig(config: TokenLauncherConfig, code: Cell, workchain = 0) {
+  static createFromConfig(config: TokenLaunchConfig, code: Cell, workchain = 0) {
     const data = tokenLauncherConfigToCell(config);
     const init = {code, data};
     return new TokenLaunch(contractAddress(workchain, init), init);
@@ -83,7 +81,6 @@ export class TokenLaunch implements Contract {
     });
   }
 
-  // get_launch_data
   async getLaunchData(provider: ContractProvider) {
     let {stack} = await provider.get('get_launch_data', []);
     return {
@@ -93,7 +90,7 @@ export class TokenLaunch implements Contract {
     };
   }
 
-  // Под вопросом
+  // We gonna create new launches with Core contract, not manually
   static initializeMessage(senderAddress: Address, futJetWalletAddress: Address, utilJetWalletAddress: Address) {
     return beginCell()
       .storeAddress(senderAddress)

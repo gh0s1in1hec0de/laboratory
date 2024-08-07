@@ -1,6 +1,6 @@
 import {Address, Cell} from "@ton/core";
 
-// todo Написать эти типы исходя из задачи
+// TODO Rewrite this type based on the task
 export type InternalTransfer = {
   from: Address | null,
   response: Address | null,
