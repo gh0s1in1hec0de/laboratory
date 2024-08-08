@@ -3,6 +3,8 @@ global slice this::chief;
 global slice this::util_jetton_master_address;
 global slice this::util_jetton_wallet_address;
 global int   this::util_jet_cur_balance;
+;; As we need to store addresses of launches, that will ask us for funding (we have some dynamic settings in state)
+;; We have a dicitonary with values, that will store not funded launches
 global cell  this::not_funded_launches;
 global int   this::not_funded_launches_amount;
 
@@ -27,7 +29,6 @@ global int launch_conf::pub_round_duration_ms;
 ;; === CONTRACTS ===
 global cell code::jetton_launch;
 global cell code::jetton_launch_user_vault;
-
 global cell code::derived_jetton_master;
 ;; This code will be used in two contracts both - in util jetton and in derived jettons
 global cell code::jetton_wallet;

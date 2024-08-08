@@ -73,13 +73,13 @@ cell build_content_cell(slice metadata_uri) inline {
 
 
 cell build_jetton_transfer_msg(
-int query_id,
-int value,
-int jetton_amount,
-slice our_wallet_address,
-slice recipient,
-int forward_ton_amount,
-builder payload
+    int query_id,
+    int value,
+    int jetton_amount,
+    slice our_wallet_address,
+    slice recipient,
+    int forward_ton_amount,
+    builder payload
 ) inline_ref {
     cell msg_body = begin_cell()
         .store_op(op::transfer)
@@ -88,7 +88,7 @@ builder payload
         .store_slice(recipient) ;; To
         .store_slice(my_address()) ;; Address, that will get excesses after operation
         .store_coins(forward_ton_amount);
-        .store_builder(payload)
+         .store_builder(payload)
         .end_cell();
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     return begin_cell()
@@ -117,12 +117,11 @@ cell build_jetton_burn_msg(int query_id, int jetton_amount, slice our_wallet_add
 
 int get_amount_out(int amount_in, int reserve_in, int reserve_out) inline {
     ;; We calculate K according to AMM (Automatic Meow-Meow) formula x*y<=K, where x and y are assets' amounts
-    int k = reserve_in * reserve_out; ;; TODO does overflow possible? We can replace it with muldiv with div = 1
     ;; New amount of first asset, that should be in pool
     int new_reserve_in = reserve_in + amount_in;
     ;; We calculate second asset value to have our x*y<=K stay correct,
     ;; `/` division rounds `new_reserve_out` to the lower bound
-    int new_reserve_out = k / new_reserve_in;
+    int new_reserve_out = muldiv(reserve_in, reserve_out, new_reserve_in);
     int amount_out = reserve_out - new_reserve_out;
 
     throw_if(error::unreachable, amount_out < 0);
