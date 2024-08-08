@@ -7,16 +7,7 @@
     - `jet` means jetton
     - `util_jet` means utility platform jetton, needed for whitelist functionality
     - `fut_jet` means jetton, that will be deployed in case of sale success
-
-    Constraints:
-    creator_round::const::fut_jet_limit
-    + wl_round::const::fut_jet_limit
-    + public_round::const::fut_jet_limit
-    + this::const::fut_jet_dex_amount
-    = this::const::fut_jet_total_supply;
 -}
-
-;; TODO To add our share
 
 ;; === GENERAL INFORMATION ===
 global int   this::const::is_initialized?;
@@ -27,6 +18,7 @@ global int   this::const::fut_jet_dex_amount;
 global int   this::const::fut_jet_platform_amount;
 global int   this::const::reward_util_jets_total_amount;
 
+global int   this::operational_needs;
 global int   this::fut_jet_cur_balance;
 global int   this::reward_util_jets_cur_balance;
 
@@ -35,6 +27,7 @@ global slice this::const::creator_address;
 
 ;; === SALE CONFING ===
 ;; State markers
+;; Actual balance of deployed derived jetton
 global int   sale::const::fut_jet_deployed_balance;
 global slice sale::const::fut_jet_wallet_address;
 global int   sale::total_tons_collected;

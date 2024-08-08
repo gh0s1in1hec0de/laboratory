@@ -12,10 +12,12 @@
     this::util_jetton_wallet_address = ds~load_msg_addr();
     this::util_jet_cur_balance = ds~load_coins();
     this::not_funded_launches = ds~load_dict();
+    this::not_funded_launches_amount = ds~load_uint(8);
 
     cell launch_config = ds~load_ref();
     slice launch_config_slice = launch_config.begin_parse();
     launch_conf::min_ton_for_sale_success = launch_config_slice~load_coins();
+    launch_conf::ton_limit_for_wl_round = launch_config_slice~load_coins();
     launch_conf::util_jet_reward_amount  = launch_config_slice~load_coins();
     launch_conf::util_jet_wl_pass_amount  = launch_config_slice~load_coins();
     launch_conf::util_jet_burn_per_wl_pass_amount  = launch_config_slice~load_coins();
@@ -23,6 +25,10 @@
     launch_conf::jet_wl_limit_pct = launch_config_slice~load_uint(16);
     launch_conf::jet_pub_limit_pct = launch_config_slice~load_uint(16);
     launch_conf::jet_dex_share_pct = launch_config_slice~load_uint(16);
+
+    launch_conf::creator_round_duration_ms = launch_config_slice~load_int(32);
+    launch_conf::wl_round_duration_ms = launch_config_slice~load_int(32);
+    launch_conf::pub_round_duration_ms = launch_config_slice~load_int(32);
     launch_config_slice.end_parse();
 
     cell contracts = ds~load_ref();
@@ -46,12 +52,16 @@
         .end_cell();
     cell launch_config = begin_cell()
         .store_coins(launch_conf::min_ton_for_sale_success)
+        .store_coins(launch_conf::ton_limit_for_wl_round)
         .store_coins(launch_conf::util_jet_reward_amount)
         .store_coins(launch_conf::util_jet_wl_pass_amount)
         .store_coins(launch_conf::util_jet_burn_per_wl_pass_amount)
         .store_uint(launch_conf::jet_wl_limit_pct, 16)
         .store_uint(launch_conf::jet_pub_limit_pct, 16)
         .store_uint(launch_conf::jet_dex_share_pct, 16)
+        .store_int(launch_conf::creator_round_duration_ms, 32)
+        .store_int(launch_conf::wl_round_duration_ms, 32)
+        .store_int(launch_conf::pub_round_duration_ms, 32)
         .end_cell();
     cell data = begin_cell()
         .store_slice(this::chief)
@@ -59,6 +69,7 @@
         .store_slice(this::util_jetton_wallet_address)
         .store_coins(this::util_jet_cur_balance)
         .store_dict(this::not_funded_launches)
+        .store_uint(this::not_funded_launches_amount, 8)
         .store_ref(launch_config)
         .store_ref(contracts)
         .end_cell();
@@ -90,6 +101,7 @@
     if (op == op::core::create_launch) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         throw_unless(error::not_enough_gas, attached_value > get_amount_for_token_launch_deploy());
+        throw_unless(error::overload, this::not_funded_launches_amount <= 20);
         create_launch(query_id, attached_value, sender_address, in_msg_body~load_coins(), in_msg_body~load_uint(16), in_msg_body~load_ref());
         save_data();
         return ();
@@ -100,7 +112,7 @@
         save_data();
         return ();
     }
-    if (op == op::internal_transfer) {
+    if (op == op::transfer_notification) {
         handle_incoming_transfer(
             query_id,
             attached_value,

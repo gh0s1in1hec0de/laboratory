@@ -10,7 +10,14 @@ import {
   toNano,
   Transaction
 } from "@ton/core";
-import {Blockchain, internal, SandboxContract, TreasuryContract} from "@ton/sandbox";
+import {
+  Blockchain,
+  internal,
+  RemoteBlockchainStorage,
+  SandboxContract,
+  TreasuryContract,
+  wrapTonClient4ForRemote
+} from "@ton/sandbox";
 import {
   collectCellStats,
   computedGeneric,
@@ -24,6 +31,7 @@ import {TokenLaunch} from '../wrappers/TokenLaunch';
 import {TonClient4, WalletContractV3R2} from "@ton/ton";
 import {Asset, Factory, MAINNET_FACTORY_ADDR} from "@dedust/sdk";
 import {mnemonicToPrivateKey} from "@ton/crypto";
+import { getHttpV4Endpoint } from '@orbs-network/ton-access'
 
 
 describe('TokenLaunch', () => {
@@ -64,7 +72,13 @@ describe('TokenLaunch', () => {
 
   beforeAll(async () => {
     tokenLaunchCodeRaw = await compile('TokenLaunch');
-    blockchain = await Blockchain.create();
+    blockchain = await Blockchain.create({
+      storage: new RemoteBlockchainStorage(wrapTonClient4ForRemote(new TonClient4({
+        endpoint: await getHttpV4Endpoint({
+          network: 'mainnet'
+        })
+      })))
+    })
     walletStats = new StorageStats(1033, 3);
 
 
@@ -109,7 +123,7 @@ describe('TokenLaunch', () => {
     jettonAddress = Address.parse("test jetton address here");
 
     tonClient = new TonClient4({
-      endpoint: "http://localhost:8080", // Replace with your sandbox endpoint
+      endpoint: await getHttpV4Endpoint({network: "mainnet"}), // Replace with your sandbox endpoint
     });
 
     factory = tonClient.open(
@@ -124,6 +138,7 @@ describe('TokenLaunch', () => {
       }),
     );
 
+    (await blockchain.getContract(wallet.address)).balance;
     provider = blockchain.provider(wallet.address);
 
     const sender = wallet.sender(keys.secretKey);
@@ -131,8 +146,6 @@ describe('TokenLaunch', () => {
     await factory.sendCreateVault(sender, {
       asset: Asset.jetton(jettonAddress),
     });
-
-
 
     // Measures compute fees of a tx
     printTxGasStats = (name, transaction) => {

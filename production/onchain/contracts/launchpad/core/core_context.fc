@@ -4,6 +4,7 @@ global slice this::util_jetton_master_address;
 global slice this::util_jetton_wallet_address;
 global int   this::util_jet_cur_balance;
 global cell  this::not_funded_launches;
+global int   this::not_funded_launches_amount;
 
 ;; === LAUNCH CONFIG ===
 ;; Values that creators are not responsible for
@@ -13,7 +14,6 @@ global int launch_conf::ton_limit_for_wl_round;
 global int launch_conf::util_jet_reward_amount;
 global int launch_conf::util_jet_wl_pass_amount;
 global int launch_conf::util_jet_burn_per_wl_pass_amount;
-
 ;; As it is impossible to store fractions of percents, than we store percentages as 4-digit integers
 ;; global int launch_conf::jet_creator_limit_pct;
 global int launch_conf::jet_wl_limit_pct;
@@ -31,7 +31,4 @@ global cell code::jetton_launch_user_vault;
 global cell code::derived_jetton_master;
 ;; This code will be used in two contracts both - in util jetton and in derived jettons
 global cell code::jetton_wallet;
-
-;; === MAYBE STATE ===
-;; Variables, represents data with unclear source for now
 

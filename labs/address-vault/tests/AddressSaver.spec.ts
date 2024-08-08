@@ -1,8 +1,8 @@
-import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
-import { AddressSaver, addressSaverConfigToCell } from '../wrappers/AddressSaver';
-import { beginCell, Cell, toNano } from '@ton/core';
-import { randomAddress } from '@ton/test-utils';
-import { compile } from '@ton/blueprint';
+import {Blockchain, SandboxContract, TreasuryContract} from '@ton/sandbox';
+import {AddressSaver, addressSaverConfigToCell} from '../wrappers/AddressSaver';
+import {beginCell, Cell, toNano} from '@ton/core';
+import {randomAddress} from '@ton/test-utils';
+import {compile} from '@ton/blueprint';
 import '@ton/test-utils';
 
 describe('AddressSaver', () => {
@@ -19,7 +19,7 @@ describe('AddressSaver', () => {
     beforeEach(async () => {
         blockchain = await Blockchain.create();
         deployer = await blockchain.treasury('deployer');
-        const config = { manager: deployer.address };
+        const config = {manager: deployer.address, initialAddress: randomAddress()};
         addressSaver = blockchain.openContract(AddressSaver.createFromConfig(config, code));
 
         const deployResult = await addressSaver.sendDeploy(deployer.getSender(), toNano('0.1'));

@@ -36,7 +36,7 @@
     throw_if(error::wrong_time, now() < creator_round::const::end_time | now() > wl_round::const::end_time);
     int user_value_after_fee = check_amount_is_enough_for_wl_purchase(attached_value);
 
-    if (user_value_after_fee < 0 | wl_round::ton_invested_total + user_value_after_fee <= wl_round::const::ton_limit) {
+    if (user_value_after_fee <= 0 | wl_round::ton_invested_total + user_value_after_fee <= wl_round::const::ton_limit) {
         cell chargeback_transfer_msg = build_jetton_transfer_msg(
             query_id,
             0,
@@ -121,7 +121,7 @@
 }
 
 () handle_refund_request(int query_id, int attached_value, slice sender_address, int mode, int refund_value) inline {
-    throw_if(error::wrong_time, now() < creator_round::const::end_time | now() > public_round::const::end_time);
+    throw_if(error::wrong_time, now() < creator_round::const::end_time);
     throw_unless(error::bad_request, mode == 3 | mode == 4 | mode == 5);
     ;; We don't actually care about leftovers
     int _user_value_after_fee = check_amount_is_enough_for_refund(attached_value);
@@ -214,7 +214,6 @@
         total_fut_jet_recipient_amount,
         total_amount_destributed_amount_users
     );
-    ;; TODO Make this more verboose
     throw_if(
         error::balance_lack,
         this::reward_util_jets_cur_balance < utility_tokens_to_reward_user

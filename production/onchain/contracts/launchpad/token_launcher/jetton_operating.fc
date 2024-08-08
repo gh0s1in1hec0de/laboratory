@@ -17,7 +17,6 @@ const int MINT_QUERY_ID = 27082006;
         jet_tools::const::wallet_code,
         jet_tools::const::metadata
     );
-
     ;; Internal message for jetton master jetton wallet
     cell master_msg = begin_cell()
         .store_op(op::internal_transfer)
@@ -46,6 +45,7 @@ const int MINT_QUERY_ID = 27082006;
 
 () route_incoming_transfer(int query_id, int attached_value, slice sender_address, int jetton_amount, slice initiator, slice maybe_payload) impure inline {
     if (equal_slices_bits(sender_address, jet_tools::const::util_jet_wallet_address)) {
+        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE);
         int util_jet_enr_mode = maybe_payload~load_uint(UTIL_JET_SEND_MODE_SIZE);
 
         if (util_jet_enr_mode == UTIL_JET_REWARD_ENROLLMENT) {
@@ -94,16 +94,16 @@ const int MINT_QUERY_ID = 27082006;
 
         ;; We send one jetton transfer with all the
         ;; TODO fee will be sent here
-        cell tranfer_msg = build_jetton_transfer_msg(
+        cell transfer_msg = build_jetton_transfer_msg(
             query_id,
-            JETTON_MIN_TRANSFER_FEE,
+            JETTON_MIN_TRANSFER_FEE + sale::total_tons_collected,
             this::const::fut_jet_dex_amount + this::const::fut_jet_platform_amount,
             sale::const::fut_jet_wallet_address,
             this::chief,
             this::const::min_ton_for_sale_success,
             begin_cell().store_coins(this::const::fut_jet_dex_amount).store_coins(this::const::fut_jet_platform_amount)
         );
-        cell msg = begin_cell()
+        cell claim_admin_msg = begin_cell()
             .store_msg_flags_and_address_none(NON_BOUNCEABLE)
             .store_slice(jet_tools::const::fut_jet_master_address)
             .store_coins(
@@ -113,6 +113,7 @@ const int MINT_QUERY_ID = 27082006;
             .store_prefix_only_body()
             .store_op(op::claim_admin)
             .end_cell();
-
+        send_raw_message(claim_admin_msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+        send_raw_message(transfer_msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     }
 }

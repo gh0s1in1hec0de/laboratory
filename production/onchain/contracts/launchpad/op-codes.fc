@@ -42,3 +42,4 @@ const error::balance_lack = 417;
 const error::bad_request = 400;
 const error::tokens_lack = 433;
 const error::wrong_time = 434;
+const error::overload = 469;

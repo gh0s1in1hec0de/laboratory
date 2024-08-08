@@ -11,13 +11,6 @@
 {-
   TODO are we doing this ton-jetton processing the correct way?
   TODO Seems like we should add nine zeroes in couple of places
-
-  TODO initialization and jetton transfer to chief address after Jetton deploy
-  TODO to add 1 percent fee
-
-  Questions to Lisa:
-  - How we handle rewards per
-
 -}
 
 ;; TODO add following admin options: buys freeze, sells freeeze, util token management
@@ -33,6 +26,7 @@
     this::const::fut_jet_platform_amount = ds~load_coins();
     this::const::reward_util_jets_total_amount = ds~load_coins();
 
+    this::operational_needs = ds~load_coins();
     this::fut_jet_cur_balance = ds~load_coins();
     this::reward_util_jets_cur_balance = ds~load_coins();
 
@@ -98,6 +92,7 @@
         .store_coins(this::const::fut_jet_platform_amount)       ;; VarUinteger16
         .store_coins(this::const::reward_util_jets_total_amount) ;; VarUinteger16
 
+        .store_coins(this::operational_needs)                    ;; VarUinteger16
         .store_coins(this::fut_jet_cur_balance)                  ;; VarUinteger16
         .store_coins(this::reward_util_jets_cur_balance)         ;; VarUinteger16
 
@@ -164,7 +159,7 @@
 
     if (op == op::tl::init) {
         throw_if(error::already_initialized, this::const::is_initialized?);
-        raw_reserve(calculate_token_launch_min_storage_fee(), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        raw_reserve(calculate_token_launch_min_storage_fee(2_MONTHS), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
         initialize(sender_address, in_msg_body~load_msg_addr(), in_msg_body~load_msg_addr(), in_msg_body~load_msg_addr());
         save_data();
         return ();
@@ -195,8 +190,6 @@
     -}
     if (op == op::transfer_notification) {
         ;; Verify, that sender is our utility token wallet and no one other
-        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE); ;; Transfer notification can't be bounced back
-        ;; handle_wl_purchase(query_id, in_msg_body~load_coins(), attached_value, sender_address, in_msg_body~load_msg_addr());
         route_incoming_transfer(query_id, attached_value, sender_address, in_msg_body~load_coins(),  in_msg_body~load_msg_addr(), in_msg_body);
         save_data();
         return ();
@@ -226,14 +219,16 @@
 
     if (op == op::tl::deploy_jet) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::chief_address));
-        accept_message(); ;; TODO Set gas limit after tests
+        accept_message();
+        ;; 2 checks here - that we have collected enough money for jetton deploy and that contract has money for all the additional spendings
+        throw_if(error::balance_lack, sale::total_tons_collected < this::const::min_ton_for_sale_success);
         int launch_success_treshold =
-        this::const::min_ton_for_sale_success ;; Replace with total-ton_collected
+        sale::total_tons_collected + this::operational_needs
         + get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_GAS_CONSUMPTION)
         + get_jetton_deploy_gas_cost()
-        + calculate_user_vault_min_storage_fee();
-
+        + calculate_token_launch_min_storage_fee(1_MONTH);
         throw_if(error::balance_lack, contract_balance < launch_success_treshold);
+
         deploy_launch_jetton();
         return ();
     }
@@ -246,7 +241,7 @@
         return ();
     }
     if (op == op::tl::jetton_claim_confirmation) {
-        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE);
         int wl_tons = in_msg_body~load_coins();
         in_msg_body~load_coins(); ;; Skip pub_tons
         int jettons = in_msg_body~load_coins();
