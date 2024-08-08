@@ -7,7 +7,7 @@
 
 #include "tl_context.fc";
 
-() handle_owner_buyout(int query_id, int msg_value) inline {
+() handle_owner_buyout(int query_id, int msg_value) impure inline {
     throw_unless(error::wrong_time, now() < creator_round::const::end_time);
     int val_left = check_amount_is_enough_for_creator_buyout(msg_value);
     (int jettons_amount, int remainder) = divmod(val_left, creator_round::const::fut_jet_price);
@@ -32,7 +32,7 @@
     }
 }
 
-() handle_wl_purchase(int query_id, int attached_value, slice sender_address, slice initiator) inline {
+() handle_wl_purchase(int query_id, int attached_value, slice sender_address, slice initiator) impure inline {
     throw_if(error::wrong_time, now() < creator_round::const::end_time | now() > wl_round::const::end_time);
     int user_value_after_fee = check_amount_is_enough_for_wl_purchase(attached_value);
 
@@ -88,7 +88,7 @@
     public_round::synthetic_ton_reserve += user_value_after_fee;
 }
 
-() handle_public_purchase(int query_id, int attached_value, slice sender_address) {
+() handle_public_purchase(int query_id, int attached_value, slice sender_address) impure inline {
     throw_if(error::wrong_time, now() < wl_round::const::end_time | now() >= public_round::const::end_time);
     ;; `user_value_after_fee` is always more than 0
     int user_value_after_fee = check_amount_is_enough_for_public_purchase(attached_value);
@@ -120,7 +120,7 @@
     send_raw_message(msg, SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
-() handle_refund_request(int query_id, int attached_value, slice sender_address, int mode, int refund_value) inline {
+() handle_refund_request(int query_id, int attached_value, slice sender_address, int mode, int refund_value) impure inline {
     throw_if(error::wrong_time, now() < creator_round::const::end_time);
     throw_unless(error::bad_request, mode == 3 | mode == 4 | mode == 5);
     ;; We don't actually care about leftovers
@@ -137,7 +137,7 @@
     send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
-() handle_refund_confirmation(int query_id, int attached_value, slice sender_address, int wl_tons, int pub_tons, int jettons_to_charge_back, slice recipient) inline {
+() handle_refund_confirmation(int query_id, int attached_value, slice sender_address, int wl_tons, int pub_tons, int jettons_to_charge_back, slice recipient) impure inline {
     verify_user_vault(sender_address, recipient);
     int tons_to_refund = wl_tons + pub_tons;
 
@@ -164,7 +164,7 @@
     send_raw_message(simple_transfer_message, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
-() handle_wl_callback(int query_id, int _attached_value, slice sender_address, int should_burn?, int initiator) inline {
+() handle_wl_callback(int query_id, int _attached_value, slice sender_address, int should_burn?, int initiator) impure inline {
     verify_user_vault(sender_address, initiator);
     cell msg = should_burn?
     ? build_jetton_burn_msg(query_id, wl_round::const::burn_util_jet_amount, jet_tools::const::util_jet_wallet_address) ;; 1 nanoton to notify user about tokens
@@ -173,7 +173,7 @@
     send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
 }
 
-() handle_jetton_claim_request(int query_id, int attached_value, slice sender_address) {
+() handle_jetton_claim_request(int query_id, int attached_value, slice sender_address) impure inline {
     ;; Don't need stateinit as if user vault doesn't exist - there is nothing to claim
     (cell _user_vault_stateinit, slice user_vault_address) = calculate_user_vault_data(sender_address);
     ;; We don't care about extra value as final operation (claimed jetton transfer) will take care about excesses
@@ -192,7 +192,7 @@
     send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
-() handle_jetton_claim_confirmation(int query_id, int _attached_value, slice sender_address, int wl_tons, int jettons_to_send, slice recipient) {
+() handle_jetton_claim_confirmation(int query_id, int _attached_value, slice sender_address, int wl_tons, int jettons_to_send, slice recipient) impure inline {
     verify_user_vault(sender_address, recipient);
     int total_fut_jet_recipient_amount = jettons_to_send;
 
@@ -200,7 +200,7 @@
         int public_remainings = public_round::const::fut_jet_limit - public_round::fut_jet_sold;
         int wl_round_fut_jet_final_amount = wl_round::const::fut_jet_limit + public_remainings;
 
-        int recipient_fur_jet_share = muldiv(wl_tons, wl_round_fut_jet_final_amount, wl_round::ton_invested_total);
+        int recipient_fur_jet_share = muldiv(wl_round_fut_jet_final_amount, wl_tons, wl_round::ton_invested_total);
         total_fut_jet_recipient_amount += recipient_fur_jet_share;
     }
     if (equal_slices_bits(recipient, this::const::creator_address)) {
@@ -221,7 +221,15 @@
     );
 
     this::reward_util_jets_cur_balance -= utility_tokens_to_reward_user;
-    cell util_jet_reward_msg = build_jetton_transfer_msg(query_id, JETTON_MIN_TRANSFER_FEE, utility_tokens_to_reward_user, jet_tools::const::util_jet_wallet_address, recipient, 1, begin_cell().store_uint(0, 1));
+    cell util_jet_reward_msg = build_jetton_transfer_msg(
+        query_id,
+        JETTON_MIN_TRANSFER_FEE,
+        utility_tokens_to_reward_user,
+        jet_tools::const::util_jet_wallet_address,
+        recipient,
+        1,
+        begin_cell().store_uint(0, 1)
+    );
 
     sale::const::fut_jet_deployed_balance -= total_fut_jet_recipient_amount;
     cell msg_body = begin_cell()

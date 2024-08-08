@@ -18,9 +18,9 @@
     slice launch_config_slice = launch_config.begin_parse();
     launch_conf::min_ton_for_sale_success = launch_config_slice~load_coins();
     launch_conf::ton_limit_for_wl_round = launch_config_slice~load_coins();
-    launch_conf::util_jet_reward_amount  = launch_config_slice~load_coins();
-    launch_conf::util_jet_wl_pass_amount  = launch_config_slice~load_coins();
-    launch_conf::util_jet_burn_per_wl_pass_amount  = launch_config_slice~load_coins();
+    launch_conf::util_jet_reward_amount = launch_config_slice~load_coins();
+    launch_conf::util_jet_wl_pass_amount = launch_config_slice~load_coins();
+    launch_conf::util_jet_burn_per_wl_pass_amount = launch_config_slice~load_coins();
 
     launch_conf::jet_wl_limit_pct = launch_config_slice~load_uint(16);
     launch_conf::jet_pub_limit_pct = launch_config_slice~load_uint(16);
@@ -94,10 +94,15 @@
             code::jetton_wallet
         );
     }
-    if (msg_flags & 1) { ;; Is bounced
+    if (msg_flags & 1) {
+        ;; Is bounced
         return ();
     }
 
+    if (op == op::core::init) {
+        ;; Add some storage and values constraints later
+        return ();
+    }
     if (op == op::core::create_launch) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         throw_unless(error::not_enough_gas, attached_value > get_amount_for_token_launch_deploy());
@@ -106,7 +111,7 @@
         save_data();
         return ();
     }
-    if (op == op::core::init_callback) {
+    if (op == op::core::tl_init_callback) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         init_callback(query_id, attached_value, sender_address);
         save_data();
@@ -125,6 +130,8 @@
         return ();
     }
 
+    ;; TODO To add change-config function
+
     if (op == op::upgrade) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::chief));
         (cell new_data, cell new_code) = (in_msg_body~load_ref(), in_msg_body~load_ref());
@@ -137,6 +144,30 @@
     throw(error::wrong_op);
 }
 
-(slice, int, int, int) get_user_data() method_id {
+(cell, int, int) get_state() method_id {
     load_data();
+    return (
+        this::not_funded_launches,
+        this::not_funded_launches_amount,
+        this::util_jet_cur_balance
+    );
+}
+
+(int, int, int, int, int, int, int, int, int, int, int) get_launch_config() method_id {
+    load_data();
+    return (
+        launch_conf::min_ton_for_sale_success,
+        launch_conf::ton_limit_for_wl_round,
+        launch_conf::util_jet_reward_amount,
+        launch_conf::util_jet_wl_pass_amount,
+        launch_conf::util_jet_burn_per_wl_pass_amount,
+
+        launch_conf::jet_wl_limit_pct,
+        launch_conf::jet_pub_limit_pct,
+        launch_conf::jet_dex_share_pct,
+
+        launch_conf::creator_round_duration_ms,
+        launch_conf::wl_round_duration_ms,
+        launch_conf::pub_round_duration_ms
+    );
 }
