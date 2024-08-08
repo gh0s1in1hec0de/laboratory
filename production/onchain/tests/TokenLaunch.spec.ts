@@ -31,8 +31,9 @@ import {
 import {TokenLaunch} from '../wrappers/TokenLaunch';
 import {TonClient4, WalletContractV3R2} from "@ton/ton";
 import {Asset, Factory, MAINNET_FACTORY_ADDR} from "@dedust/sdk";
-import {KeyPair, mnemonicToPrivateKey, mnemonicToWalletKey} from "@ton/crypto";
+import {KeyPair, mnemonicNew, mnemonicToPrivateKey, mnemonicToWalletKey} from "@ton/crypto";
 import { getHttpV4Endpoint } from '@orbs-network/ton-access'
+import {randomTestKey} from "@ton/ton/dist/utils/randomTestKey";
 
 
 describe('TokenLaunch', () => {
@@ -83,56 +84,16 @@ describe('TokenLaunch', () => {
     })
 
     deployer = await blockchain.treasury('deployer');
-    // QUESTION Почему именно такие значения?
-    walletStats = new StorageStats(1033, 3);
 
+    const newMnemonic = await mnemonicNew(24);
+    console.log(newMnemonic);
 
-    const _libs = Dictionary.empty(Dictionary.Keys.BigUint(256), Dictionary.Values.Cell());
-    _libs.set(BigInt(`0x${tokenLaunchCodeRaw.hash().toString('hex')}`), tokenLaunchCodeRaw);
-    const libs = beginCell().storeDictDirect(_libs).endCell();
-    blockchain.libs = libs;
-    let lib_prep = beginCell().storeUint(2, 8).storeBuffer(tokenLaunchCodeRaw.hash()).endCell();
-    tokenLaunchCode = new Cell({exotic: true, bits: lib_prep.bits, refs: lib_prep.refs});
-    console.log('token launch code hash = ', tokenLaunchCode.hash().toString('hex'));
-    console.log('jetton wallet code hash = ', tokenLaunchCode.hash().toString('hex'));
-    blockchain.now = Math.floor(Date.now() / 1000);
-
-    // TODO Build similar one after wrapper accomplishment
-    // jettonMinter = blockchain.openContract(
-    //   JettonMinter.createFromConfig(
-    //     {
-    //       admin: deployer.address,
-    //       wallet_code: jwallet_code,
-    //       jetton_content: jettonContentToCell(defaultContent)
-    //     },
-    //     minter_code
-    //   )
-    // );
-    //
-    // userWallet = async (address: Address) => blockchain.openContract(
-    //   JettonWallet.createFromAddress(
-    //     await jettonMinter.getWalletAddress(address)
-    //   )
-    // );
-
-
-    // DeDust integration setup
-    // TODO Determine how to store keys
-    // if (!process.env.MNEMONIC) {
-    //   throw new Error("Environment variable MNEMONIC is required.");
-    // }
-    // const mnemonic = process.env.MNEMONIC.split(" ");
-    // const jettonAddress = Address.parse(process.env.JETTON_ADDRESS);;
-
-    const mnemonic = ['word1', 'word2', 'word3', 'word4', 'word5', 'word6', 'word7', 'word8', 'word9', 'word10', 'word11', 'word12'];
-    jettonAddress = randomAddress();
-
-    const keyPair: KeyPair = await mnemonicToWalletKey(mnemonic);
+    jettonAddress = Address.parse("EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE");
+    const keyPair: KeyPair = await mnemonicToWalletKey(newMnemonic);
     factory = tonClient.open(
       Factory.createFromAddress(MAINNET_FACTORY_ADDR) // You may need a testnet or sandbox factory address
     );
 
-    const keys = await mnemonicToPrivateKey(mnemonic);
     const wallet = tonClient.open(
       WalletContractV3R2.create({
         workchain: 0,
@@ -140,19 +101,12 @@ describe('TokenLaunch', () => {
       }),
     );
 
-    // console.log((await blockchain.getContract(wallet.address)).balance)
+    console.log((await blockchain.getContract(wallet.address)).balance)
 
     provider = blockchain.provider(wallet.address);
-
-    const sender = wallet.sender(keys.secretKey);
-    console.log(jettonAddress)
+    const sender = wallet.sender(keyPair.secretKey);
 
     blockchain.openContract(wallet)
-
-    await factory.sendCreateVault(sender, {
-      asset: Asset.jetton(jettonAddress),
-    });
-
 
     // Measures compute fees of a tx
     printTxGasStats = (name, transaction) => {
@@ -178,10 +132,10 @@ describe('TokenLaunch', () => {
     }
 
     // Jerks
-    forwardOverhead = (prices, stats) => {
-      // Meh, kinda lazy way of doing that, but tests are bloated enough already
-      return computeFwdFees(prices, stats.cells, stats.bits) - prices.lumpPrice;
-    }
+    // forwardOverhead = (prices, stats) => {
+    //   // Meh, kinda lazy way of doing that, but tests are bloated enough already
+    //   return computeFwdFees(prices, stats.cells, stats.bits) - prices.lumpPrice;
+    // }
 
     calcSendFees = (send, recv, fwd, fwd_amount, storage, state_init) => {
       const overhead = state_init || defaultOverhead;
@@ -190,7 +144,7 @@ describe('TokenLaunch', () => {
       return fwdTotal + send + recv + storage + 1n;
     }
 
-    defaultOverhead = forwardOverhead(msgPrices, stateInitStats);
+   // defaultOverhead = forwardOverhead(msgPrices, stateInitStats);
   })
 
   // TESTS
@@ -206,7 +160,7 @@ describe('TokenLaunch', () => {
 
     // Optionally, you could also check the state of the vault if needed
     const vaultState = await blockchain.getContract(vaultAddress);
-    console.log(`Vault State: ${vaultState}`);
+    console.log(vaultState);
     expect(vaultState).toBeDefined(); // Adjust based on the expected structure
   });
 })
