@@ -25,12 +25,13 @@ import {
   computeFwdFeesVerbose,
   FullFees,
   MsgPrices,
+  randomAddress,
   StorageStats
 } from "./utils";
 import {TokenLaunch} from '../wrappers/TokenLaunch';
 import {TonClient4, WalletContractV3R2} from "@ton/ton";
 import {Asset, Factory, MAINNET_FACTORY_ADDR} from "@dedust/sdk";
-import {mnemonicToPrivateKey} from "@ton/crypto";
+import {KeyPair, mnemonicToPrivateKey, mnemonicToWalletKey} from "@ton/crypto";
 import { getHttpV4Endpoint } from '@orbs-network/ton-access'
 
 
@@ -55,7 +56,7 @@ describe('TokenLaunch', () => {
   let provider: ContractProvider;
   let jettonAddress: Address;
   // let wallet: WalletContractV3R2;
-  // let sender: any;
+  let sender: any;
 
 
   // FUNCTIONS
@@ -71,14 +72,18 @@ describe('TokenLaunch', () => {
                      state_init?: bigint) => bigint;
 
   beforeAll(async () => {
-    tokenLaunchCodeRaw = await compile('TokenLaunch');
+    // tokenLaunchCodeRaw = await compile('TokenLaunch');
+
+    tonClient = new TonClient4({
+      endpoint: await getHttpV4Endpoint({network: "mainnet"}),
+    });
+
     blockchain = await Blockchain.create({
-      storage: new RemoteBlockchainStorage(wrapTonClient4ForRemote(new TonClient4({
-        endpoint: await getHttpV4Endpoint({
-          network: 'mainnet'
-        })
-      })))
+      storage: new RemoteBlockchainStorage(wrapTonClient4ForRemote(tonClient))
     })
+
+    deployer = await blockchain.treasury('deployer');
+    // QUESTION Почему именно такие значения?
     walletStats = new StorageStats(1033, 3);
 
 
@@ -119,13 +124,10 @@ describe('TokenLaunch', () => {
     // const mnemonic = process.env.MNEMONIC.split(" ");
     // const jettonAddress = Address.parse(process.env.JETTON_ADDRESS);;
 
-    const mnemonic = "test mnemonic phrase here".split(" ");
-    jettonAddress = Address.parse("test jetton address here");
+    const mnemonic = ['word1', 'word2', 'word3', 'word4', 'word5', 'word6', 'word7', 'word8', 'word9', 'word10', 'word11', 'word12'];
+    jettonAddress = randomAddress();
 
-    tonClient = new TonClient4({
-      endpoint: await getHttpV4Endpoint({network: "mainnet"}), // Replace with your sandbox endpoint
-    });
-
+    const keyPair: KeyPair = await mnemonicToWalletKey(mnemonic);
     factory = tonClient.open(
       Factory.createFromAddress(MAINNET_FACTORY_ADDR) // You may need a testnet or sandbox factory address
     );
@@ -134,18 +136,23 @@ describe('TokenLaunch', () => {
     const wallet = tonClient.open(
       WalletContractV3R2.create({
         workchain: 0,
-        publicKey: keys.publicKey,
+        publicKey: keyPair.publicKey,
       }),
     );
 
-    (await blockchain.getContract(wallet.address)).balance;
+    // console.log((await blockchain.getContract(wallet.address)).balance)
+
     provider = blockchain.provider(wallet.address);
 
     const sender = wallet.sender(keys.secretKey);
+    console.log(jettonAddress)
+
+    blockchain.openContract(wallet)
 
     await factory.sendCreateVault(sender, {
       asset: Asset.jetton(jettonAddress),
     });
+
 
     // Measures compute fees of a tx
     printTxGasStats = (name, transaction) => {
