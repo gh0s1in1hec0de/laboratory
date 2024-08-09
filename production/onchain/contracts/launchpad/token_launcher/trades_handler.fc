@@ -121,6 +121,8 @@
 }
 
 () handle_refund_request(int query_id, int attached_value, slice sender_address, int mode, int refund_value) impure inline {
+    ;; If jetton is deployed - than pool is already created and there is no refund option
+    throw_if(error::wrong_time, sale::const::fut_jet_deployed_balance > 0);
     throw_if(error::wrong_time, now() < creator_round::const::end_time);
     throw_unless(error::bad_request, mode == 3 | mode == 4 | mode == 5);
     ;; We don't actually care about leftovers

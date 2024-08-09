@@ -5,11 +5,11 @@
 
 #include "uv_context.fc";
 
-int vault_is_empty() {
+int vault_is_empty() inline {
     this::wl_ton_balance + this::public_ton_balance + this::jetton_balance == 0 ? TRUE : FALSE;
 }
 
-int get_withdraw_message_mode() {
+int get_withdraw_message_mode() impure inline_ref {
     int msg_mode = SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL;
     ifnot (vault_is_empty()) {
         raw_reserve(calculate_user_vault_min_storage_fee(), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
@@ -19,7 +19,7 @@ int get_withdraw_message_mode() {
     return msg_mode;
 }
 
-cell build_withdraw_confirmation_message(int is_refund?, int query_id, int wl_tons, int pub_tons, int jettons) {
+cell build_withdraw_confirmation_message(int is_refund?, int query_id, int wl_tons, int pub_tons, int jettons) inline_ref {
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     ;; 32 + 64 + 16 + 16 + 16 + 267 < 1023
     cell msg_body = begin_cell()
@@ -39,7 +39,7 @@ cell build_withdraw_confirmation_message(int is_refund?, int query_id, int wl_to
     return msg;
 }
 
-cell build_wl_callback(int query_id, int should_burn?) {
+cell build_wl_callback(int query_id, int should_burn?) inline {
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     ;; Bits: 32 + 64 + 1 + 267 < 1023
     cell msg_body = begin_cell()
@@ -60,7 +60,7 @@ cell build_wl_callback(int query_id, int should_burn?) {
 
 ;;; We repeat `save_data` here as we want to exlude completely an opportuninty of infinite refund attack through
 ;;; lack of attached gas or sth. It is just safer, albeit not as concise.
-() handle_balance_update(int query_id, int mode, int ton_balance_update, int jetton_balance_update) {
+() handle_balance_update(int query_id, int mode, int ton_balance_update, int jetton_balance_update) impure inline {
     if (mode == BALANCE_UPD_DEPOSIT_WL) {
         throw_if(error::unreachable, jetton_balance_update > 0);
         cell wl_callback = build_wl_callback(query_id, this::wl_ton_balance == 0 ? TRUE : FALSE);

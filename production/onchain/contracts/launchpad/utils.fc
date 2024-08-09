@@ -37,7 +37,7 @@ slice pack_address(slice address) inline {
     return (msg_flags, sender_address, value, fwd_fee);
 }
 
-() load_sale_config(cell sale_config) inline_ref {
+() load_sale_config(cell sale_config) inline {
     slice sale_conf_slice = sale_config.begin_parse();
     sale::const::fut_jet_deployed_balance = sale_conf_slice.load_coins();
     sale::const::fut_jet_wallet_address = sale_conf_slice.load_msg_addr();
@@ -115,7 +115,7 @@ cell build_jetton_burn_msg(int query_id, int jetton_amount, slice our_wallet_add
         .end_cell();
 }
 
-int get_amount_out(int amount_in, int reserve_in, int reserve_out) inline {
+int get_amount_out(int amount_in, int reserve_in, int reserve_out) impure inline {
     ;; We calculate K according to AMM (Automatic Meow-Meow) formula x*y<=K, where x and y are assets' amounts
     ;; New amount of first asset, that should be in pool
     int new_reserve_in = reserve_in + amount_in;
@@ -160,9 +160,6 @@ slice calculate_contract_address(cell state_init) inline_ref {
         .store_uint(cell_hash(state_init), 256)
         .end_cell() ;; can we optimize it?
         .begin_parse();
-    ;; Pay attention to amount of bits in address - 267.
-    ;; All is needed - to find out concrete cases, where it can differ -
-    ;; after that we can be sure in our address size
 }
 
 cell pack_user_vault_data(slice owner_address, slice launch_contract_address, int wl_invested, int public_invested, int token_balance) inline {
@@ -190,7 +187,7 @@ cell pack_user_vault_data(slice owner_address, slice launch_contract_address, in
     return (user_vault_stateinit, user_vault_address);
 }
 
-() verify_user_vault(slice vault_address, slice owner_address) inline_ref {
+() verify_user_vault(slice vault_address, slice owner_address) impure inline_ref {
     slice (_user_vault_stateinit, derived_user_vault_address) = calculate_user_vault_data(owner_address);
     throw_unless(error::unauthorized_access, equal_slices_bits(vault_address, derived_user_vault_address));
 }
