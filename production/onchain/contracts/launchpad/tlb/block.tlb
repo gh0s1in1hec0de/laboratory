@@ -30,3 +30,6 @@ var_int$_ {n:#} len:(#< n) value:(int (len * 8))
 nanograms$_ amount:(VarUInteger 16) = Grams;
 
 _ grams:Grams = Coins;
+
+vm_stk_null#00 = VmStackValue;
+

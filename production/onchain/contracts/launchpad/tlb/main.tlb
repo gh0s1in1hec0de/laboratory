@@ -1,37 +1,67 @@
-// TODO ADD `OP` FIELDS WITH ACTUAL CRC32 HASHES IN CONSTRUCTOR TAG
+/* === TOKEN LAUNCH === */
+_ fut_jet_deployed_balance:Coins fut_jet_wallet_address:Coins total_tons_collected:Coins
+  creator_fut_jet_limit:Coins creator_fut_jet_balance:Coins creator_fut_jet_price:Coins creator_round_end_time:int32
+  wl_fut_jet_limit:Coins wl_ton_limit:Coins wl_pass_util_jet_amount:Coins wl_burn_util_jet_amount:Coins wl_ton_invested_total:Coins wl_end_time:int32
+  pub_fut_jet_limit:Coins pub_fut_jet_sold:Coins synthetic_jet_reserve:Coins synthetic_ton_reserve:Coins pub_end_time:int32
+  user_vault_code:^Cell = SaleData;
+_ util_jet_wallet_address:MsgAddressInt fut_jet_master_address:MsgAddressInt
+  metadata:^Cell fut_jet_master_code:^Cell wallet_code:^Cell = JetTools;
 
-// TOKEN LAUNCH
-sale_config# fut_jet_deployed_balance:Coins fut_jet_wallet_address:Coins total_tons_collected:Coins
-             creator_fut_jet_limit:Coins creator_fut_jet_balance:Coins creator_fut_jet_price:Coins creator_round_end_time:int32
-             wl_fut_jet_limit:Coins wl_ton_limit:Coins wl_pass_util_jet_amount:Coins wl_burn_util_jet_amount:Coins wl_ton_invested_total:Coins wl_end_time:int32
-             pub_fut_jet_limit:Coins pub_fut_jet_sold:Coins synthetic_jet_reserve:Coins synthetic_ton_reserve:Coins pub_end_time:int32
-             user_vault_code:^Cell = SaleData;
-jet_tools#   util_jet_wallet_address:MsgAddressInt fut_jet_master_address:MsgAddressInt
-             metadata:^Cell fut_jet_master_code:^Cell wallet_code:^Cell = JetTools;
+_ is_initialized:int1 fut_jet_total_supply:Coins min_ton_for_sale_success:Coins fut_jet_dex_amount:Coins fut_jet_platform_amount:Coins reward_util_jets_total_amount:Coins
+  operational_needs:Coins fut_jet_cur_balance:Coins reward_util_jets_cur_balance:Coins
+  chief_address:MsgAddressInt creator_address: MsgAddressInt
+  sale_data: ^SaleData jet_tools: ^JetTools = TokenLaunchStorage;
 
-storage# is_initialized:int1 fut_jet_total_supply:Coins min_ton_for_sale_success:Coins fut_jet_dex_amount:Coins fut_jet_platform_amount:Coins reward_util_jets_total_amount:Coins
-         operational_needs:Coins fut_jet_cur_balance:Coins reward_util_jets_cur_balance:Coins
-         chief_address:MsgAddressInt creator_address: MsgAddressInt
-         sale_data: ^SaleData jet_tools: ^JetTools = TokenLaunchStorage;
-
-init# fut_jet_wallet_address:MsgAddressInt util_jet_wallet_address:MsgAddressInt fut_jet_master_address:MsgAddressInt = TokenLaunchMsg;
+init#5ca04142 fut_jet_wallet_address:MsgAddressInt util_jet_wallet_address:MsgAddressInt fut_jet_master_address:MsgAddressInt = TokenLaunchMsg;
 // Buys
-creator_buyout# query_id:uint64 = TokenLaunchMsg;
-public_buy# query_id:uint64 = TokenLaunchMsg;
-wl_callback# query_id:uint64 should_burn:int1 initiator:MsgAddressInt = TokenLaunchMsg;
+creator_buyout#0a535100 query_id:uint64 = TokenLaunchMsg;
+public_buy#16ee6c2d query_id:uint64 = TokenLaunchMsg;
+wl_callback#390f7cfd query_id:uint64 should_burn:int1 initiator:MsgAddressInt = TokenLaunchMsg;
+
 // Claims
-refund_request# query_id:uint64 mode:uint4 refund_value:Coins = TokenLaunchMsg;
-refund_confirmation# query_id:uint64 wl_tons:Coins pub_tons:Coins jettons:Coins recipient:MsgAddressInt = TokenLaunchMsg;
-jetton_claim_request# query_id:uint64 = TokenLaunchMsg;
-jetton_claim_confirmation# query_id:uint64 wl_tons:Coins pub_tons:Coins jettons:Coins recipient:MsgAddressInt = TokenLaunchMsg;
-//Utils
-deploy_jet# query_id:uint64 = TokenLaunchMsg;
-upgrade#2508d66a query_id:uint64 new_data:^Cell new_code:^Cell = TokenLaunchMsg;
+refund_request#7b4587a1 query_id:uint64 mode:uint4 refund_value:Coins = TokenLaunchMsg;
+refund_confirmation#6f7dbcd0 query_id:uint64 wl_tons:Coins pub_tons:Coins jettons:Coins recipient:MsgAddressInt = TokenLaunchMsg;
+jetton_claim_request#16b3aef0 query_id:uint64 = TokenLaunchMsg;
+jetton_claim_confirmation#349c1c7f query_id:uint64 wl_tons:Coins pub_tons:Coins jettons:Coins recipient:MsgAddressInt = TokenLaunchMsg;
+
+// Utils
+deploy_jet#71161970 query_id:uint64 = TokenLaunchMsg;
+upgrade#055d212a query_id:uint64 new_data:^Cell new_code:^Cell = TokenLaunchMsg;
 
 
-// USER VAULT
-storage# owner:MsgAddressInt wl_invested:Coins public_invested:Coins token_balance:Coins = UserVaultStorage;
+/* === USER VAULT === */
+_ owner:MsgAddressInt wl_invested:Coins public_invested:Coins token_balance:Coins = UserVaultStorage;
+balance_update#00399d7a query_id:uint64 mode:uint4 tons:Coins fut_jettons:Coins = UserVaultUpdate;
+claim#670fafc3 = UserVaultUpdate;
 
-balance_update# query_id:uint64 mode:uint4 tons:Coins fut_jettons:Coins = BalanceUpdate;
 
-// TODO Core tlb & periphery messages
+/* === CORE === */
+_ jetton_launch_code:^Cell jetton_launch_user_vault:^Cell derived_jetton_master_code:^Cell jetton_wallet_code:^Cell = Contracts;
+_ min_ton_for_sale_success:Coins ton_limit_for_wl_round:Coins util_jet_reward_amount:Coins util_jet_wl_pass_amount:Coins util_jet_burn_per_wl_pass_amount:Coins
+  jet_wl_limit_pct:uint16 jet_wl_limit_pct:uint16 jet_wl_limit_pct:uint16
+  creator_round_duration_ms:int32 wl_round_duration_ms:int32 pub_round_duration_ms:int32
+  = LaunchConfig;
+_ chief:MsgAddressInt util_jetton_master_address:MsgAddressInt util_jetton_wallet_address:MsgAddressInt
+  util_jet_cur_balance:Coins not_funded_launches:Hashmap 0 VmStackValue /* initial size is 0, value is nothing, null, zero, absolute fucking emtyness ^^  */
+  not_funded_launches_amount:uint8 launch_config:^Cell contracts:^Cell
+  = CoreStorage;
+
+create_launch#5a4aa3d3 platform_supply:Coins platform_share_pct:uint16 metadata_cell:^Cell = CoreMsg;
+init_callback#15ec7a91 = CoreMsg;
+
+/* === PERIPHERY === */
+
+// Jetton master opertions we call
+mint#642b7d07
+  query_id:uint64
+  to_address:MsgAddressInt
+  ton_amount:Coins
+  master_msg:^JettonInternalTransfer
+  = JettonMinterMsg;
+
+claim_admin#fb88e119
+  query_id:uint64
+  = JettonMinterMsg;
+
+// token_launcher/jetton_operating.fc#L103
+_ fut_jet_dex_amount:Coins fut_jet_platform_amount:Coins = PoolValueWithdrawPayload;
