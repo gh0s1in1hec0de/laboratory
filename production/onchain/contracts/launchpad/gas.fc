@@ -173,6 +173,16 @@ int get_jetton_deploy_gas_cost() {
 }
 
 ;; === Jetton Claim ===
+
+;; Don't need stateinit as if vault doesn't exist, then there is nothing to claim
+int get_claim_gas_cost() inline_ref {
+    return
+    ;; Forwarding claim message
+     get_forward_fee(MY_WORKCHAIN, CLAIM_MSG_BITS, CLAIM_MSG_CELLS)
+    ;; User-vault side request processing
+    + get_compute_fee(MY_WORKCHAIN, RECEIVE_CLAIM_CONSUMPTION)
+    + calculate_user_vault_min_storage_fee();
+}
 const CLAIM_GAS_CONSUMPTION = 1;
 const CLAIM_CONFIRMATION_GAS_CONSUMPTION = 1;
 int check_amount_is_enough_for_jetton_claim(int msg_value) {
@@ -180,10 +190,7 @@ int check_amount_is_enough_for_jetton_claim(int msg_value) {
     ;; Our side request processing
     get_compute_fee(MY_WORKCHAIN, CLAIM_GAS_CONSUMPTION)
     ;; Forwarding claim message
-    + get_forward_fee(MY_WORKCHAIN, CLAIM_MSG_BITS, CLAIM_MSG_CELLS)
-    ;; User-vault side request processing
-    + get_compute_fee(MY_WORKCHAIN, RECEIVE_CLAIM_CONSUMPTION)
-    + calculate_user_vault_min_storage_fee()
+    + get_claim_gas_cost()
     ;; User vault's response
     + get_forward_fee(MY_WORKCHAIN, WITHDRAW_CONFIRMATION_MSG_BITS, WITHDRAW_CONFIRMATION_MSG_CELLS)
     ;; Our side callback processing

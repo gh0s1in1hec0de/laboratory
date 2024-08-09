@@ -95,7 +95,7 @@ const int MINT_QUERY_ID = 27082006;
         ;; We send one jetton transfer with all the
         cell transfer_msg = build_jetton_transfer_msg(
             query_id,
-            JETTON_MIN_TRANSFER_FEE + sale::total_tons_collected,
+            JETTON_MIN_TRANSFER_FEE + sale::total_tons_collected + this::operational_needs,
             this::const::fut_jet_dex_amount + this::const::fut_jet_platform_amount,
             sale::const::fut_jet_wallet_address,
             this::chief,
