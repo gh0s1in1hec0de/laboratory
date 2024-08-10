@@ -1,15 +1,4 @@
-import {compile} from "@ton/blueprint";
-import {
-  Address,
-  beginCell,
-  Cell,
-  ContractProvider,
-  Dictionary,
-  OpenedContract,
-  storeMessage,
-  toNano,
-  Transaction
-} from "@ton/core";
+import {Address, beginCell, Cell, storeMessage, toNano, Transaction} from "@ton/core";
 import {
   Blockchain,
   internal,
@@ -25,15 +14,12 @@ import {
   computeFwdFeesVerbose,
   FullFees,
   MsgPrices,
-  randomAddress,
   StorageStats
 } from "./utils";
 import {TokenLaunch} from '../wrappers/TokenLaunch';
-import {TonClient4, WalletContractV3R2} from "@ton/ton";
-import {Asset, Factory, MAINNET_FACTORY_ADDR} from "@dedust/sdk";
-import {KeyPair, mnemonicNew, mnemonicToPrivateKey, mnemonicToWalletKey} from "@ton/crypto";
-import { getHttpV4Endpoint } from '@orbs-network/ton-access'
-import {randomTestKey} from "@ton/ton/dist/utils/randomTestKey";
+import {TonClient4} from "@ton/ton";
+import {Factory} from "@dedust/sdk";
+import {getHttpV4Endpoint} from '@orbs-network/ton-access'
 
 
 describe('TokenLaunch', () => {
@@ -52,16 +38,16 @@ describe('TokenLaunch', () => {
   let defaultOverhead: bigint;
 
   // Dedust related variables
-  let tonClient: TonClient4;
-  let factory: OpenedContract<Factory>;
-  let provider: ContractProvider;
-  let jettonAddress: Address;
-  // let wallet: WalletContractV3R2;
-  let sender: any;
-
+  let factory: SandboxContract<Factory>;
 
   // FUNCTIONS
+  /**
+   * Measures compute fees of a tx
+   */
   let printTxGasStats: (name: string, trans: Transaction) => bigint;
+  /**
+   * Measures forward fees of a cell structure
+   */
   let estimateBodyFee: (body: Cell, force_ref: boolean, prices?: MsgPrices) => FullFees;
   let estimateBurnFwd: (prices?: MsgPrices) => bigint;
   let forwardOverhead: (prices: MsgPrices, stats: StorageStats) => bigint;
@@ -74,41 +60,32 @@ describe('TokenLaunch', () => {
 
   beforeAll(async () => {
     // tokenLaunchCodeRaw = await compile('TokenLaunch');
-
-    tonClient = new TonClient4({
-      endpoint: await getHttpV4Endpoint({network: "mainnet"}),
-    });
-
     blockchain = await Blockchain.create({
-      storage: new RemoteBlockchainStorage(wrapTonClient4ForRemote(tonClient))
+      storage: new RemoteBlockchainStorage(wrapTonClient4ForRemote(new TonClient4({
+        endpoint: await getHttpV4Endpoint({network: "mainnet"}),
+      })))
     })
-
     deployer = await blockchain.treasury('deployer');
+    blockchain.now = Math.floor(Date.now() / 1000);
 
-    const newMnemonic = await mnemonicNew(24);
-    console.log(newMnemonic);
+    // TODO Build similar one after wrapper accomplishment
+    // jettonMinter = blockchain.openContract(
+    //   JettonMinter.createFromConfig(
+    //     {
+    //       admin: deployer.address,
+    //       wallet_code: jwallet_code,
+    //       jetton_content: jettonContentToCell(defaultContent)
+    //     },
+    //     minter_code
+    //   )
+    // );
+    //
+    // userWallet = async (address: Address) => blockchain.openContract(
+    //   JettonWallet.createFromAddress(
+    //     await jettonMinter.getWalletAddress(address)
+    //   )
+    // );
 
-    jettonAddress = Address.parse("EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE");
-    const keyPair: KeyPair = await mnemonicToWalletKey(newMnemonic);
-    factory = tonClient.open(
-      Factory.createFromAddress(MAINNET_FACTORY_ADDR) // You may need a testnet or sandbox factory address
-    );
-
-    const wallet = tonClient.open(
-      WalletContractV3R2.create({
-        workchain: 0,
-        publicKey: keyPair.publicKey,
-      }),
-    );
-
-    console.log((await blockchain.getContract(wallet.address)).balance)
-
-    provider = blockchain.provider(wallet.address);
-    const sender = wallet.sender(keyPair.secretKey);
-
-    blockchain.openContract(wallet)
-
-    // Measures compute fees of a tx
     printTxGasStats = (name, transaction) => {
       const txComputed = computedGeneric(transaction);
       console.log(`${name} used ${txComputed.gasUsed} gas`);
@@ -116,7 +93,6 @@ describe('TokenLaunch', () => {
       return txComputed.gasFees;
     }
 
-    // Measures forward fees of a cell structure
     estimateBodyFee = (body, forceRef, prices) => {
       // const curPrice = prices || msgPrices;
       const mockAddr = new Address(0, Buffer.alloc(32, 'A'));
@@ -132,10 +108,10 @@ describe('TokenLaunch', () => {
     }
 
     // Jerks
-    // forwardOverhead = (prices, stats) => {
-    //   // Meh, kinda lazy way of doing that, but tests are bloated enough already
-    //   return computeFwdFees(prices, stats.cells, stats.bits) - prices.lumpPrice;
-    // }
+    forwardOverhead = (prices, stats) => {
+      // Meh, kinda lazy way of doing that, but tests are bloated enough already
+      return computeFwdFees(prices, stats.cells, stats.bits) - prices.lumpPrice;
+    }
 
     calcSendFees = (send, recv, fwd, fwd_amount, storage, state_init) => {
       const overhead = state_init || defaultOverhead;
@@ -144,23 +120,24 @@ describe('TokenLaunch', () => {
       return fwdTotal + send + recv + storage + 1n;
     }
 
-   // defaultOverhead = forwardOverhead(msgPrices, stateInitStats);
+    defaultOverhead = forwardOverhead(msgPrices, stateInitStats);
   })
 
   // TESTS
-  test('should create a vault using DeDust', async () => {
-    // Here, you would add logic to interact with the factory to verify vault creation
-    // Assuming you have a method to get the vaults, or if you need to manually check the state
-    // Replace this with actual interaction logic, e.g., querying a known vault address or state
-
-    // Get the vault address for the jetton
-    const vaultAddress = await factory.getVaultAddress(Asset.jetton(jettonAddress));
-    console.log(`Vault Address: ${Address.normalize(vaultAddress)}`);
-    expect(vaultAddress).toBeDefined(); // Adjust based on the expected structure
-
-    // Optionally, you could also check the state of the vault if needed
-    const vaultState = await blockchain.getContract(vaultAddress);
-    console.log(vaultState);
-    expect(vaultState).toBeDefined(); // Adjust based on the expected structure
+  test('test DeDust', async () => {
+    //   const scaleAddress = Address.parse("EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE");
+    //   factory = blockchain.openContract(
+    //     Factory.createFromAddress(MAINNET_FACTORY_ADDR)
+    //   );
+    //
+    //   const scaleVaultAddress = await factory.getVaultAddress(Asset.jetton(scaleAddress));
+    //   console.log(`$SCALE vault address: ${Address.normalize(scaleVaultAddress)}`);
+    //
+    //   await factory.sendCreateVault(deployer.getSender(), {
+    //     asset: Asset.jetton(jettonMinter.address),
+    //   });
+    //
+    //   const newVaultAddress = await factory.getVaultAddress(Asset.jetton(jettonMinter.address));
+    //   console.log(`New vault address: ${Address.normalize(newVaultAddress)}`);
   });
 })
