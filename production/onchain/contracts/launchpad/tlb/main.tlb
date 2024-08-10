@@ -1,20 +1,33 @@
 /* === TOKEN LAUNCH === */
-// 124 * 15 + 32 * 3 lol TODO
-_ fut_jet_deployed_balance:Coins fut_jet_wallet_address:Coins total_tons_collected:Coins
-  creator_fut_jet_limit:Coins creator_fut_jet_balance:Coins creator_fut_jet_price:Coins creator_round_end_time:int32
-  wl_fut_jet_limit:Coins wl_ton_limit:Coins wl_pass_util_jet_amount:Coins wl_burn_util_jet_amount:Coins wl_ton_invested_total:Coins wl_end_time:int32
-  pub_fut_jet_limit:Coins pub_fut_jet_sold:Coins synthetic_jet_reserve:Coins synthetic_ton_reserve:Coins pub_end_time:int32
-  user_vault_code:^Cell = SaleData;
-_ util_jet_wallet_address:MsgAddressInt fut_jet_master_address:MsgAddressInt
-  metadata:^Cell fut_jet_master_code:^Cell wallet_code:^Cell = JetTools;
 
-// 124 * 8 + 267 * 2 + 1 lol TODO
-_ is_initialized:int1 fut_jet_total_supply:Coins min_ton_for_sale_success:Coins fut_jet_dex_amount:Coins fut_jet_platform_amount:Coins reward_util_jets_total_amount:Coins
-  operational_needs:Coins fut_jet_cur_balance:Coins reward_util_jets_cur_balance:Coins
-  chief_address:MsgAddressInt creator_address: MsgAddressInt
-  sale_data: ^SaleData jet_tools: ^JetTools = TokenLaunchStorage;
+// Token Launch Storage
+// 124 x 4
+_ fut_jet_inner_balance:Coins fut_jet_deployed_balance:Coins total_tons_collected:Coins reward_util_jets_balance:Coins
+  = GeneralState;
+// 124 x 3 + 32
+_ creator_fut_jet_limit:Coins creator_fut_jet_balance:Coins creator_fut_jet_price:Coins creator_round_end_time:int32
+  = CreatorRoundState;
+// 124 x 5 + 32
+_ wl_fut_jet_limit:Coins wl_ton_limit:Coins wl_pass_util_jet_amount:Coins wl_burn_util_jet_amount:Coins wl_ton_invested_total:Coins wl_end_time:int32
+  = WhitelistRoundState;
+// 124 x 4 + 32
+_ pub_fut_jet_limit:Coins pub_fut_jet_sold:Coins synthetic_jet_reserve:Coins synthetic_ton_reserve:Coins pub_end_time:int32
+  = PublicRoundState;
+_ general:^GeneralState creator_round:^CreatorRoundState wl_round:^WhitelistRoundState pub_round:^PublicRoundState
+  = SaleState;
+_ util_jet_wallet_address:MsgAddressInt fut_jet_master_address:MsgAddressInt fut_jet_wallet_address:MsgAddressInt
+  metadata:^Cell fut_jet_master_code:^Cell wallet_code:^Cell user_vault_code:^Cell = Tools;
 
+// 124 x 5
+_ fut_jet_total_supply:Coins min_ton_for_sale_success:Coins fut_jet_dex_amount:Coins fut_jet_platform_amount:Coins reward_util_jets_total_amount:Coins
+  = SaleConfig;
+// 1 + 124 + 267 x 2
+_ is_initialized:int1 operational_needs:Coins chief_address:MsgAddressInt creator_address: MsgAddressInt
+  sale_config:^SaleConfig sale_state: ^SaleState jet_tools: ^Tools = TokenLaunchStorage;
+
+// Token Launch Operations
 init#5ca04142 fut_jet_wallet_address:MsgAddressInt util_jet_wallet_address:MsgAddressInt fut_jet_master_address:MsgAddressInt = TokenLaunchMsg;
+
 // Buys
 creator_buyout#0a535100 query_id:uint64 = TokenLaunchMsg;
 public_buy#16ee6c2d query_id:uint64 = TokenLaunchMsg;

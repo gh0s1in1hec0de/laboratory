@@ -37,33 +37,6 @@ slice pack_address(slice address) inline {
     return (msg_flags, sender_address, value, fwd_fee);
 }
 
-() load_sale_config(cell sale_config) inline {
-    slice sale_conf_slice = sale_config.begin_parse();
-    sale::const::fut_jet_deployed_balance = sale_conf_slice.load_coins();
-    sale::const::fut_jet_wallet_address = sale_conf_slice.load_msg_addr();
-    sale::total_tons_collected = sale_conf_slice.load_coins();
-
-    creator_round::const::fut_jet_limit = sale_conf_slice~load_coins()
-    creator_round::creator_fut_jet_balance = sale_conf_slice~load_coins();
-    creator_round::const::fut_jet_price = sale_conf_slice~load_uint(32);
-    creator_round::const::end_time = sale_conf_slice~load_int(32);
-
-    wl_round::const::fut_jet_limit = sale_conf_slice~load_uint(8);
-    wl_round::const::ton_limit = sale_conf_slice~load_uint(8);
-    wl_round::const::pass_util_jet_amount = sale_conf_slice~load_coins();
-    wl_round::const::burn_util_jet_amount = sale_conf_slice~load_coins();
-    wl_round::ton_invested_total = sale_conf_slice~load_coins();
-    wl_round::const::end_time = sale_conf_slice~load_int(32);
-
-    public_round::const::fut_jet_limit = sale_conf_slice~load_coins();
-    public_round::fut_jet_sold = sale_conf_slice~load_coins();
-    public_round::synthetic_jet_reserve = sale_conf_slice~load_coins();
-    public_round::synthetic_ton_reserve = sale_conf_slice~load_coins();
-    public_round::const::end_time = sale_conf_slice~load_int(32);
-    sale::const::user_vault_code = sale_conf_slice~load_ref();
-    sale_conf_slice.end_parse();
-}
-
 cell build_content_cell(slice metadata_uri) inline {
     cell content_dict = new_dict();
     content_dict~set_token_snake_metadata_entry("uri"H, metadata_uri);
@@ -174,7 +147,7 @@ cell pack_user_vault_data(slice owner_address, slice launch_contract_address, in
 
 (cell, slice) calculate_user_vault_data(slice sender_address) inline_ref {
     cell user_vault_stateinit = calculate_contract_state_init(
-        sale::const::user_vault_code,
+        tools::const::user_vault_code,
         pack_user_vault_data(
             sender_address,
             my_address(),

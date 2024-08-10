@@ -14,9 +14,9 @@
 
     if (jettons_amount > 0) {
         throw_if(error::balance_overlimit, creator_round::creator_fut_jet_balance + jettons_amount > creator_round::const::fut_jet_limit);
-        sale::total_tons_collected += val_left;
+        general_state::total_tons_collected += val_left;
         creator_round::creator_fut_jet_balance += jettons_amount;
-        this::fut_jet_cur_balance -= jettons_amount;
+        general_state::fut_jet_inner_balance -= jettons_amount;
     }
     ;; Seems like it will fail almost always, and the remainder will be to small, do we actually need it?
     if (remainder > 0) {
@@ -41,7 +41,7 @@
             query_id,
             0,
             wl_round::const::pass_util_jet_amount,
-            jet_tools::const::util_jet_wallet_address,
+            tools::const::util_jet_wallet_address,
             initiator,
             user_value_after_fee > 0 ? user_value_after_fee : 1,
             begin_cell().store_uint(0, 1)
@@ -57,7 +57,7 @@
         query_id,
         0,
         wl_round::const::pass_util_jet_amount - wl_round::const::burn_util_jet_amount,
-        jet_tools::const::util_jet_wallet_address,
+        tools::const::util_jet_wallet_address,
         initiator,
         0,
         begin_cell().store_uint(0, 1)
@@ -77,7 +77,7 @@
 
     send_raw_message(msg, SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     wl_round::ton_invested_total += user_value_after_fee;
-    sale::total_tons_collected += user_value_after_fee;
+    general_state::total_tons_collected += user_value_after_fee;
     {-
        As out WL phase is fairlaunch - we have static amount of jettons to distribute
        and dynamic value of TON, that can be invested in this round (due to our guarantees to WL investors).
@@ -96,16 +96,16 @@
 
     throw_unless(error::unreachable, res_jettons >= 0);
     throw_unless(error::balance_overlimit, public_round::const::fut_jet_limit >= public_round::fut_jet_sold + res_jettons);
-    throw_unless(error::balance_overlimit, this::fut_jet_cur_balance - wl_round::const::fut_jet_limit - res_jettons >= 0);
+    throw_unless(error::balance_overlimit, general_state::fut_jet_inner_balance - wl_round::const::fut_jet_limit - res_jettons >= 0);
 
     ;; Taking care of our synthetic price controllers
     public_round::synthetic_ton_reserve += attached_value;
     public_round::synthetic_jet_reserve -= res_jettons;
 
-    this::fut_jet_cur_balance -= res_jettons;
+    general_state::fut_jet_inner_balance -= res_jettons;
     public_round::fut_jet_sold += res_jettons;
 
-    sale::total_tons_collected += user_value_after_fee;
+    general_state::total_tons_collected += user_value_after_fee;
 
     ;; Here we attach precise amount of money - as all the remainings gone on ivenstment
     int msg_value = get_balance_update_gas_cost();
@@ -122,7 +122,7 @@
 
 () handle_refund_request(int query_id, int attached_value, slice sender_address, int mode, int refund_value) impure inline {
     ;; If jetton is deployed - than pool is already created and there is no refund option
-    throw_if(error::wrong_time, sale::const::fut_jet_deployed_balance > 0);
+    throw_if(error::wrong_time, general_state::fut_jet_deployed_balance > 0);
     throw_if(error::wrong_time, now() < creator_round::const::end_time);
     throw_unless(error::bad_request, mode == 3 | mode == 4 | mode == 5);
     ;; We don't actually care about leftovers
@@ -152,8 +152,8 @@
     }
 
     ;; Return jettons, owned by users
-    this::fut_jet_cur_balance += jettons_to_charge_back;
-    sale::total_tons_collected -= tons_to_refund;
+    general_state::fut_jet_inner_balance += jettons_to_charge_back;
+    general_state::total_tons_collected -= tons_to_refund;
 
     cell simple_transfer_message = begin_cell()
         .store_msg_flags_and_address_none(BOUNCEABLE)
@@ -169,8 +169,8 @@
 () handle_wl_callback(int query_id, int _attached_value, slice sender_address, int should_burn?, int initiator) impure inline {
     verify_user_vault(sender_address, initiator);
     cell msg = should_burn?
-    ? build_jetton_burn_msg(query_id, wl_round::const::burn_util_jet_amount, jet_tools::const::util_jet_wallet_address) ;; 1 nanoton to notify user about tokens
-    : build_jetton_transfer_msg(query_id, 0, wl_round::const::burn_util_jet_amount, jet_tools::const::util_jet_wallet_address, initiator, 1, begin_cell().store_uint(0, 1));
+    ? build_jetton_burn_msg(query_id, wl_round::const::burn_util_jet_amount, tools::const::util_jet_wallet_address) ;; 1 nanoton to notify user about tokens
+    : build_jetton_transfer_msg(query_id, 0, wl_round::const::burn_util_jet_amount, tools::const::util_jet_wallet_address, initiator, 1, begin_cell().store_uint(0, 1));
 
     send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
 }
@@ -212,28 +212,28 @@
 
     int total_amount_destributed_amount_users = wl_round::const::fut_jet_limit + public_round::const::fut_jet_limit;
     int utility_tokens_to_reward_user = muldiv(
-        this::const::reward_util_jets_total_amount,
+        config::const::reward_util_jets_total_amount,
         total_fut_jet_recipient_amount,
         total_amount_destributed_amount_users
     );
     throw_if(
         error::balance_lack,
-        this::reward_util_jets_cur_balance < utility_tokens_to_reward_user
-        | sale::const::fut_jet_deployed_balance < total_fut_jet_recipient_amount
+        general_state::reward_util_jets_balance < utility_tokens_to_reward_user
+        | general_state::fut_jet_deployed_balance < total_fut_jet_recipient_amount
     );
 
-    this::reward_util_jets_cur_balance -= utility_tokens_to_reward_user;
+    general_state::reward_util_jets_balance -= utility_tokens_to_reward_user;
     cell util_jet_reward_msg = build_jetton_transfer_msg(
         query_id,
         JETTON_MIN_TRANSFER_FEE,
         utility_tokens_to_reward_user,
-        jet_tools::const::util_jet_wallet_address,
+        tools::const::util_jet_wallet_address,
         recipient,
         1,
         begin_cell().store_uint(0, 1)
     );
 
-    sale::const::fut_jet_deployed_balance -= total_fut_jet_recipient_amount;
+    general_state::fut_jet_deployed_balance -= total_fut_jet_recipient_amount;
     cell msg_body = begin_cell()
         .store_op(op::transfer)
         .store_query_id(query_id)
@@ -245,7 +245,7 @@
         .end_cell();
     cell fut_jet_claim_msg = begin_cell()
         .store_msg_flags_and_address_none(BOUNCEABLE) ;; TODO Handle in on-bounce in the future
-        .store_slice(sale::const::fut_jet_wallet_address)
+        .store_slice(tools::const::fut_jet_wallet_address)
         .store_coins(0) ;; Will be rewritten by sending mode
         .store_only_body_ref(msg_body)
         .end_cell();

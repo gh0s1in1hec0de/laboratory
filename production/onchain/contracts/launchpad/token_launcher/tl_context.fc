@@ -9,28 +9,23 @@
     - `fut_jet` means jetton, that will be deployed in case of sale success
 -}
 
-;; === GENERAL INFORMATION ===
+;; === STORAGE ===
 global int   this::const::is_initialized?;
-
-global int   this::const::fut_jet_total_supply;
-global int   this::const::min_ton_for_sale_success;
-global int   this::const::fut_jet_dex_amount;
-global int   this::const::fut_jet_platform_amount;
-global int   this::const::reward_util_jets_total_amount;
-
 global int   this::operational_needs;
-global int   this::fut_jet_cur_balance;
-global int   this::reward_util_jets_cur_balance;
-
 global slice this::const::chief_address;
 global slice this::const::creator_address;
 
-;; === SALE CONFING ===
-;; State markers
-;; Actual balance of deployed derived jetton
-global int   sale::const::fut_jet_deployed_balance;
-global slice sale::const::fut_jet_wallet_address;
-global int   sale::total_tons_collected;
+global int   config::const::fut_jet_total_supply;
+global int   config::const::min_ton_for_sale_success;
+global int   config::const::fut_jet_dex_amount;
+global int   config::const::fut_jet_platform_amount;
+global int   config::const::reward_util_jets_total_amount;
+
+;; === SALE STATE ===
+global int   general_state::fut_jet_inner_balance;
+global int   general_state::reward_util_jets_balance;
+global int   general_state::fut_jet_deployed_balance;
+global int   general_state::total_tons_collected;
 
 global int   creator_round::const::fut_jet_limit;
 ;; Amount of tokens, that creator bought back
@@ -61,15 +56,16 @@ global int   public_round::synthetic_jet_reserve;
 ;; Equals to `wl_ton_invested_total` until public phase
 global int   public_round::synthetic_ton_reserve;
 global int   public_round::const::end_time;
-global cell  sale::const::user_vault_code;
 
-;; === JETTONS' TOOLS ===
+;; === TOOLS ===
 ;; An address of our utility jetton wallet smart contract.
 ;; We store it to avoid its calculation every time, it's nice decision to compress data we store and reduce fees.
-global slice jet_tools::const::util_jet_wallet_address;
-global slice jet_tools::const::fut_jet_master_address;
+global slice tools::const::util_jet_wallet_address;
+global slice tools::const::fut_jet_wallet_address;
+global slice tools::const::fut_jet_master_address;
 ;; Future jetton metadata, formatted due to TEP-74
-global cell  jet_tools::const::metadata;
+global cell  tools::const::metadata;
 ;; Data for jetton deployment in case of successful sale
-global cell  jet_tools::const::fut_jet_master_code;
-global cell  jet_tools::const::wallet_code;
+global cell  tools::const::fut_jet_master_code;
+global cell  tools::const::wallet_code;
+global cell  tools::const::user_vault_code;

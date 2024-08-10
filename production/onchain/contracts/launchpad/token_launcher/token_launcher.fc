@@ -4,6 +4,7 @@
 #include "../utils.fc";
 #include "../gas.fc";
 
+#include "tl_storage.fc";
 #include "jetton_operating.fc";
 #include "trades_handler.fc";
 #include "tl_context.fc";
@@ -13,100 +14,11 @@
   TODO Seems like we should add nine zeroes in couple of places
 -}
 
-() load_data() inline_ref {
-    slice ds = get_data().begin_parse();
-    this::const::is_initialized? = ds~load_int(1);
-
-    this::const::fut_jet_total_supply = ds~load_coins();
-    this::const::min_ton_for_sale_success = ds~load_coins();
-
-    this::const::fut_jet_dex_amount = ds~load_coins();
-    this::const::fut_jet_platform_amount = ds~load_coins();
-    this::const::reward_util_jets_total_amount = ds~load_coins();
-
-    this::operational_needs = ds~load_coins();
-    this::fut_jet_cur_balance = ds~load_coins();
-    this::reward_util_jets_cur_balance = ds~load_coins();
-
-    this::const::chief_address = ds~load_msg_addr();
-    this::const::creator_address = ds~load_msg_addr();
-
-    cell sale_config = ds~load_ref();
-    load_sale_config(sale_config);
-
-    cell jet_tools = ds~load_ref();
-    slice jet_tools_slice = jet_tools.begin_parse();
-    jet_tools::const::util_jet_wallet_address = jet_tools_slice~load_msg_addr();
-    jet_tools::const::fut_jet_master_address = jet_tools_slice~load_msg_addr();
-    jet_tools::const::metadata = jet_tools_slice~load_ref();
-    jet_tools::const::fut_jet_master_code = jet_tools_slice~load_ref();
-    jet_tools::const::wallet_code = jet_tools_slice~load_ref();
-    jet_tools_slice.end_parse();
-
-    ds.end_parse();
-}
-
-() save_data() impure inline_ref {
-    ;; Don't forget about cell upper bound - 1023 bits
-    ;; Bits: 16 + 267 + 16 + 16 + 32 + 32 + 16*5 + 32 + 16*4 + 32
-    cell sale_config = begin_cell()
-        .store_coins(sale::const::fut_jet_deployed_balance)
-        .store_slice(sale::const::fut_jet_wallet_address)
-        .store_coins(sale::total_tons_collected)
-        .store_coins(creator_round::const::fut_jet_limit)
-        .store_coins(creator_round::creator_fut_jet_balance)
-        .store_uint(creator_round::const::fut_jet_price, 32)
-        .store_int(creator_round::const::end_time, 32)
-
-        .store_coins(wl_round::const::fut_jet_limit)
-        .store_coins(wl_round::const::ton_limit)
-        .store_coins(wl_round::const::pass_util_jet_amount)
-        .store_coins(wl_round::const::burn_util_jet_amount)
-        .store_coins(wl_round::ton_invested_total)
-        .store_int(wl_round::const::end_time, 32)
-
-        .store_coins(public_round::const::fut_jet_limit)
-        .store_coins(public_round::fut_jet_sold)
-        .store_coins(public_round::synthetic_jet_reserve)
-        .store_coins(public_round::synthetic_ton_reserve)
-        .store_int(public_round::const::end_time, 32)
-        .store_ref(sale::const::user_vault_code)
-        .end_cell();
-
-    cell jet_tools = begin_cell()
-        .store_slice(jet_tools::const::util_jet_wallet_address)
-        .store_slice(jet_tools::const::fut_jet_master_address)
-        .store_ref(jet_tools::const::metadata)
-        .store_ref(jet_tools::const::fut_jet_master_code)
-        .store_ref(jet_tools::const::wallet_code)
-        .end_cell();
-
-    ;; 1 + 16 * 4 + 16 * 2 + 267 + 267 < 1023
-    cell data = begin_cell()
-        .store_int(this::const::is_initialized?, 1)
-        .store_coins(this::const::fut_jet_total_supply)          ;; VarUinteger16
-        .store_coins(this::const::min_ton_for_sale_success)      ;; VarUinteger16
-        .store_coins(this::const::fut_jet_dex_amount)            ;; VarUinteger16
-        .store_coins(this::const::fut_jet_platform_amount)       ;; VarUinteger16
-        .store_coins(this::const::reward_util_jets_total_amount) ;; VarUinteger16
-
-        .store_coins(this::operational_needs)                    ;; VarUinteger16
-        .store_coins(this::fut_jet_cur_balance)                  ;; VarUinteger16
-        .store_coins(this::reward_util_jets_cur_balance)         ;; VarUinteger16
-
-        .store_slice(this::const::chief_address)                 ;; address(267 bits - common size)
-        .store_slice(this::const::creator_address)               ;; address
-        .store_ref(sale_config)                                  ;; sale parameters cell
-        .store_ref(jet_tools)
-        .end_cell();
-    set_data(data);
-}
-
 () initialize(slice sender_address, slice fut_jet_wallet_address, slice util_jet_wallet_address, slice fut_jet_master_address) impure inline {
     ;; Here we have our state loaded, but we need to do some initializations manually
-    sale::const::fut_jet_wallet_address = fut_jet_wallet_address;
-    jet_tools::const::util_jet_wallet_address = util_jet_wallet_address;
-    jet_tools::const::fut_jet_master_address = fut_jet_master_address;
+    tools::const::fut_jet_wallet_address = fut_jet_wallet_address;
+    tools::const::util_jet_wallet_address = util_jet_wallet_address;
+    tools::const::fut_jet_master_address = fut_jet_master_address;
     cell msg = begin_cell()
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(sender_address)
@@ -215,9 +127,9 @@
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::chief_address));
         accept_message();
         ;; 2 checks here - that we have collected enough money for jetton deploy and that contract has money for all the additional spendings
-        throw_if(error::balance_lack, sale::total_tons_collected < this::const::min_ton_for_sale_success);
+        throw_if(error::balance_lack, general_state::total_tons_collected < config::const::min_ton_for_sale_success);
         int launch_success_treshold =
-        sale::total_tons_collected + this::operational_needs
+        general_state::total_tons_collected + this::operational_needs
         + get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_GAS_CONSUMPTION)
         + get_jetton_deploy_gas_cost()
         + calculate_token_launch_min_storage_fee(1_MONTH);
@@ -230,7 +142,7 @@
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         throw_unless(error::wrong_time, now() > public_round::const::end_time);
         ;; For successful claim we need both launch jetton to send and utility jetton to reward
-        throw_if(error::tokens_lack, ~ sale::const::fut_jet_deployed_balance > 0 | ~ this::reward_util_jets_cur_balance > 0);
+        throw_if(error::tokens_lack, ~ general_state::fut_jet_deployed_balance > 0 | ~ general_state::reward_util_jets_balance > 0);
         handle_jetton_claim_request(query_id, attached_value, sender_address);
         return ();
     }
@@ -264,7 +176,7 @@
 (int, slice, cell) get_launch_data() method_id {
     load_data();
     throw_unless(error::uninitialized, this::const::is_initialized?);
-    return (this::const::fut_jet_total_supply, this::const::creator_address, build_content_cell(jet_tools::const::metadata.begin_parse()));
+    return (config::const::fut_jet_total_supply, this::const::creator_address, build_content_cell(tools::const::metadata.begin_parse()));
 }
 
 slice get_user_vault_address(slice user_address) method_id {

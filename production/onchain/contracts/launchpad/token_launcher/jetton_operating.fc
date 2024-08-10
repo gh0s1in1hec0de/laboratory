@@ -10,18 +10,18 @@ const int MINT_QUERY_ID = 27082006;
 
 () deploy_launch_jetton() inline {
     (cell jetton_master_stateinit, slice jetton_master_address) = calculate_fut_jet_master_data(
-        jet_tools::const::fut_jet_master_code,
-        this::const::fut_jet_total_supply,
+        tools::const::fut_jet_master_code,
+        config::const::fut_jet_total_supply,
         my_address(),
         address_none(),
-        jet_tools::const::wallet_code,
-        jet_tools::const::metadata
+        tools::const::wallet_code,
+        tools::const::metadata
     );
     ;; Internal message for jetton master jetton wallet
     cell master_msg = begin_cell()
         .store_op(op::internal_transfer)
         .store_query_id(MINT_QUERY_ID)
-        .store_coins(this::const::fut_jet_total_supply)
+        .store_coins(config::const::fut_jet_total_supply)
         .store_slice(my_address()) ;; from
         .store_slice(my_address()) ;; response_address
         .store_coins(1) ;; Forwarding 1 nanoton to get transfer_notification
@@ -44,18 +44,18 @@ const int MINT_QUERY_ID = 27082006;
 }
 
 () route_incoming_transfer(int query_id, int attached_value, slice sender_address, int jetton_amount, slice initiator, slice maybe_payload) impure inline {
-    if (equal_slices_bits(sender_address, jet_tools::const::util_jet_wallet_address)) {
+    if (equal_slices_bits(sender_address, tools::const::util_jet_wallet_address)) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE);
         int util_jet_enr_mode = maybe_payload~load_uint(UTIL_JET_SEND_MODE_SIZE);
 
         if (util_jet_enr_mode == UTIL_JET_REWARD_ENROLLMENT) {
             ;; It does mean, that utility jettons reward amount was already enrolled
-            if(this::reward_util_jets_cur_balance != 0 | this::const::reward_util_jets_total_amount != 0) {
+            if(general_state::reward_util_jets_balance != 0 | config::const::reward_util_jets_total_amount != 0) {
                 cell chargeback_msg = build_jetton_transfer_msg(
                     query_id,
                     0,
                     jetton_amount,
-                    jet_tools::const::util_jet_wallet_address,
+                    tools::const::util_jet_wallet_address,
                     initiator,
                     1,
                     begin_cell().store_uint(0, 1)
@@ -63,8 +63,8 @@ const int MINT_QUERY_ID = 27082006;
                 send_raw_message(chargeback_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
                 return ();
             }
-            this::const::reward_util_jets_total_amount += jetton_amount;
-            this::reward_util_jets_cur_balance += jetton_amount;
+            config::const::reward_util_jets_total_amount += jetton_amount;
+            general_state::reward_util_jets_balance += jetton_amount;
         }
 
         if (util_jet_enr_mode == UTIL_JET_WL_PASS) {
@@ -73,7 +73,7 @@ const int MINT_QUERY_ID = 27082006;
                     query_id,
                     0,
                     jetton_amount,
-                    jet_tools::const::util_jet_wallet_address,
+                    tools::const::util_jet_wallet_address,
                     initiator,
                     1,
                     begin_cell().store_uint(0, 1)
@@ -85,26 +85,26 @@ const int MINT_QUERY_ID = 27082006;
         }
     }
     ;; `ifs` oreder defined this way for reasons of efficiency
-    if (jetton_amount == this::const::fut_jet_total_supply) {
-        if (~ equal_slices_bits(sender_address, sale::const::fut_jet_wallet_address)) {
+    if (jetton_amount == config::const::fut_jet_total_supply) {
+        if (~ equal_slices_bits(sender_address, tools::const::fut_jet_wallet_address)) {
             ;; It does mean we just got random tokens on equal amount
             return ();
         }
-        sale::const::fut_jet_deployed_balance = this::const::fut_jet_total_supply;
+        general_state::fut_jet_deployed_balance = config::const::fut_jet_total_supply;
 
         ;; We send one jetton transfer with all the
         cell transfer_msg = build_jetton_transfer_msg(
             query_id,
-            JETTON_MIN_TRANSFER_FEE + sale::total_tons_collected + this::operational_needs,
-            this::const::fut_jet_dex_amount + this::const::fut_jet_platform_amount,
-            sale::const::fut_jet_wallet_address,
+            JETTON_MIN_TRANSFER_FEE + general_state::total_tons_collected + this::operational_needs,
+            config::const::fut_jet_dex_amount + config::const::fut_jet_platform_amount,
+            tools::const::fut_jet_wallet_address,
             this::chief,
-            this::const::min_ton_for_sale_success,
-            begin_cell().store_coins(this::const::fut_jet_dex_amount).store_coins(this::const::fut_jet_platform_amount)
+            config::const::min_ton_for_sale_success,
+            begin_cell().store_coins(config::const::fut_jet_dex_amount).store_coins(config::const::fut_jet_platform_amount)
         );
         cell claim_admin_msg = begin_cell()
             .store_msg_flags_and_address_none(NON_BOUNCEABLE)
-            .store_slice(jet_tools::const::fut_jet_master_address)
+            .store_slice(tools::const::fut_jet_master_address)
             .store_coins(
                 get_forward_fee(MY_WORKCHAIN, CLAIM_ADMIN_MSG_BITS, CLAIM_ADMIN_MSG_CELLS)
                 + get_compute_fee(MY_WORKCHAIN, CLAIM_ADMIN_GAS_CONSUMPTION)

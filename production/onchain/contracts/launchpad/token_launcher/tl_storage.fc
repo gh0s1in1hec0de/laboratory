@@ -1,0 +1,135 @@
+#include "../../stdlib.fc";
+#include "tl_context.fc";
+#include "../gas.fc";
+
+() save_data() impure inline_ref {
+    cell general_state = begin_cell()
+        .store_coins(general_state::fut_jet_inner_balance)
+        .store_coins(general_state::fut_jet_deployed_balance)
+        .store_coins(general_state::total_tons_collected)
+        .store_coins(general_state::reward_util_jets_balance)
+        .end_cell();
+    cell creator_round_state = begin_cell()
+        .store_coins(creator_round::const::fut_jet_limit)
+        .store_coins(creator_round::creator_fut_jet_balance)
+        .store_coins(creator_round::const::fut_jet_price)
+        .store_int(creator_round::const::end_time, 32)
+        .end_cell();
+    cell wl_round_state = begin_cell()
+        .store_coins(wl_round::const::fut_jet_limit)
+        .store_coins(wl_round::const::ton_limit)
+        .store_coins(wl_round::const::pass_util_jet_amount)
+        .store_coins(wl_round::const::burn_util_jet_amount)
+        .store_coins(wl_round::ton_invested_total)
+        .store_int(wl_round::const::end_time, 32)
+        .end_cell();
+    cell public_round_state = begin_cell()
+        .store_coins(public_round::const::fut_jet_limit)
+        .store_coins(public_round::fut_jet_sold)
+        .store_coins(public_round::synthetic_jet_reserve)
+        .store_coins(public_round::synthetic_ton_reserve)
+        .store_int(public_round::const::end_time, 32)
+        .end_cell();
+    cell sale_state = begin_cell()
+        .store_ref(general_state)
+        .store_ref(creator_round_state)
+        .store_ref(wl_round_state)
+        .store_ref(public_round_state)
+        .end_cell();
+    cell sale_config = begin_cell()
+        .store_coins(config::const::fut_jet_total_supply)
+        .store_coins(config::const::min_ton_for_sale_success)
+        .store_coins(config::const::fut_jet_dex_amount)
+        .store_coins(config::const::fut_jet_platform_amount)
+        .store_coins(config::const::reward_util_jets_total_amount)
+        .store_coins()
+        .end_cell();
+    cell tools = begin_cell()
+        .store_slice(tools::const::util_jet_wallet_address)
+        .store_slice(tools::const::fut_jet_master_address)
+        .store_slice(tools::const::fut_jet_wallet_address)
+        .store_ref(tools::const::metadata)
+        .store_ref(tools::const::fut_jet_master_code)
+        .store_ref(tools::const::wallet_code)
+        .store_ref(tools::const::user_vault_code)
+        .end_cell();
+    cell data = begin_cell()
+        .store_int(this::const::is_initialized?, 1)
+        .store_coins(this::operational_needs)
+        .store_slice(this::const::chief_address)
+        .store_slice(this::const::creator_address)
+        .store_ref(sale_config)
+        .store_ref(sale_state)
+        .store_ref(tools)
+        .end_cell();
+    set_data(data);
+}
+
+() load_data() inline_ref {
+    slice ds = get_data().begin_parse();
+    this::const::is_initialized? = ds~load_int(1);
+    this::operational_needs = ds~load_coins();
+    this::const::chief_address = ds~load_msg_addr();
+    this::const::creator_address = ds~load_msg_addr();
+
+    cell sale_config = ds~load_ref();
+    slice sale_config_slice = sale_config.begin_parse();
+    config::const::fut_jet_total_supply = sale_config_slice~load_coins();
+    config::const::fut_jet_dex_amount = sale_config_slice~load_coins();
+    config::const::fut_jet_dex_amount = sale_config_slice~load_coins();
+    config::const::fut_jet_platform_amount = sale_config_slice~load_coins();
+    config::const::reward_util_jets_total_amount = sale_config_slice~load_coins();
+    sale_config_slice.end_parse();
+
+    cell sale_state = ds~load_ref();
+    slice sale_state_slice = sale_state.begin_parse();
+    cell general_state = sale_state_slice~load_ref();
+    cell creator_round_state = sale_state_slice~load_ref();
+    cell wl_round_state = sale_state_slice~load_ref();
+    cell pub_round_state = sale_state_slice~load_ref();
+    sale_state_slice.end_parse();
+
+    slice general_state_slice = general_state.begin_parse();
+    general_state::fut_jet_inner_balance = general_state_slice~load_coins();
+    general_state::fut_jet_deployed_balance = general_state_slice~load_coins();
+    general_state::total_tons_collected = general_state_slice~load_coins();
+    general_state::reward_util_jets_balance = general_state_slice~load_coins();
+    general_state_slice.end_parse();
+
+    slice creator_round_state_slice = creator_round_state.begin_parse();
+    creator_round::const::fut_jet_limit = creator_round_state_slice~load_coins();
+    creator_round::creator_fut_jet_balance = creator_round_state_slice~load_coins();
+    creator_round::const::fut_jet_price = creator_round_state_slice~load_coins();
+    creator_round::const::end_time = creator_round_state_slice~load_int(32);
+    creator_round_state_slice.end_parse();
+
+    slice wl_round_state_slice = wl_round_state.begin_parse();
+    wl_round::const::fut_jet_limit = wl_round_state_slice~load_coins();
+    wl_round::const::ton_limit = wl_round_state_slice~load_coins();
+    wl_round::const::pass_util_jet_amount = wl_round_state_slice~load_coins();
+    wl_round::const::burn_util_jet_amount = wl_round_state_slice~load_coins();
+    wl_round::ton_invested_total = wl_round_state_slice~load_coins();
+    wl_round::const::end_time = wl_round_state_slice~load_int(32);
+    wl_round_state_slice.end_parse();
+
+    slice public_round_state_slice = pub_round_state.begin_parse();
+    public_round::const::fut_jet_limit = public_round_state_slice~load_coins();
+    public_round::fut_jet_sold = public_round_state_slice~load_coins();
+    public_round::synthetic_jet_reserve = public_round_state_slice~load_coins();
+    public_round::synthetic_ton_reserve = public_round_state_slice~load_coins();
+    public_round::const::end_time = public_round_state_slice~load_int(32);
+    public_round_state_slice.end_parse();
+
+    cell tools = ds~load_ref();
+    slice tools_slice = tools.begin_parse();
+    tools::const::util_jet_wallet_address = tools_slice~load_msg_addr();
+    tools::const::fut_jet_master_address = tools_slice~load_msg_addr();
+    tools::const::fut_jet_wallet_address = tools_slice~load_msg_addr();
+    tools::const::metadata = tools_slice~load_ref();
+    tools::const::fut_jet_master_code = tools_slice~load_ref();
+    tools::const::wallet_code = tools_slice~load_ref();
+    tools::const::user_vault_code = tools_slice~load_ref();
+    tools_slice.end_parse();
+
+    ds.end_parse();
+}
