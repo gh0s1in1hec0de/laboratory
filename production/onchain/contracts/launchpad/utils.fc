@@ -29,7 +29,7 @@ slice pack_address(slice address) inline {
     slice in_msg_full_slice = in_msg_full.begin_parse();
     int msg_flags = in_msg_full_slice~load_msg_flags();
     slice sender_address = in_msg_full_slice~load_msg_addr();
-    in_msg_full_slice~load_msg_addr();                        ;; As recepient is our contarct
+    in_msg_full_slice~load_msg_addr();                        ;; As recepient is our contract
     int value = in_msg_full_slice~load_coins();
     in_msg_full_slice~skip_dict();                            ;; skip extracurrency collection
     in_msg_full_slice~load_coins();                           ;; skip ihr_fee
