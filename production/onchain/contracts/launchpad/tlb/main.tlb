@@ -62,8 +62,9 @@ _ owner:MsgAddressInt wl_invested:Coins public_invested:Coins token_balance:Coin
 // 64 + 4 + 124 x 2 = 316
 balance_update#00399d7a query_id:uint64 mode:uint4 tons:Coins fut_jettons:Coins = UserVaultUpdate;
 // 64
-claim#670fafc3 = UserVaultUpdate;
+claim#556a6246 query_id:uint64 = UserVaultUpdate;
 
+// TODO Canvas recalc updated queries
 
 /* === CORE === */
 // 2 x 4 = 8
@@ -80,9 +81,11 @@ _ chief:MsgAddressInt util_jetton_master_address:MsgAddressInt util_jetton_walle
   = CoreStorage;
 
 // 124 + 16 + 2 = 142
-create_launch#5a4aa3d3 platform_supply:Coins platform_share_pct:uint16 metadata_cell:^Cell = CoreMsg;
+create_launch#70b5140f query_id:uint64 total_supply:Coins platform_share_pct:uint16 metadata_cell:^Cell = CoreMsg;
 // ? (probably 0)
-init_callback#15ec7a91 = CoreMsg;
+
+init#18add407 query_id:uint64 = CoreMsg;
+init_callback#5d988a60 query_id:uint64 = CoreMsg;
 
 /* === PERIPHERY === */
 

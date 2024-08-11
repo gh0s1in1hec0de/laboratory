@@ -18,11 +18,12 @@ upgrade#055d212a query_id:uint64 new_data:^Cell new_code:^Cell = TokenLaunchMsg
 
 /* === USER VAULT === */
 balance_update#00399d7a query_id:uint64 mode:uint4 tons:Coins fut_jettons:Coins = UserVaultUpdate
-claim#670fafc3 = UserVaultUpdate
+claim#556a6246 query_id:uint64 = UserVaultUpdate
 
 /* === CORE === */
-create_launch#5a4aa3d3 platform_supply:Coins platform_share_pct:uint16 metadata_cell:^Cell = CoreMsg
-init_callback#15ec7a91 = CoreMsg
+create_launch#70b5140f query_id:uint64 total_supply:Coins platform_share_pct:uint16 metadata_cell:^Cell = CoreMsg
+init#18add407 query_id:uint64 = CoreMsg
+init_callback#5d988a60 query_id:uint64 = CoreMsg
 
 // Right approach in hashing this code should throw 0xf8a7ea5 CRC32 hash
 

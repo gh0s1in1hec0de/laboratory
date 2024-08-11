@@ -110,7 +110,7 @@ export class Core implements Contract {
        .storeCoins(params.platformSupply)
        .storeUint(params.platformSharePct, 16)
        .storeRef(params.metadata)
-       .endCell()
+       .endCell();
     await provider.internal(via, {
       value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
     });

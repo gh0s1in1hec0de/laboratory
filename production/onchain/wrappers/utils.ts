@@ -1,8 +1,7 @@
 import {beginCell, Cell} from "@ton/core";
 
 export enum Ops {
-    core_init = 0x15ec7a91,
-    tl_init_callback = 0x15ec7a91,
+    core_init = 0x18add407,
     create_launch = 0x5a4aa3d3,
 }
 
