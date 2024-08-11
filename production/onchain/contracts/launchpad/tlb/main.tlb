@@ -76,7 +76,7 @@ _ min_ton_for_sale_success:Coins ton_limit_for_wl_round:Coins util_jet_reward_am
 // 267 x 3 + 124 + 0 + 8 + 2 x 2 = 937
 _ chief:MsgAddressInt util_jetton_master_address:MsgAddressInt util_jetton_wallet_address:MsgAddressInt
   util_jet_cur_balance:Coins not_funded_launches:Hashmap 0 VmStackValue /* initial size is 0, value is nothing, null, zero, absolute fucking emptyness ^^  */
-  not_funded_launches_amount:uint8 launch_config:^Cell contracts:^Cell
+  not_funded_launches_amount:uint8 launch_config:^LaunchConfig contracts:^Contracts
   = CoreStorage;
 
 // 124 + 16 + 2 = 142

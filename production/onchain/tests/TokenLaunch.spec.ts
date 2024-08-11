@@ -41,6 +41,7 @@ describe('TokenLaunch', () => {
   let factory: SandboxContract<Factory>;
 
   // FUNCTIONS
+  // TODO What is the purpose of ** instead of *?
   /**
    * Measures compute fees of a tx
    */

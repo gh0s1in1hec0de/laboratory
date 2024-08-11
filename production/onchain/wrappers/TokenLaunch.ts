@@ -72,15 +72,6 @@ export class TokenLaunch implements Contract {
     return new TokenLaunch(contractAddress(workchain, init), init);
   }
 
-  async sendDeploy(provider: ContractProvider, via: Sender, value: bigint) {
-    await provider.internal(via, {
-      value,
-      sendMode: SendMode.PAY_GAS_SEPARATELY,
-      // точни ли тело должно быть пустым? (не смог найти где деплой в token_launcher.fc) (возможно core.fc - 82?)
-      body: beginCell().endCell(),
-    });
-  }
-
   async getLaunchData(provider: ContractProvider) {
     let {stack} = await provider.get('get_launch_data', []);
     return {
@@ -90,7 +81,17 @@ export class TokenLaunch implements Contract {
     };
   }
 
-  // We gonna create new launches with Core contract, not manually
+  /* TODO
+  Since we'll be handling deployments and initiating launches from the core, these functions might no longer be necessary
+  The only usage case - very specific tests, so I think we can delete it for now
+  async sendDeploy(provider: ContractProvider, via: Sender, value: bigint) {
+    await provider.internal(via, {
+      value,
+      sendMode: SendMode.PAY_GAS_SEPARATELY,
+      // точни ли тело должно быть пустым? (не смог найти где деплой в token_launcher.fc) (возможно core.fc - 82?)
+      body: beginCell().endCell(),
+    });
+  }
   static initializeMessage(senderAddress: Address, futJetWalletAddress: Address, utilJetWalletAddress: Address) {
     return beginCell()
       .storeAddress(senderAddress)
@@ -98,4 +99,5 @@ export class TokenLaunch implements Contract {
       .storeAddress(utilJetWalletAddress)
       .endCell();
   }
+  */
 }

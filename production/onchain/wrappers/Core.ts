@@ -1,39 +1,23 @@
+import {Ops} from "./utils";
 import {
-  Address,
-  beginCell,
-  Cell,
-  Contract,
-  contractAddress,
   ContractProvider,
+  contractAddress,
   Dictionary,
-  Sender,
+  beginCell,
+  Contract,
   SendMode,
-  Slice
+  Address,
+  Sender,
+  Cell,
 } from "@ton/core";
-import {Op} from "./constants";
-import {randomAddress} from "../tests/utils";
 
-interface IDontKnowYetProbablySomeBody {
-  /** TODO
-   * Взял из core.fc L84
-   * какие тут будут типы, если там они int?
-   */
-  // msg_flags:;
-  // sender_address: Address;
-  // value:bigint; probably Coins
-  // fwd_fee:bigint; probably Coins
-}
-
-/** TODO
- * Взял из core.fc L87 -> L8
- * тип для notFundedLaunches не могу корректно отпределить
- */
+// Replace `;` with `,`
 export type CoreConfig = {
   chief: Address;
   utilJettonMasterAddress: Address;
   utilJettonWalletAddress: Address;
   utilJetCurBalance: bigint;
-  notFundedLaunches: Dictionary<Slice, Cell> | null;
+  notFundedLaunches: Dictionary<Address, Cell> | null;
   notFundedLaunchesAmount: number;
   launchConfig: {
     minTonForSaleSuccess: bigint;
@@ -90,6 +74,12 @@ export function coreConfigToCell(config: CoreConfig): Cell {
   .endCell();
 }
 
+export type CreateLaunchParams =  {
+  platformSupply: bigint | number,
+  platformSharePct: number,
+  metadata: Cell,
+};
+
 export class Core implements Contract {
   constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
   }
@@ -108,27 +98,21 @@ export class Core implements Contract {
     await provider.internal(via, {
       value,
       sendMode: SendMode.PAY_GAS_SEPARATELY,
-      body: beginCell().storeUint(Op.core_init, 32).storeUint(0, 64).endCell(),
+      body: beginCell().storeUint(Ops.core_init, 32).storeUint(0, 64).endCell(),
     });
   }
 
-  async sendCreateLaunch(provider: ContractProvider, via: Sender, value: bigint, queryId: bigint, launchParams: Cell) {
-    const msgBody = beginCell()
-    .storeUint(/* хуй знает что тут писать, мне пиздец уже */ 0, 4) // msg_flags
-    .storeAddress(/* хуй знает что тут писать, мне пиздец уже */ randomAddress()) // sender_address
-    .storeCoins(0) // attached_value
-    .storeCoins(0) // fwd_fee_from_in_msg
-    .endCell()
-
-    return beginCell()
-    .storeUint(Op.create_launch, 32)
-    .storeUint(0, 64)
-    .storeCoins(0)// total_supply
-    .storeUint(0, 16)// platform_share_pct
-    .storeRef(Cell.EMPTY)// metadata_cell
-    // .storeRef(msgBody)
-    .endCell()
-
-
+  // To build metadata see ./utils#L16
+  async sendCreateLaunch(provider: ContractProvider, via: Sender, value: bigint, queryId: bigint, params: CreateLaunchParams) {
+   const body = beginCell()
+       .storeUint(Ops.create_launch, 32)
+       .storeUint(queryId, 64)
+       .storeCoins(params.platformSupply)
+       .storeUint(params.platformSharePct, 16)
+       .storeRef(params.metadata)
+       .endCell()
+    await provider.internal(via, {
+      value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
+    });
   }
 }
