@@ -29,7 +29,7 @@ _ is_initialized:int1 operational_needs:Coins chief_address:MsgAddressInt creato
 
 // Token Launch Operations
 // 267 x 3 = 801
-init#5ca04142 fut_jet_wallet_address:MsgAddressInt util_jet_wallet_address:MsgAddressInt fut_jet_master_address:MsgAddressInt = TokenLaunchMsg;
+init#5ca04142 query_id:uint64 fut_jet_wallet_address:MsgAddressInt util_jet_wallet_address:MsgAddressInt fut_jet_master_address:MsgAddressInt = TokenLaunchMsg;
 
 // Buys
 // 64

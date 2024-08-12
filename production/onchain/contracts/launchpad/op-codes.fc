@@ -9,8 +9,8 @@ const op::burn_notification = 0x7bdd97de;
 const op::burn = 0x595f07bc;
 
 ;; Contract-realted OPs
-const op::upgrade = 0x2508d66a;
-const op::tl::init = 0x5ca04142;
+const op::upgrade = 0x055d212a;
+const op::tl::init = 0x358b2487;
 const op::tl::creator_buyout = 0x0a535100;
 const op::tl::wl_callback = 0x390f7cfd;
 const op::tl::public_buy = 0x16ee6c2d;
@@ -21,11 +21,11 @@ const op::tl::refund_confirmation = 0x6f7dbcd0;
 const op::tl::deploy_jet = 0x71161970;
 
 const op::uv::balance_update = 0x00399d7a;
-const op::uv::claim = 0x670fafc3;
+const op::uv::claim = 0x556a6246;
 
-const op::core::tl_init_callback = 0x15ec7a91;
-const op::core::create_launch = 0x5a4aa3d3;
-const op::core::init = 0x15ec7a91;
+const op::core::tl_init_callback = 0x5d988a60;
+const op::core::create_launch = 0x70b5140f;
+const op::core::init = 0x18add407;
 
 const error::not_enough_gas = 48;
 const error::invalid_op = 72;

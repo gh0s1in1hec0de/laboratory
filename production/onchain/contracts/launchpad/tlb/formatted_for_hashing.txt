@@ -1,4 +1,4 @@
-init#5ca04142 fut_jet_wallet_address:MsgAddressInt util_jet_wallet_address:MsgAddressInt fut_jet_master_address:MsgAddressInt = TokenLaunchMsg
+init#358b2487 query_id:uint64 fut_jet_wallet_address:MsgAddressInt util_jet_wallet_address:MsgAddressInt fut_jet_master_address:MsgAddressInt = TokenLaunchMsg
 
 // Buys
 creator_buyout#0a535100 query_id:uint64 = TokenLaunchMsg
