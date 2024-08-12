@@ -120,6 +120,7 @@
     send_raw_message(msg, SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
+;; Forgot about creator refund lol
 () handle_refund_request(int query_id, int attached_value, slice sender_address, int mode, int refund_value) impure inline {
     ;; If jetton is deployed - than pool is already created and there is no refund option
     throw_if(error::wrong_time, general_state::fut_jet_deployed_balance > 0);

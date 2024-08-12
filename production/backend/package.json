@@ -7,5 +7,12 @@
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "postgres": "^3.4.4",
+    "dotenv": "^16.4.5"
+  },
+  "scripts": {
+    "backend": "bun run src/index.ts"
   }
 }
