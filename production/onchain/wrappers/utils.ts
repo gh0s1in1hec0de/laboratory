@@ -2,7 +2,7 @@ import {beginCell, Cell} from "@ton/core";
 
 export enum Ops {
     core_init = 0x18add407,
-    create_launch = 0x70b5140f,
+    create_launch = 0x0eedbf42,
 }
 
 export enum Errors {}

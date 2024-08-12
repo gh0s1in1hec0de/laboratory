@@ -37,7 +37,15 @@
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         throw_unless(error::not_enough_gas, attached_value > get_amount_for_token_launch_deploy());
         throw_unless(error::overload, this::not_funded_launches_amount <= 20);
-        create_launch(query_id, attached_value, sender_address, in_msg_body~load_coins(), in_msg_body~load_uint(16), in_msg_body~load_ref());
+        create_launch(
+            query_id,
+            attached_value,
+            sender_address,
+            in_msg_body~load_coins(),
+            in_msg_body~load_uint(16),
+            in_msg_body~load_ref(),
+            in_msg_body~load_int(32)
+        );
         save_data();
         return ();
     }

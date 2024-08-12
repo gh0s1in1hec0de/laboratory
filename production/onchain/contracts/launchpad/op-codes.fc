@@ -24,7 +24,7 @@ const op::uv::balance_update = 0x00399d7a;
 const op::uv::claim = 0x556a6246;
 
 const op::core::tl_init_callback = 0x5d988a60;
-const op::core::create_launch = 0x70b5140f;
+const op::core::create_launch = 0x0eedbf42;
 const op::core::init = 0x18add407;
 
 const error::not_enough_gas = 48;

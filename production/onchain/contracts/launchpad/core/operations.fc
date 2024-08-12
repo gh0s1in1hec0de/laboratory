@@ -13,8 +13,8 @@
 }
 
 ;; We use TEP-74 Metadata standard
-() create_launch(int query_id, int attached_value, int sender_address, int total_supply, int platform_share_pct, cell metadata_cell) {
-    int start_time = now() + 10; ;; 10 sec gap for transaction processing
+;; We determine start time manually to be able to calculate address of lunch off-chain before its actual deploy
+() create_launch(int query_id, int attached_value, int sender_address, int total_supply, int platform_share_pct, cell metadata_cell, int start_time) {
     int wl_jet_limit = muldiv(launch_conf::jet_wl_limit_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int pub_jet_limit = muldiv(launch_conf::jet_pub_limit_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int dex_jet_share = muldiv(launch_conf::jet_dex_share_pct, total_supply, PERCENTAGE_DENOMINATOR);
@@ -24,6 +24,7 @@
     int creator_jet_price = launch_conf::ton_limit_for_wl_round / (wl_jet_limit * 2);
 
     cell general_state = begin_cell()
+        .store_int(start_time, 32)
         .store_coins(total_supply)
         .store_coins(0)
         .store_coins(0)

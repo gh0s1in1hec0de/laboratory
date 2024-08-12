@@ -1,8 +1,8 @@
 /* === TOKEN LAUNCH === */
 
-// Token Launch Storage
+// Storage
 // 124 x 4 = 496
-_ fut_jet_inner_balance:Coins fut_jet_deployed_balance:Coins total_tons_collected:Coins reward_util_jets_balance:Coins
+_ start_time:int32 fut_jet_inner_balance:Coins fut_jet_deployed_balance:Coins total_tons_collected:Coins reward_util_jets_balance:Coins
   = GeneralState;
 // 124 x 3 + 32 = 404
 _ creator_fut_jet_limit:Coins creator_fut_jet_balance:Coins creator_fut_jet_price:Coins creator_round_end_time:int32
@@ -84,9 +84,7 @@ _ chief:MsgAddressInt util_jetton_master_address:MsgAddressInt util_jetton_walle
   = CoreStorage;
 
 // 124 + 16 + 2 = 142
-create_launch#70b5140f query_id:uint64 total_supply:Coins platform_share_pct:uint16 metadata_cell:^Cell = CoreMsg;
-// ? (probably 0)
-
+create_launch#0eedbf42 query_id:uint64 start_time:int32 total_supply:Coins platform_share_pct:uint16 metadata_cell:^Cell = CoreMsg;
 init#18add407 query_id:uint64 = CoreMsg;
 init_callback#5d988a60 query_id:uint64 = CoreMsg;
 

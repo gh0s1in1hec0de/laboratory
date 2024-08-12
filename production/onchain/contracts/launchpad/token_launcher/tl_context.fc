@@ -22,6 +22,7 @@ global int   config::const::fut_jet_platform_amount;
 global int   config::const::reward_util_jets_total_amount;
 
 ;; === SALE STATE ===
+global int   general_state::const::start_time;
 global int   general_state::fut_jet_inner_balance;
 global int   general_state::reward_util_jets_balance;
 global int   general_state::fut_jet_deployed_balance;

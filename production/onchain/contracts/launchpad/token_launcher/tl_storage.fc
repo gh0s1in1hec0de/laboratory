@@ -4,6 +4,7 @@
 
 () save_data() impure inline_ref {
     cell general_state = begin_cell()
+        .store_int(general_state::const::start_time, 32)
         .store_coins(general_state::fut_jet_inner_balance)
         .store_coins(general_state::fut_jet_deployed_balance)
         .store_coins(general_state::total_tons_collected)
@@ -90,6 +91,7 @@
     sale_state_slice.end_parse();
 
     slice general_state_slice = general_state.begin_parse();
+    general_state::const::start_time = general_state_slice~load_int(32);
     general_state::fut_jet_inner_balance = general_state_slice~load_coins();
     general_state::fut_jet_deployed_balance = general_state_slice~load_coins();
     general_state::total_tons_collected = general_state_slice~load_coins();

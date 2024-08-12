@@ -71,7 +71,8 @@
         return ();
     }
 
-    ;; We can't perform any operations before initialization
+    ;; We can't perform any operations before actual start and initialization
+    throw_unless(error::wrong_time, now() > general_state::const::start_time);
     throw_unless(error::uninitialized, this::const::is_initialized?);
 
     if (op == op::tl::creator_buyout) {
@@ -118,7 +119,15 @@
         return ();
     }
     if (op == op::tl::refund_confirmation) {
-        handle_refund_confirmation(query_id, attached_value, sender_address, in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_coins(), in_msg_body~load_msg_addr());
+        handle_refund_confirmation(
+            query_id,
+            attached_value,
+            sender_address,
+            in_msg_body~load_coins(),
+            in_msg_body~load_coins(),
+            in_msg_body~load_coins(),
+            in_msg_body~load_msg_addr()
+        );
         save_data();
         return ();
     }
@@ -183,4 +192,17 @@ slice get_user_vault_address(slice user_address) method_id {
     load_data();
     (_, slice user_vault_address) = calculate_user_vault_data(user_address);
     return user_vault_address;
+}
+
+(int, int, int, int, int, int, int) get_sale_state() method_id {
+    load_data();
+    return (
+        general_state::reward_util_jets_balance,
+        general_state::const::start_time,
+        creator_round::const::end_time,
+        wl_round::const::end_time,
+        public_round::const::end_time,
+        general_state::total_tons_collected,
+        general_state::fut_jet_deployed_balance
+    );
 }
