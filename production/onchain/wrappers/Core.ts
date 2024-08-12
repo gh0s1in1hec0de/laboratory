@@ -75,7 +75,8 @@ export function coreConfigToCell(config: CoreConfig): Cell {
 }
 
 export type CreateLaunchParams =  {
-  platformSupply: bigint | number,
+  startTime: number // Unix timestamp
+  totalSupply: bigint | number,
   platformSharePct: number,
   metadata: Cell,
 };
@@ -107,7 +108,8 @@ export class Core implements Contract {
    const body = beginCell()
        .storeUint(Ops.create_launch, 32)
        .storeUint(queryId, 64)
-       .storeCoins(params.platformSupply)
+       .storeInt(params.startTime, 32)
+       .storeCoins(params.totalSupply)
        .storeUint(params.platformSharePct, 16)
        .storeRef(params.metadata)
        .endCell();
