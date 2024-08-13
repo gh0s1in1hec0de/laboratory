@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     // Enable latest features
-    "lib": ["ESNext", "DOM"],
+    "lib": [
+      "ESNext",
+      "DOM",
+      "webworker"
+    ],
     "target": "ESNext",
     "module": "ESNext",
     "moduleDetection": "force",

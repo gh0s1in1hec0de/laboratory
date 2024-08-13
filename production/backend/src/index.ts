@@ -9,13 +9,12 @@ greeting();
 if (!Bun.argv.includes("--debug")) console.debug = () => {};
 
 console.debug(`db ${process.env.DB_HOST} | ${process.env.DB_HOST} | ${process.env.DB_NAME} | ${process.env.DB_USER} | ${process.env.DB_PASSWORD}`);
-const sql = await db.createPostgresClient();
 
 export const CLEAN_START = Bun.argv.includes("--fresh");
 if (CLEAN_START) {
     console.log(`applying migrations to clean database...`);
     console.log();
-    await db.applyMigrations(sql);
+    await db.applyMigrations();
 }
 
 async function main() {

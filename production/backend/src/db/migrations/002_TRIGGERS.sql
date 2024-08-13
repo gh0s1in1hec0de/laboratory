@@ -2,11 +2,15 @@ CREATE OR REPLACE FUNCTION update_user_balance()
     RETURNS TRIGGER AS
 $$
 BEGIN
+    IF NOT EXISTS (SELECT 1 FROM users WHERE address = NEW.actor) THEN
+        INSERT INTO users (address, nickname) VALUES (NEW.actor, 'default_nickname');
+    END IF;
+
     IF NEW.action_type IN ('whitelist_buy', 'whitelist_refund') THEN
         UPDATE user_balances
         SET whitelist_tons = whitelist_tons + CASE
-                                    WHEN NEW.action_type = 'whitelist_buy' THEN NEW.whitelist_tons
-                                    WHEN NEW.action_type = 'whitelist_refund' THEN -NEW.whitelist_tons
+                                                  WHEN NEW.action_type = 'whitelist_buy' THEN NEW.whitelist_tons
+                                                  WHEN NEW.action_type = 'whitelist_refund' THEN -NEW.whitelist_tons
             END
         WHERE "user" = NEW.actor
           AND token_launch = NEW.token_launch;
@@ -44,9 +48,9 @@ BEGIN
 
     ELSIF NEW.action_type = 'claim' THEN
         UPDATE user_balances
-        SET whitelist_tons     = whitelist_tons - NEW.whitelist_tons,
-            public_tons = public_tons - NEW.public_tons,
-            jettons     = jettons - NEW.jettons
+        SET whitelist_tons = whitelist_tons - NEW.whitelist_tons,
+            public_tons    = public_tons - NEW.public_tons,
+            jettons        = jettons - NEW.jettons
         WHERE "user" = NEW.actor
           AND token_launch = NEW.token_launch;
 

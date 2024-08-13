@@ -16,7 +16,7 @@ export type JsonLaunchMetadata = {
     url: string;
 };
 
-export type StoredLaunch = {
+export type StoredTokenLaunch = {
     address: Address,
     creator: Address,
     metadata: JsonLaunchMetadata
@@ -42,7 +42,7 @@ export type UserAction = {
     timestamp: Date
 };
 
-export type UserBalance = {
+export type StoredUserBalance = {
     actor: Address,
     tokenLaunch: Address,
     whitelistTons: Coins,
