@@ -79,14 +79,8 @@ export type CreateLaunchParams = {
   platformSharePct: number,
   metadata: Cell | TEP64JettonMetadata,
 };
-
-export type TransferNotificationParams = {
-  jettonAmount: bigint | number,
-  initiator: Address,
-  maybePayload: Cell
-}
-
 export type UpgradeParams = {
+  // TODO TF is new data 2 and 3
   newData2: number,
   newData3: Address,
   newData: Cell,
@@ -125,31 +119,6 @@ export class Core implements Contract {
       .storeCoins(totalSupply)
       .storeUint(platformSharePct, 16)
       .storeRef(packagedMetadata)
-      .endCell();
-    await provider.internal(via, {
-      value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
-    });
-  }
-
-  async sendTlInitCallback(provider: ContractProvider, via: Sender, value: bigint, queryId: bigint) {
-    const body = beginCell()
-      .storeUint(OpCore.tl_init_callback, 32)
-      .storeUint(queryId, 64)
-      .endCell();
-    await provider.internal(via, {
-      value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
-    });
-  }
-
-  // TODO figure out type of maybePayload and how to pass on (Either Cell ^Cell)
-  async sendTransferNotification(provider: ContractProvider, via: Sender, value: bigint, queryId: bigint, params: TransferNotificationParams) {
-    const {jettonAmount, initiator, maybePayload} = params;
-    const body = beginCell()
-      .storeUint(OpCore.transfer_notification, 32)
-      .storeUint(queryId, 64)
-      .storeCoins(jettonAmount)
-      .storeAddress(initiator)
-      .storeRef(maybePayload)
       .endCell();
     await provider.internal(via, {
       value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
