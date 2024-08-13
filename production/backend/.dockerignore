@@ -1,0 +1,21 @@
+node_modules
+# Should be managed as volume
+postgres-data
+
+# We don't need em inside container
+Dockerfile
+docker-compose.yml
+
+.git
+.gitignore
+
+*.log
+*.tmp
+*.temp
+
+.vscode/
+.idea/
+
+# Seems like we don't actually need it
+dist/
+build/
