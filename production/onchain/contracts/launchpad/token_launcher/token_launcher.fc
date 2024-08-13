@@ -75,6 +75,8 @@
     throw_unless(error::wrong_time, now() > general_state::const::start_time);
     throw_unless(error::uninitialized, this::const::is_initialized?);
 
+    ;; - CN: can be sent by anyone
+    ;; if there is a commission balance, returns it back to the user
     if (op == op::tl::creator_buyout) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::creator_address));
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);

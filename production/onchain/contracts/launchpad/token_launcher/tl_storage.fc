@@ -77,7 +77,6 @@
     slice sale_config_slice = sale_config.begin_parse();
     config::const::fut_jet_total_supply = sale_config_slice~load_coins();
     config::const::fut_jet_dex_amount = sale_config_slice~load_coins();
-    config::const::fut_jet_dex_amount = sale_config_slice~load_coins();
     config::const::fut_jet_platform_amount = sale_config_slice~load_coins();
     config::const::reward_util_jets_total_amount = sale_config_slice~load_coins();
     sale_config_slice.end_parse();

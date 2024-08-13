@@ -1,62 +1,6 @@
-import {Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode} from "@ton/core";
-import {Slice} from "@ton/ton";
-
-export type TokenLaunchConfig = {
-  futJetTotalSupply: bigint;      // this::const::fut_jet_total_supply
-  minTonForSaleSuccess: bigint;   // this::const::min_ton_for_sale_success
-  chiefAddress: Address;          // this::const::chief_address
-  creatorAddress: Address;        // this::const::creator_address
-  utilJetWalletAddress: Address;  // jet_tools::const::util_jet_wallet_address
-  metadata: Cell;                 // jet_tools::const::metadata
-  futJetMasterCode: Cell;         // jet_tools::const::fut_jet_master_code
-  walletCode: Cell;               // jet_tools::const::wallet_code
-};
-
-export function tokenLauncherConfigToCell(config: TokenLaunchConfig): Cell {
-  return beginCell()
-  .storeCoins(config.futJetTotalSupply)
-  .storeCoins(config.minTonForSaleSuccess)
-  .storeAddress(config.chiefAddress)
-  .storeAddress(config.creatorAddress)
-  .storeRef(
-      // TODO initialize in a separate variable as it have done in load_data
-    beginCell()
-    .storeAddress(config.utilJetWalletAddress)
-    .storeRef(config.metadata)
-    .storeRef(config.futJetMasterCode)
-    .storeRef(config.walletCode)
-    .endCell()
-  )
-  .endCell();
-}
-
-export function endParse(slice: Slice) {
-  if (slice.remainingBits > 0 || slice.remainingRefs > 0) {
-    throw new Error('remaining bits in data');
-  }
-}
-
-export function parseTokenLaunchrData(data: Cell) {
-  const sc = data.beginParse();
-  const parsed = {
-    isInitialized: sc.loadInt(1),
-    futJetTotalSupply: sc.loadCoins(),
-    minTonForSaleSuccess: sc.loadCoins(),
-    futJetCurBalance: sc.loadCoins(),
-    rewardUtilJetsCurBalance: sc.loadCoins(),
-    chiefAddress: sc.loadAddress(),
-    creatorAddress: sc.loadAddress(),
-    saleConfig: sc.loadRef(),
-    jetTools: {
-      utilJetWalletAddress: sc.loadAddress(),
-      metadata: sc.loadRef(),
-      futJetMasterCode: sc.loadRef(),
-      walletCode: sc.loadRef()
-    }
-  };
-  endParse(sc);
-  return parsed;
-}
+import {Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode} from "@ton/core";
+import {OpTokenLauncher, SendMessageParams, tokenLauncherConfigToCell} from "./utils";
+import {LaunchDataType, RefundRequestParams, SaleStateType, TokenLaunchConfig} from "./types";
 
 export class TokenLaunch implements Contract {
   constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
@@ -72,7 +16,58 @@ export class TokenLaunch implements Contract {
     return new TokenLaunch(contractAddress(workchain, init), init);
   }
 
-  async getLaunchData(provider: ContractProvider) {
+  async sendPublicBuy(provider: ContractProvider, sendMessageParams: SendMessageParams) {
+    const {queryId, via, value} = sendMessageParams;
+
+    const body = beginCell()
+      .storeUint(OpTokenLauncher.public_buy, 32)
+      .storeUint(queryId, 64)
+      .endCell();
+    await provider.internal(via, {
+      value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
+    });
+  }
+
+  async sendRefundRequest(provider: ContractProvider, sendMessageParams: SendMessageParams, params: RefundRequestParams) {
+    const {refundValue, mode} = params;
+    const {queryId, via, value} = sendMessageParams;
+
+    const body = beginCell()
+      .storeUint(OpTokenLauncher.refund_request, 32)
+      .storeUint(queryId, 64)
+      .storeUint(mode, 4)
+      .storeCoins(refundValue)
+      .endCell();
+    await provider.internal(via, {
+      value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
+    });
+  }
+
+  async sendDeployJet(provider: ContractProvider, sendMessageParams: SendMessageParams) {
+    const {queryId, via, value} = sendMessageParams;
+
+    const body = beginCell()
+      .storeUint(OpTokenLauncher.deploy_jet, 32)
+      .storeUint(queryId, 64)
+      .endCell();
+    await provider.internal(via, {
+      value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
+    });
+  }
+
+  async sendJettonClaimRequest(provider: ContractProvider, sendMessageParams: SendMessageParams) {
+    const {queryId, via, value} = sendMessageParams;
+
+    const body = beginCell()
+      .storeUint(OpTokenLauncher.jetton_claim_request, 32)
+      .storeUint(queryId, 64)
+      .endCell();
+    await provider.internal(via, {
+      value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
+    });
+  }
+
+  async getLaunchData(provider: ContractProvider): Promise<LaunchDataType> {
     let {stack} = await provider.get('get_launch_data', []);
     return {
       futJetTotalSupply: stack.readBigNumber(),
@@ -81,23 +76,24 @@ export class TokenLaunch implements Contract {
     };
   }
 
-  /* TODO
-  Since we'll be handling deployments and initiating launches from the core, these functions might no longer be necessary
-  The only usage case - very specific tests, so I think we can delete it for now
-  async sendDeploy(provider: ContractProvider, via: Sender, value: bigint) {
-    await provider.internal(via, {
-      value,
-      sendMode: SendMode.PAY_GAS_SEPARATELY,
-      // точни ли тело должно быть пустым? (не смог найти где деплой в token_launcher.fc) (возможно core.fc - 82?)
-      body: beginCell().endCell(),
-    });
+  // possibly unnecessarily
+  async getUserVaultAddress(provider: ContractProvider): Promise<Address> {
+    let {stack} = await provider.get('get_user_vault_address', []);
+    return stack.readAddress()
   }
-  static initializeMessage(senderAddress: Address, futJetWalletAddress: Address, utilJetWalletAddress: Address) {
-    return beginCell()
-      .storeAddress(senderAddress)
-      .storeAddress(futJetWalletAddress)
-      .storeAddress(utilJetWalletAddress)
-      .endCell();
+
+  // possibly unnecessarily
+  async getSaleState(provider: ContractProvider): Promise<SaleStateType> {
+    let {stack} = await provider.get('get_sale_state', []);
+    // TODO here should be readBigNumber or readNumber?
+    return {
+      rewardUtilJetsBalance: stack.readBigNumber(),
+      generalStateStartTime: stack.readBigNumber(),
+      creatorRoundEndTime: stack.readBigNumber(),
+      wlRoundEndTime: stack.readBigNumber(),
+      publicRoundEndTime: stack.readBigNumber(),
+      totalTonsCollected: stack.readBigNumber(),
+      futJetDeployedBalance: stack.readBigNumber()
+    }
   }
-  */
 }

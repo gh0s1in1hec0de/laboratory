@@ -16,19 +16,23 @@ import {
   MsgPrices,
   StorageStats
 } from "./utils";
+import '@ton/test-utils';
 import {TokenLaunch} from '../wrappers/TokenLaunch';
 import {TonClient4} from "@ton/ton";
 import {Factory} from "@dedust/sdk";
 import {getHttpV4Endpoint} from '@orbs-network/ton-access'
+import {compile} from "@ton/blueprint";
+import {Core} from "../wrappers/Core";
 
 
 describe('TokenLaunch', () => {
   // VARIABLES
-  let tokenLaunchCodeRaw = new Cell();  // true code
-  let tokenLaunchCode = new Cell();     // library cell with reference to tokenLaunchCodeRaw
+  let coreCode = new Cell();  // true code
+  let core: SandboxContract<Core>;  // true code
+  let tokenLaunchCode = new Cell();  // true code
+  let tokenLaunch: SandboxContract<TokenLaunch>;
   let blockchain: Blockchain;
   let deployer: SandboxContract<TreasuryContract>;
-  let tokenLaunch: SandboxContract<TokenLaunch>;
   // TODO Build similar one after wrapper accomplishment
   // let userWallet: (address: Address) => Promise<SandboxContract<JettonWallet>>;
   let walletStats: StorageStats;
@@ -60,7 +64,9 @@ describe('TokenLaunch', () => {
                      state_init?: bigint) => bigint;
 
   beforeAll(async () => {
-    // tokenLaunchCodeRaw = await compile('TokenLaunch');
+    coreCode = await compile("Core")
+    tokenLaunchCode = await compile("TokenLaunch");
+
     blockchain = await Blockchain.create({
       storage: new RemoteBlockchainStorage(wrapTonClient4ForRemote(new TonClient4({
         endpoint: await getHttpV4Endpoint({network: "mainnet"}),
@@ -69,18 +75,50 @@ describe('TokenLaunch', () => {
     deployer = await blockchain.treasury('deployer');
     blockchain.now = Math.floor(Date.now() / 1000);
 
-    // TODO Build similar one after wrapper accomplishment
-    // jettonMinter = blockchain.openContract(
-    //   JettonMinter.createFromConfig(
+    core = blockchain.openContract(
+      Core.createFromConfig(
+        {
+          chief: deployer.address,
+          utilJettonMasterAddress: deployer.address,
+          utilJettonWalletAddress: deployer.address,
+          utilJetCurBalance: 0n,
+          notFundedLaunches: null,
+          notFundedLaunchesAmount: 0,
+          launchConfig: {
+            minTonForSaleSuccess: 0n,
+            tonLimitForWlRound: 0n,
+            utilJetRewardAmount: 0n,
+            utilJetWlPassAmount: 0n,
+            utilJetBurnPerWlPassAmount: 0n,
+            jetWlLimitPct: 0,
+            jetPubLimitPct: 0,
+            jetDexSharePct: 0,
+            creatorRoundDurationMs: 0,
+            wlRoundDurationMs: 0,
+            pubRoundDurationMs: 0,
+          },
+          contracts: {
+            jettonLaunch: tokenLaunchCode,
+            jettonLaunchUserVault: new Cell(),
+            derivedJettonMaster: new Cell(),
+            jettonWallet: new Cell()
+          }
+        },
+        coreCode
+      )
+    )
+    // TODO paste current params
+    // tokenLaunch = blockchain.openContract(
+    //   TokenLaunch.createFromConfig(
     //     {
     //       admin: deployer.address,
     //       wallet_code: jwallet_code,
     //       jetton_content: jettonContentToCell(defaultContent)
     //     },
-    //     minter_code
+    //     tokenLaunchCode
     //   )
     // );
-    //
+
     // userWallet = async (address: Address) => blockchain.openContract(
     //   JettonWallet.createFromAddress(
     //     await jettonMinter.getWalletAddress(address)
@@ -125,6 +163,22 @@ describe('TokenLaunch', () => {
   })
 
   // TESTS
+  it('should deploy', async () => {
+    const deployResult = await core.sendDeploy({value: toNano('10'), via: deployer.getSender()});
+
+    expect(deployResult.transactions).toHaveTransaction({
+      from: deployer.address,
+      to: core.address,
+      deploy: true,
+    });
+    // Make sure it didn't bounce
+    expect(deployResult.transactions).not.toHaveTransaction({
+      on: deployer.address,
+      from: core.address,
+      inMessageBounced: true
+    });
+  });
+
   test('test DeDust', async () => {
     //   const scaleAddress = Address.parse("EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE");
     //   factory = blockchain.openContract(
