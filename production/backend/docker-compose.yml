@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: launchpad
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev_pass
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  app:
+    # We don't need such a verbose build description rn, but later it may be useful
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /app
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    # It should be started like that to be able to parse flags dinamically
+    # BUN_FLAGS="--flag1 --flag2" docker-compose up --build
+    command: sh -c "until pg_isready -h db -p 5432; do echo 'waiting for database...'; sleep 1; done; bun install && bun run src/index.ts $BUN_FLAGS"
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"

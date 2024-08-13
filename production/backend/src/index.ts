@@ -3,12 +3,12 @@ import dotenv from "dotenv";
 import * as db from "./db";
 
 dotenv.config();
-
-if (!Bun.argv.includes("--production")) greeting();
+greeting();
 
 // Disable console.debug unless debug logging is explicitly enabled
 if (!Bun.argv.includes("--debug")) console.debug = () => {};
 
+console.debug(`db ${process.env.DB_HOST} | ${process.env.DB_HOST} | ${process.env.DB_NAME} | ${process.env.DB_USER} | ${process.env.DB_PASSWORD}`);
 const sql = await db.createPostgresClient();
 
 export const CLEAN_START = Bun.argv.includes("--fresh");
