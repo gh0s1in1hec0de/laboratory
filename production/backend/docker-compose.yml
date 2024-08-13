@@ -2,6 +2,7 @@ services:
   db:
     image: postgres:latest
     environment:
+      # Take care about production database protection; todo just replace with .env?
       POSTGRES_DB: launchpad
       POSTGRES_USER: dev
       POSTGRES_PASSWORD: dev_pass

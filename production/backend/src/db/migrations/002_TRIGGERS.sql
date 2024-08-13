@@ -2,21 +2,21 @@ CREATE OR REPLACE FUNCTION update_user_balance()
     RETURNS TRIGGER AS
 $$
 BEGIN
-    IF NEW.action_type IN ('wl_buy', 'wl_refund') THEN
+    IF NEW.action_type IN ('whitelist_buy', 'whitelist_refund') THEN
         UPDATE user_balances
-        SET wl_tons = wl_tons + CASE
-                                    WHEN NEW.action_type = 'wl_buy' THEN NEW.wl_tons
-                                    WHEN NEW.action_type = 'wl_refund' THEN -NEW.wl_tons
+        SET whitelist_tons = whitelist_tons + CASE
+                                    WHEN NEW.action_type = 'whitelist_buy' THEN NEW.whitelist_tons
+                                    WHEN NEW.action_type = 'whitelist_refund' THEN -NEW.whitelist_tons
             END
         WHERE "user" = NEW.actor
           AND token_launch = NEW.token_launch;
 
         IF NOT FOUND THEN
-            IF NEW.action_type = 'wl_buy' THEN
-                INSERT INTO user_balances ("user", token_launch, wl_tons)
-                VALUES (NEW.actor, NEW.token_launch, NEW.wl_tons);
+            IF NEW.action_type = 'whitelist_buy' THEN
+                INSERT INTO user_balances ("user", token_launch, whitelist_tons)
+                VALUES (NEW.actor, NEW.token_launch, NEW.whitelist_tons);
             ELSE
-                RAISE EXCEPTION 'no existing wl_tons balance found for user % and token launch %', NEW.actor, NEW.token_launch;
+                RAISE EXCEPTION 'no existing whitelist_tons balance found for user % and token launch %', NEW.actor, NEW.token_launch;
             END IF;
         END IF;
 
@@ -44,7 +44,7 @@ BEGIN
 
     ELSIF NEW.action_type = 'claim' THEN
         UPDATE user_balances
-        SET wl_tons     = wl_tons - NEW.wl_tons,
+        SET whitelist_tons     = whitelist_tons - NEW.whitelist_tons,
             public_tons = public_tons - NEW.public_tons,
             jettons     = jettons - NEW.jettons
         WHERE "user" = NEW.actor
