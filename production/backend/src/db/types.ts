@@ -1,10 +1,10 @@
 import type {Sql} from "postgres";
+import type {Coins} from "../utils.ts";
 
 type SqlTypes = { bigint: bigint };
 export type Client = Sql<SqlTypes>;
 // Just for readability
 export type Address = string;
-export type Coins = bigint;
 
 export type StoredUser = {
     address: Address,
@@ -21,6 +21,9 @@ export type StoredTokenLaunch = {
     creator: Address,
     metadata: JsonLaunchMetadata
     creatorBalance: Coins
+    startTime: Date,
+    endTime: Date,
+    heightTime: Date,
 };
 
 export enum UserActionType {
