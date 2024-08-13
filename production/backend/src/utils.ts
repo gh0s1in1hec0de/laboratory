@@ -1,3 +1,7 @@
+export type Coins = bigint;
+// Еo standardize the way addresses are stored
+export type RawAddress = string;
+
 export function greeting() {
     console.log(`
      .-')   .-') _     ('-.    _  .-')  .-') _                   .-') _  
