@@ -1,6 +1,15 @@
 -- TODO Replace 256 with max address length
 CREATE DOMAIN address AS VARCHAR(256);
 CREATE DOMAIN coins AS BIGINT CHECK ( VALUE >= 0 );
+
+-- A little trick to store height that is related to core
+CREATE TABLE global_settings
+(
+    setting_key   TEXT PRIMARY KEY,
+    setting_value TIMESTAMP
+);
+
+
 CREATE TABLE users
 (
     address  address PRIMARY KEY,
@@ -14,10 +23,9 @@ CREATE TABLE token_launches
     -- Now it is JSONB, but, after we'll determine format of metadata, we should rewrite this as explicit fields
     metadata        JSONB     NOT NULL,
     -- On creator buyout we just update this field
-    creator_balance BIGINT             DEFAULT 0,
+    creator_balance BIGINT DEFAULT 0,
     start_time      TIMESTAMP NOT NULL,
-    end_time        TIMESTAMP NOT NULL,
-    height          TIMESTAMP NOT NULL DEFAULT now()
+    end_time        TIMESTAMP NOT NULL
 );
 
 CREATE TYPE user_action_type AS ENUM ('whitelist_buy', 'public_buy', 'whitelist_refund', 'public_refund', 'total_refund', 'claim');

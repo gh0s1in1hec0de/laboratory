@@ -44,7 +44,8 @@ cell build_content_cell(slice metadata_uri) inline {
     return create_token_onchain_metadata(content_dict);
 }
 
-
+;;  Warning! Builders should point to a separate cell if exceeds the rest of memory of `internal_transfer`
+;; See tlb/jetton.tlb#L3
 cell build_jetton_transfer_msg(
     int query_id,
     int value,
@@ -60,10 +61,9 @@ cell build_jetton_transfer_msg(
         .store_coins(jetton_amount)
         .store_slice(recipient) ;; To
         .store_slice(my_address()) ;; Address, that will get excesses after operation
-        .store_coins(forward_ton_amount);
-         .store_builder(payload)
+        .store_coins(forward_ton_amount)
+        .store_builder(payload)
         .end_cell();
-    ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     return begin_cell()
         .store_msg_flags_and_address_none(NON_BOUNCEABLE) ;; As we are not able to handle this situation
         .store_slice(our_wallet_address)
@@ -161,7 +161,7 @@ cell pack_user_vault_data(slice owner_address, slice launch_contract_address, in
 }
 
 () verify_user_vault(slice vault_address, slice owner_address) impure inline_ref {
-    slice (_user_vault_stateinit, derived_user_vault_address) = calculate_user_vault_data(owner_address);
+    (cell _user_vault_stateinit, slice derived_user_vault_address) = calculate_user_vault_data(owner_address);
     throw_unless(error::unauthorized_access, equal_slices_bits(vault_address, derived_user_vault_address));
 }
 

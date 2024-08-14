@@ -5,7 +5,7 @@
 
 #include "core_context.fc";
 
-() handle_incoming_transfer(int _query_id, int _attached_value, int sender_address,  int jetton_amount, slice _initiator, slice _maybe_payload) {
+() handle_incoming_transfer(int _query_id, int _attached_value, slice sender_address,  int jetton_amount, slice _initiator, slice _maybe_payload) {
     if (~ equal_slices_bits(sender_address, this::util_jetton_wallet_address)) {
         return ();
     }
@@ -14,7 +14,7 @@
 
 ;; We use TEP-74 Metadata standard
 ;; We determine start time manually to be able to calculate address of lunch off-chain before its actual deploy
-() create_launch(int query_id, int attached_value, int sender_address, int total_supply, int platform_share_pct, cell metadata_cell, int start_time) {
+() create_launch(int query_id, int attached_value, slice sender_address, int total_supply, int platform_share_pct, cell metadata_cell, int start_time) {
     int wl_jet_limit = muldiv(launch_conf::jet_wl_limit_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int pub_jet_limit = muldiv(launch_conf::jet_pub_limit_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int dex_jet_share = muldiv(launch_conf::jet_dex_share_pct, total_supply, PERCENTAGE_DENOMINATOR);
@@ -71,7 +71,6 @@
         .store_coins(dex_jet_share)
         .store_coins(platform_share)
         .store_coins(launch_conf::util_jet_reward_amount)
-        .store_coins()
         .end_cell();
     cell tools = begin_cell()
         .store_address_none()
@@ -122,6 +121,7 @@
         .store_coins(msg_value)
         .store_statinit_ref_and_body_ref(token_launch_stateinit, msg_body)
         .end_cell();
+    ;; TODO have to provide value the explicit way
     this::not_funded_launches.dict_set(ADDRESS_SIZE, pack_address(token_launch_address));
     this::not_funded_launches_amount += 1;
     send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
@@ -140,7 +140,7 @@
         this::util_jetton_wallet_address,
         sender_address,
         1,
-        begin_cell().store_uint(UTIL_JET_REWARD_ENROLLMENT, UTIL_JET_SEND_MODE_SIZE)
+        begin_cell().store_uint(UTIL_JET_REWARD_ENROLLMENT, UTIL_JET_SEND_MODE_SIZE).end_cell()
     );
     send_raw_message(msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }

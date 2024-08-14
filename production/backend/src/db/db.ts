@@ -21,12 +21,18 @@ export async function applyMigrations(client?: Client) {
     const directoryPath = path.join(__dirname, 'migrations');
     const files = fs.readdirSync(directoryPath).sort();
 
-    // Open a transaction
-    await (client ? client : globalClient).begin(async sql => {
-        for (const file of files) {
-            const migration = fs.readFileSync(path.join(directoryPath, file), 'utf-8');
-            // Here we call text we got from migration .sql file as a query
-            await sql.unsafe(migration);
-        }
-    })
+    try {
+        // Open a transaction
+        await (client || globalClient).begin(async sql => {
+            for (const file of files) {
+                try {
+                    const migration = fs.readFileSync(path.join(directoryPath, file), 'utf-8');
+                    // Here we call text we got from migration .sql file as a query
+                    await sql.unsafe(migration);
+                } catch (_e) {
+                    console.info(`seems like migration ${file} had already been applied`);
+                }
+            }
+        })
+    } catch (e) { /* Just preventing exiting in case of already applied migrations */ }
 }

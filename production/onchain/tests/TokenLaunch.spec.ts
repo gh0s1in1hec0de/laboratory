@@ -107,23 +107,6 @@ describe('TokenLaunch', () => {
         coreCode
       )
     )
-    // TODO paste current params
-    // tokenLaunch = blockchain.openContract(
-    //   TokenLaunch.createFromConfig(
-    //     {
-    //       admin: deployer.address,
-    //       wallet_code: jwallet_code,
-    //       jetton_content: jettonContentToCell(defaultContent)
-    //     },
-    //     tokenLaunchCode
-    //   )
-    // );
-
-    // userWallet = async (address: Address) => blockchain.openContract(
-    //   JettonWallet.createFromAddress(
-    //     await jettonMinter.getWalletAddress(address)
-    //   )
-    // );
 
     printTxGasStats = (name, transaction) => {
       const txComputed = computedGeneric(transaction);
