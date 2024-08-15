@@ -4,8 +4,9 @@
 #include "../gas.fc";
 
 #include "core_context.fc";
+#include "core_storage.fc";
 
-() handle_incoming_transfer(int _query_id, int _attached_value, slice sender_address,  int jetton_amount, slice _initiator, slice _maybe_payload) {
+() handle_incoming_transfer(slice sender_address, int jetton_amount) {
     if (~ equal_slices_bits(sender_address, this::util_jetton_wallet_address)) {
         return ();
     }
@@ -14,7 +15,15 @@
 
 ;; We use TEP-74 Metadata standard
 ;; We determine start time manually to be able to calculate address of lunch off-chain before its actual deploy
-() create_launch(int query_id, int attached_value, slice sender_address, int total_supply, int platform_share_pct, cell metadata_cell, int start_time) {
+() create_launch(int query_id, slice sender_address, int total_supply, int platform_share_pct, cell metadata_cell, int start_time, cell launch_conf, cell contracts) {
+    var (
+        launch_conf::util_jet_reward_amount, launch_conf::min_ton_for_sale_success, launch_conf::ton_limit_for_wl_round,
+        launch_conf::util_jet_wl_pass_amount, launch_conf::util_jet_burn_per_wl_pass_amount,
+        launch_conf::jet_wl_limit_pct, launch_conf::jet_pub_limit_pct, launch_conf::jet_dex_share_pct,
+        launch_conf::creator_round_duration_ms, launch_conf::wl_round_duration_ms, launch_conf::pub_round_duration_ms
+    ) = parse_launch_conf(launch_conf);
+    var (token_launch_code, user_vault_code, jetton_master_code, jetton_wallet_code) = parse_contracts(contracts);
+
     int wl_jet_limit = muldiv(launch_conf::jet_wl_limit_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int pub_jet_limit = muldiv(launch_conf::jet_pub_limit_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int dex_jet_share = muldiv(launch_conf::jet_dex_share_pct, total_supply, PERCENTAGE_DENOMINATOR);
@@ -77,9 +86,9 @@
         .store_address_none()
         .store_address_none()
         .store_ref(metadata_cell)
-        .store_ref(code::derived_jetton_master)
-        .store_ref(code::jetton_wallet)
-        .store_ref(code::jetton_launch_user_vault)
+        .store_ref(jetton_master_code)
+        .store_ref(jetton_wallet_code)
+        .store_ref(user_vault_code)
         .end_cell();
     cell data = begin_cell()
         .store_int(0, 1)
@@ -90,22 +99,22 @@
         .store_ref(sale_state)
         .store_ref(tools)
         .end_cell();
-    cell token_launch_stateinit = calculate_contract_state_init(code::jetton_launch, data);
+    cell token_launch_stateinit = calculate_contract_state_init(token_launch_code, data);
     slice token_launch_address = calculate_contract_address(token_launch_stateinit);
     (cell _fut_jet_master_stateinit, slice fut_jet_master_address) = calculate_fut_jet_master_data(
-        code::derived_jetton_master,
+        jetton_master_code,
         total_supply,
         token_launch_address,
         address_none(),
-        code::jetton_wallet,
+        jetton_wallet_code,
         metadata_cell
     );
 
     slice token_launch_fut_jet_wallet_address = calculate_user_jetton_wallet_address(
-        token_launch_address, fut_jet_master_address, code::jetton_wallet
+        token_launch_address, fut_jet_master_address, jetton_wallet_code
     );
     slice util_jet_wallet_address = calculate_user_jetton_wallet_address(
-        token_launch_address, this::util_jetton_master_address, code::jetton_wallet
+        token_launch_address, this::util_jetton_master_address, jetton_wallet_code
     );
     int msg_value = get_amount_for_token_launch_deploy();
     cell msg_body = begin_cell()
@@ -122,14 +131,18 @@
         .store_statinit_ref_and_body_ref(token_launch_stateinit, msg_body)
         .end_cell();
     ;; TODO have to provide value the explicit way
-    this::not_funded_launches.dict_set(ADDRESS_SIZE, pack_address(token_launch_address));
+    this::not_funded_launches.dict_set(ADDRESS_SIZE, pack_address(token_launch_address), "");
     this::not_funded_launches_amount += 1;
     send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
-() init_callback(int query_id, int attached_value, int sender_address) {
-    (_, int found) = this::not_funded_launches~dict_delete_get?(ADDRESS_SIZE, pack_address(sender_address));
-    throw_if(error::tokens_lack, this::util_jet_cur_balance < this::util_jetton_wallet_address);
+() init_callback(int query_id, slice sender_address, cell launch_conf) impure inline {
+    var (
+        launch_conf::util_jet_reward_amount, _, _, _, _, _, _, _, _, _, _
+    ) = parse_launch_conf(launch_conf);
+    cell not_fun_l = this::not_funded_launches;
+    (_, int found) = not_fun_l~dict_delete_get?(ADDRESS_SIZE, pack_address(sender_address));
+    throw_if(error::tokens_lack, this::util_jet_cur_balance < launch_conf::util_jet_reward_amount);
     throw_unless(error::unauthorized_access, found);
     this::not_funded_launches_amount -= 1;
 
@@ -140,7 +153,7 @@
         this::util_jetton_wallet_address,
         sender_address,
         1,
-        begin_cell().store_uint(UTIL_JET_REWARD_ENROLLMENT, UTIL_JET_SEND_MODE_SIZE).end_cell()
+        begin_cell().store_uint(UTIL_JET_REWARD_ENROLLMENT, UTIL_JET_SEND_MODE_SIZE)
     );
     send_raw_message(msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
