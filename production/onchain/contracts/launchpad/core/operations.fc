@@ -122,14 +122,14 @@
         .store_statinit_ref_and_body_ref(token_launch_stateinit, msg_body)
         .end_cell();
     ;; TODO have to provide value the explicit way
-    this::not_funded_launches.dict_set(ADDRESS_SIZE, pack_address(token_launch_address));
+    this::not_funded_launches.dict_set(ADDRESS_SIZE, pack_address(token_launch_address), "");
     this::not_funded_launches_amount += 1;
     send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
-() init_callback(int query_id, int attached_value, int sender_address) {
+() init_callback(int query_id, int attached_value, slice sender_address) {
     (_, int found) = this::not_funded_launches~dict_delete_get?(ADDRESS_SIZE, pack_address(sender_address));
-    throw_if(error::tokens_lack, this::util_jet_cur_balance < this::util_jetton_wallet_address);
+    throw_if(error::tokens_lack, this::util_jet_cur_balance < launch_conf::util_jet_reward_amount);
     throw_unless(error::unauthorized_access, found);
     this::not_funded_launches_amount -= 1;
 
@@ -140,7 +140,7 @@
         this::util_jetton_wallet_address,
         sender_address,
         1,
-        begin_cell().store_uint(UTIL_JET_REWARD_ENROLLMENT, UTIL_JET_SEND_MODE_SIZE).end_cell()
+        begin_cell().store_uint(UTIL_JET_REWARD_ENROLLMENT, UTIL_JET_SEND_MODE_SIZE)
     );
     send_raw_message(msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
