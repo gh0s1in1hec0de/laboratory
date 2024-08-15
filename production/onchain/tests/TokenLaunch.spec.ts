@@ -64,7 +64,7 @@ describe('TokenLaunch', () => {
                      state_init?: bigint) => bigint;
 
   beforeAll(async () => {
-    coreCode = await compile("Core")
+    coreCode = await compile("Core");
     tokenLaunchCode = await compile("TokenLaunch");
 
     blockchain = await Blockchain.create({

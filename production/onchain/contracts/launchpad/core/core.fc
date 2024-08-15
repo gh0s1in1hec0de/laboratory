@@ -2,7 +2,6 @@
 #include "../op-codes.fc";
 #include "../utils.fc";
 
-#include "core_context.fc";
 #include "core_storage.fc";
 #include "operations.fc";
 
@@ -14,7 +13,7 @@
     (int msg_flags, slice sender_address, int attached_value, int fwd_fee_from_in_msg) = extract_full_msg_data(in_msg_full);
     (int op, int query_id) = in_msg_body~load_op_and_query_id();
 
-    (cell launch_conf, cell contracts) = load_data();
+    (cell not_funded_launches, cell launch_conf, cell contracts) = load_data();
 
     if (msg_flags & 1) {
         ;; Is bounced
@@ -31,30 +30,31 @@
                 jetton_wallet_code
             );
         }
-        save_data(launch_conf, contracts);
+        save_data(not_funded_launches, launch_conf, contracts);
         return ();
     }
     if (op == op::core::create_launch) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         throw_unless(error::not_enough_gas, attached_value > get_amount_for_token_launch_deploy());
         throw_unless(error::overload, this::not_funded_launches_amount <= 20);
-        create_launch(
+        cell not_funded_launches_updated = create_launch(
             query_id,
             sender_address,
             in_msg_body~load_coins(),
             in_msg_body~load_uint(16),
             in_msg_body~load_ref(),
             in_msg_body~load_int(32),
+            not_funded_launches,
             launch_conf,
             contracts
         );
-        save_data(launch_conf, contracts);
+        save_data(not_funded_launches_updated, launch_conf, contracts);
         return ();
     }
     if (op == op::core::tl_init_callback) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
-        init_callback(query_id, sender_address, launch_conf);
-        save_data(launch_conf, contracts);
+        cell not_funded_launches_updated = init_callback(query_id, sender_address, launch_conf, not_funded_launches);
+        save_data(not_funded_launches_updated, launch_conf, contracts);
         return ();
     }
     if (op == op::transfer_notification) {
@@ -62,7 +62,7 @@
             sender_address,
             in_msg_body~load_coins()
         );
-        save_data(launch_conf, contracts);
+        save_data(not_funded_launches, launch_conf, contracts);
         return ();
     }
 
@@ -79,17 +79,17 @@
     throw(error::wrong_op);
 }
 
-(cell, int, int) get_state() method_id {
-    load_data();
-    return (
-        this::not_funded_launches,
-        this::not_funded_launches_amount,
-        this::util_jet_cur_balance
-    );
-}
+;; (cell, int, int) get_state() method_id {
+;;     load_data();
+;;     return (
+;;         this::not_funded_launches,
+;;         this::not_funded_launches_amount,
+;;         this::util_jet_cur_balance
+;;     );
+;; }
 
 ;; Or just return cell?
 (int, int, int, int, int, int, int, int, int, int, int) get_launch_config() method_id {
-    var (launch_conf, _) = load_data();
+    var (launch_conf, _, _) = load_data();
     return parse_launch_conf(launch_conf);
 }
