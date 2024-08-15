@@ -17,5 +17,4 @@ docker-compose.yml
 .idea/
 
 # Seems like we don't actually need it
-dist/
 build/
