@@ -28,7 +28,7 @@ global int launch_conf::pub_round_duration_ms;
 
 ;; === CONTRACTS ===
 global cell code::jetton_launch;
-global cell code::jetton_launch_user_vault;
+global cell code::user_vault;
 global cell code::derived_jetton_master;
 ;; This code will be used in two contracts both - in util jetton and in derived jettons
 global cell code::jetton_wallet;

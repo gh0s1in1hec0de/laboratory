@@ -1,6 +1,6 @@
 #include "../../stdlib.fc";
-#include "tl_context.fc";
 #include "../gas.fc";
+#include "tl_context.fc";
 
 () save_data() impure inline_ref {
     cell general_state = begin_cell()
@@ -43,7 +43,6 @@
         .store_coins(config::const::fut_jet_dex_amount)
         .store_coins(config::const::fut_jet_platform_amount)
         .store_coins(config::const::reward_util_jets_total_amount)
-        .store_coins()
         .end_cell();
     cell tools = begin_cell()
         .store_slice(tools::const::util_jet_wallet_address)

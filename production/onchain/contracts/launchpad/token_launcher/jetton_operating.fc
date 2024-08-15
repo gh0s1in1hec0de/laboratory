@@ -52,7 +52,7 @@ const int MINT_QUERY_ID = 27082006;
         ;; CN: number of tokens required for reward
         if (util_jet_enr_mode == UTIL_JET_REWARD_ENROLLMENT) {
             ;; It does mean, that utility jettons reward amount was already enrolled
-            if(general_state::reward_util_jets_balance != 0 | config::const::reward_util_jets_total_amount != 0) {
+            if((general_state::reward_util_jets_balance != 0) | (config::const::reward_util_jets_total_amount != 0)) {
                 cell chargeback_msg = build_jetton_transfer_msg(
                     query_id,
                     0,

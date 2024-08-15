@@ -30,7 +30,7 @@
     cell contracts = ds~load_ref();
     slice contarcts_slice = contracts.begin_parse();
     code::jetton_launch = contarcts_slice~load_ref();
-    code::jetton_launch_user_vault = contarcts_slice~load_ref();
+    code::user_vault = contarcts_slice~load_ref();
 
     code::derived_jetton_master = contarcts_slice~load_ref();
     code::jetton_wallet = contarcts_slice~load_ref();
@@ -42,7 +42,7 @@
 () save_data() impure inline_ref {
     cell contracts = begin_cell()
         .store_ref(code::jetton_launch)
-        .store_ref(code::jetton_launch_user_vault)
+        .store_ref(code::user_vault)
         .store_ref(code::derived_jetton_master)
         .store_ref(code::jetton_wallet)
         .end_cell();

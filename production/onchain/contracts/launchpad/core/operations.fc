@@ -79,7 +79,7 @@
         .store_ref(metadata_cell)
         .store_ref(code::derived_jetton_master)
         .store_ref(code::jetton_wallet)
-        .store_ref(code::jetton_launch_user_vault)
+        .store_ref(code::user_vault)
         .end_cell();
     cell data = begin_cell()
         .store_int(0, 1)

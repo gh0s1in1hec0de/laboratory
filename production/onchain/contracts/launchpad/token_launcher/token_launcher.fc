@@ -4,10 +4,11 @@
 #include "../utils.fc";
 #include "../gas.fc";
 
-#include "tl_storage.fc";
 #include "jetton_operating.fc";
 #include "trades_handler.fc";
 #include "tl_context.fc";
+#include "tl_storage.fc";
+
 
 {-
   TODO are we doing this ton-jetton processing the correct way?
@@ -34,7 +35,7 @@
     if (op == op::uv::balance_update) {
         int mode = in_msg_body~load_uint(4);
         ;; If it is not deposit
-        ifnot (mode == BALANCE_UPD_DEPOSIT_WL | mode == BALANCE_UPD_DEPOSIT_PUB) {
+        ifnot ((mode == BALANCE_UPD_DEPOSIT_WL) | (mode == BALANCE_UPD_DEPOSIT_PUB)) {
             return ();
         }
         handle_refund_confirmation(
@@ -153,7 +154,7 @@
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         throw_unless(error::wrong_time, now() > public_round::const::end_time);
         ;; For successful claim we need both launch jetton to send and utility jetton to reward
-        throw_if(error::tokens_lack, ~ general_state::fut_jet_deployed_balance > 0 | ~ general_state::reward_util_jets_balance > 0);
+        throw_if(error::tokens_lack, ~ (general_state::fut_jet_deployed_balance > 0) | ~ (general_state::reward_util_jets_balance > 0));
         handle_jetton_claim_request(query_id, attached_value, sender_address);
         return ();
     }
@@ -162,7 +163,7 @@
         int wl_tons = in_msg_body~load_coins();
         in_msg_body~load_coins(); ;; Skip pub_tons
         int jettons = in_msg_body~load_coins();
-        int recipient = in_msg_body~load_msg_addr();
+        slice recipient = in_msg_body~load_msg_addr();
         handle_jetton_claim_confirmation(query_id, attached_value, sender_address, wl_tons, jettons, recipient);
         save_data();
         return ();
@@ -192,7 +193,7 @@
 
 slice get_user_vault_address(slice user_address) method_id {
     load_data();
-    (_, slice user_vault_address) = calculate_user_vault_data(user_address);
+    (_, slice user_vault_address) = calculate_user_vault_data(code::user_vault, user_address);
     return user_vault_address;
 }
 

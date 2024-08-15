@@ -33,10 +33,10 @@
 }
 
 () handle_wl_purchase(int query_id, int attached_value, slice sender_address, slice initiator) impure inline {
-    throw_if(error::wrong_time, now() < creator_round::const::end_time | now() > wl_round::const::end_time);
+    throw_if(error::wrong_time, (now() < creator_round::const::end_time) | (now() > wl_round::const::end_time));
     int user_value_after_fee = check_amount_is_enough_for_wl_purchase(attached_value);
 
-    if (user_value_after_fee <= 0 | wl_round::ton_invested_total + user_value_after_fee <= wl_round::const::ton_limit) {
+    if ((user_value_after_fee <= 0) | ((wl_round::ton_invested_total + user_value_after_fee) <= wl_round::const::ton_limit)) {
         cell chargeback_transfer_msg = build_jetton_transfer_msg(
             query_id,
             0,
@@ -67,6 +67,7 @@
     ;; We attach value only for routong messages
     int value = get_wl_purchase_gas_consumption() - get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_GAS_CONSUMPTION);
     cell msg = build_balance_update_message(
+        code::user_vault,
         query_id,
         value,
         sender_address,
@@ -89,7 +90,7 @@
 }
 
 () handle_public_purchase(int query_id, int attached_value, slice sender_address) impure inline {
-    throw_if(error::wrong_time, now() < wl_round::const::end_time | now() >= public_round::const::end_time);
+    throw_if(error::wrong_time, (now() < wl_round::const::end_time) | (now() >= public_round::const::end_time));
     ;; `user_value_after_fee` is always more than 0
     int user_value_after_fee = check_amount_is_enough_for_public_purchase(attached_value);
     int res_jettons = get_amount_out(user_value_after_fee, public_round::synthetic_ton_reserve, public_round::synthetic_jet_reserve);
@@ -110,6 +111,7 @@
     ;; Here we attach precise amount of money - as all the remainings gone on ivenstment
     int msg_value = get_balance_update_gas_cost();
     cell msg = build_balance_update_message(
+        code::user_vault,
         query_id,
         msg_value,
         sender_address,
@@ -131,15 +133,16 @@
     -}
     throw_unless(
         error::wrong_time,
-        ~ general_state::total_tons_collected > config::const::min_ton_for_sale_success
-    | ~ now() > public_round::const::end_time
+        ~ (general_state::total_tons_collected > config::const::min_ton_for_sale_success)
+    | ~ (now() > public_round::const::end_time)
     );
     throw_if(error::wrong_time, now() < creator_round::const::end_time);
-    throw_unless(error::bad_request, mode == 3 | mode == 4 | mode == 5);
+    throw_unless(error::bad_request, (mode == 3) | (mode == 4) | (mode == 5));
     ;; We don't actually care about leftovers
-    int _user_value_after_fee = check_amount_is_enough_for_refund(attached_value);
+    check_amount_is_enough_for_refund(attached_value);
 
     cell msg = build_balance_update_message(
+        code::user_vault,
         query_id,
         0, ;; Should be rewritten by message sending mode
         sender_address,
@@ -150,8 +153,8 @@
     send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
-() handle_refund_confirmation(int query_id, int attached_value, slice sender_address, int wl_tons, int pub_tons, int jettons_to_charge_back, slice recipient) impure inline {
-    verify_user_vault(sender_address, recipient);
+() handle_refund_confirmation(int query_id, int _attached_value, slice sender_address, int wl_tons, int pub_tons, int jettons_to_charge_back, slice recipient) impure inline {
+    verify_user_vault(code::user_vault, sender_address, recipient);
     int tons_to_refund = wl_tons + pub_tons;
 
     if (wl_tons > 0) {
@@ -177,8 +180,8 @@
     send_raw_message(simple_transfer_message, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
-() handle_wl_callback(int query_id, int _attached_value, slice sender_address, int should_burn?, int initiator) impure inline {
-    verify_user_vault(sender_address, initiator);
+() handle_wl_callback(int query_id, int _attached_value, slice sender_address, int should_burn?, slice initiator) impure inline {
+    verify_user_vault(code::user_vault, sender_address, initiator);
     cell msg = should_burn?
     ? build_jetton_burn_msg(query_id, wl_round::const::burn_util_jet_amount, tools::const::util_jet_wallet_address) ;; 1 nanoton to notify user about tokens
     : build_jetton_transfer_msg(query_id, 0, wl_round::const::burn_util_jet_amount, tools::const::util_jet_wallet_address, initiator, 1, begin_cell().store_uint(0, 1));
@@ -188,9 +191,9 @@
 
 () handle_jetton_claim_request(int query_id, int attached_value, slice sender_address) impure inline {
     ;; Don't need stateinit as if user vault doesn't exist - there is nothing to claim
-    (cell _user_vault_stateinit, slice user_vault_address) = calculate_user_vault_data(sender_address);
+    (_, slice user_vault_address) = calculate_user_vault_data(code::user_vault, sender_address);
     ;; We don't care about extra value as final operation (claimed jetton transfer) will take care about excesses
-    int _remainings = check_amount_is_enough_for_jetton_claim(attached_value);
+    check_amount_is_enough_for_jetton_claim(attached_value);
     cell msg_body = begin_cell()
         .store_op(op::uv::claim)
         .store_query_id(query_id)
@@ -206,7 +209,7 @@
 }
 
 () handle_jetton_claim_confirmation(int query_id, int _attached_value, slice sender_address, int wl_tons, int jettons_to_send, slice recipient) impure inline {
-    verify_user_vault(sender_address, recipient);
+    verify_user_vault(code::user_vault, sender_address, recipient);
     int total_fut_jet_recipient_amount = jettons_to_send;
 
     if (wl_tons > 0) {
@@ -229,8 +232,8 @@
     );
     throw_if(
         error::balance_lack,
-        general_state::reward_util_jets_balance < utility_tokens_to_reward_user
-        | general_state::fut_jet_deployed_balance < total_fut_jet_recipient_amount
+        (general_state::reward_util_jets_balance < utility_tokens_to_reward_user)
+        | (general_state::fut_jet_deployed_balance < total_fut_jet_recipient_amount)
     );
 
     general_state::reward_util_jets_balance -= utility_tokens_to_reward_user;
