@@ -1,5 +1,6 @@
 #include "../../stdlib.fc";
 #include "../gas.fc";
+
 #include "tl_context.fc";
 
 () save_data() impure inline_ref {
@@ -44,15 +45,6 @@
         .store_coins(config::const::fut_jet_platform_amount)
         .store_coins(config::const::reward_util_jets_total_amount)
         .end_cell();
-    cell tools = begin_cell()
-        .store_slice(tools::const::util_jet_wallet_address)
-        .store_slice(tools::const::fut_jet_master_address)
-        .store_slice(tools::const::fut_jet_wallet_address)
-        .store_ref(tools::const::metadata)
-        .store_ref(tools::const::fut_jet_master_code)
-        .store_ref(tools::const::wallet_code)
-        .store_ref(tools::const::user_vault_code)
-        .end_cell();
     cell data = begin_cell()
         .store_int(this::const::is_initialized?, 1)
         .store_coins(this::operational_needs)
@@ -60,7 +52,7 @@
         .store_slice(this::const::creator_address)
         .store_ref(sale_config)
         .store_ref(sale_state)
-        .store_ref(tools)
+        .store_ref(this::tools)
         .end_cell();
     set_data(data);
 }
@@ -120,16 +112,22 @@
     public_round::const::end_time = public_round_state_slice~load_int(32);
     public_round_state_slice.end_parse();
 
-    cell tools = ds~load_ref();
-    slice tools_slice = tools.begin_parse();
-    tools::const::util_jet_wallet_address = tools_slice~load_msg_addr();
-    tools::const::fut_jet_master_address = tools_slice~load_msg_addr();
-    tools::const::fut_jet_wallet_address = tools_slice~load_msg_addr();
-    tools::const::metadata = tools_slice~load_ref();
-    tools::const::fut_jet_master_code = tools_slice~load_ref();
-    tools::const::wallet_code = tools_slice~load_ref();
-    tools::const::user_vault_code = tools_slice~load_ref();
-    tools_slice.end_parse();
-
+    this::tools = ds~load_ref();
     ds.end_parse();
+}
+
+(slice, slice, slice, cell, cell, cell, cell) unpack_tools(cell tools) inline_ref {
+    slice tools_slice = tools.begin_parse();
+    slice util_jet_wallet_address = tools_slice~load_msg_addr();
+    slice fut_jet_master_address = tools_slice~load_msg_addr();
+    slice fut_jet_wallet_address = tools_slice~load_msg_addr();
+    cell metadata = tools_slice~load_ref();
+    cell fut_jet_master_code = tools_slice~load_ref();
+    cell wallet_code = tools_slice~load_ref();
+    cell user_vault_code = tools_slice~load_ref();
+    tools_slice.end_parse();
+    return (
+        util_jet_wallet_address, fut_jet_master_address, fut_jet_wallet_address,
+        metadata, fut_jet_master_code, wallet_code, user_vault_code
+    );
 }

@@ -1,8 +1,6 @@
-#include "../stdlib.fc";
 #include "../workchain.fc";
+#include "../stdlib.fc";
 #include "op-codes.fc";
-
-#include "token_launcher/tl_context.fc";
 
 const ONE_TON = 1000000000;
 const 1_MONTH = 30 * 24 * 3600;
@@ -89,18 +87,18 @@ int get_balance_update_gas_cost() inline_ref {
     + calculate_user_vault_min_storage_fee();
 }
 
-int validate_value(int total, int fee) impure inline_ref {
+;;; Returns purified value and operational needs
+(int, int) validate_value(int total, int fee) inline_ref {
     throw_if(error::not_enough_gas, fee > total);
     int extra = total - fee;
     int purified = muldiv(extra, 99, 100);
     throw_unless(error::balance_lack, purified > 0);
-    this::operational_needs += (extra - purified);
-    return purified;
+    return (purified, extra - purified);
 }
 
 ;; As we don't have any external calls, we accounting only code execution fees
 const CREATOR_BUYOUT_GAS_CONSUMPTION = 1;
-int check_amount_is_enough_for_creator_buyout(int msg_value) inline {
+(int, int) check_amount_is_enough_for_creator_buyout(int msg_value) inline {
     int fee = get_compute_fee(MY_WORKCHAIN, CREATOR_BUYOUT_GAS_CONSUMPTION);
     return validate_value(msg_value, fee);
 }
@@ -115,21 +113,21 @@ int get_wl_purchase_gas_consumption() inline_ref {
     + get_compute_fee(MY_WORKCHAIN, WL_CALLBACK_GAS_CONSUMPTION);
 }
 
-int check_amount_is_enough_for_wl_purchase(int msg_value) inline {
+(int, int) check_amount_is_enough_for_wl_purchase(int msg_value) inline {
     ;; Don't use throw here as we have to return tokens back in case of errors
-    int validated = 0;
+    (int validated, int opn) = (0, 0);
     try {
-        validated = validate_value(msg_value, get_wl_purchase_gas_consumption());
+        (validated, opn) = validate_value(msg_value, get_wl_purchase_gas_consumption());
     } catch (_, _) {
         ;; Nothing to catch here, so I'll just leave some meows:
         ;; meow meow meow
     }
-    return validated;
+    return (validated, opn);
 }
 
 ;; === Public Purchase ===
 const PUB_PURCHASE_GAS_CONSUMPTION = 1;
-int check_amount_is_enough_for_public_purchase(int msg_value) {
+(int, int) check_amount_is_enough_for_public_purchase(int msg_value) {
     return validate_value(
         msg_value,
         get_compute_fee(MY_WORKCHAIN, PUB_PURCHASE_GAS_CONSUMPTION) + get_balance_update_gas_cost()
@@ -139,14 +137,14 @@ int check_amount_is_enough_for_public_purchase(int msg_value) {
 ;; === Refund ===
 const REFUND_REQUEST_GAS_CONSUMPTION = 1;
 const REFUND_CONFIRMATION_GAS_CONSUMPTION = 1;
-(int) check_amount_is_enough_for_refund(int msg_value) {
+() check_amount_is_enough_for_refund(int msg_value) {
     int required_gas =
     get_compute_fee(MY_WORKCHAIN, REFUND_REQUEST_GAS_CONSUMPTION)
     + get_balance_update_gas_cost()
     + get_forward_fee(MY_WORKCHAIN, WITHDRAW_CONFIRMATION_MSG_BITS, WITHDRAW_CONFIRMATION_MSG_CELLS)
     + get_compute_fee(MY_WORKCHAIN, REFUND_CONFIRMATION_GAS_CONSUMPTION)
     + SIMPLE_TRANSFER_FEE;
-    return validate_value(msg_value, required_gas);
+    throw_if(error::not_enough_gas, msg_value < required_gas);
 }
 
 ;; === Token Deploy ===

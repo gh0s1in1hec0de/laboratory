@@ -16,10 +16,18 @@
 -}
 
 () initialize(slice sender_address, slice fut_jet_wallet_address, slice util_jet_wallet_address, slice fut_jet_master_address) impure inline {
-    ;; Here we have our state loaded, but we need to do some initializations manually
-    tools::const::fut_jet_wallet_address = fut_jet_wallet_address;
-    tools::const::util_jet_wallet_address = util_jet_wallet_address;
-    tools::const::fut_jet_master_address = fut_jet_master_address;
+    (_, _, _, cell metadata, cell fut_jet_master_code, cell wallet_code, cell user_vault_code) = unpack_tools(this::tools);
+    ;; Building new tools with initialized addresses instead of none ones
+    cell new_tools = begin_cell()
+        .store_slice(util_jet_wallet_address)
+        .store_slice(fut_jet_master_address)
+        .store_slice(fut_jet_wallet_address)
+        .store_ref(metadata)
+        .store_ref(fut_jet_master_code)
+        .store_ref(wallet_code)
+        .store_ref(user_vault_code)
+        .end_cell();
+    this::tools = new_tools;
     cell msg = begin_cell()
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(sender_address)
@@ -187,13 +195,15 @@
 
 (int, slice, cell) get_launch_data() method_id {
     load_data();
+    (_, _, _, cell metadata, _, _, _) = unpack_tools(this::tools);
     throw_unless(error::uninitialized, this::const::is_initialized?);
-    return (config::const::fut_jet_total_supply, this::const::creator_address, build_content_cell(tools::const::metadata.begin_parse()));
+    return (config::const::fut_jet_total_supply, this::const::creator_address, build_content_cell(metadata.begin_parse()));
 }
 
 slice get_user_vault_address(slice user_address) method_id {
     load_data();
-    (_, slice user_vault_address) = calculate_user_vault_data(code::user_vault, user_address);
+    (_, _, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
+    (_, slice user_vault_address) = calculate_user_vault_data(user_vault_code, user_address);
     return user_vault_address;
 }
 

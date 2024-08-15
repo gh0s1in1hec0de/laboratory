@@ -59,14 +59,16 @@ global int   public_round::synthetic_ton_reserve;
 global int   public_round::const::end_time;
 
 ;; === TOOLS ===
-;; An address of our utility jetton wallet smart contract.
-;; We store it to avoid its calculation every time, it's nice decision to compress data we store and reduce fees.
-global slice tools::const::util_jet_wallet_address;
-global slice tools::const::fut_jet_wallet_address;
-global slice tools::const::fut_jet_master_address;
-;; Future jetton metadata, formatted due to TEP-74
-global cell  tools::const::metadata;
-;; Data for jetton deployment in case of successful sale
-global cell  tools::const::fut_jet_master_code;
-global cell  tools::const::wallet_code;
-global cell  tools::const::user_vault_code;
+global cell this::tools;
+
+;; ;; An address of our utility jetton wallet smart contract.
+;; ;; We store it to avoid its calculation every time, it's nice decision to compress data we store and reduce fees.
+;; global slice tools::const::util_jet_wallet_address;
+;; global slice tools::const::fut_jet_wallet_address;
+;; global slice tools::const::fut_jet_master_address;
+;; ;; Future jetton metadata, formatted due to TEP-74
+;; global cell  tools::const::metadata;
+;; ;; Data for jetton deployment in case of successful sale
+;; global cell  tools::const::fut_jet_master_code;
+;; global cell  tools::const::wallet_code;
+;; global cell  tools::const::user_vault_code;

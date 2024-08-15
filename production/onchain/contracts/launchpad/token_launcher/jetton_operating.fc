@@ -3,19 +3,21 @@
 #include "../utils.fc";
 #include "../gas.fc";
 
-#include "tl_context.fc";
 #include "trades_handler.fc";
+#include "tl_context.fc";
+#include "tl_storage.fc";
 
 const int MINT_QUERY_ID = 27082006;
 
 () deploy_launch_jetton() inline {
+    (_, _, _, cell metadata, cell fut_jet_master_code, cell wallet_code, _) = unpack_tools(this::tools);
     (cell jetton_master_stateinit, slice jetton_master_address) = calculate_fut_jet_master_data(
-        tools::const::fut_jet_master_code,
+        fut_jet_master_code,
         config::const::fut_jet_total_supply,
         my_address(),
         address_none(),
-        tools::const::wallet_code,
-        tools::const::metadata
+        wallet_code,
+        metadata
     );
     ;; Internal message for jetton master jetton wallet
     cell master_msg = begin_cell()
@@ -44,8 +46,9 @@ const int MINT_QUERY_ID = 27082006;
 }
 
 () route_incoming_transfer(int query_id, int attached_value, slice sender_address, int jetton_amount, slice initiator, slice maybe_payload) impure inline {
+    (slice util_jet_wallet_address, slice fut_jet_master_address, slice fut_jet_wallet_address, _, _, _, _) = unpack_tools(this::tools);
     ;; CN: check sender address
-    if (equal_slices_bits(sender_address, tools::const::util_jet_wallet_address)) {
+    if (equal_slices_bits(sender_address, util_jet_wallet_address)) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE);
         int util_jet_enr_mode = maybe_payload~load_uint(UTIL_JET_SEND_MODE_SIZE);
 
@@ -57,7 +60,7 @@ const int MINT_QUERY_ID = 27082006;
                     query_id,
                     0,
                     jetton_amount,
-                    tools::const::util_jet_wallet_address,
+                    util_jet_wallet_address,
                     initiator,
                     1,
                     begin_cell().store_uint(0, 1)
@@ -76,7 +79,7 @@ const int MINT_QUERY_ID = 27082006;
                     query_id,
                     0,
                     jetton_amount,
-                    tools::const::util_jet_wallet_address,
+                    util_jet_wallet_address,
                     initiator,
                     1,
                     begin_cell().store_uint(0, 1)
@@ -90,7 +93,7 @@ const int MINT_QUERY_ID = 27082006;
     ;; `ifs` oreder defined this way for reasons of efficiency
     ;; CN: deploy jet
     if (jetton_amount == config::const::fut_jet_total_supply) {
-        if (~ equal_slices_bits(sender_address, tools::const::fut_jet_wallet_address)) {
+        if (~ equal_slices_bits(sender_address, fut_jet_wallet_address)) {
             ;; It does mean we just got random tokens on equal amount
             return ();
         }
@@ -101,14 +104,14 @@ const int MINT_QUERY_ID = 27082006;
             query_id,
             JETTON_MIN_TRANSFER_FEE + general_state::total_tons_collected + this::operational_needs,
             config::const::fut_jet_dex_amount + config::const::fut_jet_platform_amount,
-            tools::const::fut_jet_wallet_address,
-            this::chief,
+            fut_jet_wallet_address,
+            this::const::chief_address,
             config::const::min_ton_for_sale_success,
             begin_cell().store_coins(config::const::fut_jet_dex_amount).store_coins(config::const::fut_jet_platform_amount)
         );
         cell claim_admin_msg = begin_cell()
             .store_msg_flags_and_address_none(NON_BOUNCEABLE)
-            .store_slice(tools::const::fut_jet_master_address)
+            .store_slice(fut_jet_master_address)
             .store_coins(
                 get_forward_fee(MY_WORKCHAIN, CLAIM_ADMIN_MSG_BITS, CLAIM_ADMIN_MSG_CELLS)
                 + get_compute_fee(MY_WORKCHAIN, CLAIM_ADMIN_GAS_CONSUMPTION)

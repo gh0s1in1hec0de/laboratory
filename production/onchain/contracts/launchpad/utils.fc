@@ -1,6 +1,4 @@
-#include "core/core_context.fc";
 #include "../stdlib.fc";
-
 #include "op-codes.fc";
 
 const MY_WORKCHAIN = BASECHAIN;
