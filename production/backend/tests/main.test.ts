@@ -1,6 +1,5 @@
 import {test, describe} from "bun:test";
-import {Network} from "../src/utils.ts";
-import {TonEye} from "../src/oracle";
+import {getAccount, getTransactionsForAccount} from "../src/oracle";
 import {Address} from "@ton/ton";
 import dotenv from "dotenv";
 
@@ -10,8 +9,7 @@ describe("labs", () => {
     test("results of network scanning", async () => {
         // Took deployed simple `address vault` from labs
         const exampleAddress = Address.parse("EQBx3ogufv7zZlqNqvGsnhGOfsIprcyKnMEe04KSREQAEG3z");
-        const tonEye = await TonEye.raise(Network.Testnet, process.env.TONCENTER_TESTNET_API_KEY!);
-        const accountEntity = await tonEye.getAccount(exampleAddress);
+        const accountEntity = await getAccount(exampleAddress);
 
         console.log(`[*] account entity: `);
         console.log(accountEntity);
@@ -21,7 +19,7 @@ describe("labs", () => {
         console.log(`[*] last: `);
         console.log(last);
 
-        const txs = await tonEye.getTransactionsForAccount(exampleAddress,
+        const txs = await getTransactionsForAccount(exampleAddress,
             "24809208000001",
             "EVkd8f4JDXl4cOOuDRS+/8pOocUY1EtOn8E3GwLiWBA=",
             "24120614000001", // "24120614000001",

@@ -18,9 +18,7 @@ services:
       - .:/app
     env_file:
       - .env
-    # It should be started like that to be able to parse flags dinamically
-    # BUN_FLAGS="--flag1 --flag2" docker-compose up --build
-    command: sh -c "until pg_isready -h db -p 5432; do echo 'waiting for database...'; sleep 1; done; bun install && bun run src/index.ts $BUN_FLAGS"
+    command: sh -c "until pg_isready -h db -p 5432; do echo 'waiting for database...'; sleep 1; done; bun install && bun run src/index.ts"
     depends_on:
       - db
     ports:

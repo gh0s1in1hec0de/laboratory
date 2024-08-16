@@ -14,19 +14,23 @@ export async function getActiveTokenLaunches(client?: Client): Promise<StoredTok
     return res;
 }
 
+export async function getTokenLaunch(address: RawAddressString, client?: Client): Promise<StoredTokenLaunch> {
+    const res = await (client || globalClient)<StoredTokenLaunch[]>`
+        SELECT * FROM token_launches WHERE address = ${address}
+    `;
+    assert(res.length === 1, `exactly 1 column must be returned, got: ${res}`);
+    return res[0];
+}
+
 export async function getTokenLaunchHeight(address: RawAddressString, client?: Client): Promise<Date> {
     const res = await (client || globalClient)<{ last_action_time: Date }[]>`
-        SELECT timestamp AS last_action_time
-        FROM user_actions
-        WHERE token_launch = ${address}
-        ORDER BY timestamp DESC
-        LIMIT 1;
+        SELECT height FROM token_launches WHERE address = ${address}
     `;
     assert(res.length === 1, `exactly 1 column must be returned, got: ${res}`);
     return res[0].last_action_time;
 }
 
-export async function setCoreHeight(height: Date, client?: Client): Promise<void> {
+export async function setCoreHeight(height: bigint, client?: Client): Promise<void> {
     const res = await (client || globalClient)`
         INSERT INTO global_settings (setting_key, setting_value)
         VALUES ('core_height', ${height})

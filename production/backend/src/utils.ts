@@ -1,5 +1,3 @@
-import type {ParseArgsConfig} from "util";
-
 export type Coins = bigint;
 // The raw address string format is chosen to standardize the stored addresses.
 // It will help to avoid errors based on addresses' formats.
@@ -8,18 +6,6 @@ export enum Network {
     Mainnet = "mainnet",
     Testnet = "testnet"
 }
-
-export const parseArgsConfig = (args: string[]): ParseArgsConfig => ({
-    args,
-    options: {
-        debug: { type: 'boolean' },
-        fresh: { type: 'boolean' },
-        height: { type: 'string' },
-    },
-    strict: true,
-    allowPositionals: true,
-});
-
 
 export async function maybeBruteforceOverload<T>(
     operation: Promise<T>,

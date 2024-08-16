@@ -25,6 +25,8 @@ CREATE TABLE token_launches
     -- On creator buyout we just update this field
     creator_balance BIGINT DEFAULT 0,
     start_time      TIMESTAMP NOT NULL,
+    end_time        TIMESTAMP NOT NULL,
+    -- lt of last transaction we know about
     height          BIGINT DEFAULT 0
 );
 

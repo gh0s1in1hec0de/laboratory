@@ -23,7 +23,7 @@ export type StoredTokenLaunch = {
     creatorBalance: Coins
     startTime: Date,
     endTime: Date,
-    heightTime: Date,
+    height: Date,
 };
 
 export enum UserActionType {
