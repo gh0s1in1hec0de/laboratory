@@ -12,7 +12,8 @@
     "postgres": "^3.4.4",
     "dotenv": "^16.4.5",
     "@ton/core": "^0.56.3",
-    "@ton/ton": "^14.0.0"
+    "@ton/ton": "^14.0.0",
+    "@orbs-network/ton-access": "^2.3.3"
   },
   "scripts": {
     "backend": "bun run src/index.ts"

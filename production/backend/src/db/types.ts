@@ -4,10 +4,10 @@ import type {Coins} from "../utils.ts";
 type SqlTypes = { bigint: bigint };
 export type Client = Sql<SqlTypes>;
 // Just for readability
-export type Address = string;
+export type StoredAddress = string;
 
 export type StoredUser = {
-    address: Address,
+    address: StoredAddress,
     nickname: string | null
 };
 
@@ -17,8 +17,8 @@ export type JsonLaunchMetadata = {
 };
 
 export type StoredTokenLaunch = {
-    address: Address,
-    creator: Address,
+    address: StoredAddress,
+    creator: StoredAddress,
     metadata: JsonLaunchMetadata
     creatorBalance: Coins
     startTime: Date,
@@ -36,8 +36,8 @@ export enum UserActionType {
 }
 
 export type UserAction = {
-    actor: Address,
-    tokenLaunch: Address,
+    actor: StoredAddress,
+    tokenLaunch: StoredAddress,
     actionType: UserActionType,
     whitelistTons: Coins,
     publicTons: Coins,
@@ -46,8 +46,8 @@ export type UserAction = {
 };
 
 export type StoredUserBalance = {
-    actor: Address,
-    tokenLaunch: Address,
+    actor: StoredAddress,
+    tokenLaunch: StoredAddress,
     whitelistTons: Coins,
     publicTons: Coins,
     jettons: Coins,

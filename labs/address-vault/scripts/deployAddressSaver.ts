@@ -47,48 +47,48 @@ export async function run(provider: NetworkProvider) {
   console.log(transactions);
 
   // todo TEST THIS
-
-  for (const tx of transactions) {
-    console.debug("-----------------------------------------------------------------------------")
-    const inMessage = tx.inMessage;
-    const outMessages = tx.outMessages;
-    console.log("IN MESSAGE:")
-    console.log(inMessage)
-    console.log(`OUT MESSAGES COUNT: ${outMessages.values().length}`)
-    outMessages.values().map(msg => {
-      console.log(msg);
-    })
-    console.debug("-----------------------------------------------------------------------------")
-
-    // parse "InMessage" - external-in
-    if (inMessage?.info.type == 'external-in') {
-      const resultParse = parseBodyOfExternalInMessage(inMessage);
-      console.log(resultParse)
-
-      outMessages.values().map(message => {
-        // if transaction have internal message in "outMessages"
-        if (message?.info.type == 'internal') {
-          const sender = message.info.src;
-          const value = message.info.value.coins;
-          const resultParse = parseBodyOfInternalMessage(message, sender, value);
-          if (resultParse.info.action === InternalMessageActions.UnknownStructureCalled){
-            resultParse.info
-          }
-          console.log(resultParse)
-        }
-
-        if (message?.info.type == 'external-out') {
-          // todo optional
-        }
-      })
-    }
-
-    // parse "InMessage" - internal
-    if (inMessage?.info.type == 'internal') {
-      const sender = inMessage.info.src;
-      const value = inMessage.info.value.coins;
-      const resultParse = parseBodyOfInternalMessage(inMessage, sender, value);
-      console.log(resultParse)
-    }
-  }
+  //
+  // for (const tx of transactions) {
+  //   console.debug("-----------------------------------------------------------------------------")
+  //   const inMessage = tx.inMessage;
+  //   const outMessages = tx.outMessages;
+  //   console.log("IN MESSAGE:")
+  //   console.log(inMessage)
+  //   console.log(`OUT MESSAGES COUNT: ${outMessages.values().length}`)
+  //   outMessages.values().map(msg => {
+  //     console.log(msg);
+  //   })
+  //   console.debug("-----------------------------------------------------------------------------")
+  //
+  //   // parse "InMessage" - external-in
+  //   if (inMessage?.info.type == 'external-in') {
+  //     const resultParse = parseBodyOfExternalInMessage(inMessage);
+  //     console.log(resultParse)
+  //
+  //     outMessages.values().map(message => {
+  //       // if transaction have internal message in "outMessages"
+  //       if (message?.info.type == 'internal') {
+  //         const sender = message.info.src;
+  //         const value = message.info.value.coins;
+  //         const resultParse = parseBodyOfInternalMessage(message, sender, value);
+  //         if (resultParse.info.action === InternalMessageActions.UnknownStructureCalled){
+  //           resultParse.info
+  //         }
+  //         console.log(resultParse)
+  //       }
+  //
+  //       if (message?.info.type == 'external-out') {
+  //         // todo optional
+  //       }
+  //     })
+  //   }
+  //
+  //   // parse "InMessage" - internal
+  //   if (inMessage?.info.type == 'internal') {
+  //     const sender = inMessage.info.src;
+  //     const value = inMessage.info.value.coins;
+  //     const resultParse = parseBodyOfInternalMessage(inMessage, sender, value);
+  //     console.log(resultParse)
+  //   }
+  // }
 }

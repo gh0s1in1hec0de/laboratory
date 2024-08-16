@@ -4,6 +4,10 @@ export type Coins = bigint;
 // The raw address string format is chosen to standardize the stored addresses.
 // It will help to avoid errors based on addresses' formats.
 export type RawAddressString = string;
+export enum Network {
+    Mainnet = "mainnet",
+    Testnet = "testnet"
+}
 
 export const parseArgsConfig = (args: string[]): ParseArgsConfig => ({
     args,
