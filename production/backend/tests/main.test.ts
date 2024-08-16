@@ -1,7 +1,7 @@
 import {test, describe} from "bun:test";
-import {Address, TonClient} from "@ton/ton";
-import {TonEye} from "../src/oracle/actors.ts";
 import {Network} from "../src/utils.ts";
+import {TonEye} from "../src/oracle";
+import {Address} from "@ton/ton";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -21,13 +21,19 @@ describe("labs", () => {
         console.log(`[*] last: `);
         console.log(last);
 
-        const txs = await tonEye.getTransactionsForAccount(exampleAddress, {
-            lt: last.lt,
-            hash: last.hash,
-            limit: 10,
-            archival: true,
-            to_lt: "0" // "24809880000001"
+        const txs = await tonEye.getTransactionsForAccount(exampleAddress,
+            "24809208000001",
+            "EVkd8f4JDXl4cOOuDRS+/8pOocUY1EtOn8E3GwLiWBA=",
+            "24120614000001", // "24120614000001",
+            true,
+            100
+        );
+
+        // Sort transactions by 'now' in ascending order (oldest to newest)
+        txs.sort((a, b) => {
+            return Number(a.lt - b.lt) // return a.now - b.now;
         });
+
         let counter = 0;
         console.log(`[*] transactions: `);
         for (const tx of txs) {
@@ -38,6 +44,6 @@ describe("labs", () => {
             console.log(` - prev tx lt: ${tx.prevTransactionLt}`);
             console.log();
         }
-        console.log(counter)
+        console.log(`txs total amount: ${counter}`);
     });
 });
