@@ -40,12 +40,14 @@ export async function getAccount(address: Address, seqno?: number) {
 //
 // When lt and hash are set to transaction x, parsing begins from the transaction immediately following `x`, excluding `x` itself.
 export async function getTransactionsForAccount(address: Address, lt?: string, hash?: string, to_lt?: string, archival: boolean = true, limit: number = 100) {
-    return await maybeBruteforceOverload<Transaction[]>(balancedTonClient.get().getTransactions(address, {
-        limit,
-        lt,
-        hash,
-        to_lt,
-        archival
-    }));
+    return await maybeBruteforceOverload<Transaction[]>(
+        balancedTonClient.get().getTransactions(address, {
+            limit,
+            lt,
+            hash,
+            to_lt,
+            archival
+        })
+    );
 }
 
