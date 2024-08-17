@@ -1,4 +1,4 @@
-import {coreConfigToCell, OpCore, SendMessageParams, TEP64MetadataToCell} from "./utils";
+import {coreConfigToCell, CoreOps, SendMessageParams, TEP64MetadataToCell} from "./utils";
 import {Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode,} from "@ton/core";
 import {CoreConfig, CreateLaunchParams, LaunchConfigType, StateType, UpgradeParams} from "./types";
 
@@ -21,7 +21,7 @@ export class Core implements Contract {
     await provider.internal(via, {
       value,
       sendMode: SendMode.PAY_GAS_SEPARATELY,
-      body: beginCell().storeUint(OpCore.init, 32).storeUint(0, 64).endCell(),
+      body: beginCell().storeUint(CoreOps.init, 32).storeUint(0, 64).endCell(),
     });
   }
 
@@ -31,7 +31,7 @@ export class Core implements Contract {
     const packagedMetadata = metadata instanceof Cell ? metadata : TEP64MetadataToCell(metadata);
 
     const body = beginCell()
-      .storeUint(OpCore.create_launch, 32)
+      .storeUint(CoreOps.create_launch, 32)
       .storeUint(queryId, 64)
       .storeCoins(totalSupply)
       .storeUint(platformSharePct, 16)
@@ -48,7 +48,7 @@ export class Core implements Contract {
     const {queryId, via, value} = sendMessageParams;
 
     const body = beginCell()
-      .storeUint(OpCore.upgrade, 32)
+      .storeUint(CoreOps.upgrade, 32)
       .storeUint(queryId, 64)
       .storeRef(newData)
       .storeRef(newCode)

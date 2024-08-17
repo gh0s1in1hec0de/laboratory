@@ -20,14 +20,14 @@ export type SendMessageParams = {
   queryId: bigint
 }
 
-export enum OpCore {
+export enum CoreOps {
   init = 0x18add407,
   create_launch = 0x0eedbf42,
   transfer_notification = 0x7362d09c,
   upgrade = 0x055d212a,
 }
 
-export enum OpTokenLauncher {
+export enum TokensLaunchOps {
   public_buy = 0x16ee6c2d,
   refund_request = 0x7b4587a1,
   deploy_jet = 0x71161970,

@@ -219,3 +219,5 @@ slice get_user_vault_address(slice user_address) method_id {
         general_state::fut_jet_deployed_balance
     );
 }
+
+;; TODO New getters: maybe get_sale_config, get_creator_balance (maybe merged with something else), get_synthetic_reserves

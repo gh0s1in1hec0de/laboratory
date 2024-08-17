@@ -1,3 +1,4 @@
+import {loadOpAndQueryId, TokensLaunchOps, UserVaultOps} from "./messageParsers.ts";
 import type {Address, Transaction} from "@ton/ton";
 import {getTransactionsForAccount} from "./api.ts";
 import type {LamportTime} from "../utils.ts";
@@ -24,10 +25,11 @@ async function retrieveAllUnknownTransactions(
 
         // Update our new starting point to last parsed tx
         const lastParsedTx = transactions[transactions.length - 1];
+        // TODO compare with .toString('hex') results
         startFrom = {lt: lastParsedTx.lt, hash: lastParsedTx.hash().toString("base64")}
     }
     // No updates happened case
-    if (newTransactions.length === 0) return [];
+    if (newTransactions.length == 0) return [];
     // From oldest to newest
     newTransactions.sort((a, b) => {
         if (a.lt < b.lt) return -1;
@@ -43,11 +45,8 @@ export async function handleCoreUpdates() {
 
 export async function handleTokenLaunchUpdates(launchAddress: Address) {
     const tokenLaunch = await db.getTokenLaunch(launchAddress.toRawString());
-
-    let iterationNumber = 0;
-    let someConstraint = true;
     let currentHeight: LamportTime = tokenLaunch.height;
-
+    let iterationNumber = 0;
     while (true) {
         try {
             iterationNumber += 1;
@@ -65,7 +64,34 @@ export async function handleTokenLaunchUpdates(launchAddress: Address) {
                  - refund/jetton claim confirmation
                  */
                 const inMsg = tx.inMessage;
-                const outMsg = tx.outMessages;
+                const outMsgs = tx.outMessages;
+                // As we don't have external messages mechanics
+                if (inMsg?.info.type !== 'internal') continue;
+
+                const sender = inMsg?.info.src;
+                const messageBody = inMsg?.body.beginParse();
+                // We don't care about simple transfers
+                if (messageBody.remainingBits < 32) continue;
+                const {changedSlice, op, queryId} = await loadOpAndQueryId(messageBody);
+                // Then we'll look for following operation: creatorBuyout, jettonClaimConfirmation
+                switch (op) {
+                    case TokensLaunchOps.creatorBuyout: {
+                        // TODO I don't know to extract exact amount of tokens he got, maybe call getMethod for it?
+                        break;
+                    }
+                    case TokensLaunchOps.jettonClaimConfirmation: {
+                        // TODO
+                        break;
+                    }
+                    default: break;
+                }
+
+                for (const [n, msg] of outMsgs) {
+                    const {changedSlice, op, queryId} = await loadOpAndQueryId(messageBody);
+                    // Then we'll look for following operation: balanceUpdate
+                    if (op !== UserVaultOps.balanceUpdate) continue;
+                    console.log()
+                }
 
             }
         } catch (e) {

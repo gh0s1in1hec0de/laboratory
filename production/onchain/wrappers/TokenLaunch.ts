@@ -1,5 +1,5 @@
 import {Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode} from "@ton/core";
-import {OpTokenLauncher, SendMessageParams, tokenLauncherConfigToCell} from "./utils";
+import {TokensLaunchOps, SendMessageParams, tokenLauncherConfigToCell} from "./utils";
 import {LaunchDataType, RefundRequestParams, SaleStateType, TokenLaunchConfig} from "./types";
 
 export class TokenLaunch implements Contract {
@@ -20,7 +20,7 @@ export class TokenLaunch implements Contract {
     const {queryId, via, value} = sendMessageParams;
 
     const body = beginCell()
-      .storeUint(OpTokenLauncher.public_buy, 32)
+      .storeUint(TokensLaunchOps.public_buy, 32)
       .storeUint(queryId, 64)
       .endCell();
     await provider.internal(via, {
@@ -33,7 +33,7 @@ export class TokenLaunch implements Contract {
     const {queryId, via, value} = sendMessageParams;
 
     const body = beginCell()
-      .storeUint(OpTokenLauncher.refund_request, 32)
+      .storeUint(TokensLaunchOps.refund_request, 32)
       .storeUint(queryId, 64)
       .storeUint(mode, 4)
       .storeCoins(refundValue)
@@ -47,7 +47,7 @@ export class TokenLaunch implements Contract {
     const {queryId, via, value} = sendMessageParams;
 
     const body = beginCell()
-      .storeUint(OpTokenLauncher.deploy_jet, 32)
+      .storeUint(TokensLaunchOps.deploy_jet, 32)
       .storeUint(queryId, 64)
       .endCell();
     await provider.internal(via, {
@@ -59,7 +59,7 @@ export class TokenLaunch implements Contract {
     const {queryId, via, value} = sendMessageParams;
 
     const body = beginCell()
-      .storeUint(OpTokenLauncher.jetton_claim_request, 32)
+      .storeUint(TokensLaunchOps.jetton_claim_request, 32)
       .storeUint(queryId, 64)
       .endCell();
     await provider.internal(via, {
