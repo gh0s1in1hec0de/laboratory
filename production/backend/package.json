@@ -14,9 +14,11 @@
     "@ton/core": "^0.56.3",
     "@ton/ton": "^14.0.0",
     "@orbs-network/ton-access": "^2.3.3",
-    "yaml": "^2.5.0"
+    "yaml": "^2.5.0",
+    "elysia": "^1.1.6"
   },
   "scripts": {
-    "backend": "bun run src/index.ts"
+    "backend": "bun run src/index.ts",
+    "backend:dev": "bun run --watch src/index.ts",
   }
 }

@@ -48,10 +48,11 @@ export async function run(provider: NetworkProvider) {
   //   limit: limit,
   // });
 
-  // todo figure out why the error is "Invalid hash"
-  // let ltTx = "24869880000001";
-  // let hashTx = "da354ac8f31aac3ba639f7697d833ccb172bb3f01b206775c5f94cb918561285";
-  // const transaction: Transaction | null = await client.getTransaction(senderAddress, ltTx, hashTx)
+  /** work */
+  // let ltTx = "24869877000001";
+  // let hashTx = "5a3ac47de92fe5dcea13310370f1b77b2cd7729a7ac6c2a67b0065f8d4e76c28";
+  // const hashBits = Buffer.from(hashTx, 'hex')
+  // const transaction: Transaction | null = await client.getTransaction(senderAddress, ltTx, hashBits.toString("base64"))
   // console.log(transaction);
 
   /** work (find external-in message) */
@@ -60,9 +61,9 @@ export async function run(provider: NetworkProvider) {
   // console.log(transaction);
 
   /** work (find internal message) */
-  createdLt = "24869877000002";
-  const transaction: Transaction = await client.tryLocateResultTx(senderAddress, contactAddress, createdLt)
-  console.log(transaction);
+  // createdLt = "24869877000002";
+  // const transaction: Transaction = await client.tryLocateResultTx(senderAddress, contactAddress, createdLt)
+  // console.log(transaction);
 
   // todo TEST THIS
   //
