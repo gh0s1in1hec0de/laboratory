@@ -1,6 +1,6 @@
-import type {StoredAddress, StoredUserBalance, Client} from "./types.ts";
-import {ok as assert} from "node:assert";
-import {globalClient} from "./db.ts";
+import type { StoredAddress, StoredUserBalance, Client } from "./types.ts";
+import { ok as assert } from "node:assert";
+import { globalClient } from "./db.ts";
 
 export async function getUserBalance(address: StoredAddress, launch: StoredAddress, client?: Client): Promise<StoredUserBalance> {
     const res = await (client || globalClient)<StoredUserBalance[]>`
@@ -19,6 +19,6 @@ export async function getAllUserBalances(address: StoredAddress, client?: Client
         FROM user_balances
         WHERE "user" = ${address};
     `;
-    assert(res.length > 0, `no balances for user`);
+    assert(res.length > 0, "no balances for user");
     return res;
 }

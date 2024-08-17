@@ -1,6 +1,6 @@
-import {test, describe} from "bun:test";
-import {getAccount, getTransactionsForAccount} from "../src/oracle";
-import {Address} from "@ton/ton";
+import { test, describe } from "bun:test";
+import { getAccount, getTransactionsForAccount } from "../src/oracle";
+import { Address } from "@ton/ton";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -11,16 +11,16 @@ describe("labs", () => {
         const exampleAddress = Address.parse("EQBx3ogufv7zZlqNqvGsnhGOfsIprcyKnMEe04KSREQAEG3z");
         const accountEntity = await getAccount(exampleAddress);
 
-        console.log(`[*] account entity: `);
+        console.log("[*] account entity: ");
         console.log(accountEntity);
 
         const last = accountEntity.account.last;
         if (!last) throw new Error("failed to get lt and hash");
-        console.log(`[*] last: `);
+        console.log("[*] last: ");
         console.log(last);
 
         const txs = await getTransactionsForAccount(exampleAddress,
-            24121092000001n, {lt: 24809208000001n, hash: "EVkd8f4JDXl4cOOuDRS+/8pOocUY1EtOn8E3GwLiWBA="}, undefined, 10
+            24121092000001n, { lt: 24809208000001n, hash: "EVkd8f4JDXl4cOOuDRS+/8pOocUY1EtOn8E3GwLiWBA=" }, undefined, 10
         );
 
         // Sort transactions by 'now' in ascending order (oldest to newest)
@@ -32,7 +32,7 @@ describe("labs", () => {
 
 
         let counter = 0;
-        console.log(`[*] transactions: `);
+        console.log("[*] transactions: ");
         for (const tx of txs) {
             counter += 1;
             console.log(` # transaction ${tx.hash().toString("base64")}`);

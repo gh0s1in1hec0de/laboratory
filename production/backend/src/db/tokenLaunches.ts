@@ -1,7 +1,7 @@
-import type {Client, StoredTokenLaunch} from "./types.ts";
-import type {LamportTime, RawAddressString} from "../utils.ts";
-import {globalClient} from "./db.ts";
-import {ok as assert} from "assert";
+import type { Client, StoredTokenLaunch } from "./types.ts";
+import type { LamportTime, RawAddressString } from "../utils.ts";
+import { globalClient } from "./db.ts";
+import { ok as assert } from "assert";
 
 // Returns `null` to show that nothing was found the explicit way
 export async function getActiveTokenLaunches(client?: Client): Promise<StoredTokenLaunch[] | null> {
@@ -10,7 +10,7 @@ export async function getActiveTokenLaunches(client?: Client): Promise<StoredTok
         FROM token_launches
         WHERE end_time - now() > INTERVAL '30 seconds';
     `;
-    assert(res.length > 0, `no active launches found`);
+    assert(res.length > 0, "no active launches found");
     return res;
 }
 

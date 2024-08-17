@@ -1,5 +1,5 @@
-import fs from 'fs';
-import YAML from 'yaml';
+import fs from "fs";
+import YAML from "yaml";
 
 type DatabaseConfig ={
   should_migrate: boolean;
@@ -29,7 +29,7 @@ let config: Config | null = null;
 
 export function getConfig(): Config {
     if (!config) {
-        const configFile = fs.readFileSync('config.yaml', 'utf8');
+        const configFile = fs.readFileSync("config.yaml", "utf8");
         config = YAML.parse(configFile) as Config;
     }
     return config;

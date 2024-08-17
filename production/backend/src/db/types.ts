@@ -1,5 +1,5 @@
-import type {Sql} from "postgres";
-import type {Coins, LamportTime} from "../utils.ts";
+import type { Sql } from "postgres";
+import type { Coins, LamportTime } from "../utils.ts";
 
 type SqlTypes = { bigint: bigint };
 export type Client = Sql<SqlTypes>;

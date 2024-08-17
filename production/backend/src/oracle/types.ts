@@ -1,4 +1,4 @@
-import type {Coins, RawAddressString} from "../utils.ts";
+import type { Coins, RawAddressString } from "../utils.ts";
 
 export enum BalanceUpdateMode {
     WhitelistDeposit = 1,

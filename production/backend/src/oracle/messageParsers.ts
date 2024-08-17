@@ -1,5 +1,5 @@
-import {Slice} from "@ton/core";
-import type {BalanceUpdateMessage, RefundOrClaimConfirmationMessage} from "./types.ts";
+import { Slice } from "@ton/core";
+import type { BalanceUpdateMessage, RefundOrClaimConfirmationMessage } from "./types.ts";
 
 const OP_LENGTH = 32;
 const QUERY_ID_LENGTH = 64;
@@ -38,7 +38,7 @@ export async function loadOpAndQueryId(messageBody: Slice): Promise<{
 }> {
     const op = messageBody.loadUint(OP_LENGTH);
     const queryId = messageBody.loadUint(QUERY_ID_LENGTH);
-    return {changedSlice: messageBody, op, queryId};
+    return { changedSlice: messageBody, op, queryId };
 }
 
 // Op and query id had already been loaded
@@ -47,7 +47,7 @@ export function ParseBalanceUpdate(purifiedMessageBody: Slice): BalanceUpdateMes
     const tons = purifiedMessageBody.loadCoins();
     const futureJettons = purifiedMessageBody.loadCoins();
     purifiedMessageBody.endParse();
-    return {mode, tons, futureJettons};
+    return { mode, tons, futureJettons };
 }
 
 // Op and query id had already been loaded
@@ -57,5 +57,5 @@ export function ParseRefundOrClaim(purifiedMessageBody: Slice): RefundOrClaimCon
     const futureJettons = purifiedMessageBody.loadCoins();
     const recipient = purifiedMessageBody.loadAddress().toRawString();
     purifiedMessageBody.endParse();
-    return {whitelistTons, publicTons, futureJettons, recipient}
+    return { whitelistTons, publicTons, futureJettons, recipient };
 }
