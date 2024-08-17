@@ -1,5 +1,6 @@
 import {useIsConnectionRestored, useTonAddress, useTonConnectUI, useTonWallet} from "@tonconnect/ui-react";
 import {useState} from "react";
+import {beginCell} from "@ton/ton";
 
 export function SendTransaction() {
   const isConnectionRestored = useIsConnectionRestored();
@@ -26,12 +27,18 @@ export function SendTransaction() {
       break;
   }
 
-  const body = {
+  const body = beginCell()
+    .storeUint(0, 32) // write 32 zero bits to indicate that a text comment will follow
+    .storeStringTail("spent two hours on dat shit") // write our text comment
+    .endCell();
+
+  const myTransaction  = {
     validUntil: Math.floor(Date.now() / 1000) + 360,
     messages: [
       {
         amount: "10000000",
-        address: "EQBx3ogufv7zZlqNqvGsnhGOfsIprcyKnMEe04KSREQAEG3z"
+        address: "kQBx3ogufv7zZlqNqvGsnhGOfsIprcyKnMEe04KSREQAENZ5",
+        payload: body.toBoc().toString("base64")
       }
     ]
   }
@@ -42,15 +49,13 @@ export function SendTransaction() {
     } else {
       setIsLoadingTransaction(true)
       try {
-        await tonConnectUI.sendTransaction(body);
-        // const txResult = await tonConnectUI.sendTransaction(body);
-        // const exBoc = txResult.boc;
+        const txResult = await tonConnectUI.sendTransaction(myTransaction);
+        const exBoc = txResult.boc;
 
-        // const txRes = await getTxByBOC(exBoc, address);
-        // console.log(txRes);
-
-        // console.log(txResult)
+        console.log("OK")
+        console.log(exBoc)
       } catch (e) {
+        console.log("PIZDEC")
         console.log(e)
       }
       setIsLoadingTransaction(false)
