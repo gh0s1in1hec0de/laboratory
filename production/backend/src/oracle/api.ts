@@ -1,6 +1,6 @@
-import { type LamportTime, maybeBruteforceOverload, Network } from "../utils.ts";
+import { type LamportTime, maybeBruteforceOverload, Network } from "../utils";
 import { Address, TonClient, TonClient4, type Transaction } from "@ton/ton";
-import { currentNetwork, mainnetKeys, testnetKeys } from "../config.ts";
+import { currentNetwork, mainnetKeys, testnetKeys } from "../config";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 
 // RR bitch (RoundRobin, not Rolls-Royce)
@@ -39,7 +39,7 @@ export async function getAccount(address: Address, seqno?: number) {
 // Limited to 100 transactions per request by TonCenter;
 //
 // When lt and hash are set to transaction x, parsing begins from the transaction immediately following `x`, excluding `x` itself.
-export async function getTransactionsForAccount(address: Address, to_lt?: LamportTime, from?: {lt: LamportTime, hash: string}, archival: boolean = true, limit: number = 100) {
+export async function getTransactionsForAccount(address: Address, to_lt?: LamportTime, from?: {lt: LamportTime; hash: string}, archival = true, limit = 100) {
     return await maybeBruteforceOverload<Transaction[]>(
         balancedTonClient.get().getTransactions(address, {
             limit,

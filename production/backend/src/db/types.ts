@@ -1,5 +1,5 @@
 import type { Sql } from "postgres";
-import type { Coins, LamportTime } from "../utils.ts";
+import type { Coins, LamportTime } from "../utils";
 
 type SqlTypes = { bigint: bigint };
 export type Client = Sql<SqlTypes>;
@@ -7,8 +7,8 @@ export type Client = Sql<SqlTypes>;
 export type StoredAddress = string;
 
 export type StoredUser = {
-    address: StoredAddress,
-    nickname: string | null
+    address: StoredAddress;
+    nickname: string | null;
 };
 
 // TODO Change this type
@@ -17,13 +17,13 @@ export type JsonLaunchMetadata = {
 };
 
 export type StoredTokenLaunch = {
-    address: StoredAddress,
-    creator: StoredAddress,
-    metadata: JsonLaunchMetadata
-    creatorBalance: Coins
-    startTime: Date,
-    endTime: Date,
-    height: LamportTime,
+    address: StoredAddress;
+    creator: StoredAddress;
+    metadata: JsonLaunchMetadata;
+    creatorBalance: Coins;
+    startTime: Date;
+    endTime: Date;
+    height: LamportTime;
 };
 
 export enum UserActionType {
@@ -36,19 +36,19 @@ export enum UserActionType {
 }
 
 export type UserAction = {
-    actor: StoredAddress,
-    tokenLaunch: StoredAddress,
-    actionType: UserActionType,
-    whitelistTons: Coins,
-    publicTons: Coins,
-    jettons: Coins,
-    timestamp: Date
+    actor: StoredAddress;
+    tokenLaunch: StoredAddress;
+    actionType: UserActionType;
+    whitelistTons: Coins;
+    publicTons: Coins;
+    jettons: Coins;
+    timestamp: Date;
 };
 
 export type StoredUserBalance = {
-    actor: StoredAddress,
-    tokenLaunch: StoredAddress,
-    whitelistTons: Coins,
-    publicTons: Coins,
-    jettons: Coins,
+    actor: StoredAddress;
+    tokenLaunch: StoredAddress;
+    whitelistTons: Coins;
+    publicTons: Coins;
+    jettons: Coins;
 };

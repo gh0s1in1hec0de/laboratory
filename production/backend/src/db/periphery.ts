@@ -1,5 +1,5 @@
-import type { Client } from "./types.ts";
-import { globalClient } from "./db.ts";
+import type { Client } from "./types";
+import { globalClient } from "./db";
 import { ok as assert } from "assert";
 
 export async function setCoreHeight(height: bigint, client?: Client): Promise<void> {

@@ -1,4 +1,4 @@
-import type { Client } from "./types.ts";
+import type { Client } from "./types";
 import postgres from "postgres";
 import * as path from "path";
 import * as fs from "fs";

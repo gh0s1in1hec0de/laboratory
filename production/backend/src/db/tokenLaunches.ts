@@ -1,6 +1,6 @@
-import type { Client, StoredTokenLaunch } from "./types.ts";
-import type { LamportTime, RawAddressString } from "../utils.ts";
-import { globalClient } from "./db.ts";
+import type { Client, StoredTokenLaunch } from "./types";
+import type { LamportTime, RawAddressString } from "../utils";
+import { globalClient } from "./db";
 import { ok as assert } from "assert";
 
 // Returns `null` to show that nothing was found the explicit way

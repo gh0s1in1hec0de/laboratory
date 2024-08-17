@@ -1,4 +1,4 @@
-import type { Coins, RawAddressString } from "../utils.ts";
+import type { Coins, RawAddressString } from "../utils";
 
 export enum BalanceUpdateMode {
     WhitelistDeposit = 1,
@@ -14,14 +14,14 @@ export enum UtilJettonsEnrollmentMode {
 }
 
 export type BalanceUpdateMessage = {
-    mode: BalanceUpdateMode,
-    tons: Coins,
-    futureJettons: Coins,
+    mode: BalanceUpdateMode;
+    tons: Coins;
+    futureJettons: Coins;
 }
 
 export type RefundOrClaimConfirmationMessage = {
-    whitelistTons: Coins,
-    publicTons: Coins,
-    futureJettons: Coins,
-    recipient: RawAddressString
+    whitelistTons: Coins;
+    publicTons: Coins;
+    futureJettons: Coins;
+    recipient: RawAddressString;
 }

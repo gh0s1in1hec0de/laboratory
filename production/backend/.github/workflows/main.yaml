@@ -1,0 +1,33 @@
+name: linting, building
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.1.24 # or "latest"
+
+      - name: Install modules
+        run: bun install
+
+      - name: Linter fix
+        run: bun run lint:fix
+
+      - name: Build production project
+        run: bun run build:prod
+        if: always()
+
+      - name: Run linter
+        run: bun run lint
+        if: always()
+
+#      - name: Unit tests
+#        if: always()
+#        run: bun run test

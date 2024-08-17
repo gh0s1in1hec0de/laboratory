@@ -1,6 +1,6 @@
-import type { UserActionType, Client, StoredAddress, UserAction } from "./types.ts";
-import type { Coins } from "../utils.ts";
-import { globalClient } from "./db.ts";
+import type { UserActionType, Client, StoredAddress, UserAction } from "./types";
+import type { Coins } from "../utils";
+import { globalClient } from "./db";
 import { ok as assert } from "assert";
 
 export async function storeUserAction(

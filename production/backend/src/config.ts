@@ -23,7 +23,7 @@ type Config = {
     db: DatabaseConfig;
     oracle: OracleConfig;
     server: ServerConfig;
-};
+}
 
 let config: Config | null = null;
 

@@ -1,7 +1,7 @@
-import { loadOpAndQueryId, TokensLaunchOps, UserVaultOps } from "./messageParsers.ts";
+import { loadOpAndQueryId, TokensLaunchOps, UserVaultOps } from "./messageParsers";
 import type { Address, Transaction } from "@ton/ton";
-import { getTransactionsForAccount } from "./api.ts";
-import type { LamportTime } from "../utils.ts";
+import { getTransactionsForAccount } from "./api";
+import type { LamportTime } from "../utils";
 import * as db from "../db";
 
 // `stopAt` is lamport time of last known tx; returns an array of new transactions oldest -> the newest
@@ -11,12 +11,12 @@ async function retrieveAllUnknownTransactions(
     address: Address,
     stopAt: LamportTime,
     parsingOptions?: {
-        archival: boolean,
-        limit: number
+        archival: boolean;
+        limit: number;
     }
 ): Promise<Transaction[]> {
     const newTransactions: Transaction[] = [];
-    let startFrom: { lt: LamportTime, hash: string } | undefined = undefined;
+    let startFrom: { lt: LamportTime; hash: string } | undefined = undefined;
     while (true) {
         const transactions = await getTransactionsForAccount(address, stopAt, startFrom, parsingOptions?.archival, parsingOptions?.limit);
 
