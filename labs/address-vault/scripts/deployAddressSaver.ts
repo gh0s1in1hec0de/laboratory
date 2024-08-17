@@ -5,6 +5,7 @@ import {TonClient} from '@ton/ton';
 import {parseBodyOfExternalInMessage, parseBodyOfInternalMessage} from "../helpers";
 import {InternalMessageActions} from "../helpers/parseBodyOfInternalMessage/types";
 import {ExternalInMessageActions} from "../helpers/parseBodyOfExternalInMessage/types";
+import {hash} from "crypto";
 
 export async function run(provider: NetworkProvider) {
   const providerAddress = provider.sender().address;
@@ -26,25 +27,42 @@ export async function run(provider: NetworkProvider) {
 
 
   let limit;
+  const contactAddress = Address.parse("kQBx3ogufv7zZlqNqvGsnhGOfsIprcyKnMEe04KSREQAENZ5");
+  let createdLt;
 
 
   // await addressSaver.sendRequestAddress(provider.sender(), toNano(0.02), 12345n);
   // limit = 2;
 
   limit = 1;
-  const randomAddr = Address.parse("EQAgGgnGzKreSLnpZHxM3mFUa2r6CKeuzHdWC6W1p89KmsJT");
-  await addressSaver.sendChangeAddress(provider.sender(), toNano(0.02), 12345n, randomAddr);
+  // const randomAddr = Address.parse("EQAgGgnGzKreSLnpZHxM3mFUa2r6CKeuzHdWC6W1p89KmsJT");
+  // await addressSaver.sendChangeAddress(provider.sender(), toNano(0.02), 12345n, randomAddr);
 
   const client = new TonClient({
     endpoint: 'https://testnet.toncenter.com/api/v2/jsonRPC',
     apiKey: '588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82',
   });
 
-  const transactions: Transaction[] = await client.getTransactions(senderAddress, {
-    limit: limit,
-  });
+  /** work */
+  // const transactions: Transaction[] = await client.getTransactions(senderAddress, {
+  //   limit: limit,
+  // });
 
-  console.log(transactions);
+  // todo figure out why the error is "Invalid hash"
+  // let ltTx = "24869880000001";
+  // let hashTx = "da354ac8f31aac3ba639f7697d833ccb172bb3f01b206775c5f94cb918561285";
+  // const transaction: Transaction | null = await client.getTransaction(senderAddress, ltTx, hashTx)
+  // console.log(transaction);
+
+  /** work (find external-in message) */
+  // createdLt = "24869877000002";
+  // const transaction: Transaction = await client.tryLocateSourceTx(senderAddress, contactAddress, createdLt)
+  // console.log(transaction);
+
+  /** work (find internal message) */
+  createdLt = "24869877000002";
+  const transaction: Transaction = await client.tryLocateResultTx(senderAddress, contactAddress, createdLt)
+  console.log(transaction);
 
   // todo TEST THIS
   //
