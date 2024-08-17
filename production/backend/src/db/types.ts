@@ -1,5 +1,5 @@
 import type {Sql} from "postgres";
-import type {Coins} from "../utils.ts";
+import type {Coins, LamportTime} from "../utils.ts";
 
 type SqlTypes = { bigint: bigint };
 export type Client = Sql<SqlTypes>;
@@ -23,7 +23,7 @@ export type StoredTokenLaunch = {
     creatorBalance: Coins
     startTime: Date,
     endTime: Date,
-    height: Date,
+    height: LamportTime,
 };
 
 export enum UserActionType {

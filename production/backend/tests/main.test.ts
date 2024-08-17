@@ -20,17 +20,16 @@ describe("labs", () => {
         console.log(last);
 
         const txs = await getTransactionsForAccount(exampleAddress,
-            "24809208000001",
-            "EVkd8f4JDXl4cOOuDRS+/8pOocUY1EtOn8E3GwLiWBA=",
-            "24120614000001", // "24120614000001",
-            true,
-            100
+            24121092000001n, {lt: 24809208000001n, hash: "EVkd8f4JDXl4cOOuDRS+/8pOocUY1EtOn8E3GwLiWBA="}, undefined, 10
         );
 
         // Sort transactions by 'now' in ascending order (oldest to newest)
         txs.sort((a, b) => {
-            return Number(a.lt - b.lt) // return a.now - b.now;
+            if (a.lt < b.lt) return -1;
+            if (a.lt > b.lt) return 1;
+            return 0;
         });
+
 
         let counter = 0;
         console.log(`[*] transactions: `);
@@ -43,5 +42,8 @@ describe("labs", () => {
             console.log();
         }
         console.log(`txs total amount: ${counter}`);
+    });
+    test("just some temporary shit I need to check fast", async () => {
+        // All the fast checks here
     });
 });
