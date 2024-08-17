@@ -8,17 +8,18 @@ import Elysia from "elysia";
 dotenv.config();
 greeting();
 
+const config = getConfig();
 // Disable console.debug unless debug logging is explicitly enabled
-if (getConfig().debug_mode) console.debug = () => {};
+if (config.debug_mode) console.debug = () => {};
 console.debug(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_USER} | ${process.env.POSTGRES_PASSWORD}`);
 
-if (getConfig().db.should_migrate) {
+if (config.db.should_migrate) {
     console.log(`applying migrations to clean database...`);
     console.log();
     await db.applyMigrations();
 }
-if (getConfig().oracle.core_height) {
-    await db.setCoreHeight(getConfig().oracle.core_height!);
+if (config.oracle.core_height) {
+    await db.setCoreHeight(config.oracle.core_height!);
 }
 
 async function main() {
@@ -27,7 +28,7 @@ async function main() {
 
     const app = new Elysia()
       .group("/api", (app) => app.use(userRoutes))
-      .listen(process.env.SERVER_PORT);
+      .listen(config.server.port);
 
     console.log(`🚀 Server is running at ${app.server?.hostname}:${app.server?.port}`)
 }
