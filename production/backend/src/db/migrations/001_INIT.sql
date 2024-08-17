@@ -25,7 +25,9 @@ CREATE TABLE token_launches
     -- On creator buyout we just update this field
     creator_balance BIGINT DEFAULT 0,
     start_time      TIMESTAMP NOT NULL,
-    end_time        TIMESTAMP NOT NULL
+    end_time        TIMESTAMP NOT NULL,
+    -- lt of last transaction we know about
+    height          BIGINT DEFAULT 0
 );
 
 CREATE TYPE user_action_type AS ENUM ('whitelist_buy', 'public_buy', 'whitelist_refund', 'public_refund', 'total_refund', 'claim');

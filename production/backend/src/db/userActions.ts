@@ -1,12 +1,12 @@
-import type {UserActionType, Client, Address, UserAction} from "./types.ts";
+import type {UserActionType, Client, StoredAddress, UserAction} from "./types.ts";
 import type {Coins} from "../utils.ts";
 import {globalClient} from "./db.ts";
 import {ok as assert} from "assert";
 
 export async function storeUserAction(
     type: UserActionType,
-    actor: Address,
-    tokenLaunch: Address,
+    actor: StoredAddress,
+    tokenLaunch: StoredAddress,
     whitelistTons: Coins,
     publicTons: Coins,
     jettons: Coins,
@@ -23,9 +23,9 @@ export async function storeUserAction(
 
 // Returns `null` to show that nothing was found the explicit way
 export async function getUserActions(
-    actor: Address,
+    actor: StoredAddress,
     type?: UserActionType,
-    tokenLaunch?: Address,
+    tokenLaunch?: StoredAddress,
     after?: Date,
     client?: Client
 ): Promise<UserAction[] | null> {

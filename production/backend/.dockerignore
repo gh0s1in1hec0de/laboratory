@@ -4,7 +4,7 @@ postgres-data
 
 # We don't need em inside container
 Dockerfile
-docker-compose.yml
+docker-compose.yaml
 
 .git
 .gitignore

@@ -1,5 +1,5 @@
 import type {Client, StoredTokenLaunch} from "./types.ts";
-import type {RawAddressString} from "../utils.ts";
+import type {LamportTime, RawAddressString} from "../utils.ts";
 import {globalClient} from "./db.ts";
 import {ok as assert} from "assert";
 
@@ -14,35 +14,25 @@ export async function getActiveTokenLaunches(client?: Client): Promise<StoredTok
     return res;
 }
 
-export async function getTokenLaunchHeight(address: RawAddressString, client?: Client): Promise<Date> {
-    const res = await (client || globalClient)<{ last_action_time: Date }[]>`
-        SELECT timestamp AS last_action_time
-        FROM user_actions
-        WHERE token_launch = ${address}
-        ORDER BY timestamp DESC
-        LIMIT 1;
+export async function getTokenLaunch(address: RawAddressString, client?: Client): Promise<StoredTokenLaunch> {
+    const res = await (client || globalClient)<StoredTokenLaunch[]>`
+        SELECT * FROM token_launches WHERE address = ${address}
     `;
     assert(res.length === 1, `exactly 1 column must be returned, got: ${res}`);
-    return res[0].last_action_time;
+    return res[0];
 }
 
-export async function setCoreHeight(height: Date, client?: Client): Promise<void> {
+export async function getTokenLaunchHeight(address: RawAddressString, client?: Client): Promise<LamportTime> {
+    const res = await (client || globalClient)<{ height: LamportTime }[]>`
+        SELECT height FROM token_launches WHERE address = ${address}
+    `;
+    assert(res.length === 1, `exactly 1 column must be returned, got: ${res}`);
+    return res[0].height;
+}
+
+export async function setTokenLaunchHeight(address: RawAddressString, height: LamportTime, client?: Client): Promise<void> {
     const res = await (client || globalClient)`
-        INSERT INTO global_settings (setting_key, setting_value)
-        VALUES ('core_height', ${height})
-        ON CONFLICT (setting_key)
-            DO UPDATE SET setting_value = EXCLUDED.setting_value
-        RETURNING 1;
-    `;
-    assert(res.length === 1, `exactly 1 column must be created/updated, got: ${res}`);
-}
-
-export async function getCoreHeight(client?: Client): Promise<Date> {
-    const res = await (client || globalClient)<{ core_height: Date }[]>`
-        SELECT setting_value AS core_height
-        FROM global_settings
-        WHERE setting_key = 'core_height';
+        UPDATE token_launches SET height = ${height} WHERE address = ${address}
     `;
     assert(res.length === 1, `exactly 1 column must be returned, got: ${res}`);
-    return res[0].core_height;
 }
