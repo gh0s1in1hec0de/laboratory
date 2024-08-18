@@ -33,6 +33,7 @@ CREATE TABLE token_launches
 CREATE TYPE user_action_type AS ENUM ('whitelist_buy', 'public_buy', 'whitelist_refund', 'public_refund', 'total_refund', 'claim');
 CREATE TABLE user_actions
 (
+    id             BIGSERIAL PRIMARY KEY,
     actor          address          NOT NULL REFERENCES users (address),
     token_launch   address          NOT NULL REFERENCES token_launches (address),
     action_type    user_action_type NOT NULL,
@@ -40,8 +41,10 @@ CREATE TABLE user_actions
     whitelist_tons coins            NOT NULL DEFAULT 0,
     public_tons    coins            NOT NULL DEFAULT 0,
     jettons        coins            NOT NULL DEFAULT 0,
+    -- Timestamp from on-chain data
     timestamp      TIMESTAMP        NOT NULL,
-    PRIMARY KEY (actor, action_type, timestamp),
+    -- TODO Replace with constraint: actor, action_type, timestamp must be unique
+    UNIQUE (actor, action_type, timestamp),
 
     CONSTRAINT chk_whitelist_buy CHECK (
         (action_type = 'whitelist_buy' AND whitelist_tons > 0 AND public_tons = 0 AND jettons = 0)

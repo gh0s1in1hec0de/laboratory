@@ -77,7 +77,7 @@ export async function handleTokenLaunchUpdates(launchAddress: Address) {
                 switch (op) {
                 case TokensLaunchOps.creatorBuyout: {
                     const res = await callGetMethod(launchAddress, "get_sale_state");
-                    // Figure out about type consistency
+                    // I think, that it's gonna be better to parse this with TonClient4 decentralized API on frontend side, so this code will be removed with a high chance
                     const creatorBalance = res.stack.readBigNumber();
                     await updateLaunchCreatorBalance(launchAddress.toRawString(), creatorBalance);
                     break;

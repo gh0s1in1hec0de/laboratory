@@ -1,0 +1,15 @@
+# if not - console.debug will not be shown
+debug_mode: true
+db:
+  should_migrate: true
+server:
+  port: 3000
+
+oracle:
+  core_height: null
+  network: "testnet"
+  api_keys:
+    testnet_keys:
+      - "k"
+    mainnet_keys:
+      - "k"

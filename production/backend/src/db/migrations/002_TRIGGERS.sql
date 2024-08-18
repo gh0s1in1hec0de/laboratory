@@ -1,3 +1,18 @@
+CREATE TABLE user_balance_errors
+(
+    id      BIGSERIAL PRIMARY KEY,
+    action  BIGINT NOT NULL REFERENCES user_actions (id),
+    details TEXT
+);
+
+CREATE OR REPLACE FUNCTION log_user_balance_error(action BIGINT, details TEXT) RETURNS void AS
+$$
+BEGIN
+    INSERT INTO user_balance_errors (action, details)
+    VALUES (action, details);
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION update_user_balance()
     RETURNS TRIGGER AS
 $$
@@ -9,8 +24,10 @@ BEGIN
     IF NEW.action_type IN ('whitelist_buy', 'whitelist_refund') THEN
         UPDATE user_balances
         SET whitelist_tons = whitelist_tons + CASE
-                                                  WHEN NEW.action_type = 'whitelist_buy' THEN NEW.whitelist_tons
-                                                  WHEN NEW.action_type = 'whitelist_refund' THEN -NEW.whitelist_tons
+                                                  WHEN NEW.action_type = 'whitelist_buy'
+                                                      THEN NEW.whitelist_tons
+                                                  WHEN NEW.action_type = 'whitelist_refund'
+                                                      THEN -NEW.whitelist_tons
             END
         WHERE "user" = NEW.actor
           AND token_launch = NEW.token_launch;
@@ -20,7 +37,7 @@ BEGIN
                 INSERT INTO user_balances ("user", token_launch, whitelist_tons)
                 VALUES (NEW.actor, NEW.token_launch, NEW.whitelist_tons);
             ELSE
-                RAISE EXCEPTION 'no existing whitelist_tons balance found for user % and token launch %', NEW.actor, NEW.token_launch;
+                PERFORM log_user_balance_error(NEW.id, 'refund record can not be the first user balance update');
             END IF;
         END IF;
 
@@ -42,20 +59,19 @@ BEGIN
                 INSERT INTO user_balances ("user", token_launch, public_tons, jettons)
                 VALUES (NEW.actor, NEW.token_launch, NEW.public_tons, NEW.jettons);
             ELSE
-                RAISE EXCEPTION 'no existing public_tons or jettons balance found for user % and token launch %', NEW.actor, NEW.token_launch;
+                PERFORM log_user_balance_error(NEW.id, 'refund record can not be the first user balance update');
             END IF;
         END IF;
 
     ELSIF NEW.action_type = 'claim' THEN
-        UPDATE user_balances
-        SET whitelist_tons = whitelist_tons - NEW.whitelist_tons,
-            public_tons    = public_tons - NEW.public_tons,
-            jettons        = jettons - NEW.jettons
+        DELETE
+        FROM user_balances
         WHERE "user" = NEW.actor
           AND token_launch = NEW.token_launch;
 
         IF NOT FOUND THEN
-            RAISE EXCEPTION 'no existing balance found for user % and token launch % for claim', NEW.actor, NEW.token_launch;
+            PERFORM log_user_balance_error(NEW.id, 'claim record can not be the first user balance update');
+
         END IF;
     END IF;
 
