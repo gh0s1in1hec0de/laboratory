@@ -1,9 +1,10 @@
-import { loadOpAndQueryId, TokensLaunchOps, UserVaultOps } from "./messageParsers";
+import { loadOpAndQueryId, parseBalanceUpdate, TokensLaunchOps, UserVaultOps } from "./messageParsers";
 import { callGetMethod, getTransactionsForAccount } from "./api";
 import type { Address, Transaction } from "@ton/ton";
-import type { LamportTime } from "../utils";
 import * as db from "../db";
 import { updateLaunchCreatorBalance } from "../db";
+import type { LamportTime } from "../utils";
+import { BalanceUpdateMode } from "./types";
 
 // `stopAt` is lamport time of last known tx; returns an array of new transactions oldest -> the newest
 //
@@ -86,6 +87,10 @@ export async function handleTokenLaunchUpdates(launchAddress: Address) {
                     // TODO
                     break;
                 }
+                case TokensLaunchOps.refundConfirmation: {
+                    // TODO
+                    break;
+                }
                 default:
                     break;
                 }
@@ -94,7 +99,9 @@ export async function handleTokenLaunchUpdates(launchAddress: Address) {
                     const { changedSlice, op, queryId } = await loadOpAndQueryId(messageBody);
                     // Then we'll look for following operation: balanceUpdate
                     if (op !== UserVaultOps.balanceUpdate) continue;
-                    console.log();
+                    const balanceUpdateMessage = parseBalanceUpdate(changedSlice);
+                    if (![BalanceUpdateMode.PublicDeposit, BalanceUpdateMode.WhitelistDeposit].includes(balanceUpdateMessage.mode)) continue;
+                    // TODO Record of a new action; we'll record refunds and claims from confirmations as it is safer
                 }
 
             }

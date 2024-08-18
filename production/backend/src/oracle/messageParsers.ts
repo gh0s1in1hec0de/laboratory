@@ -42,7 +42,7 @@ export async function loadOpAndQueryId(messageBody: Slice): Promise<{
 }
 
 // Op and query id had already been loaded
-export function ParseBalanceUpdate(purifiedMessageBody: Slice): BalanceUpdateMessage {
+export function parseBalanceUpdate(purifiedMessageBody: Slice): BalanceUpdateMessage {
     const mode = purifiedMessageBody.loadUint(4);
     const tons = purifiedMessageBody.loadCoins();
     const futureJettons = purifiedMessageBody.loadCoins();
@@ -51,7 +51,7 @@ export function ParseBalanceUpdate(purifiedMessageBody: Slice): BalanceUpdateMes
 }
 
 // Op and query id had already been loaded
-export function ParseRefundOrClaim(purifiedMessageBody: Slice): RefundOrClaimConfirmationMessage {
+export function parseRefundOrClaim(purifiedMessageBody: Slice): RefundOrClaimConfirmationMessage {
     const whitelistTons = purifiedMessageBody.loadCoins();
     const publicTons = purifiedMessageBody.loadCoins();
     const futureJettons = purifiedMessageBody.loadCoins();

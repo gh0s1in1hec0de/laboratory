@@ -36,6 +36,7 @@ export enum UserActionType {
 }
 
 export type UserAction = {
+    id: bigint;
     actor: StoredAddress;
     tokenLaunch: StoredAddress;
     actionType: UserActionType;
@@ -43,6 +44,7 @@ export type UserAction = {
     publicTons: Coins;
     jettons: Coins;
     timestamp: Date;
+    query_id: bigint;
 };
 
 export type StoredUserBalance = {

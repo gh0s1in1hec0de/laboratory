@@ -4,7 +4,7 @@ import * as path from "path";
 import * as fs from "fs";
 
 export async function createPostgresClient(): Promise<Client> {
-    return postgres({
+    const sql = postgres({
         host: "db",
         port: 5432,
         database: process.env.POSTGRES_DB,
@@ -13,6 +13,11 @@ export async function createPostgresClient(): Promise<Client> {
         types: { bigint: postgres.BigInt },
         transform: postgres.camel
     });
+    await sql.listen("user_balance_error", async (payload) => {
+        const { id, action, details } = JSON.parse(payload);
+        console.log(`new user balance error#${id}: action#${action} - ${details}`);
+    });
+    return sql;
 }
 
 export const globalClient = await createPostgresClient();
@@ -34,5 +39,6 @@ export async function applyMigrations(client?: Client) {
                 }
             }
         });
-    } catch (e) { /* Just preventing exiting in case of already applied migrations */ }
+    } catch (e) { /* Just preventing exiting in case of already applied migrations */
+    }
 }

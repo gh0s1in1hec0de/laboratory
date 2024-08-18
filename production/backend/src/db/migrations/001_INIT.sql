@@ -43,7 +43,7 @@ CREATE TABLE user_actions
     jettons        coins            NOT NULL DEFAULT 0,
     -- Timestamp from on-chain data
     timestamp      TIMESTAMP        NOT NULL,
-    -- TODO Replace with constraint: actor, action_type, timestamp must be unique
+    query_id       BIGINT,
     UNIQUE (actor, action_type, timestamp),
 
     CONSTRAINT chk_whitelist_buy CHECK (

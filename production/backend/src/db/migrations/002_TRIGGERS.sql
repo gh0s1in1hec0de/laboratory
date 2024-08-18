@@ -2,7 +2,7 @@ CREATE TABLE user_balance_errors
 (
     id      BIGSERIAL PRIMARY KEY,
     action  BIGINT NOT NULL REFERENCES user_actions (id),
-    details TEXT
+    details TEXT   NOT NULL
 );
 
 CREATE OR REPLACE FUNCTION log_user_balance_error(action BIGINT, details TEXT) RETURNS void AS

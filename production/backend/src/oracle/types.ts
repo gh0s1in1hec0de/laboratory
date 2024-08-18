@@ -9,8 +9,8 @@ export enum BalanceUpdateMode {
 }
 
 export enum UtilJettonsEnrollmentMode {
-    UTIL_JET_REWARD_ENROLLMENT = 1,
-    UTIL_JET_WL_PASS = 2
+    UtilJettonRewardEnrollment = 1,
+    UtilJettonWlPass = 2
 }
 
 export type BalanceUpdateMessage = {
