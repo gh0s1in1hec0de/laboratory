@@ -6,7 +6,7 @@
 #include "uv_context.fc";
 
 int vault_is_empty() inline {
-    this::wl_ton_balance + this::public_ton_balance + this::jetton_balance == 0 ? TRUE : FALSE;
+    return this::wl_ton_balance + this::public_ton_balance + this::jetton_balance == 0 ? TRUE : FALSE;
 }
 
 int get_withdraw_message_mode() impure inline_ref {

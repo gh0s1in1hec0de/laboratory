@@ -25,6 +25,7 @@
     launch_conf::creator_round_duration_ms = launch_config_slice~load_int(32);
     launch_conf::wl_round_duration_ms = launch_config_slice~load_int(32);
     launch_conf::pub_round_duration_ms = launch_config_slice~load_int(32);
+    launch_conf::claim_duration_ms = launch_config_slice~load_int(32);
     launch_config_slice.end_parse();
 
     cell contracts = ds~load_ref();
@@ -58,6 +59,7 @@
         .store_int(launch_conf::creator_round_duration_ms, 32)
         .store_int(launch_conf::wl_round_duration_ms, 32)
         .store_int(launch_conf::pub_round_duration_ms, 32)
+        .store_int(launch_conf::claim_duration_ms, 32)
         .end_cell();
     cell data = begin_cell()
         .store_slice(this::chief)

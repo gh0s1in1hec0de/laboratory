@@ -1,8 +1,8 @@
 /* === TOKEN LAUNCH === */
 
 // Storage
-// 32 + 124 x 4 = 528
-_ start_time:int32 fut_jet_inner_balance:Coins fut_jet_deployed_balance:Coins total_tons_collected:Coins reward_util_jets_balance:Coins
+// 32 x 2 + 124 x 4 = 560
+_ start_time:int32 fut_jet_inner_balance:Coins fut_jet_deployed_balance:Coins total_tons_collected:Coins reward_util_jets_balance:Coins end_time:int32
   = GeneralState;
 // 124 x 3 + 32 = 404
 _ creator_fut_jet_limit:Coins creator_fut_jet_balance:Coins creator_fut_jet_price:Coins creator_round_end_time:int32
@@ -68,10 +68,10 @@ claim#556a6246 query_id:uint64 = UserVaultUpdate;
 /* === CORE === */
 // 0
 _ jetton_launch_code:^Cell jetton_launch_user_vault:^Cell derived_jetton_master_code:^Cell jetton_wallet_code:^Cell = Contracts;
-// 124 * 5 + 16 * 3 + 32 * 3 = 764
+// 124 * 5 + 16 * 3 + 32 * 4 = 796
 _ min_ton_for_sale_success:Coins ton_limit_for_wl_round:Coins util_jet_reward_amount:Coins util_jet_wl_pass_amount:Coins util_jet_burn_per_wl_pass_amount:Coins
   jet_wl_limit_pct:uint16 jet_wl_limit_pct:uint16 jet_wl_limit_pct:uint16
-  creator_round_duration_ms:int32 wl_round_duration_ms:int32 pub_round_duration_ms:int32
+  creator_round_duration_ms:int32 wl_round_duration_ms:int32 pub_round_duration_ms:int32 claim_duration_ms:int32
   = LaunchConfig;
 // 267 x 3 + 124 + 1 + 8 = 934
 _ chief:MsgAddressInt util_jetton_master_address:MsgAddressInt util_jetton_wallet_address:MsgAddressInt
@@ -88,6 +88,9 @@ create_launch#0eedbf42 query_id:uint64 start_time:int32 total_supply:Coins platf
 init#18add407 query_id:uint64 = CoreMsg;
 // 32 + 64 = 96
 init_callback#5d988a60 query_id:uint64 = CoreMsg;
+// 32 + 64 + 796 = 892
+// There is no direct fielt `launch_config`, it represents all the fileds `LaunchConfig` originally include, starting from `min_ton_for_sale_success`
+update_config#7fb2e4ba query_id:uint64 launch_config:LaunchConfig = CoreMsg;
 
 /* === PERIPHERY === */
 
@@ -108,3 +111,8 @@ claim_admin#fb88e119
 // token_launcher/jetton_operating.fc#L103
 // 124 x 2 = 248
 _ fut_jet_dex_amount:Coins fut_jet_platform_amount:Coins = PoolValueWithdrawPayload;
+
+/*
+Right approach in hashing this code should throw 0xf8a7ea5 CRC32 hash (no spaces and semicolons):
+transfer# query_id:uint64 amount:VarUInteger 16 destination:MsgAddress response_destination:MsgAddress custom_payload:Maybe ^Cell forward_ton_amount:VarUInteger 16 forward_payload:Either Cell ^Cell = InternalMsgBody
+*/

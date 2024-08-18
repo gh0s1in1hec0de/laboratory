@@ -93,8 +93,8 @@
         save_data();
         return ();
     }
-    {-
-       Rewrite balance - freeze not just contract balance, but -
+    {- TODO
+       Rewrite balance - freeze not just contract balance, but add inspection for -
        - One month storage fee - its dummy, but fuck dinamic calc, it is lower bound
        - Total amount of tons, that was locked
        - Fees, that was prepared for token deploy
@@ -207,17 +207,25 @@ slice get_user_vault_address(slice user_address) method_id {
     return user_vault_address;
 }
 
-(int, int, int, int, int, int, int) get_sale_state() method_id {
+(int, int, int) get_sale_state() method_id {
     load_data();
     return (
-        general_state::reward_util_jets_balance,
-        general_state::const::start_time,
-        creator_round::const::end_time,
-        wl_round::const::end_time,
-        public_round::const::end_time,
-        general_state::total_tons_collected,
-        general_state::fut_jet_deployed_balance
+        creator_round::creator_fut_jet_balance,
+        wl_round::ton_invested_total,
+        public_round::fut_jet_sold,
+        public_round::synthetic_jet_reserve,
+        public_round::synthetic_ton_reserve
     );
 }
 
-;; TODO New getters: maybe get_sale_config, get_creator_balance (maybe merged with something else), get_synthetic_reserves
+;; Shouldn't exist as we must read this data from initialization
+(int, int, int, int, int) get_sale_timings() method_id {
+    load_data();
+    return (
+        general_state::const::start_time,
+        creator_round::const::end_time,
+        wl_round::const::end_time,
+        public_round::const::end_time
+        general_state::const::end_time
+    );
+}

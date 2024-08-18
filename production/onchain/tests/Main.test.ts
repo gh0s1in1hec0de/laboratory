@@ -26,15 +26,14 @@ import {Core} from "../wrappers/Core";
 
 
 describe('TokenLaunch', () => {
-  // VARIABLES
-  let coreCode = new Cell();  // true code
-  let core: SandboxContract<Core>;  // true code
-  let tokenLaunchCode = new Cell();  // true code
+  let coreCode = new Cell();
+  let core: SandboxContract<Core>;
+  let tokenLaunchCode = new Cell()
   let tokenLaunch: SandboxContract<TokenLaunch>;
+  let userVaultCode = new Cell()
+  let userVault: SandboxContract<TokenLaunch>; // TODO
   let blockchain: Blockchain;
   let deployer: SandboxContract<TreasuryContract>;
-  // TODO Build similar one after wrapper accomplishment
-  // let userWallet: (address: Address) => Promise<SandboxContract<JettonWallet>>;
   let walletStats: StorageStats;
   let msgPrices: MsgPrices;
   let stateInitStats: StorageStats;
@@ -44,7 +43,7 @@ describe('TokenLaunch', () => {
   // Dedust related variables
   let factory: SandboxContract<Factory>;
 
-  // FUNCTIONS
+  // Function initialization
   // TODO What is the purpose of ** instead of *?
   /**
    * Measures compute fees of a tx
@@ -64,8 +63,9 @@ describe('TokenLaunch', () => {
                      state_init?: bigint) => bigint;
 
   beforeAll(async () => {
-    coreCode = await compile("Core")
+    coreCode = await compile("Core");
     tokenLaunchCode = await compile("TokenLaunch");
+    tokenLaunchCode = await compile("UserVault");
 
     blockchain = await Blockchain.create({
       storage: new RemoteBlockchainStorage(wrapTonClient4ForRemote(new TonClient4({
@@ -145,7 +145,6 @@ describe('TokenLaunch', () => {
     defaultOverhead = forwardOverhead(msgPrices, stateInitStats);
   })
 
-  // TESTS
   it('should deploy', async () => {
     const deployResult = await core.sendDeploy({value: toNano('10'), via: deployer.getSender()});
 
@@ -163,19 +162,6 @@ describe('TokenLaunch', () => {
   });
 
   test('test DeDust', async () => {
-    //   const scaleAddress = Address.parse("EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE");
-    //   factory = blockchain.openContract(
-    //     Factory.createFromAddress(MAINNET_FACTORY_ADDR)
-    //   );
-    //
-    //   const scaleVaultAddress = await factory.getVaultAddress(Asset.jetton(scaleAddress));
-    //   console.log(`$SCALE vault address: ${Address.normalize(scaleVaultAddress)}`);
-    //
-    //   await factory.sendCreateVault(deployer.getSender(), {
-    //     asset: Asset.jetton(jettonMinter.address),
-    //   });
-    //
-    //   const newVaultAddress = await factory.getVaultAddress(Asset.jetton(jettonMinter.address));
-    //   console.log(`New vault address: ${Address.normalize(newVaultAddress)}`);
+
   });
 })

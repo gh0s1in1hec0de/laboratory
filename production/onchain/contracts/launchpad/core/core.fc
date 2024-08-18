@@ -39,7 +39,6 @@
         throw_unless(error::overload, this::not_funded_launches_amount <= 20);
         create_launch(
             query_id,
-            attached_value,
             sender_address,
             in_msg_body~load_coins(),
             in_msg_body~load_uint(16),
@@ -56,19 +55,30 @@
         return ();
     }
     if (op == op::transfer_notification) {
-        handle_incoming_transfer(
-            query_id,
-            attached_value,
-            sender_address,
-            in_msg_body~load_coins(),
-            in_msg_body~load_msg_addr(),
-            in_msg_body
-        );
+        handle_incoming_transfer(sender_address, in_msg_body~load_coins());
         save_data();
         return ();
     }
 
-    ;; TODO To add change-config function
+    if (op == op::core::upgrade_config) {
+        throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::chief));
+        load_data();
+        launch_conf::min_ton_for_sale_success = in_msg_body~load_coins();
+        launch_conf::ton_limit_for_wl_round = in_msg_body~load_coins();
+        launch_conf::util_jet_reward_amount = in_msg_body~load_coins();
+        launch_conf::util_jet_wl_pass_amount = in_msg_body~load_coins();
+        launch_conf::util_jet_burn_per_wl_pass_amount = in_msg_body~load_coins();
+
+        launch_conf::jet_wl_limit_pct = in_msg_body~load_uint(16);
+        launch_conf::jet_pub_limit_pct = in_msg_body~load_uint(16);
+        launch_conf::jet_dex_share_pct = in_msg_body~load_uint(16);
+
+        launch_conf::creator_round_duration_ms = in_msg_body~load_int(32);
+        launch_conf::wl_round_duration_ms = in_msg_body~load_int(32);
+        launch_conf::pub_round_duration_ms = in_msg_body~load_int(32);
+        launch_conf::claim_duration_ms = in_msg_body~load_int(32);
+        save_data();
+    }
 
     if (op == op::upgrade) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::chief));

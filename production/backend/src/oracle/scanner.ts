@@ -1,8 +1,9 @@
 import { loadOpAndQueryId, TokensLaunchOps, UserVaultOps } from "./messageParsers";
+import { callGetMethod, getTransactionsForAccount } from "./api";
 import type { Address, Transaction } from "@ton/ton";
-import { getTransactionsForAccount } from "./api";
 import type { LamportTime } from "../utils";
 import * as db from "../db";
+import { updateLaunchCreatorBalance } from "../db";
 
 // `stopAt` is lamport time of last known tx; returns an array of new transactions oldest -> the newest
 //
@@ -25,7 +26,6 @@ async function retrieveAllUnknownTransactions(
 
         // Update our new starting point to last parsed tx
         const lastParsedTx = transactions[transactions.length - 1];
-        // TODO compare with .toString('hex') results
         startFrom = { lt: lastParsedTx.lt, hash: lastParsedTx.hash().toString("base64") };
     }
     // No updates happened case
@@ -76,14 +76,18 @@ export async function handleTokenLaunchUpdates(launchAddress: Address) {
                 // Then we'll look for following operation: creatorBuyout, jettonClaimConfirmation
                 switch (op) {
                 case TokensLaunchOps.creatorBuyout: {
-                    // TODO I don't know to extract exact amount of tokens he got, maybe call getMethod for it?
+                    const res = await callGetMethod(launchAddress, "get_sale_state");
+                    // Figure out about type consistency
+                    const creatorBalance = res.stack.readBigNumber();
+                    await updateLaunchCreatorBalance(launchAddress.toRawString(), creatorBalance);
                     break;
                 }
                 case TokensLaunchOps.jettonClaimConfirmation: {
                     // TODO
                     break;
                 }
-                default: break;
+                default:
+                    break;
                 }
 
                 for (const [n, msg] of outMsgs) {

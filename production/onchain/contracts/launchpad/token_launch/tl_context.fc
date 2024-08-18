@@ -27,6 +27,8 @@ global int   general_state::fut_jet_inner_balance;
 global int   general_state::reward_util_jets_balance;
 global int   general_state::fut_jet_deployed_balance;
 global int   general_state::total_tons_collected;
+;; End of launch itself, you can't claim tokens after this time
+global int   general_state::const::end_time;
 
 global int   creator_round::const::fut_jet_limit;
 ;; Amount of tokens, that creator bought back
@@ -60,15 +62,3 @@ global int   public_round::const::end_time;
 
 ;; === TOOLS ===
 global cell this::tools;
-
-;; ;; An address of our utility jetton wallet smart contract.
-;; ;; We store it to avoid its calculation every time, it's nice decision to compress data we store and reduce fees.
-;; global slice tools::const::util_jet_wallet_address;
-;; global slice tools::const::fut_jet_wallet_address;
-;; global slice tools::const::fut_jet_master_address;
-;; ;; Future jetton metadata, formatted due to TEP-74
-;; global cell  tools::const::metadata;
-;; ;; Data for jetton deployment in case of successful sale
-;; global cell  tools::const::fut_jet_master_code;
-;; global cell  tools::const::wallet_code;
-;; global cell  tools::const::user_vault_code;
