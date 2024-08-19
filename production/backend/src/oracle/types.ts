@@ -9,20 +9,13 @@ export enum BalanceUpdateMode {
     TotalWithdrawal = 5
 }
 
-export function balanceUpdateModeToUserAction(mode: BalanceUpdateMode) {
-    switch (mode) {
-    case BalanceUpdateMode.WhitelistDeposit:
-        return UserActionType.WhiteListBuy;
-    case BalanceUpdateMode.PublicDeposit:
-        return UserActionType.PublicBuy;
-    case BalanceUpdateMode.WhitelistWithdrawal:
-        return UserActionType.WhitelistRefund;
-    case BalanceUpdateMode.PublicWithdrawal:
-        return UserActionType.PublicRefund;
-    case BalanceUpdateMode.TotalWithdrawal:
-        return UserActionType.TotalRefund;
-    }
-}
+export const balanceUpdateModeToUserActionType: { [key in BalanceUpdateMode]: UserActionType } = {
+    [BalanceUpdateMode.WhitelistDeposit]: UserActionType.WhiteListBuy,
+    [BalanceUpdateMode.PublicDeposit]: UserActionType.PublicBuy,
+    [BalanceUpdateMode.WhitelistWithdrawal]: UserActionType.WhitelistRefund,
+    [BalanceUpdateMode.PublicWithdrawal]: UserActionType.PublicRefund,
+    [BalanceUpdateMode.TotalWithdrawal]: UserActionType.TotalRefund,
+};
 
 export enum UtilJettonsEnrollmentMode {
     UtilJettonRewardEnrollment = 1,
@@ -33,11 +26,12 @@ export type BalanceUpdateMessage = {
     mode: BalanceUpdateMode;
     tons: Coins;
     futureJettons: Coins;
-}
+};
 
-export type RefundOrClaimConfirmationMessage = {
+export type WithdrawConfirmationMessage = {
     whitelistTons: Coins;
     publicTons: Coins;
     futureJettons: Coins;
     recipient: RawAddressString;
-}
+    mode?: BalanceUpdateMode;
+};

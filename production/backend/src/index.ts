@@ -20,9 +20,9 @@ if (config.db.should_migrate) {
     console.log();
     await db.applyMigrations();
 }
-if (config.oracle.core_height) {
-    await db.setCoreHeight(config.oracle.core_height!);
-}
+// TODO Replace dummies
+if (config.oracle.core_height) await db.setCoreHeight("", config.oracle.core_height!, false);
+
 
 async function main() {
     // We parse current launches we have to manage with our promise-workers

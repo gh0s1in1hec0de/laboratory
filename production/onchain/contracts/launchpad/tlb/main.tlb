@@ -42,8 +42,8 @@ wl_callback#390f7cfd query_id:uint64 should_burn:int1 initiator:MsgAddressInt = 
 // Claims
 // 32 + 64 + 4 + 124 = 224
 refund_request#7b4587a1 query_id:uint64 mode:uint4 refund_value:Coins = TokenLaunchMsg;
-// 32 + 64 + 124 x 3 + 267 = 735
-refund_confirmation#6f7dbcd0 query_id:uint64 wl_tons:Coins pub_tons:Coins jettons:Coins recipient:MsgAddressInt = TokenLaunchMsg;
+// 32 + 64 + 124 x 3 + 267 + 4 = 739
+refund_confirmation#6f7dbcd0 query_id:uint64 wl_tons:Coins pub_tons:Coins jettons:Coins recipient:MsgAddressInt mode:uint4 = TokenLaunchMsg;
 // 32 + 64 = 96
 jetton_claim_request#16b3aef0 query_id:uint64 = TokenLaunchMsg;
 // 32 + 64 + 124 x 3 + 267 = 735

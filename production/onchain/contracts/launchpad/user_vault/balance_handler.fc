@@ -19,22 +19,24 @@ int get_withdraw_message_mode() impure inline_ref {
     return msg_mode;
 }
 
-cell build_withdraw_confirmation_message(int is_refund?, int query_id, int wl_tons, int pub_tons, int jettons) inline_ref {
+cell build_withdraw_confirmation_message(int is_refund?, int query_id, int wl_tons, int pub_tons, int jettons, int refund_mode) inline_ref {
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
     ;; 32 + 64 + 16 + 16 + 16 + 267 < 1023
-    cell msg_body = begin_cell()
+    builder msg_body = begin_cell()
         .store_op(is_refund? ? op::tl::refund_confirmation : op::tl::jetton_claim_confirmation)
         .store_query_id(query_id)
         .store_coins(wl_tons)
         .store_coins(pub_tons)
         .store_coins(jettons)
-        .store_slice(this::owner_addr)
-        .end_cell();
+        .store_slice(this::owner_addr);
+    if (is_refund?) {
+        msg_body = msg_body.store_uint(refund_mode, BALANCE_UPD_MODE_SIZE);
+    }
     cell msg = begin_cell()
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(this::token_launch_addr)
         .store_coins(0)
-        .store_only_body_ref(msg_body)
+        .store_only_body_ref(msg_body.end_cell())
         .end_cell();
     return msg;
 }
@@ -94,7 +96,7 @@ cell build_wl_callback(int query_id, int should_burn?) inline {
         int wl_tons = this::wl_ton_balance;
         this::wl_ton_balance = 0;
 
-        cell msg = build_withdraw_confirmation_message(TRUE, query_id, wl_tons, 0, 0);
+        cell msg = build_withdraw_confirmation_message(TRUE, query_id, wl_tons, 0, 0, mode);
         send_raw_message(msg, get_withdraw_message_mode());
     }
     if (mode == BALANCE_UPD_WITHDRAWAL_PUB) {
@@ -105,7 +107,7 @@ cell build_wl_callback(int query_id, int should_burn?) inline {
         this::public_ton_balance = 0;
         this::jetton_balance = 0;
 
-        cell msg = build_withdraw_confirmation_message(TRUE, query_id, 0, pub_tons, jettons_to_restore);
+        cell msg = build_withdraw_confirmation_message(TRUE, query_id, 0, pub_tons, jettons_to_restore, mode);
         send_raw_message(msg, get_withdraw_message_mode());
     }
     if (mode == BALANCE_UPD_WITHDRAWAL_ALL) {
@@ -118,7 +120,7 @@ cell build_wl_callback(int query_id, int should_burn?) inline {
         this::public_ton_balance = 0;
         this::jetton_balance = 0;
 
-        cell msg = build_withdraw_confirmation_message(TRUE, query_id, wl_tons, pub_tons, jettons_to_restore);
+        cell msg = build_withdraw_confirmation_message(TRUE, query_id, wl_tons, pub_tons, jettons_to_restore, mode);
         send_raw_message(msg, get_withdraw_message_mode());
     }
 }
@@ -134,6 +136,6 @@ cell build_wl_callback(int query_id, int should_burn?) inline {
     this::public_ton_balance = 0;
     this::jetton_balance = 0;
 
-    cell msg = build_withdraw_confirmation_message(FALSE, query_id, wl_tons, pub_tons, jettons_to_claim);
+    cell msg = build_withdraw_confirmation_message(FALSE, query_id, wl_tons, pub_tons, jettons_to_claim, 6);
     send_raw_message(msg, get_withdraw_message_mode());
 }

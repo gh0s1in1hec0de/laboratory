@@ -1,12 +1,12 @@
-import { BalanceUpdateMode, balanceUpdateModeToUserAction } from "./types.ts";
-import { getTransactionsForAccount } from "./api";
+import { BalanceUpdateMode, balanceUpdateModeToUserActionType } from "./types.ts";
 import type { Address, Transaction } from "@ton/ton";
-import type { LamportTime } from "../utils";
+import { getTransactionsForAccount } from "./api";
+import { type LamportTime } from "../utils";
 import * as db from "../db";
 import {
+    loadOpAndQueryId,
     parseBalanceUpdate,
     parseRefundOrClaim,
-    loadOpAndQueryId,
     TokensLaunchOps,
     UserVaultOps
 } from "./messageParsers";
@@ -53,12 +53,10 @@ export async function handleTokenLaunchUpdates(launchAddress: Address) {
     const tokenLaunch = await db.getTokenLaunch(launchAddress.toRawString());
     // TODO Proper error handling
     if (!tokenLaunch) return;
-    let currentHeight  = await db.getHeight(launchAddress.toRawString()) ?? 0n;
+    let currentHeight = await db.getLaunchHeight(launchAddress.toRawString()) ?? 0n;
 
-    let iterationNumber = 0;
     while (true) {
         try {
-            iterationNumber += 1;
             // This is a constraint to stop monitoring contract calls and update data based on that
             // I don't know certainly, what is end time - end of launch or end of claims opportunity(todo)
             if (Date.now() < tokenLaunch.endTime.getTime()) break;
@@ -66,10 +64,9 @@ export async function handleTokenLaunchUpdates(launchAddress: Address) {
             const newTxs = await retrieveAllUnknownTransactions(launchAddress, currentHeight);
             currentHeight = newTxs[newTxs.length - 1].lt;
             // Don't give a fuck about order of recording data in db it will be recorded with sql transaction
-            // TODO record time
-            if (iterationNumber % 4 === 0) await db.setHeight(launchAddress.toRawString(), currentHeight);
 
             for (const tx of newTxs) {
+                const userActionsToRecord: db.UserAction[] = [];
                 const inMsg = tx.inMessage;
                 if (!inMsg) continue;
                 if (inMsg.info.type !== "internal") continue;
@@ -83,8 +80,23 @@ export async function handleTokenLaunchUpdates(launchAddress: Address) {
 
                 const { msgBodyData, op, queryId } = await loadOpAndQueryId(inMsgBody);
                 if ([TokensLaunchOps.jettonClaimConfirmation, TokensLaunchOps.refundConfirmation].includes(op)) {
-                    const { whitelistTons, publicTons, futureJettons, recipient } = parseRefundOrClaim(msgBodyData);
-                    // await storeUserAction();
+                    const {
+                        whitelistTons,
+                        publicTons,
+                        futureJettons,
+                        recipient,
+                        mode
+                    } = parseRefundOrClaim(msgBodyData);
+                    userActionsToRecord.push({
+                        actor: recipient,
+                        tokenLaunch: launchAddress.toRawString(),
+                        actionType: mode ? balanceUpdateModeToUserActionType[mode] : db.UserActionType.Claim,
+                        whitelistTons,
+                        publicTons,
+                        jettons: futureJettons,
+                        timestamp: txCreatedAt,
+                        queryId
+                    } as db.UserAction);
                 }
 
                 // Here we'll handle only DEPOSITING operations
@@ -97,18 +109,18 @@ export async function handleTokenLaunchUpdates(launchAddress: Address) {
                     if (![BalanceUpdateMode.PublicDeposit, BalanceUpdateMode.WhitelistDeposit].includes(mode)) continue;
                     const [whitelistTons, publicTons] =
                         mode === BalanceUpdateMode.WhitelistDeposit ? [tons, 0n] : [0n, tons];
-                    await db.storeUserAction(
-                        balanceUpdateModeToUserAction(mode),
-                        inMsgSender.toRawString(),
-                        launchAddress.toRawString(),
+                    userActionsToRecord.push({
+                        actor: inMsgSender.toRawString(),
+                        tokenLaunch: launchAddress.toRawString(),
+                        actionType: balanceUpdateModeToUserActionType[mode],
                         whitelistTons,
                         publicTons,
-                        futureJettons,
-                        txCreatedAt,
+                        jettons: futureJettons,
+                        timestamp: txCreatedAt,
                         queryId
-                    );
-                    // TODO Record of a new action; we'll record refunds and claims from confirmations as it is safer
+                    } as db.UserAction);
                 }
+                await db.storeUserActions(userActionsToRecord);
             }
         } catch (e) {
             console.error(`failed to handle launch ${launchAddress} update with error: ${e}`);

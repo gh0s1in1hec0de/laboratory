@@ -207,7 +207,7 @@ slice get_user_vault_address(slice user_address) method_id {
     return user_vault_address;
 }
 
-(int, int, int) get_sale_state() method_id {
+(int, int, int, int, int) get_sale_state() method_id {
     load_data();
     return (
         creator_round::creator_fut_jet_balance,
@@ -225,7 +225,7 @@ slice get_user_vault_address(slice user_address) method_id {
         general_state::const::start_time,
         creator_round::const::end_time,
         wl_round::const::end_time,
-        public_round::const::end_time
+        public_round::const::end_time,
         general_state::const::end_time
     );
 }

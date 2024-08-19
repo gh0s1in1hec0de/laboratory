@@ -15,20 +15,20 @@ export async function createPostgresClient(): Promise<SqlClient> {
     });
     await sql.listen("user_balance_error", async (payload) => {
         const { id, action, details } = JSON.parse(payload);
-        console.log(`new user balance error#${id}: action#${action} - ${details}`);
+        console.error(`new user balance error#${id}: action#${action} - ${details}`);
     });
     return sql;
 }
 
 export const globalClient = await createPostgresClient();
 
-export async function applyMigrations(client?: SqlClient) {
+export async function applyMigrations() {
     const directoryPath = path.join(__dirname, "migrations");
     const files = fs.readdirSync(directoryPath).sort();
 
     try {
         // Open a transaction
-        await (client || globalClient).begin(async sql => {
+        await globalClient.begin(async sql => {
             for (const file of files) {
                 try {
                     const migration = fs.readFileSync(path.join(directoryPath, file), "utf-8");

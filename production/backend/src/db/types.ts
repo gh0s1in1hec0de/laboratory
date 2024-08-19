@@ -37,8 +37,9 @@ export enum UserActionType {
     Claim = "claim",
 }
 
+// Id is optional as we use the same type for recording and retrieving data
 export type UserAction = {
-    id: bigint;
+    id?: bigint;
     actor: RawAddressString;
     tokenLaunch: RawAddressString;
     actionType: UserActionType;

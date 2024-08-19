@@ -2,6 +2,7 @@
 CREATE DOMAIN address AS VARCHAR(256);
 CREATE DOMAIN coins AS BIGINT CHECK ( VALUE >= 0 );
 
+-- In fact will be used only as core height storage, but may be extended later
 CREATE TABLE heights
 (
     contract_address address PRIMARY KEY,
@@ -39,6 +40,7 @@ CREATE TABLE user_actions
     public_tons    coins            NOT NULL DEFAULT 0,
     jettons        coins            NOT NULL DEFAULT 0,
     -- Timestamp from on-chain data
+    lt             BIGINT           NOT NULL,
     timestamp      TIMESTAMP        NOT NULL,
     query_id       BIGINT           NOT NULL,
     UNIQUE (actor, action_type, timestamp),
