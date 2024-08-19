@@ -1,9 +1,9 @@
-import type { Client } from "./types";
+import type { SqlClient } from "./types";
 import postgres from "postgres";
 import * as path from "path";
 import * as fs from "fs";
 
-export async function createPostgresClient(): Promise<Client> {
+export async function createPostgresClient(): Promise<SqlClient> {
     const sql = postgres({
         host: "db",
         port: 5432,
@@ -22,7 +22,7 @@ export async function createPostgresClient(): Promise<Client> {
 
 export const globalClient = await createPostgresClient();
 
-export async function applyMigrations(client?: Client) {
+export async function applyMigrations(client?: SqlClient) {
     const directoryPath = path.join(__dirname, "migrations");
     const files = fs.readdirSync(directoryPath).sort();
 
@@ -39,6 +39,5 @@ export async function applyMigrations(client?: Client) {
                 }
             }
         });
-    } catch (e) { /* Just preventing exiting in case of already applied migrations */
-    }
+    } catch (e) { /* Just preventing exiting in case of already applied migrations */ }
 }

@@ -1,17 +1,18 @@
 import { userRoutes } from "./routes";
 import { getConfig } from "./config";
 import { greeting } from "./utils";
-import * as db from "./db";
 import dotenv from "dotenv";
 import Elysia from "elysia";
+import * as db from "./db";
 
 dotenv.config();
 greeting();
 
 const config = getConfig();
+
 // Disable console.debug unless debug logging is explicitly enabled
-if (config.debug_mode) console.debug = () => {
-};
+if (!config.debug_mode) console.debug = () => {};
+
 console.debug(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_USER} | ${process.env.POSTGRES_PASSWORD}`);
 
 if (config.db.should_migrate) {
@@ -31,7 +32,7 @@ async function main() {
         .group("/api", (app) => app.use(userRoutes))
         .listen(config.server.port);
 
-    console.log(`🚀 Server is running at ${app.server?.hostname}:${app.server?.port}`);
+    console.log(`server is running at ${app.server?.hostname}:${app.server?.port}`);
 }
 
 main().then();

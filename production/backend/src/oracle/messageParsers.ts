@@ -32,13 +32,13 @@ export enum UserVaultOps {
 
 
 export async function loadOpAndQueryId(messageBody: Slice): Promise<{
-  changedSlice: Slice;
+  msgBodyData: Slice;
   op: number;
-  queryId: number;
+  queryId: bigint;
 }> {
     const op = messageBody.loadUint(OP_LENGTH);
-    const queryId = messageBody.loadUint(QUERY_ID_LENGTH);
-    return { changedSlice: messageBody, op, queryId };
+    const queryId = messageBody.loadUintBig(QUERY_ID_LENGTH);
+    return { msgBodyData: messageBody, op, queryId };
 }
 
 // Op and query id had already been loaded

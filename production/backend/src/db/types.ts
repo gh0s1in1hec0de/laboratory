@@ -1,29 +1,31 @@
+import type { Coins, LamportTime, RawAddressString } from "../utils";
 import type { Sql } from "postgres";
-import type { Coins, LamportTime } from "../utils";
 
 type SqlTypes = { bigint: bigint };
-export type Client = Sql<SqlTypes>;
-// Just for readability
-export type StoredAddress = string;
+export type SqlClient = Sql<SqlTypes>;
 
+export type StoredHeight = {
+    contractAddress: RawAddressString;
+    height: LamportTime;
+}
 export type StoredUser = {
-    address: StoredAddress;
+    address: RawAddressString;
     nickname: string | null;
 };
 
 // TODO Change this type
+//      ... when the time comes...
 export type JsonLaunchMetadata = {
     url: string;
 };
 
 export type StoredTokenLaunch = {
-    address: StoredAddress;
-    creator: StoredAddress;
+    address: RawAddressString;
+    creator: RawAddressString;
     metadata: JsonLaunchMetadata;
     creatorBalance: Coins;
     startTime: Date;
     endTime: Date;
-    height: LamportTime;
 };
 
 export enum UserActionType {
@@ -37,19 +39,19 @@ export enum UserActionType {
 
 export type UserAction = {
     id: bigint;
-    actor: StoredAddress;
-    tokenLaunch: StoredAddress;
+    actor: RawAddressString;
+    tokenLaunch: RawAddressString;
     actionType: UserActionType;
     whitelistTons: Coins;
     publicTons: Coins;
     jettons: Coins;
     timestamp: Date;
-    query_id: bigint;
+    queryId: bigint;
 };
 
 export type StoredUserBalance = {
-    actor: StoredAddress;
-    tokenLaunch: StoredAddress;
+    actor: RawAddressString;
+    tokenLaunch: RawAddressString;
     whitelistTons: Coins;
     publicTons: Coins;
     jettons: Coins;

@@ -1,24 +1,23 @@
-import type { Client } from "./types";
-import { globalClient } from "./db";
+import type { LamportTime, RawAddressString } from "../utils";
+import type { SqlClient } from "./types";
 import { ok as assert } from "assert";
+import { globalClient } from "./db";
 
-export async function setCoreHeight(height: bigint, client?: Client): Promise<void> {
+export async function setHeight(address: RawAddressString, height: LamportTime, client?: SqlClient): Promise<void> {
     const res = await (client || globalClient)`
-        INSERT INTO global_settings (setting_key, setting_value)
-        VALUES ('core_height', ${height})
-        ON CONFLICT (setting_key)
-            DO UPDATE SET setting_value = EXCLUDED.setting_value
-        RETURNING 1;
+        INSERT INTO heights (contract_address, height)
+        VALUES (${address}, ${height})
+        ON CONFLICT (contract_address)
+            DO UPDATE SET height = EXCLUDED.height;
     `;
     assert(res.length === 1, `exactly 1 column must be created/updated, got: ${res}`);
 }
 
-export async function getCoreHeight(client?: Client): Promise<Date> {
-    const res = await (client || globalClient)<{ core_height: Date }[]>`
-        SELECT setting_value AS core_height
-        FROM global_settings
-        WHERE setting_key = 'core_height';
+export async function getHeight(address: RawAddressString, client?: SqlClient): Promise<LamportTime | null> {
+    const res = await (client || globalClient)<{ height: LamportTime }[]>`
+        SELECT height
+        FROM heights
+        WHERE contract_address = ${address}
     `;
-    assert(res.length === 1, `exactly 1 column must be returned, got: ${res}`);
-    return res[0].core_height;
+    return res.length ? res[0].height : null;
 }

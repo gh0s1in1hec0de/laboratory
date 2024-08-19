@@ -1,4 +1,5 @@
 import type { Coins, RawAddressString } from "../utils";
+import { UserActionType } from "../db";
 
 export enum BalanceUpdateMode {
     WhitelistDeposit = 1,
@@ -6,6 +7,21 @@ export enum BalanceUpdateMode {
     WhitelistWithdrawal = 3,
     PublicWithdrawal = 4,
     TotalWithdrawal = 5
+}
+
+export function balanceUpdateModeToUserAction(mode: BalanceUpdateMode) {
+    switch (mode) {
+    case BalanceUpdateMode.WhitelistDeposit:
+        return UserActionType.WhiteListBuy;
+    case BalanceUpdateMode.PublicDeposit:
+        return UserActionType.PublicBuy;
+    case BalanceUpdateMode.WhitelistWithdrawal:
+        return UserActionType.WhitelistRefund;
+    case BalanceUpdateMode.PublicWithdrawal:
+        return UserActionType.PublicRefund;
+    case BalanceUpdateMode.TotalWithdrawal:
+        return UserActionType.TotalRefund;
+    }
 }
 
 export enum UtilJettonsEnrollmentMode {

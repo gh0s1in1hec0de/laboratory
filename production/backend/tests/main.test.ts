@@ -1,5 +1,5 @@
+import { getAccount, getTransactionsForAccount } from "../src/oracle/api";
 import { test, describe } from "bun:test";
-import { getAccount, getTransactionsForAccount } from "../src/oracle";
 import { Address } from "@ton/ton";
 import dotenv from "dotenv";
 
@@ -20,7 +20,10 @@ describe("labs", () => {
         console.log(last);
 
         const txs = await getTransactionsForAccount(exampleAddress,
-            24121092000001n, { lt: 24809208000001n, hash: "EVkd8f4JDXl4cOOuDRS+/8pOocUY1EtOn8E3GwLiWBA=" }, undefined, 10
+            24121092000001n, {
+                lt: 24809208000001n,
+                hash: "EVkd8f4JDXl4cOOuDRS+/8pOocUY1EtOn8E3GwLiWBA="
+            }, undefined, 10
         );
 
         // Sort transactions by 'now' in ascending order (oldest to newest)

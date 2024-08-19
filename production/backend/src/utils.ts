@@ -1,6 +1,3 @@
-import { BalanceUpdateMode } from "./oracle";
-import { UserActionType } from "./db";
-
 export type Coins = bigint;
 // The raw address string format is chosen to standardize the stored addresses.
 // It will help to avoid errors based on addresses' formats.
@@ -10,21 +7,6 @@ export type LamportTime = bigint;
 export enum Network {
     Mainnet = "mainnet",
     Testnet = "testnet"
-}
-
-export function BalanceUpdateModeToUserAction(mode: BalanceUpdateMode) {
-    switch (mode) {
-    case BalanceUpdateMode.WhitelistDeposit:
-        return UserActionType.WhiteListBuy;
-    case BalanceUpdateMode.PublicDeposit:
-        return UserActionType.PublicBuy;
-    case BalanceUpdateMode.WhitelistWithdrawal:
-        return UserActionType.WhitelistRefund;
-    case BalanceUpdateMode.PublicWithdrawal:
-        return UserActionType.PublicRefund;
-    case BalanceUpdateMode.TotalWithdrawal:
-        return UserActionType.TotalRefund;
-    }
 }
 
 export async function maybeBruteforceOverload<T>(

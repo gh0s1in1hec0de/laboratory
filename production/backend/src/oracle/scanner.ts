@@ -1,10 +1,15 @@
-import { loadOpAndQueryId, parseBalanceUpdate, TokensLaunchOps, UserVaultOps } from "./messageParsers";
-import { callGetMethod, getTransactionsForAccount } from "./api";
+import { BalanceUpdateMode, balanceUpdateModeToUserAction } from "./types.ts";
+import { getTransactionsForAccount } from "./api";
 import type { Address, Transaction } from "@ton/ton";
-import * as db from "../db";
-import { updateLaunchCreatorBalance } from "../db";
 import type { LamportTime } from "../utils";
-import { BalanceUpdateMode } from "./types";
+import * as db from "../db";
+import {
+    parseBalanceUpdate,
+    parseRefundOrClaim,
+    loadOpAndQueryId,
+    TokensLaunchOps,
+    UserVaultOps
+} from "./messageParsers";
 
 // `stopAt` is lamport time of last known tx; returns an array of new transactions oldest -> the newest
 //
@@ -46,7 +51,10 @@ export async function handleCoreUpdates() {
 
 export async function handleTokenLaunchUpdates(launchAddress: Address) {
     const tokenLaunch = await db.getTokenLaunch(launchAddress.toRawString());
-    let currentHeight: LamportTime = tokenLaunch.height;
+    // TODO Proper error handling
+    if (!tokenLaunch) return;
+    let currentHeight  = await db.getHeight(launchAddress.toRawString()) ?? 0n;
+
     let iterationNumber = 0;
     while (true) {
         try {
@@ -54,56 +62,53 @@ export async function handleTokenLaunchUpdates(launchAddress: Address) {
             // This is a constraint to stop monitoring contract calls and update data based on that
             // I don't know certainly, what is end time - end of launch or end of claims opportunity(todo)
             if (Date.now() < tokenLaunch.endTime.getTime()) break;
+
             const newTxs = await retrieveAllUnknownTransactions(launchAddress, currentHeight);
             currentHeight = newTxs[newTxs.length - 1].lt;
-            if (iterationNumber % 4 === 0) await db.setTokenLaunchHeight(launchAddress.toRawString(), currentHeight);
+            // Don't give a fuck about order of recording data in db it will be recorded with sql transaction
+            // TODO record time
+            if (iterationNumber % 4 === 0) await db.setHeight(launchAddress.toRawString(), currentHeight);
 
             for (const tx of newTxs) {
-                /*
-                Which exactly incoming messages are interesting for us?
-                 - wl confirmation
-                 - refund/jetton claim confirmation
-                 */
                 const inMsg = tx.inMessage;
+                if (!inMsg) continue;
+                if (inMsg.info.type !== "internal") continue;
+
+                const txCreatedAt = new Date(tx.now * 1000);
                 const outMsgs = tx.outMessages;
-                // As we don't have external messages mechanics
-                if (inMsg?.info.type !== "internal") continue;
-
-                const sender = inMsg?.info.src;
-                const messageBody = inMsg?.body.beginParse();
+                const inMsgSender = inMsg.info.src;
+                const inMsgBody = inMsg.body.beginParse();
                 // We don't care about simple transfers
-                if (messageBody.remainingBits < 32) continue;
-                const { changedSlice, op, queryId } = await loadOpAndQueryId(messageBody);
-                // Then we'll look for following operation: creatorBuyout, jettonClaimConfirmation
-                switch (op) {
-                case TokensLaunchOps.creatorBuyout: {
-                    const res = await callGetMethod(launchAddress, "get_sale_state");
-                    // I think, that it's gonna be better to parse this with TonClient4 decentralized API on frontend side, so this code will be removed with a high chance
-                    const creatorBalance = res.stack.readBigNumber();
-                    await updateLaunchCreatorBalance(launchAddress.toRawString(), creatorBalance);
-                    break;
-                }
-                case TokensLaunchOps.jettonClaimConfirmation: {
-                    // TODO
-                    break;
-                }
-                case TokensLaunchOps.refundConfirmation: {
-                    // TODO
-                    break;
-                }
-                default:
-                    break;
+                if (inMsgBody.remainingBits < 32) continue;
+
+                const { msgBodyData, op, queryId } = await loadOpAndQueryId(inMsgBody);
+                if ([TokensLaunchOps.jettonClaimConfirmation, TokensLaunchOps.refundConfirmation].includes(op)) {
+                    const { whitelistTons, publicTons, futureJettons, recipient } = parseRefundOrClaim(msgBodyData);
+                    // await storeUserAction();
                 }
 
-                for (const [n, msg] of outMsgs) {
-                    const { changedSlice, op, queryId } = await loadOpAndQueryId(messageBody);
+                // Here we'll handle only DEPOSITING operations
+                for (const [_n, msg] of outMsgs) {
+                    const outMsgBody = msg?.body.beginParse();
+                    const { msgBodyData, op, queryId } = await loadOpAndQueryId(outMsgBody);
                     // Then we'll look for following operation: balanceUpdate
                     if (op !== UserVaultOps.balanceUpdate) continue;
-                    const balanceUpdateMessage = parseBalanceUpdate(changedSlice);
-                    if (![BalanceUpdateMode.PublicDeposit, BalanceUpdateMode.WhitelistDeposit].includes(balanceUpdateMessage.mode)) continue;
+                    const { mode, tons, futureJettons } = parseBalanceUpdate(msgBodyData);
+                    if (![BalanceUpdateMode.PublicDeposit, BalanceUpdateMode.WhitelistDeposit].includes(mode)) continue;
+                    const [whitelistTons, publicTons] =
+                        mode === BalanceUpdateMode.WhitelistDeposit ? [tons, 0n] : [0n, tons];
+                    await db.storeUserAction(
+                        balanceUpdateModeToUserAction(mode),
+                        inMsgSender.toRawString(),
+                        launchAddress.toRawString(),
+                        whitelistTons,
+                        publicTons,
+                        futureJettons,
+                        txCreatedAt,
+                        queryId
+                    );
                     // TODO Record of a new action; we'll record refunds and claims from confirmations as it is safer
                 }
-
             }
         } catch (e) {
             console.error(`failed to handle launch ${launchAddress} update with error: ${e}`);

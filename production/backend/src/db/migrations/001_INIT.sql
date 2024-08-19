@@ -2,11 +2,10 @@
 CREATE DOMAIN address AS VARCHAR(256);
 CREATE DOMAIN coins AS BIGINT CHECK ( VALUE >= 0 );
 
--- A little trick to store height that is related to core
-CREATE TABLE global_settings
+CREATE TABLE heights
 (
-    setting_key   TEXT PRIMARY KEY,
-    setting_value TIMESTAMP
+    contract_address address PRIMARY KEY,
+    height           BIGINT NOT NULL DEFAULT 0
 );
 
 
@@ -22,12 +21,10 @@ CREATE TABLE token_launches
     creator         address   NOT NULL REFERENCES users (address),
     -- Now it is JSONB, but, after we'll determine format of metadata, we should rewrite this as explicit fields
     metadata        JSONB     NOT NULL,
-    -- On creator buyout we just update this field
+    -- Remove this shit
     creator_balance BIGINT DEFAULT 0,
     start_time      TIMESTAMP NOT NULL,
-    end_time        TIMESTAMP NOT NULL,
-    -- lt of last transaction we know about
-    height          BIGINT DEFAULT 0
+    end_time        TIMESTAMP NOT NULL
 );
 
 CREATE TYPE user_action_type AS ENUM ('whitelist_buy', 'public_buy', 'whitelist_refund', 'public_refund', 'total_refund', 'claim');
@@ -43,7 +40,7 @@ CREATE TABLE user_actions
     jettons        coins            NOT NULL DEFAULT 0,
     -- Timestamp from on-chain data
     timestamp      TIMESTAMP        NOT NULL,
-    query_id       BIGINT,
+    query_id       BIGINT           NOT NULL,
     UNIQUE (actor, action_type, timestamp),
 
     CONSTRAINT chk_whitelist_buy CHECK (

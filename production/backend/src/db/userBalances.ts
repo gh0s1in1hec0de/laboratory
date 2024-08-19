@@ -1,24 +1,22 @@
-import type { StoredAddress, StoredUserBalance, Client } from "./types";
-import { ok as assert } from "node:assert";
+import type{ StoredUserBalance, SqlClient } from "./types";
+import type { RawAddressString } from "../utils";
 import { globalClient } from "./db";
 
-export async function getUserBalance(address: StoredAddress, launch: StoredAddress, client?: Client): Promise<StoredUserBalance> {
+export async function getUserBalance(address: RawAddressString, launch: RawAddressString, client?: SqlClient): Promise<StoredUserBalance | null> {
     const res = await (client || globalClient)<StoredUserBalance[]>`
         SELECT *
         FROM user_balances
         WHERE "user" = ${address}
           AND token_launch = ${launch};
     `;
-    assert(res.length === 1, `exactly 1 column must be returned, got: ${res}`);
-    return res[0];
+    return res.length ? res[0] : null;
 }
 
-export async function getAllUserBalances(address: StoredAddress, client?: Client): Promise<StoredUserBalance[]> {
+export async function getAllUserBalances(address: RawAddressString, client?: SqlClient): Promise<StoredUserBalance[] | null> {
     const res = await (client || globalClient)<StoredUserBalance[]>`
         SELECT *
         FROM user_balances
         WHERE "user" = ${address};
     `;
-    assert(res.length > 0, "no balances for user");
-    return res;
+    return res.length ? res : null;
 }
