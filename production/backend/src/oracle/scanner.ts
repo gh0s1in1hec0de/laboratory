@@ -1,7 +1,7 @@
 import { BalanceUpdateMode, balanceUpdateModeToUserActionType } from "./types.ts";
-import type { Address, Transaction } from "@ton/ton";
+import { delay, type LamportTime, type RawAddressString } from "../utils";
 import { getTransactionsForAccount } from "./api";
-import { type LamportTime } from "../utils";
+import type { Transaction } from "@ton/ton";
 import * as db from "../db";
 import {
     loadOpAndQueryId,
@@ -10,12 +10,13 @@ import {
     TokensLaunchOps,
     UserVaultOps
 } from "./messageParsers";
+import { setCoreHeight } from "../db";
 
 // `stopAt` is lamport time of last known tx; returns an array of new transactions oldest -> the newest
 //
 // Warning! Function may throw and error - this case should be properly handled
 async function retrieveAllUnknownTransactions(
-    address: Address,
+    address: RawAddressString,
     stopAt: LamportTime,
     parsingOptions?: {
         archival: boolean;
@@ -45,15 +46,50 @@ async function retrieveAllUnknownTransactions(
     return newTransactions;
 }
 
-export async function handleCoreUpdates() {
+export async function handleCoreUpdates(coreAddress: RawAddressString) {
+    let currentHeight = await db.getCoreHeight(coreAddress) ?? 0n;
+    let iteration = 0;
+    while (true) {
+        try {
+            const newTxs = await retrieveAllUnknownTransactions(coreAddress, currentHeight);
+            for (const tx of newTxs) {
+                const inMsg = tx.inMessage;
+                if (!inMsg) continue;
+                if (inMsg.info.type !== "internal") continue;
 
+                const txCreatedAt = new Date(tx.now * 1000);
+                const outMsgs = tx.outMessages;
+                const inMsgSender = inMsg.info.src;
+                const inMsgBody = inMsg.body.beginParse();
+                // We don't care about simple transfers
+                if (inMsgBody.remainingBits < 32) continue;
+
+                const { msgBodyData, op, queryId } = await loadOpAndQueryId(inMsgBody);
+
+
+                // Here we'll handle only DEPOSITING operations
+                for (const [_n, msg] of outMsgs) {
+                    const outMsgBody = msg?.body.beginParse();
+                    const { msgBodyData, op, queryId } = await loadOpAndQueryId(outMsgBody);
+
+                }
+            }
+            currentHeight = newTxs[newTxs.length - 1].lt;
+            iteration += 1;
+            if (iteration % 5 === 0) await setCoreHeight(coreAddress, currentHeight, true);
+            // TODO Determine synthetic delay
+            await delay(5000);
+        } catch (e) {
+            console.error(`failed to load new launches for core(${coreAddress}) update with error: ${e}`);
+        }
+    }
 }
 
-export async function handleTokenLaunchUpdates(launchAddress: Address) {
-    const tokenLaunch = await db.getTokenLaunch(launchAddress.toRawString());
+export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) {
+    const tokenLaunch = await db.getTokenLaunch(launchAddress);
     // TODO Proper error handling
     if (!tokenLaunch) return;
-    let currentHeight = await db.getLaunchHeight(launchAddress.toRawString()) ?? 0n;
+    let currentHeight = await db.getLaunchHeight(launchAddress) ?? 0n;
 
     while (true) {
         try {
@@ -62,9 +98,6 @@ export async function handleTokenLaunchUpdates(launchAddress: Address) {
             if (Date.now() < tokenLaunch.endTime.getTime()) break;
 
             const newTxs = await retrieveAllUnknownTransactions(launchAddress, currentHeight);
-            currentHeight = newTxs[newTxs.length - 1].lt;
-            // Don't give a fuck about order of recording data in db it will be recorded with sql transaction
-
             for (const tx of newTxs) {
                 const userActionsToRecord: db.UserAction[] = [];
                 const inMsg = tx.inMessage;
@@ -89,7 +122,7 @@ export async function handleTokenLaunchUpdates(launchAddress: Address) {
                     } = parseRefundOrClaim(msgBodyData);
                     userActionsToRecord.push({
                         actor: recipient,
-                        tokenLaunch: launchAddress.toRawString(),
+                        tokenLaunch: launchAddress,
                         actionType: mode ? balanceUpdateModeToUserActionType[mode] : db.UserActionType.Claim,
                         whitelistTons,
                         publicTons,
@@ -111,7 +144,7 @@ export async function handleTokenLaunchUpdates(launchAddress: Address) {
                         mode === BalanceUpdateMode.WhitelistDeposit ? [tons, 0n] : [0n, tons];
                     userActionsToRecord.push({
                         actor: inMsgSender.toRawString(),
-                        tokenLaunch: launchAddress.toRawString(),
+                        tokenLaunch: launchAddress,
                         actionType: balanceUpdateModeToUserActionType[mode],
                         whitelistTons,
                         publicTons,
@@ -122,6 +155,8 @@ export async function handleTokenLaunchUpdates(launchAddress: Address) {
                 }
                 await db.storeUserActions(userActionsToRecord);
             }
+            currentHeight = newTxs[newTxs.length - 1].lt;
+            await delay(2000); // TODO Determine synthetic delay
         } catch (e) {
             console.error(`failed to handle launch ${launchAddress} update with error: ${e}`);
         }
