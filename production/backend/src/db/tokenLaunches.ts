@@ -33,7 +33,7 @@ export async function storeTokenLaunch(
 ): Promise<void> {
     const res = await (client || globalClient)`
         INSERT INTO token_launches (address, creator, metadata, timings)
-        VALUES (${address}, ${creator}, ${metadata}, ${timings})
+        VALUES (${address}, ${creator}, ${JSON.stringify(metadata)}, ${JSON.stringify(timings)})
         RETURNING 1;
     `;
     assert(res.length === 1, `exactly 1 column must be created, got: ${res}`);
