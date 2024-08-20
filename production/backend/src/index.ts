@@ -1,6 +1,6 @@
+import { getSwaggerDocsConfig, userRoutes } from "./server";
 import { handleCoreUpdates } from "./oracle";
 import { swagger } from "@elysiajs/swagger";
-import {getSwaggerDocsConfig, userRoutes} from "./server";
 import { getConfig } from "./config";
 import { greeting } from "./utils";
 import { Address } from "@ton/ton";
@@ -40,12 +40,14 @@ async function main() {
         .group("/api", (app) => app.use(userRoutes))
         .listen(config.server.port);
 
-    console.log(`server is running at ${app.server?.hostname}:${app.server?.port}`);
+    console.log(`elysia server is running at ${app.server?.hostname}:${app.server?.port}`);
 
     if (Address.parse(address)) handleCoreUpdates(address);
 }
 
 main().then();
 
-// command to download modules for production
-// bun install --frozen-lockfile
+/** TODO Here are some useful commands/features for development (delete in prod)
+ * command to download modules for production: bun install --frozen-lockfile
+ * link to swagger: http:/localhost:3000/swagger
+ */
