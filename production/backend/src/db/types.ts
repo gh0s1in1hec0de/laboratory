@@ -52,6 +52,7 @@ export type UserAction = {
     whitelistTons: Coins,
     publicTons: Coins,
     jettons: Coins,
+    lt: LamportTime,
     timestamp: Date,
     queryId: bigint,
 };

@@ -13,6 +13,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- TODO Marry this function after release
 CREATE OR REPLACE FUNCTION update_user_balance()
     RETURNS TRIGGER AS
 $$
@@ -24,11 +25,11 @@ BEGIN
     -- Handle negative values
     IF NEW.action_type IN ('whitelist_buy', 'whitelist_refund') THEN
         UPDATE user_balances
-        SET whitelist_tons = whitelist_tons + CASE
-                                                  WHEN NEW.action_type = 'whitelist_buy'
-                                                      THEN NEW.whitelist_tons
-                                                  WHEN NEW.action_type = 'whitelist_refund'
-                                                      THEN -NEW.whitelist_tons
+        SET whitelist_tons = CASE
+                                 WHEN NEW.action_type = 'whitelist_buy'
+                                     THEN whitelist_tons + NEW.whitelist_tons
+                                 WHEN NEW.action_type = 'whitelist_refund'
+                                     THEN 0
             END
         WHERE "user" = NEW.actor
           AND token_launch = NEW.token_launch;
@@ -44,13 +45,13 @@ BEGIN
 
     ELSIF NEW.action_type IN ('public_buy', 'public_refund') THEN
         UPDATE user_balances
-        SET public_tons = public_tons + CASE
-                                            WHEN NEW.action_type = 'public_buy' THEN NEW.public_tons
-                                            WHEN NEW.action_type = 'public_refund' THEN -NEW.public_tons
+        SET public_tons = CASE
+                              WHEN NEW.action_type = 'public_buy' THEN public_tons + NEW.public_tons
+                              WHEN NEW.action_type = 'public_refund' THEN 0
             END,
-            jettons     = jettons + CASE
-                                        WHEN NEW.action_type = 'public_buy' THEN NEW.jettons
-                                        WHEN NEW.action_type = 'public_refund' THEN -NEW.jettons
+            jettons     = CASE
+                              WHEN NEW.action_type = 'public_buy' THEN jettons + NEW.jettons
+                              WHEN NEW.action_type = 'public_refund' THEN 0
                 END
         WHERE "user" = NEW.actor
           AND token_launch = NEW.token_launch;

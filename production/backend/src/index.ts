@@ -42,7 +42,7 @@ async function main() {
 
     console.log(`elysia server is running at ${app.server?.hostname}:${app.server?.port}`);
 
-    if (Address.parse(address)) handleCoreUpdates(address);
+    // if (Address.parse(address)) handleCoreUpdates(address);
 }
 
 main().then();

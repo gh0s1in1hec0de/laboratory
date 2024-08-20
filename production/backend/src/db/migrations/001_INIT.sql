@@ -23,6 +23,7 @@ CREATE TABLE token_launches
     -- Now it is JSONB, but, after we'll determine format of metadata, we should rewrite this as explicit fields
     metadata JSONB   NOT NULL,
     timings  JSONB   NOT NULL
+    -- TODO Maybe add addresses of jettons or something like that? This will become cleaner through oracle second part development
 );
 
 CREATE TYPE user_action_type AS ENUM ('whitelist_buy', 'public_buy', 'whitelist_refund', 'public_refund', 'total_refund', 'claim');
@@ -60,6 +61,7 @@ CREATE TABLE user_actions
         )
 );
 
+-- Balances can't be negative by design
 CREATE TABLE user_balances
 (
     "user"         address NOT NULL REFERENCES users (address),

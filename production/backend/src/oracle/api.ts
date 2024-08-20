@@ -81,7 +81,7 @@ export async function retrieveAllUnknownTransactions(
     let iterationIndex = 1;
     while (true) {
         if (iterationIndex > 1) {
-            console.log(`exceeded update limit(${limit} per request) for address ${address} at ${new Date(Date.now().toString())}`);
+            console.log(`exceeded update limit(${limit} per request) for address ${address} at ${new Date(Date.now()).toString()}`);
             await delay(750);
         }
 

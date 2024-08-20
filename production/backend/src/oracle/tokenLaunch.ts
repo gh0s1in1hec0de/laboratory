@@ -6,7 +6,7 @@ import {
     UserVaultOps
 } from "./messageParsers";
 import { BalanceUpdateMode, balanceUpdateModeToUserActionType } from "./types.ts";
-import { delay, type RawAddressString } from "../utils";
+import { delay, type LamportTime, type RawAddressString } from "../utils";
 import { retrieveAllUnknownTransactions } from "./api";
 import * as db from "../db";
 
@@ -25,12 +25,13 @@ export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) 
 
             const newTxs = await retrieveAllUnknownTransactions(launchAddress, currentHeight);
             for (const tx of newTxs) {
-                const userActionsToRecord: db.UserAction[] = [];
+                const userActions: db.UserAction[] = [];
                 const inMsg = tx.inMessage;
                 if (!inMsg) continue;
                 if (inMsg.info.type !== "internal") continue;
 
                 const txCreatedAt = new Date(tx.now * 1000);
+                const lt: LamportTime = tx.lt;
                 const outMsgs = tx.outMessages;
                 const inMsgSender = inMsg.info.src;
                 const inMsgBody = inMsg.body.beginParse();
@@ -46,13 +47,14 @@ export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) 
                         recipient,
                         mode
                     } = parseRefundOrClaim(msgBodyData);
-                    userActionsToRecord.push({
+                    userActions.push({
                         actor: recipient,
                         tokenLaunch: launchAddress,
                         actionType: mode ? balanceUpdateModeToUserActionType[mode] : db.UserActionType.Claim,
                         whitelistTons,
                         publicTons,
                         jettons: futureJettons,
+                        lt,
                         timestamp: txCreatedAt,
                         queryId
                     } as db.UserAction);
@@ -68,18 +70,20 @@ export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) 
                     if (![BalanceUpdateMode.PublicDeposit, BalanceUpdateMode.WhitelistDeposit].includes(mode)) continue;
                     const [whitelistTons, publicTons] =
                         mode === BalanceUpdateMode.WhitelistDeposit ? [tons, 0n] : [0n, tons];
-                    userActionsToRecord.push({
+                    userActions.push({
                         actor: inMsgSender.toRawString(),
                         tokenLaunch: launchAddress,
                         actionType: balanceUpdateModeToUserActionType[mode],
                         whitelistTons,
                         publicTons,
                         jettons: futureJettons,
+                        lt,
                         timestamp: txCreatedAt,
                         queryId
                     } as db.UserAction);
                 }
-                await db.storeUserActions(userActionsToRecord);
+                // TODO Completely change the way of recording new actions
+                await db.storeUserActions(userActions);
             }
             currentHeight = newTxs[newTxs.length - 1].lt;
             await delay(2000); // TODO Determine synthetic delay
