@@ -1,22 +1,26 @@
-import fs from "fs";
 import YAML from "yaml";
+import fs from "fs";
 
 type Config = {
-    debug_mode: boolean;
+    debug_mode: boolean,
     db: {
-        should_migrate: boolean;
-    };
+        should_migrate: boolean,
+    },
     oracle: {
-        core_height: bigint | null;
-        network: string;
+        core_height: bigint | null,
+        network: string,
         api_keys: {
-            testnet_keys: string[];
-            mainnet_keys: string[];
-        };
-    };
+            testnet_keys: string[],
+            mainnet_keys: string[],
+        },
+    },
     server: {
-        port: number;
-    };
+        port: number,
+        swagger: {
+          title: string,
+          version: string,
+        },
+    },
 }
 
 let config: Config | null = null;

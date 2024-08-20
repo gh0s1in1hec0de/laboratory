@@ -23,15 +23,15 @@ export enum UtilJettonsEnrollmentMode {
 }
 
 export type BalanceUpdateMessage = {
-    mode: BalanceUpdateMode;
-    tons: Coins;
-    futureJettons: Coins;
+    mode: BalanceUpdateMode,
+    tons: Coins,
+    futureJettons: Coins,
 };
 
 export type WithdrawConfirmationMessage = {
-    whitelistTons: Coins;
-    publicTons: Coins;
-    futureJettons: Coins;
-    recipient: RawAddressString;
-    mode?: BalanceUpdateMode;
+    whitelistTons: Coins,
+    publicTons: Coins,
+    futureJettons: Coins,
+    recipient: RawAddressString,
+    mode?: BalanceUpdateMode,
 };

@@ -3,28 +3,30 @@
   "module": "src/index.ts",
   "type": "module",
   "devDependencies": {
-    "eslint": "^8",
+    "@types/bun": "latest",
     "@typescript-eslint/eslint-plugin": "^7.16.0",
     "@typescript-eslint/parser": "^7.16.0",
+    "eslint": "^8",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
-    "@types/bun": "latest"
+    "eslint-plugin-starton-plugin": "^0.0.2"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "postgres": "^3.4.4",
-    "dotenv": "^16.4.5",
+    "@elysiajs/swagger": "^1.1.1",
+    "@orbs-network/ton-access": "^2.3.3",
     "@ton/core": "^0.56.3",
     "@ton/ton": "^14.0.0",
-    "@orbs-network/ton-access": "^2.3.3",
-    "yaml": "^2.5.0",
-    "elysia": "^1.1.6"
+    "dotenv": "^16.4.5",
+    "elysia": "^1.1.6",
+    "postgres": "^3.4.4",
+    "yaml": "^2.5.0"
   },
   "scripts": {
     "backend": "bun run src/index.ts",
-    "backend:dev": "bun run --watch src/index.ts",
+    "backend:dev": "bun run --hot src/index.ts",
     "lint": "bun run eslint .",
     "lint:fix": "bun run eslint . --fix",
     "build": "bun build src/**/*.ts --target bun --outdir ./build",

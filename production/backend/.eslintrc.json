@@ -23,10 +23,12 @@
   },
   "plugins": [
     "@typescript-eslint",
-    "import"
+    "import",
+    "starton-plugin"
   ],
   "rules": {
-    "no-constant-condition": "off",
+    "starton-plugin/excellent-imports-by-dr": "error",
+    "no-constant-condition": "warn",
     "import/no-unresolved": "warn",
     "@typescript-eslint/no-unused-vars": "warn",
     "@typescript-eslint/explicit-module-boundary-types": "off",
@@ -37,13 +39,13 @@
     "quotes": ["error", "double"],
     "semi": ["error", "always"],
     "object-curly-spacing": ["error", "always"],
-    "@typescript-eslint/member-delimiter-style": ["error", { // Требование ставить точку с запятой после описания типов
+    "@typescript-eslint/member-delimiter-style": ["error", {
       "multiline": {
-        "delimiter": "semi", // Точка с запятой обязательна для многострочных интерфейсов и типов
+        "delimiter": "comma",
         "requireLast": true
       },
       "singleline": {
-        "delimiter": "semi", // Точка с запятой обязательна для однострочных интерфейсов и типов
+        "delimiter": "comma",
         "requireLast": false
       }
     }]

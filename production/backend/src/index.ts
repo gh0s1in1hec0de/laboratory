@@ -1,4 +1,5 @@
-import { userRoutes } from "./routes";
+import { getSwaggerDocsConfig, userRoutes } from "./server";
+import { swagger } from "@elysiajs/swagger";
 import { getConfig } from "./config";
 import { greeting } from "./utils";
 import dotenv from "dotenv";
@@ -26,16 +27,24 @@ if (config.oracle.core_height) await db.setCoreHeight("", config.oracle.core_hei
 
 async function main() {
     // We parse current launches we have to manage with our promise-workers
-    // const storedActiveLaunches = await db.getActiveTokenLaunches();
-    console.log(process.title);
+    const storedActiveLaunches = await db.getActiveTokenLaunches();
+
     const app = new Elysia()
+        .use(swagger({
+            documentation: getSwaggerDocsConfig({
+                title: config.server.swagger.title,
+                version: config.server.swagger.version
+            })
+        }))
         .group("/api", (app) => app.use(userRoutes))
         .listen(config.server.port);
 
-    console.log(`server is running at ${app.server?.hostname}:${app.server?.port}`);
+    console.log(`Server is running at ${app.server?.hostname}:${app.server?.port}`);
 }
 
 main().then();
 
-// command to download modules for production
-// bun install --frozen-lockfile
+/** TODO Here are some useful commands/features for development (delete in prod)
+ * command to download modules for production: bun install --frozen-lockfile
+ * link to swagger: http:/localhost:3000/swagger
+ */

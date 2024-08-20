@@ -1,8 +1,8 @@
-import { Slice } from "@ton/core";
 import {
     type BalanceUpdateMessage, BalanceUpdateMode,
     type WithdrawConfirmationMessage
 } from "./types";
+import { Slice } from "@ton/core";
 
 const OP_LENGTH = 32;
 const QUERY_ID_LENGTH = 64;
@@ -35,9 +35,9 @@ export enum UserVaultOps {
 
 
 export async function loadOpAndQueryId(messageBody: Slice): Promise<{
-    msgBodyData: Slice;
-    op: number;
-    queryId: bigint;
+    msgBodyData: Slice,
+    op: number,
+    queryId: bigint,
 }> {
     const op = messageBody.loadUint(OP_LENGTH);
     const queryId = messageBody.loadUintBig(QUERY_ID_LENGTH);

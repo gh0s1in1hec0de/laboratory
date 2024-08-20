@@ -5,27 +5,27 @@ type SqlTypes = { bigint: bigint };
 export type SqlClient = Sql<SqlTypes>;
 
 export type StoredHeight = {
-    contractAddress: RawAddressString;
-    height: LamportTime;
+    contractAddress: RawAddressString,
+    height: LamportTime,
 }
 export type StoredUser = {
-    address: RawAddressString;
-    nickname: string | null;
+    address: RawAddressString,
+    nickname: string | null,
 };
 
 // TODO Change this type
 //      ... when the time comes...
 export type JsonLaunchMetadata = {
-    url: string;
+    url: string,
 };
 
 export type StoredTokenLaunch = {
-    address: RawAddressString;
-    creator: RawAddressString;
-    metadata: JsonLaunchMetadata;
-    creatorBalance: Coins;
-    startTime: Date;
-    endTime: Date;
+    address: RawAddressString,
+    creator: RawAddressString,
+    metadata: JsonLaunchMetadata,
+    creatorBalance: Coins,
+    startTime: Date,
+    endTime: Date,
 };
 
 export enum UserActionType {
@@ -39,21 +39,21 @@ export enum UserActionType {
 
 // Id is optional as we use the same type for recording and retrieving data
 export type UserAction = {
-    id?: bigint;
-    actor: RawAddressString;
-    tokenLaunch: RawAddressString;
-    actionType: UserActionType;
-    whitelistTons: Coins;
-    publicTons: Coins;
-    jettons: Coins;
-    timestamp: Date;
-    queryId: bigint;
+    id?: bigint,
+    actor: RawAddressString,
+    tokenLaunch: RawAddressString,
+    actionType: UserActionType,
+    whitelistTons: Coins,
+    publicTons: Coins,
+    jettons: Coins,
+    timestamp: Date,
+    queryId: bigint,
 };
 
 export type StoredUserBalance = {
-    actor: RawAddressString;
-    tokenLaunch: RawAddressString;
-    whitelistTons: Coins;
-    publicTons: Coins;
-    jettons: Coins;
+    actor: RawAddressString,
+    tokenLaunch: RawAddressString,
+    whitelistTons: Coins,
+    publicTons: Coins,
+    jettons: Coins,
 };
