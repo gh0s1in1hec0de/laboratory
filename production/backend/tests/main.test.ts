@@ -1,14 +1,17 @@
 import { getAccount, getTransactionsForAccount } from "../src/oracle/api";
-import { test, describe } from "bun:test";
+import { test, describe, beforeAll } from "bun:test";
 import { Address } from "@ton/ton";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 describe("labs", () => {
-    test("results of network scanning", async () => {
+    beforeAll(async () => {
+        // TODO
+    });
+    test("api wrapper mechanics labs", async () => {
         // Took deployed simple `address vault` from labs
-        const exampleAddress = Address.parse("EQBx3ogufv7zZlqNqvGsnhGOfsIprcyKnMEe04KSREQAEG3z");
+        const exampleAddress = Address.parse("EQBx3ogufv7zZlqNqvGsnhGOfsIprcyKnMEe04KSREQAEG3z").toRawString();
         const accountEntity = await getAccount(exampleAddress);
 
         console.log("[*] account entity: ");
@@ -46,7 +49,10 @@ describe("labs", () => {
         }
         console.log(`txs total amount: ${counter}`);
     });
+    test("partial network scanning seamlessness", async () => {
+        // TODO
+    });
     test("just some temporary shit I need to check fast", async () => {
-        // All the fast checks here
+        console.log(new Date(Date.now()).toString());
     });
 });

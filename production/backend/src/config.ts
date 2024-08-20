@@ -7,7 +7,11 @@ type Config = {
         should_migrate: boolean,
     },
     oracle: {
-        core_height: bigint | null,
+        core: {
+            address: string,
+            height: bigint | null,
+            force_height: boolean,
+        },
         network: string,
         api_keys: {
             testnet_keys: string[],
@@ -17,8 +21,8 @@ type Config = {
     server: {
         port: number,
         swagger: {
-          title: string,
-          version: string,
+            tittle: string,
+            version: string,
         },
     },
 }

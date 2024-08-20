@@ -19,13 +19,19 @@ export type JsonLaunchMetadata = {
     url: string,
 };
 
+export type StoredTimings = {
+    startTime: Date,
+    creatorRoundTime: Date,
+    wlRoundTime: Date,
+    publicRoundTime: Date,
+    endTime: Date,
+};
+
 export type StoredTokenLaunch = {
     address: RawAddressString,
     creator: RawAddressString,
     metadata: JsonLaunchMetadata,
-    creatorBalance: Coins,
-    startTime: Date,
-    endTime: Date,
+    timings: StoredTimings,
 };
 
 export enum UserActionType {

@@ -18,14 +18,11 @@ CREATE TABLE users
 
 CREATE TABLE token_launches
 (
-    address         address PRIMARY KEY,
-    creator         address   NOT NULL REFERENCES users (address),
+    address  address PRIMARY KEY,
+    creator  address NOT NULL REFERENCES users (address),
     -- Now it is JSONB, but, after we'll determine format of metadata, we should rewrite this as explicit fields
-    metadata        JSONB     NOT NULL,
-    -- Remove this shit
-    creator_balance BIGINT DEFAULT 0,
-    start_time      TIMESTAMP NOT NULL,
-    end_time        TIMESTAMP NOT NULL
+    metadata JSONB   NOT NULL,
+    timings  JSONB   NOT NULL
 );
 
 CREATE TYPE user_action_type AS ENUM ('whitelist_buy', 'public_buy', 'whitelist_refund', 'public_refund', 'total_refund', 'claim');

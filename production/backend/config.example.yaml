@@ -1,12 +1,19 @@
 # if not - console.debug will not be shown
 debug_mode: true
 db:
-  should_migrate: true
+  should_migrate: false
+
 server:
   port: 3000
+  swagger:
+    title: "Starton API Documentation"
+    version: "1.0.0"
 
 oracle:
-  core_height: null
+  core:
+    address: ""
+    height: null
+    force_height: false
   network: "testnet"
   api_keys:
     testnet_keys:

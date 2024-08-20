@@ -21,6 +21,7 @@ BEGIN
         INSERT INTO users (address, nickname) VALUES (NEW.actor, 'default_nickname');
     END IF;
 
+    -- Handle negative values
     IF NEW.action_type IN ('whitelist_buy', 'whitelist_refund') THEN
         UPDATE user_balances
         SET whitelist_tons = whitelist_tons + CASE
