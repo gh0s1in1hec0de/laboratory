@@ -7,6 +7,7 @@ import { Address } from "@ton/ton";
 import dotenv from "dotenv";
 import Elysia from "elysia";
 import * as db from "./db";
+import {createAppLogger} from "./server/logger/utils.ts";
 
 dotenv.config();
 greeting();
@@ -22,14 +23,15 @@ console.debug(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_US
 if (config.db.should_migrate) {
     console.log("applying migrations to clean database...");
     console.log();
-    await db.applyMigrations();
+    // await db.applyMigrations();
 }
 const { address, height, force_height } = config.oracle.core;
-if (height) await db.setCoreHeight(address, height, force_height);
+// if (height) await db.setCoreHeight(address, height, force_height);
 
 async function main() {
     // We parse current launches we have to manage with our promise-workers
-    const storedActiveLaunches = await db.getActiveTokenLaunches();
+    // const storedActiveLaunches = await db.getActiveTokenLaunches();
+    const logger = createAppLogger();
     const app = new Elysia()
         .use(swagger({
             documentation: getSwaggerDocsConfig({
@@ -41,6 +43,9 @@ async function main() {
         .listen(config.server.port);
 
     console.log(`elysia server is running at ${app.server?.hostname}:${app.server?.port}`);
+    logger.http("fdsf");
+    logger.error("ERROR");
+
 
     // if (Address.parse(address)) handleCoreUpdates(address);
 }
