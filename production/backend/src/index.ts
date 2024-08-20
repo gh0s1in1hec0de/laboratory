@@ -1,5 +1,6 @@
 import { handleCoreUpdates } from "./oracle";
-import { userRoutes } from "./server";
+import { swagger } from "@elysiajs/swagger";
+import {getSwaggerDocsConfig, userRoutes} from "./server";
 import { getConfig } from "./config";
 import { greeting } from "./utils";
 import { Address } from "@ton/ton";
@@ -28,10 +29,17 @@ if (height) await db.setCoreHeight(address, height, force_height);
 
 async function main() {
     // We parse current launches we have to manage with our promise-workers
-    // const storedActiveLaunches = await db.getActiveTokenLaunches();
+    const storedActiveLaunches = await db.getActiveTokenLaunches();
     const app = new Elysia()
+        .use(swagger({
+            documentation: getSwaggerDocsConfig({
+                title: config.server.swagger.title,
+                version: config.server.swagger.version
+            })
+        }))
         .group("/api", (app) => app.use(userRoutes))
         .listen(config.server.port);
+
     console.log(`server is running at ${app.server?.hostname}:${app.server?.port}`);
 
     if (Address.parse(address)) handleCoreUpdates(address);

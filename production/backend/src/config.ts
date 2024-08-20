@@ -21,7 +21,7 @@ type Config = {
     server: {
         port: number,
         swagger: {
-            tittle: string,
+            title: string,
             version: string,
         },
     },
