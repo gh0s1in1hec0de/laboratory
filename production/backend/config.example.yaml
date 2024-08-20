@@ -1,13 +1,7 @@
 # if not - console.debug will not be shown
-debug_mode: true
+mode: "dev"
 db:
   should_migrate: false
-
-server:
-  port: 3000
-  swagger:
-    title: "Starton API Documentation"
-    version: "1.0.0"
 
 oracle:
   core:
@@ -20,3 +14,15 @@ oracle:
       - "k"
     mainnet_keys:
       - "k"
+
+server:
+  port: 3000
+  swagger:
+    title: "Starton API Documentation"
+    version: "1.0.0"
+
+logger:
+  bot_token: ""
+  chat_id: -0
+  dev_thread_id: 0
+  prod_thread_id: 0

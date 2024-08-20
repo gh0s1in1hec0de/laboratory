@@ -1,37 +1,37 @@
 import { getSwaggerDocsConfig, userRoutes } from "./server";
-import { handleCoreUpdates } from "./oracle";
-import { swagger } from "@elysiajs/swagger";
 import { getConfig } from "./config";
+import { swagger } from "@elysiajs/swagger";
+import { useLogger } from "./logger";
 import { greeting } from "./utils";
-import { Address } from "@ton/ton";
 import dotenv from "dotenv";
 import Elysia from "elysia";
 import * as db from "./db";
-import {createAppLogger} from "./server/logger/utils.ts";
 
 dotenv.config();
 greeting();
 
 const config = getConfig();
+const logger = useLogger();
 
+// TODO maybe delete this ?_?
 // Disable console.debug unless debug logging is explicitly enabled
-if (!config.debug_mode) console.debug = () => {
-};
+// if (config.mode === AppMode.PROD) console.debug = () => {
+// };
 
-console.debug(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_USER} | ${process.env.POSTGRES_PASSWORD}`);
+logger.info(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_USER} | ${process.env.POSTGRES_PASSWORD}`);
 
 if (config.db.should_migrate) {
-    console.log("applying migrations to clean database...");
-    console.log();
-    // await db.applyMigrations();
+    logger.info("applying migrations to clean database...");
+    await db.applyMigrations();
 }
 const { address, height, force_height } = config.oracle.core;
-// if (height) await db.setCoreHeight(address, height, force_height);
+
+if (height) await db.setCoreHeight(address, height, force_height);
 
 async function main() {
     // We parse current launches we have to manage with our promise-workers
-    // const storedActiveLaunches = await db.getActiveTokenLaunches();
-    const logger = createAppLogger();
+    const storedActiveLaunches = await db.getActiveTokenLaunches();
+
     const app = new Elysia()
         .use(swagger({
             documentation: getSwaggerDocsConfig({
@@ -42,10 +42,7 @@ async function main() {
         .group("/api", (app) => app.use(userRoutes))
         .listen(config.server.port);
 
-    console.log(`elysia server is running at ${app.server?.hostname}:${app.server?.port}`);
-    logger.http("fdsf");
-    logger.error("ERROR");
-
+    logger.info(`elysia server is running at ${app.server?.hostname}:${app.server?.port}`);
 
     // if (Address.parse(address)) handleCoreUpdates(address);
 }

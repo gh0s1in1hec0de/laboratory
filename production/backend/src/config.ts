@@ -1,8 +1,13 @@
 import YAML from "yaml";
 import fs from "fs";
 
+export enum AppMode {
+  DEV = "dev",
+  PROD = "prod"
+}
+
 type Config = {
-    debug_mode: boolean,
+    mode: AppMode,
     db: {
         should_migrate: boolean,
     },
@@ -24,6 +29,12 @@ type Config = {
             title: string,
             version: string,
         },
+    },
+    logger: {
+      bot_token: string,
+      chat_id: number,
+      dev_thread_id: number,
+      prod_thread_id: number,
     },
 }
 
