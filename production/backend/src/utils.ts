@@ -30,6 +30,9 @@ export async function maybeBruteforceOverload<T>(
     }
     throw new Error(`operation TOTALLY SUCKED (${attempt} attempts)`);
 }
+export function delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 export function greeting() {
     console.log(`
