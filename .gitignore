@@ -1,7 +1,7 @@
 .idea
 node_modules/
-production/modules/backend/postgres-data
-production/modules/backend/logs
+postgres-data
+logs
 
 production/backend/.env
 production/backend/config.yaml

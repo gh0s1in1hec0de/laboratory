@@ -1,4 +1,5 @@
 import YAML from "yaml";
+import path from "path";
 import fs from "fs";
 
 export enum AppMode {
@@ -42,7 +43,7 @@ let config: Config | null = null;
 
 export function getConfig(): Config {
     if (!config) {
-        const configFile = fs.readFileSync("config.yaml", "utf8");
+        const configFile = fs.readFileSync(path.join(__dirname, "../config.yaml"), "utf8");
         config = YAML.parse(configFile) as Config;
     }
     return config;

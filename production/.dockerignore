@@ -3,8 +3,8 @@ node_modules
 postgres-data
 
 # We don't need em inside container
-Dockerfile
-docker-compose.yaml
+**/Dockerfile
+**/docker-compose.yaml
 
 .git
 .gitignore
@@ -15,6 +15,3 @@ docker-compose.yaml
 
 .vscode/
 .idea/
-
-# Seems like we don't actually need it
-build/

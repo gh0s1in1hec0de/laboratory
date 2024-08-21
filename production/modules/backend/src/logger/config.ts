@@ -2,6 +2,7 @@ import { AppMode, getConfig } from "../config.ts";
 import WinstonTelegram from "winston-telegram";
 import winston, { type Logger } from "winston";
 import "winston-daily-rotate-file";
+import path from "path";
 
 const {
     printf,
@@ -50,19 +51,19 @@ const format = combine(
 
 export function getLoggerConfig(): Logger {
     const { mode, logger } = getConfig();
-    const { 
+    const {
         dev_thread_id,
-        prod_thread_id, 
+        prod_thread_id,
         bot_token,
-        chat_id 
+        chat_id
     } = logger;
     const isDev = mode === AppMode.DEV;
-    const levelBasedOnMod = isDev ? "http" : "error";
+    const level = isDev ? "http" : "error";
 
     return winston.createLogger({
         levels: logLevelsOrder,
-        level: levelBasedOnMod,
-        format: format,
+        level,
+        format,
         transports: [
             new Console({
                 format: combine(
@@ -73,37 +74,17 @@ export function getLoggerConfig(): Logger {
             new WinstonTelegram({
                 token: bot_token,
                 chatId: chat_id,
-                level: levelBasedOnMod,
+                level,
                 messageThreadId: isDev ? dev_thread_id : prod_thread_id,
                 disableNotification: true,
-                // formatMessage: function (opts) {
-                //     let message = opts.message;
-                //
-                //     if (opts.level === "warn") {
-                //         message += "[Warning] ";
-                //     }
-                //     return message;
-                // }
             }),
-            ...(
-                isDev ? [
-                    new DailyRotateFile({
-                        filename: "logs/dev/logs-%DATE%.log",
-                        datePattern: "YYYY-MM-DD",
-                        maxFiles: "10d",
-                        level: "http",
-                        format: format
-                    }),
-                ] : [
-                    new DailyRotateFile({
-                        filename: "logs/prod/errors-%DATE%.log",
-                        datePattern: "YYYY-MM-DD",
-                        maxFiles: "10d",
-                        level: "error",
-                        format: format
-                    }),
-                ]
-            ),
+            new DailyRotateFile({
+                filename: path.join(__dirname, `../../logs/logs[${isDev ? "dev" : "prod"}]-%DATE%.log`),
+                datePattern: "YYYY-MM-DD",
+                maxFiles: "10d",
+                level,
+                format
+            })
         ]
     });
 }

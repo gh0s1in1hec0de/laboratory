@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:latest
     env_file:
-      - .env
+      - modules/backend/.env
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     ports:
@@ -17,8 +17,8 @@ services:
     volumes:
       - .:/app
     env_file:
-      - .env
-    command: sh -c "until pg_isready -h db -p 5432; do echo 'waiting for database...'; sleep 1; done; bun install && bun run src/index.ts"
+      - modules/backend/.env
+    command: sh -c "until pg_isready -h db -p 5432; do echo 'waiting for database...'; sleep 1; done; bun install && bun run modules/backend/src/index.ts"
     depends_on:
       - db
     ports:
