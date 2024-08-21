@@ -1,10 +1,19 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
-import { TokensLaunchOps, type TokenLaunchStorage, SaleMoneyFlow, OP_LENGTH, QUERY_ID_LENGTH } from "starton-periphery";
 import { SendMessageParams, tokenLauncherConfigToCell } from "./utils";
-import { LaunchDataType, RefundRequestParams } from "./types";
+import {
+    type TokenLaunchStorage,
+    BalanceUpdateMode,
+    TokensLaunchOps,
+    QUERY_ID_LENGTH,
+    SaleMoneyFlow,
+    LaunchData,
+    OP_LENGTH,
+    Coins,
+} from "starton-periphery";
 
 export class TokenLaunch implements Contract {
-    constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {}
+    constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
+    }
 
     static createFromAddress(address: Address) {
         return new TokenLaunch(address);
@@ -28,7 +37,13 @@ export class TokenLaunch implements Contract {
         });
     }
 
-    async sendRefundRequest(provider: ContractProvider, sendMessageParams: SendMessageParams, params: RefundRequestParams) {
+    async sendRefundRequest(
+        provider: ContractProvider,
+        sendMessageParams: SendMessageParams,
+        params: {
+            mode: BalanceUpdateMode,
+            refundValue: Coins,
+        }) {
         const { refundValue, mode } = params;
         const { queryId, via, value } = sendMessageParams;
 
@@ -67,7 +82,7 @@ export class TokenLaunch implements Contract {
         });
     }
 
-    async getLaunchData(provider: ContractProvider): Promise<LaunchDataType> {
+    async getLaunchData(provider: ContractProvider): Promise<LaunchData> {
         let { stack } = await provider.get("get_launch_data", []);
         return {
             futJetTotalSupply: stack.readBigNumber(),

@@ -10,7 +10,6 @@ export type TokenLaunchTimings = {
     endTime: Date,
 };
 
-
 export type SaleMoneyFlow = {
     creatorFutJEtBalance: Coins,
     tonInvestedTotal: Coins,
@@ -18,6 +17,12 @@ export type SaleMoneyFlow = {
     syntheticJetReserve: Coins,
     syntheticTonReserve: Coins,
 }
+
+export type LaunchData = {
+    futJetTotalSupply: Coins,
+    creatorAddress: Address,
+    metadata: Cell,
+};
 
 
 // Storage
