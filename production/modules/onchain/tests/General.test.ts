@@ -179,12 +179,7 @@ describe("TokenLaunch", () => {
             from: chief.address,
             to: core.address,
             deploy: true,
-        });
-        // Make sure it didn't bounce
-        expect(deployResult.transactions).not.toHaveTransaction({
-            on: chief.address,
-            from: core.address,
-            inMessageBounced: true
+            success: true
         });
     });
 
