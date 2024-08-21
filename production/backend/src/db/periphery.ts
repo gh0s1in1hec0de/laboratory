@@ -1,4 +1,4 @@
-import type { LamportTime, RawAddressString } from "../utils";
+import type { LamportTime, RawAddressString } from "starton-periphery";
 import type { SqlClient } from "./types";
 import { ok as assert } from "assert";
 import { globalClient } from "./db";

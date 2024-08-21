@@ -1,6 +1,6 @@
 import {Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode} from "@ton/core";
 import {TokensLaunchOps, SendMessageParams, tokenLauncherConfigToCell} from "./utils";
-import {LaunchDataType, RefundRequestParams, SaleStateType, TokenLaunchConfig} from "./types";
+import {LaunchDataType, RefundRequestParams, SaleStateType, TokenLaunchStorage} from "./types";
 
 export class TokenLaunch implements Contract {
   constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
@@ -10,7 +10,7 @@ export class TokenLaunch implements Contract {
     return new TokenLaunch(address);
   }
 
-  static createFromConfig(config: TokenLaunchConfig, code: Cell, workchain = 0) {
+  static createFromConfig(config: TokenLaunchStorage, code: Cell, workchain = 0) {
     const data = tokenLauncherConfigToCell(config);
     const init = {code, data};
     return new TokenLaunch(contractAddress(workchain, init), init);

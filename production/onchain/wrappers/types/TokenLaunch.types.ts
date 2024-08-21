@@ -56,7 +56,7 @@ export type ToolsParams = {
   userVaultCode: Cell,
 }
 
-export type TokenLaunchConfig = {
+export type TokenLaunchStorage = {
   isInitialized: boolean,
   operationalNeeds: bigint,
   chiefAddress: Address;

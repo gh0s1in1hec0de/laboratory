@@ -1,6 +1,7 @@
-import { delay, type LamportTime, maybeBruteforceOverload, Network, type RawAddressString } from "../utils";
 import { Address, TonClient, TonClient4, type Transaction, type TupleItem } from "@ton/ton";
+import type { LamportTime, RawAddressString } from "starton-periphery";
 import { currentNetwork, mainnetKeys, testnetKeys } from "../config";
+import { delay, maybeBruteforceOverload, Network } from "../utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 
 // RR bitch (RoundRobin, not Rolls-Royce)

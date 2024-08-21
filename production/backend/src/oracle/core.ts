@@ -1,15 +1,15 @@
 import {
     parseTokenLaunchStorage,
     parseTokenLaunchTimings,
+    type RawAddressString,
     parseMetadataCell,
     loadOpAndQueryId,
-    TokensLaunchOps
-} from "./messageParsers.ts";
+    TokensLaunchOps,
+} from "starton-periphery";
 import { handleTokenLaunchUpdates } from "./tokenLaunch.ts";
-import { delay, type RawAddressString } from "../utils.ts";
 import { retrieveAllUnknownTransactions } from "./api.ts";
-import { storeTokenLaunch } from "../db";
 import type { Address } from "@ton/ton";
+import { delay } from "../utils.ts";
 import * as db from "../db";
 
 export async function handleCoreUpdates(coreAddress: RawAddressString) {
@@ -39,7 +39,7 @@ export async function handleCoreUpdates(coreAddress: RawAddressString) {
 
                     const newLaunchStateinit = msg.init!.data!; // As we can guarantee our contract behaviour
                     const parsedStateinit = parseTokenLaunchStorage(newLaunchStateinit);
-                    await storeTokenLaunch({
+                    await db.storeTokenLaunch({
                         address,
                         creator: parsedStateinit.creatorAddress.toRawString(),
                         metadata: parseMetadataCell(parsedStateinit.tools.metadata),

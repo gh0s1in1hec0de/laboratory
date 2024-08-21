@@ -1,5 +1,5 @@
 import type { UserActionType, SqlClient, UserAction } from "./types";
-import type { RawAddressString } from "../utils";
+import type { RawAddressString } from "starton-periphery";
 import { ok as assert } from "assert";
 import { globalClient } from "./db";
 

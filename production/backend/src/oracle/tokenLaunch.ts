@@ -1,13 +1,15 @@
 import {
+    type RawAddressString,
     parseBalanceUpdate,
     parseRefundOrClaim,
+    BalanceUpdateMode,
+    type LamportTime,
     loadOpAndQueryId,
     TokensLaunchOps,
-    UserVaultOps
-} from "./messageParsers";
-import { BalanceUpdateMode, balanceUpdateModeToUserActionType } from "./types.ts";
-import { delay, type LamportTime, type RawAddressString } from "../utils";
+    UserVaultOps,
+} from "starton-periphery";
 import { retrieveAllUnknownTransactions } from "./api";
+import { delay } from "../utils";
 import * as db from "../db";
 
 export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) {
@@ -50,7 +52,7 @@ export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) 
                     userActions.push({
                         actor: recipient,
                         tokenLaunch: launchAddress,
-                        actionType: mode ? balanceUpdateModeToUserActionType[mode] : db.UserActionType.Claim,
+                        actionType: mode ? db.balanceUpdateModeToUserActionType[mode] : db.UserActionType.Claim,
                         whitelistTons,
                         publicTons,
                         jettons: futureJettons,
@@ -73,7 +75,7 @@ export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) 
                     userActions.push({
                         actor: inMsgSender.toRawString(),
                         tokenLaunch: launchAddress,
-                        actionType: balanceUpdateModeToUserActionType[mode],
+                        actionType: db.balanceUpdateModeToUserActionType[mode],
                         whitelistTons,
                         publicTons,
                         jettons: futureJettons,

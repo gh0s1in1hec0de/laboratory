@@ -6,7 +6,7 @@ import {
   PublicRoundStateParams,
   SaleConfigParams,
   SaleStateParams,
-  TokenLaunchConfig,
+  TokenLaunchStorage,
   ToolsParams,
   WlRoundStateParams
 } from "./types";
@@ -161,7 +161,7 @@ function packageToolsInCell(tools: ToolsParams) {
     .endCell();
 }
 
-export function tokenLauncherConfigToCell(config: TokenLaunchConfig): Cell {
+export function tokenLauncherConfigToCell(config: TokenLaunchStorage): Cell {
   const {
     creatorAddress,
     chiefAddress,

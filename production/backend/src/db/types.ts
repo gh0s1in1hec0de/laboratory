@@ -1,4 +1,5 @@
-import type { Coins, LamportTime, RawAddressString } from "../utils";
+import type { Coins, LamportTime, RawAddressString, TokenLaunchTimings, TokenMetadata } from "starton-periphery";
+import { BalanceUpdateMode } from "starton-periphery";
 import type { Sql } from "postgres";
 
 type SqlTypes = { bigint: bigint };
@@ -13,25 +14,11 @@ export type StoredUser = {
     nickname: string | null,
 };
 
-// TODO Change this type
-//      ... when the time comes...
-export type JsonLaunchMetadata = {
-    url: string,
-};
-
-export type StoredTimings = {
-    startTime: Date,
-    creatorRoundTime: Date,
-    wlRoundTime: Date,
-    publicRoundTime: Date,
-    endTime: Date,
-};
-
 export type StoredTokenLaunch = {
     address: RawAddressString,
     creator: RawAddressString,
-    metadata: JsonLaunchMetadata,
-    timings: StoredTimings,
+    metadata: TokenMetadata,
+    timings: TokenLaunchTimings,
 };
 
 export enum UserActionType {
@@ -63,4 +50,12 @@ export type StoredUserBalance = {
     whitelistTons: Coins,
     publicTons: Coins,
     jettons: Coins,
+};
+
+export const balanceUpdateModeToUserActionType: { [key in BalanceUpdateMode]: UserActionType } = {
+    [BalanceUpdateMode.WhitelistDeposit]: UserActionType.WhiteListBuy,
+    [BalanceUpdateMode.PublicDeposit]: UserActionType.PublicBuy,
+    [BalanceUpdateMode.WhitelistWithdrawal]: UserActionType.WhitelistRefund,
+    [BalanceUpdateMode.PublicWithdrawal]: UserActionType.PublicRefund,
+    [BalanceUpdateMode.TotalWithdrawal]: UserActionType.TotalRefund,
 };

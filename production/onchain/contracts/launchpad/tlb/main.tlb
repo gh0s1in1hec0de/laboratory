@@ -70,7 +70,7 @@ claim#556a6246 query_id:uint64 = UserVaultUpdate;
 _ jetton_launch_code:^Cell jetton_launch_user_vault:^Cell derived_jetton_master_code:^Cell jetton_wallet_code:^Cell = Contracts;
 // 124 * 5 + 16 * 3 + 32 * 4 = 796
 _ min_ton_for_sale_success:Coins ton_limit_for_wl_round:Coins util_jet_reward_amount:Coins util_jet_wl_pass_amount:Coins util_jet_burn_per_wl_pass_amount:Coins
-  jet_wl_limit_pct:uint16 jet_wl_limit_pct:uint16 jet_wl_limit_pct:uint16
+  jet_wl_limit_pct:uint16 jet_pub_limit_pct:uint16 jet_dex_share_pct:uint16
   creator_round_duration_ms:int32 wl_round_duration_ms:int32 pub_round_duration_ms:int32 claim_duration_ms:int32
   = LaunchConfig;
 // 267 x 3 + 124 + 1 + 8 = 934

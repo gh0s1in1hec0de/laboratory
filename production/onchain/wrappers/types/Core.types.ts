@@ -1,12 +1,12 @@
 import {Address, Cell, Dictionary} from "@ton/core";
-import {TEP64JettonMetadata} from "../utils";
+import { Slice } from "@ton/ton";
 
 export type CoreConfig = {
   chief: Address,
   utilJettonMasterAddress: Address,
   utilJettonWalletAddress: Address,
   utilJetCurBalance: bigint,
-  notFundedLaunches: Dictionary<Address, Cell> | null,
+  notFundedLaunches: Dictionary<Address, Slice> | null,
   notFundedLaunchesAmount: number,
   launchConfig: {
     minTonForSaleSuccess: bigint,
@@ -20,6 +20,7 @@ export type CoreConfig = {
     creatorRoundDurationMs: number,
     wlRoundDurationMs: number,
     pubRoundDurationMs: number,
+    claimDurationMs: number,
   };
   contracts: {
     jettonLaunch: Cell,
@@ -31,9 +32,9 @@ export type CoreConfig = {
 
 export type CreateLaunchParams = {
   startTime: number, // Unix timestamp
-  totalSupply: bigint | number,
+  totalSupply: bigint,
   platformSharePct: number,
-  metadata: Cell | TEP64JettonMetadata,
+  metadata: Cell, // Packed `TEP64JettonMetadata`
 };
 
 export type UpgradeParams = {

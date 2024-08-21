@@ -1,8 +1,12 @@
 .idea
 node_modules/
-production/backend/.env
 production/backend/postgres-data
+production/backend/logs
+
+production/backend/.env
+production/backend/config.yaml
 
 **/yarn.lock
 **/.yarnrc.yml
 **/.yarn
+**/.lockb
