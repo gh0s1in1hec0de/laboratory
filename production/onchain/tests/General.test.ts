@@ -1,57 +1,62 @@
 import { Address, beginCell, Cell, storeMessage, toNano, Transaction } from "@ton/core";
+import { LaunchConfig } from "starton-periphery";
+import { CommonJettonMaster } from "../wrappers/CommonJettonMaster";
+import {
+    collectCellStats, computedGeneric, computeFwdFees, computeFwdFeesVerbose,
+    FullFees, GasPrices, getGasPrices, getMsgPrices, getStoragePrices,
+    MsgPrices, StorageStats, StorageValue,
+} from "./utils";
+import { getHttpV4Endpoint } from "@orbs-network/ton-access";
+import { TokenLaunch } from "../wrappers/TokenLaunch";
+import { UserVault } from "../wrappers/UserVault";
+import { compile } from "@ton/blueprint";
+import { Core } from "../wrappers/Core";
+import { TonClient4 } from "@ton/ton";
+import { Factory } from "@dedust/sdk";
+import "@ton/test-utils";
 import {
     Blockchain,
     internal,
     RemoteBlockchainStorage,
     SandboxContract,
     TreasuryContract,
-    wrapTonClient4ForRemote
+    wrapTonClient4ForRemote,
 } from "@ton/sandbox";
-import {
-    collectCellStats,
-    computedGeneric,
-    computeFwdFees,
-    computeFwdFeesVerbose,
-    FullFees,
-    MsgPrices,
-    StorageStats
-} from "./utils";
-import "@ton/test-utils";
-import { TokenLaunch } from "../wrappers/TokenLaunch";
-import { TonClient4 } from "@ton/ton";
-import { Factory } from "@dedust/sdk";
-import { getHttpV4Endpoint } from "@orbs-network/ton-access";
-import { compile } from "@ton/blueprint";
-import { Core } from "../wrappers/Core";
 
 
 describe("TokenLaunch", () => {
     let coreCode = new Cell();
     let core: SandboxContract<Core>;
+
     let tokenLaunchCode = new Cell();
     let tokenLaunch: SandboxContract<TokenLaunch>;
-    let userVaultCode = new Cell();
-    let userVault: SandboxContract<TokenLaunch>; // TODO
-    let blockchain: Blockchain;
-    let deployer: SandboxContract<TreasuryContract>;
-    let walletStats: StorageStats;
-    let msgPrices: MsgPrices;
-    let stateInitStats: StorageStats;
-    let storageDuration: number;
-    let defaultOverhead: bigint;
 
+    let userVaultCode = new Cell();
+    let userVault: SandboxContract<UserVault>;
+
+    let jettonMasterCode = new Cell();
+    let jettonWalletCode = new Cell();
+    // Seems like this approach is correct
+    let utilityJettonMaster: SandboxContract<CommonJettonMaster>;
+    let derivedJettonMaster: SandboxContract<CommonJettonMaster>;
     // Dedust related variables
     let factory: SandboxContract<Factory>;
 
+    let blockchain: Blockchain;
+    let chief: SandboxContract<TreasuryContract>;
+    let msgPrices: MsgPrices;
+    let gasPrices: GasPrices;
+    let storagePrices: StorageValue;
+    let launchConfig: LaunchConfig;
+
+    // TODO Can't init atm
+    let stateInitStats: StorageStats;
+    let storageDuration: number;
+
+    // Custom values
+    let utilityJettonSupply: bigint;
     // Function initialization
-    // TODO What is the purpose of ** instead of *?
-    /**
-     * Measures compute fees of a tx
-     */
     let printTxGasStats: (name: string, trans: Transaction) => bigint;
-    /**
-     * Measures forward fees of a cell structure
-     */
     let estimateBodyFee: (body: Cell, force_ref: boolean, prices?: MsgPrices) => FullFees;
     let estimateBurnFwd: (prices?: MsgPrices) => bigint;
     let forwardOverhead: (prices: MsgPrices, stats: StorageStats) => bigint;
@@ -60,48 +65,73 @@ describe("TokenLaunch", () => {
         fwd_fee: bigint,
         fwd_amount: bigint,
         storage_fee: bigint,
-        state_init?: bigint) => bigint;
+        state_init: bigint
+    ) => bigint;
 
     beforeAll(async () => {
         coreCode = await compile("Core");
         tokenLaunchCode = await compile("TokenLaunch");
-        tokenLaunchCode = await compile("UserVault");
-        console.log("contracts compiled lol");
+        userVaultCode = await compile("UserVault");
+        jettonMasterCode = await compile("CommonJettonMaster");
+        jettonWalletCode = await compile("CommonJettonWallet");
+        console.info("contracts compiled yaay^^");
+
         blockchain = await Blockchain.create({
             storage: new RemoteBlockchainStorage(wrapTonClient4ForRemote(new TonClient4({
                 endpoint: await getHttpV4Endpoint({ network: "mainnet" }),
             })))
         });
-        deployer = await blockchain.treasury("deployer");
         blockchain.now = Math.floor(Date.now() / 1000);
 
+        msgPrices = getMsgPrices(blockchain.config, 0);
+        gasPrices = getGasPrices(blockchain.config, 0);
+        storagePrices = getStoragePrices(blockchain.config);
+
+        utilityJettonSupply = toNano("1000000"); // Replace with well-counted value
+
+        // Me btw
+        chief = await blockchain.treasury("chief");
+
+        utilityJettonMaster = blockchain.openContract(
+            CommonJettonMaster.createFromConfig(
+                {
+                    admin: chief.address,
+                    wallet_code: jettonWalletCode,
+                    jetton_content: { uri: "https://juicy_bitches.org/meta.json" }
+                },
+                jettonMasterCode
+            ));
+
+        const ONE_HOUR_MS = 3600 * 1000;
+        launchConfig = {
+            minTonForSaleSuccess: 0n,
+            tonLimitForWlRound: toNano("1000"), // Seems correct
+            utilJetRewardAmount: utilityJettonSupply * 33n / 10000n,
+            utilJetWlPassAmount: toNano("1"), // < & v - out of pants
+            utilJetBurnPerWlPassAmount: toNano("0.3"),
+            jetWlLimitPct: 3000,
+            jetPubLimitPct: 3000,
+            jetDexSharePct: 2500,
+            creatorRoundDurationMs: ONE_HOUR_MS,
+            wlRoundDurationMs: ONE_HOUR_MS,
+            pubRoundDurationMs: ONE_HOUR_MS,
+            claimDurationMs: ONE_HOUR_MS
+        };
         core = blockchain.openContract(
             Core.createFromConfig(
                 {
-                    chief: deployer.address,
-                    utilJettonMasterAddress: deployer.address,
-                    utilJettonWalletAddress: deployer.address,
+                    chief: chief.address,
+                    utilJettonMasterAddress: utilityJettonMaster.address,
+                    utilJettonWalletAddress: null, // Will be determined automatically by contract
                     utilJetCurBalance: 0n,
                     notFundedLaunches: null,
                     notFundedLaunchesAmount: 0,
-                    launchConfig: {
-                        minTonForSaleSuccess: 0n,
-                        tonLimitForWlRound: 0n,
-                        utilJetRewardAmount: 0n,
-                        utilJetWlPassAmount: 0n,
-                        utilJetBurnPerWlPassAmount: 0n,
-                        jetWlLimitPct: 0,
-                        jetPubLimitPct: 0,
-                        jetDexSharePct: 0,
-                        creatorRoundDurationMs: 0,
-                        wlRoundDurationMs: 0,
-                        pubRoundDurationMs: 0,
-                    },
+                    launchConfig,
                     contracts: {
                         jettonLaunch: tokenLaunchCode,
-                        jettonLaunchUserVault: new Cell(),
-                        derivedJettonMaster: new Cell(),
-                        jettonWallet: new Cell()
+                        jettonLaunchUserVault: userVaultCode,
+                        derivedJettonMaster: jettonMasterCode,
+                        jettonWallet: jettonWalletCode
                     }
                 },
                 coreCode
@@ -136,26 +166,23 @@ describe("TokenLaunch", () => {
         };
 
         calcSendFees = (send, recv, fwd, fwd_amount, storage, state_init) => {
-            const overhead = state_init || defaultOverhead;
-            const fwdTotal = fwd_amount + (fwd_amount > 0n ? fwd * 2n : fwd) + overhead;
+            const fwdTotal = fwd_amount + (fwd_amount > 0n ? fwd * 2n : fwd) + state_init;
             // const execute = send + recv;
             return fwdTotal + send + recv + storage + 1n;
         };
-
-        defaultOverhead = forwardOverhead(msgPrices, stateInitStats);
     });
 
     it("should deploy", async () => {
-        const deployResult = await core.sendDeploy({ value: toNano("10"), via: deployer.getSender() });
+        const deployResult = await core.sendDeploy({ value: toNano("10"), via: chief.getSender() });
 
         expect(deployResult.transactions).toHaveTransaction({
-            from: deployer.address,
+            from: chief.address,
             to: core.address,
             deploy: true,
         });
         // Make sure it didn't bounce
         expect(deployResult.transactions).not.toHaveTransaction({
-            on: deployer.address,
+            on: chief.address,
             from: core.address,
             inMessageBounced: true
         });

@@ -1,7 +1,7 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
+import { CoreStorage, CoreOps, OP_LENGTH, QUERY_ID_LENGTH, tokenMetadataToCell } from "starton-periphery";
 import { CreateLaunchParams, LaunchConfigType, StateType, UpgradeParams } from "./types";
-import { CoreStorage, CoreOps, OP_LENGTH, QUERY_ID_LENGTH } from "starton-periphery";
-import { coreConfigToCell, SendMessageParams, TokenMetadataToCell } from "./utils";
+import { coreConfigToCell, SendMessageParams } from "./utils";
 
 export class Core implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {}
@@ -28,7 +28,7 @@ export class Core implements Contract {
     async sendCreateLaunch(provider: ContractProvider, sendMessageParams: SendMessageParams, params: CreateLaunchParams) {
         const { startTime, totalSupply, platformSharePct, metadata } = params;
         const { queryId, via, value } = sendMessageParams;
-        const packagedMetadata = metadata instanceof Cell ? metadata : TokenMetadataToCell(metadata);
+        const packagedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
 
         const body = beginCell()
             .storeUint(CoreOps.create_launch, OP_LENGTH)

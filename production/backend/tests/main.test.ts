@@ -85,6 +85,6 @@ describe("Ton Eye", () => {
         }
     });
     test("just some temporary shit I need to check fast", async () => {
-        console.log(new Date(Date.now()).toString());
+
     });
 });

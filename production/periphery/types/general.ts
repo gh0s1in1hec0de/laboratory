@@ -60,5 +60,5 @@ export type BalanceUpdateMessage = {
 
 // Extend with https://github.com/ton-blockchain/TEPs/blob/master/text/0064-token-data-standard.md
 export type TokenMetadata = {
-    url: string
+    uri: string
 };

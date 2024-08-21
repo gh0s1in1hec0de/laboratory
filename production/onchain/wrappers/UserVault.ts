@@ -9,12 +9,12 @@ export type VaultData = {
     jettonBalance: Coins,
 }
 
-export class TokenLaunch implements Contract {
+export class UserVault implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
     }
 
     static createFromAddress(address: Address) {
-        return new TokenLaunch(address);
+        return new UserVault(address);
     }
 
     async getVaultData(provider: ContractProvider): Promise<VaultData> {

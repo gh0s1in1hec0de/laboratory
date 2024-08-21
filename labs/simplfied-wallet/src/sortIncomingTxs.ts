@@ -43,7 +43,7 @@ async function sortTxs(client: TonClient, transactions: Transaction[], myAddress
                         ])
                     ).stack.readAddress();
                     if (!jettonWallet.equals(sender)) {
-                        // if sender is not our real JettonWallet: this message was faked
+                        // if sender is not our real CommonJettonWallet: this message was faked
                         console.log(`FAKE Jetton transfer`);
                         continue;
                     }

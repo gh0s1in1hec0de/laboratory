@@ -16,21 +16,18 @@
 
     load_data(); ;; Now we have our contract data available in globals
 
-    ;; Will be computed just once - effecinency increase
-    if (this::util_jetton_wallet_address.is_address_none()) {
-        this::util_jetton_wallet_address = calculate_user_jetton_wallet_address(
-            my_address(),
-            this::util_jetton_master_address,
-            code::jetton_wallet
-        );
-    }
+
     if (msg_flags & 1) {
         ;; Is bounced
         return ();
     }
 
     if (op == op::core::init) {
-        ;; Add some storage and values constraints later
+        this::util_jetton_wallet_address = calculate_user_jetton_wallet_address(
+            my_address(),
+            this::util_jetton_master_address,
+            code::jetton_wallet
+        );
         return ();
     }
     if (op == op::core::create_launch) {

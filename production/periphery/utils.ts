@@ -11,9 +11,8 @@ export function parseTokenLaunchTimings(tokenLaunchStorage: TokenLaunchStorage):
     };
 }
 
-
-export function TokenMetadataToCell(content: TokenMetadata): Cell {
+export function tokenMetadataToCell(content: TokenMetadata): Cell {
     return beginCell()
-        .storeStringRefTail(content.url) //Snake logic under the hood
+        .storeStringRefTail(content.uri) // Snake logic under the hood
         .endCell();
 }
