@@ -2,7 +2,8 @@
   "name": "starton",
   "private": true,
   "workspaces": [
-    "modules/periphery"
+    "modules/periphery",
+    "modules/backend"
   ],
   "scripts": {
   },

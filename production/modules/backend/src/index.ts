@@ -5,7 +5,7 @@ import { useLogger } from "./logger";
 import { greeting } from "./utils";
 import dotenv from "dotenv";
 import Elysia from "elysia";
-// import * as db from "./db";
+import * as db from "./db";
 
 dotenv.config();
 greeting();
@@ -13,20 +13,15 @@ greeting();
 const config = getConfig();
 const logger = useLogger();
 
-// TODO maybe delete this ?_?
-// Disable console.debug unless debug logging is explicitly enabled
-// if (config.mode === AppMode.PROD) console.debug = () => {
-// };
+logger.info(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_USER} | ${process.env.POSTGRES_PASSWORD}`);
 
-// logger.info(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_USER} | ${process.env.POSTGRES_PASSWORD}`);
+if (config.db.should_migrate) {
+    logger.info("applying migrations to clean database...");
+    await db.applyMigrations();
+}
+const { address, height, force_height } = config.oracle.core;
 
-// if (config.db.should_migrate) {
-//     logger.info("applying migrations to clean database...");
-//     await db.applyMigrations();
-// }
-// const { address, height, force_height } = config.oracle.core;
-//
-// if (height) await db.setCoreHeight(address, height, force_height);
+if (height) await db.setCoreHeight(address, height, force_height);
 
 async function main() {
     // We parse current launches we have to manage with our promise-workers
