@@ -1,5 +1,5 @@
 import { getAccount, getTransactionsForAccount, retrieveAllUnknownTransactions } from "../src/oracle/api";
-import type { RawAddressString } from "../src/utils.ts";
+import type { RawAddressString } from "starton-periphery";
 import { test, describe, beforeAll } from "bun:test";
 import { Address, type Transaction } from "@ton/ton";
 import dotenv from "dotenv";

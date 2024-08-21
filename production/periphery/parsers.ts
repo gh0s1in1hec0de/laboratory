@@ -87,10 +87,10 @@ export function parseTokenLaunchStorage(storage: Cell): TokenLaunchStorage {
     const creatorRoundStateRef = saleStateSlice.loadRef();
     const creatorRoundStateSlice = creatorRoundStateRef.beginParse();
     const creatorRound: CreatorRoundState = {
-        creatorFutJetLimit: creatorRoundStateSlice.loadCoins(),
-        creatorFutJetBalance: creatorRoundStateSlice.loadCoins(),
+        futJetLimit: creatorRoundStateSlice.loadCoins(),
+        futJetBalance: creatorRoundStateSlice.loadCoins(),
         creatorFutJetPrice: creatorRoundStateSlice.loadCoins(),
-        creatorRoundEndTime: creatorRoundStateSlice.loadInt(32),
+        endTime: creatorRoundStateSlice.loadInt(32),
     };
     creatorRoundStateSlice.endParse();
 
@@ -98,23 +98,23 @@ export function parseTokenLaunchStorage(storage: Cell): TokenLaunchStorage {
     const wlRoundStateRef = saleStateSlice.loadRef();
     const wlRoundStateSlice = wlRoundStateRef.beginParse();
     const wlRound: WhitelistRoundState = {
-        wlFutJetLimit: wlRoundStateSlice.loadCoins(),
-        wlTonLimit: wlRoundStateSlice.loadCoins(),
+        futJetLimit: wlRoundStateSlice.loadCoins(),
+        tonLimit: wlRoundStateSlice.loadCoins(),
         wlPassUtilJetAmount: wlRoundStateSlice.loadCoins(),
         wlBurnUtilJetAmount: wlRoundStateSlice.loadCoins(),
-        wlTonInvestedTotal: wlRoundStateSlice.loadCoins(),
-        wlEndTime: wlRoundStateSlice.loadInt(32),
+        tonInvestedTotal: wlRoundStateSlice.loadCoins(),
+        endTime: wlRoundStateSlice.loadInt(32),
     };
     wlRoundStateSlice.endParse();
 
     const publicRoundStateRef = saleStateSlice.loadRef();
     const publicRoundStateSlice = publicRoundStateRef.beginParse();
     const pubRound: PublicRoundState = {
-        pubFutJetLimit: publicRoundStateSlice.loadCoins(),
-        pubFutJetSold: publicRoundStateSlice.loadCoins(),
+        futJetLimit: publicRoundStateSlice.loadCoins(),
+        futJetSold: publicRoundStateSlice.loadCoins(),
         syntheticJetReserve: publicRoundStateSlice.loadCoins(),
         syntheticTonReserve: publicRoundStateSlice.loadCoins(),
-        pubEndTime: publicRoundStateSlice.loadInt(32),
+        endTime: publicRoundStateSlice.loadInt(32),
     };
     publicRoundStateSlice.endParse();
 
