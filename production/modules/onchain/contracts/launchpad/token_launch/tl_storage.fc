@@ -58,7 +58,7 @@
     set_data(data);
 }
 
-() load_data() inline_ref {
+() load_data() impure inline_ref {
     slice ds = get_data().begin_parse();
     this::const::is_initialized? = ds~load_int(1);
     this::operational_needs = ds~load_coins();

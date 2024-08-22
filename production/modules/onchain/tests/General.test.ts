@@ -83,6 +83,7 @@ describe("TokenLaunch", () => {
                 endpoint: await getHttpV4Endpoint({ network: "mainnet" }),
             })))
         });
+        // Looks like this overloading doesn't give us any game-changing information
         // blockchain.verbosity = {
         //     print: true,
         //     blockchainLogs: true,
@@ -130,7 +131,7 @@ describe("TokenLaunch", () => {
                 {
                     chief: chief.address,
                     utilJettonMasterAddress: utilityJettonMaster.address,
-                    utilJettonWalletAddress: randomAddress(), // Will be determined automatically by contract
+                    utilJettonWalletAddress: null, // Will be determined automatically by contract
                     utilJetCurBalance: 0n,
                     notFundedLaunches: null,
                     notFundedLaunchesAmount: 0,
@@ -183,7 +184,6 @@ describe("TokenLaunch", () => {
     it("should deploy", async () => {
         const deployResult = await core.sendDeploy({ value: toNano("10"), via: chief.getSender() });
 
-
         for (const tx of deployResult.transactions) {
             console.log(tx.vmLogs)
             console.log(`=== NEW TX ===`);
@@ -197,7 +197,10 @@ describe("TokenLaunch", () => {
         });
     });
 
+    test("contract is active", async () => {
+        console.log(await core.getLaunchConfig());
+    });
     test("fast check", async () => {
-        console.log(toNano("0.1"));
+        // Just a buffer for a stuff you need to check fast
     });
 });

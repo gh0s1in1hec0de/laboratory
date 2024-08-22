@@ -64,7 +64,7 @@ export class Core implements Contract {
         let { stack } = await provider.get("get_state", []);
         return {
             notFundedLaunches: stack.readCell(),
-            notFundedLaunchesAmount: stack.readBigNumber(),
+            notFundedLaunchesAmount: stack.readNumber(),
             utilJetCurBalance: stack.readBigNumber()
         };
     }
@@ -77,12 +77,12 @@ export class Core implements Contract {
             utilJetRewardAmount: stack.readBigNumber(),
             utilJetWlPassAmount: stack.readBigNumber(),
             utilJetBurnPerWlPassAmount: stack.readBigNumber(),
-            jetWlLimitPct: stack.readBigNumber(),
-            jetPubLimitPct: stack.readBigNumber(),
-            jetDexSharePct: stack.readBigNumber(),
-            creatorRoundDurationMs: stack.readBigNumber(),
-            wlRoundDurationMs: stack.readBigNumber(),
-            pubRoundDurationMs: stack.readBigNumber(),
+            jetWlLimitPct: stack.readNumber(),
+            jetPubLimitPct: stack.readNumber(),
+            jetDexSharePct: stack.readNumber(),
+            creatorRoundDurationMs: stack.readNumber(),
+            wlRoundDurationMs: stack.readNumber(),
+            pubRoundDurationMs: stack.readNumber(),
         };
     }
 }

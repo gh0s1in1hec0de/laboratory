@@ -1,7 +1,6 @@
 #include "../../stdlib.fc";
 #include "core_context.fc";
 
-;; TODO FUCKING FIGURE OUT
 () load_data() impure inline_ref {
     slice ds = get_data().begin_parse();
     this::chief = ds~load_msg_addr();

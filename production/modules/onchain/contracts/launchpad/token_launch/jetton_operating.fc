@@ -9,7 +9,7 @@
 
 const int MINT_QUERY_ID = 27082006;
 
-() deploy_launch_jetton() inline {
+() deploy_launch_jetton() impure inline {
     (_, _, _, cell metadata, cell fut_jet_master_code, cell wallet_code, _) = unpack_tools(this::tools);
     (cell jetton_master_stateinit, slice jetton_master_address) = calculate_fut_jet_master_data(
         fut_jet_master_code,

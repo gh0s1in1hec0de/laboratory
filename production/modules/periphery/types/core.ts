@@ -19,7 +19,7 @@ export type LaunchConfig = {
 export type CoreStorage = {
     chief: Address,
     utilJettonMasterAddress: Address,
-    utilJettonWalletAddress: Address,
+    utilJettonWalletAddress: Maybe<Address>,
     utilJetCurBalance: bigint,
     notFundedLaunches: Maybe<Dictionary<Address, Slice>>,
     notFundedLaunchesAmount: number,
