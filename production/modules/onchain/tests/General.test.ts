@@ -1,5 +1,4 @@
 import { Address, beginCell, Cell, storeMessage, toNano, Transaction } from "@ton/core";
-import { LaunchConfig } from "starton-periphery";
 import { CommonJettonMaster } from "../wrappers/CommonJettonMaster";
 import {
     collectCellStats, computedGeneric, computeFwdFees, computeFwdFeesVerbose,
@@ -9,19 +8,22 @@ import {
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import { TokenLaunch } from "../wrappers/TokenLaunch";
 import { UserVault } from "../wrappers/UserVault";
+import { LaunchConfig } from "starton-periphery";
 import { compile } from "@ton/blueprint";
 import { Core } from "../wrappers/Core";
 import { TonClient4 } from "@ton/ton";
 import { Factory } from "@dedust/sdk";
 import "@ton/test-utils";
 import {
+    wrapTonClient4ForRemote,
+    RemoteBlockchainStorage,
+    TreasuryContract,
+    SandboxContract,
     Blockchain,
     internal,
-    RemoteBlockchainStorage,
-    SandboxContract,
-    TreasuryContract,
-    wrapTonClient4ForRemote,
+
 } from "@ton/sandbox";
+import { randomAddress } from "@ton/test-utils";
 
 
 describe("TokenLaunch", () => {
@@ -81,6 +83,12 @@ describe("TokenLaunch", () => {
                 endpoint: await getHttpV4Endpoint({ network: "mainnet" }),
             })))
         });
+        // blockchain.verbosity = {
+        //     print: true,
+        //     blockchainLogs: true,
+        //     vmLogs: "vm_logs_full",
+        //     debugLogs: true,
+        // };
         blockchain.now = Math.floor(Date.now() / 1000);
 
         msgPrices = getMsgPrices(blockchain.config, 0);
@@ -122,7 +130,7 @@ describe("TokenLaunch", () => {
                 {
                     chief: chief.address,
                     utilJettonMasterAddress: utilityJettonMaster.address,
-                    utilJettonWalletAddress: null, // Will be determined automatically by contract
+                    utilJettonWalletAddress: randomAddress(), // Will be determined automatically by contract
                     utilJetCurBalance: 0n,
                     notFundedLaunches: null,
                     notFundedLaunchesAmount: 0,
@@ -175,6 +183,12 @@ describe("TokenLaunch", () => {
     it("should deploy", async () => {
         const deployResult = await core.sendDeploy({ value: toNano("10"), via: chief.getSender() });
 
+
+        for (const tx of deployResult.transactions) {
+            console.log(tx.vmLogs)
+            console.log(`=== NEW TX ===`);
+        }
+
         expect(deployResult.transactions).toHaveTransaction({
             from: chief.address,
             to: core.address,
@@ -183,7 +197,7 @@ describe("TokenLaunch", () => {
         });
     });
 
-    test("test DeDust", async () => {
-
+    test("fast check", async () => {
+        console.log(toNano("0.1"));
     });
 });

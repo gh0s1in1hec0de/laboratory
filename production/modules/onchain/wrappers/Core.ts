@@ -2,6 +2,7 @@ import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, 
 import { CoreStorage, CoreOps, OP_LENGTH, QUERY_ID_LENGTH, tokenMetadataToCell } from "starton-periphery";
 import { CreateLaunchParams, LaunchConfigType, StateType, UpgradeParams } from "./types";
 import { coreConfigToCell, SendMessageParams } from "./utils";
+import { BASECHAIN } from "../tests/utils";
 
 export class Core implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {}
@@ -10,7 +11,7 @@ export class Core implements Contract {
         return new Core(address);
     }
 
-    static createFromConfig(config: CoreStorage, code: Cell, workchain = 0) {
+    static createFromConfig(config: CoreStorage, code: Cell, workchain = BASECHAIN) {
         const data = coreConfigToCell(config);
         const init = { code, data };
         return new Core(contractAddress(workchain, init), init);

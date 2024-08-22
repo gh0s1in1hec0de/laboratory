@@ -14,7 +14,6 @@ import {
     Cell,
 } from "@ton/core";
 
-// TODO At some asshole reason doesn't work as import from starton-periphery
 export function tokenMetadataToCell(content: TokenMetadata): Cell {
     return beginCell()
         .storeStringRefTail(content.uri) // Snake logic under the hood

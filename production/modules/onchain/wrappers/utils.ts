@@ -40,6 +40,7 @@ export function coreConfigToCell(config: CoreStorage): Cell {
         .storeInt(config.launchConfig.creatorRoundDurationMs, 32)
         .storeInt(config.launchConfig.wlRoundDurationMs, 32)
         .storeInt(config.launchConfig.pubRoundDurationMs, 32)
+        .storeInt(config.launchConfig.claimDurationMs, 32)
         .endCell();
 
     return beginCell()

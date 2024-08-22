@@ -14,7 +14,7 @@
 
 ;; We use TEP-74 Metadata standard
 ;; We determine start time manually to be able to calculate address of lunch off-chain before its actual deploy
-() create_launch(int query_id, slice sender_address, int total_supply, int platform_share_pct, cell metadata_cell, int start_time) {
+() create_launch(int query_id, slice sender_address, int total_supply, int platform_share_pct, cell metadata_cell, int start_time) impure inline  {
     int wl_jet_limit = muldiv(launch_conf::jet_wl_limit_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int pub_jet_limit = muldiv(launch_conf::jet_pub_limit_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int dex_jet_share = muldiv(launch_conf::jet_dex_share_pct, total_supply, PERCENTAGE_DENOMINATOR);
@@ -129,15 +129,15 @@
         .store_coins(msg_value)
         .store_statinit_ref_and_body_ref(token_launch_stateinit, msg_body)
         .end_cell();
-    this::not_funded_launches.dict_set(ADDRESS_SIZE, pack_address(token_launch_address), null());
+    this::not_funded_launches~dict_set(ADDRESS_SIZE, pack_address(token_launch_address), null());
     this::not_funded_launches_amount += 1;
     send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
-() init_callback(int query_id, int attached_value, slice sender_address) {
+() init_callback(int query_id, int attached_value, slice sender_address) impure inline {
     (_, int found) = this::not_funded_launches~dict_delete_get?(ADDRESS_SIZE, pack_address(sender_address));
     throw_if(error::tokens_lack, this::util_jet_cur_balance < launch_conf::util_jet_reward_amount);
-    throw_unless(error::unauthorized_access, found);
+    throw_unless(error::unauthorized_access, -1);
     this::not_funded_launches_amount -= 1;
 
     cell msg = build_jetton_transfer_msg(

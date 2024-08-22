@@ -28,6 +28,7 @@
             this::util_jetton_master_address,
             code::jetton_wallet
         );
+        save_data();
         return ();
     }
     if (op == op::core::create_launch) {
