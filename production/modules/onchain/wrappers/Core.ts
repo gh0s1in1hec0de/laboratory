@@ -1,16 +1,20 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
+import { CommonJettonMaster, tokenMetadataToCell } from "./CommonJettonMaster";
 import { CreateLaunchParams, StateType, UpgradeParams } from "./types";
 import { coreConfigToCell, SendMessageParams } from "./utils";
+import { CommonJettonWallet } from "./CommonJettonWallet";
+import { TokenLaunch } from "./TokenLaunch";
 import { BASECHAIN } from "../tests/utils";
 import {
     CoreStorage,
     CoreOps,
     OP_LENGTH,
     QUERY_ID_LENGTH,
-    tokenMetadataToCell,
     LaunchConfig,
-    Coins, Contracts
+    Contracts,
+    TokensLaunchOps
 } from "starton-periphery";
+
 
 export class Core implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
@@ -96,19 +100,17 @@ export class Core implements Contract {
         };
     }
 
-    static tokenCreationMessage(creator: Address, {
+    // TODO Stateinit calculation should be removed
+    // `../contracts/launchpad/core.operations.fc#L17`
+    static tokenCreationMessage(creator: Address, chief: Address, utilJettonMasterAddress: Address, {
             totalSupply,
             platformSharePct,
             metadata,
             startTime
         }: CreateLaunchParams,
-        staticLaunchParameters: LaunchConfig,
-        {
-            jettonLaunch,
-            derivedJettonMaster,
-            jettonWallet,
-            jettonLaunchUserVault
-        }: Contracts): Cell {
+        code: Contracts,
+        staticLaunchParameters: LaunchConfig
+    ): { stateinit: Cell, body: Cell } {
         const PERCENTAGE_DENOMINATOR = 100000n;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
 
@@ -171,23 +173,68 @@ export class Core implements Contract {
                 32
             )
             .endCell();
-        const SaleState = beginCell()
+        const saleState = beginCell()
             .storeRef(generalState)
             .storeRef(creatorRoundState)
             .storeRef(wlRoundState)
             .storeRef(pubRoundState)
+            .endCell();
+        const saleConfig = beginCell()
+            .storeCoins(totalSupply)
+            .storeCoins(staticLaunchParameters.minTonForSaleSuccess)
+            .storeCoins(dexJetShare)
+            .storeCoins(platformShare)
+            .storeCoins(staticLaunchParameters.utilJetRewardAmount)
             .endCell();
         const tools = beginCell()
             .storeAddress(null)
             .storeAddress(null)
             .storeAddress(null)
             .storeRef(packedMetadata)
-            .storeRef(derivedJettonMaster)
-            .storeRef(jettonWallet)
-            .storeRef(jettonLaunchUserVault)
+            .storeRef(code.derivedJettonMaster)
+            .storeRef(code.jettonWallet)
+            .storeRef(code.jettonLaunchUserVault)
             .endCell();
-        // TODO
-        const data = beginCell().endCell();
-        return data;
+        const data = beginCell()
+            .storeInt(0n, 1) // HAHAH BITCH TRY TO PASS 1 AS `value` AND YOU'LL GET THE MOST IDIOTIC ERROR IN THE WORLD
+            .storeCoins(0)
+            .storeAddress(chief)
+            .storeAddress(creator)
+            .storeRef(saleConfig)
+            .storeRef(saleState)
+            .storeRef(tools)
+            .endCell();
+        const tokenLaunchStateinit = beginCell()
+            .storeUint(0, 2)
+            .storeMaybeRef(code.jettonLaunch)
+            .storeMaybeRef(data)
+            .storeUint(0, 1)
+            .endCell();
+        const tokenLaunch = TokenLaunch.createFromConfig(data, code.jettonLaunch);
+        const futJetMaster = CommonJettonMaster.createFromConfig({
+                admin: tokenLaunch.address,
+                jetton_content: packedMetadata,
+                wallet_code: code.jettonWallet
+            },
+            code.derivedJettonMaster
+        );
+        const tokenLaunchFutJetWalletAddress = CommonJettonWallet.createFromConfig({
+            ownerAddress: tokenLaunch.address,
+            jettonMasterAddress: futJetMaster.address
+        }, code.jettonWallet);
+        const utilJetWalletAddress = CommonJettonWallet.createFromConfig({
+            ownerAddress: tokenLaunch.address,
+            jettonMasterAddress: utilJettonMasterAddress
+        }, code.jettonWallet);
+        return {
+            stateinit: tokenLaunchStateinit,
+            body: beginCell()
+                .storeUint(TokensLaunchOps.init, 32)
+                .storeUint(0, 64)
+                .storeAddress(tokenLaunchFutJetWalletAddress.address)
+                .storeAddress(utilJetWalletAddress.address)
+                .storeAddress(futJetMaster.address)
+                .endCell()
+        };
     }
 }

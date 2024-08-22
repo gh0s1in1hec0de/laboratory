@@ -1,4 +1,4 @@
-import { Address, beginCell, Cell, fromNano, storeMessage, storeStateInit, toNano, Transaction } from "@ton/core";
+import { Address, beginCell, Cell, storeMessage, storeStateInit, toNano, Transaction } from "@ton/core";
 import { CommonJettonMaster } from "../wrappers/CommonJettonMaster";
 import {
     collectCellStats, computedGeneric, computeFwdFees, computeFwdFeesVerbose,
@@ -6,14 +6,15 @@ import {
     MsgPrices, printTxsLogs, randomAddress, StorageStats, StorageValue,
 } from "./utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
+import { Contracts, LaunchConfig } from "starton-periphery";
 import { findTransactionRequired } from "@ton/test-utils";
+import { CreateLaunchParams } from "../wrappers/types";
 import { TokenLaunch } from "../wrappers/TokenLaunch";
 import { UserVault } from "../wrappers/UserVault";
-import { LaunchConfig } from "starton-periphery";
 import { compile } from "@ton/blueprint";
 import { ok as assert } from "node:assert";
 import { Core } from "../wrappers/Core";
-import { JettonWallet, TonClient4 } from "@ton/ton";
+import { TonClient4 } from "@ton/ton";
 import { Factory } from "@dedust/sdk";
 import "@ton/test-utils";
 import {
@@ -25,7 +26,6 @@ import {
     internal,
 
 } from "@ton/sandbox";
-import { CommonJettonWallet } from "../wrappers/CommonJettonWallet";
 
 const PRINT_TX_LOGS = false;
 
@@ -49,6 +49,7 @@ describe("Core", () => {
 
     let blockchain: Blockchain;
     let chief: SandboxContract<TreasuryContract>;
+    let creator: SandboxContract<TreasuryContract>;
     let msgPrices: MsgPrices;
     let gasPrices: GasPrices;
     let storagePrices: StorageValue;
@@ -75,10 +76,13 @@ describe("Core", () => {
         state_init: bigint
     ) => bigint;
 
-    let estimateTransferFwd: (amount: bigint, fwd_amount: bigint,
-        fwd_payload: Cell | null,
-        custom_payload: Cell | null,
-        prices?: MsgPrices) => bigint;
+    let estimateTokenLaunchDeployFwd: (
+        launchCreationParams: CreateLaunchParams,
+        code: Contracts,
+        tokenLaunchParams: LaunchConfig,
+        prices?: MsgPrices
+    ) => bigint;
+
     beforeAll(async () => {
         coreCode = await compile("Core");
         tokenLaunchCode = await compile("TokenLaunch");
@@ -93,7 +97,7 @@ describe("Core", () => {
             })))
         });
         // https://github.com/ton-org/sandbox?tab=readme-ov-file#viewing-logs
-        // We can also use approach, described in the link above, but seems like these logs are too intricate
+        // We can also use approach, described in the link above, but seems like these logs are too intricate,
         // and it is enough to use just `vmLogs` from txs
         blockchain.now = Math.floor(Date.now() / 1000);
 
@@ -105,6 +109,7 @@ describe("Core", () => {
 
         // Me btw
         chief = await blockchain.treasury("chief");
+        creator = await blockchain.treasury("creator");
 
         utilityJettonMaster = blockchain.openContract(
             CommonJettonMaster.createFromConfig(
@@ -173,25 +178,23 @@ describe("Core", () => {
             return computeFwdFeesVerbose(prices || msgPrices, stats.cells, stats.bits);
         };
 
-        estimateTransferFwd = (jetton_amount, fwd_amount,fwd_payload, custom_payload, prices) => {
-            // Purpose is to account for the first biggest one fwd fee.
-            // So, we use fwd_amount here only for body calculation
-
-            const mockFrom = randomAddress(0);
-            const mockTo   = randomAddress(0);
-
-            const body     = CommonJettonWallet.transferMessage(jetton_amount, mockTo,
-                mockFrom, custom_payload,
-                fwd_amount, fwd_payload);
+        estimateTokenLaunchDeployFwd = (launchCreationParams: CreateLaunchParams, code: Contracts, tokenLaunchParams: LaunchConfig, prices?: MsgPrices) => {
+            const { body } = Core.tokenCreationMessage(
+                creator.address,
+                chief.address,
+                utilityJettonMaster.address,
+                launchCreationParams,
+                code,
+                tokenLaunchParams
+            );
 
             const curPrices = prices || msgPrices;
-            const feesRes   = estimateBodyFee(body, true, curPrices);
-            const reverse   = feesRes.remaining * 65536n / (65536n - curPrices.firstFrac);
+            const feesRes = estimateBodyFee(body, true, curPrices);
+            const reverse = feesRes.remaining * 65536n / (65536n - curPrices.firstFrac);
             expect(reverse).toBeGreaterThanOrEqual(feesRes.total);
             return reverse;
-        }
+        };
 
-        // TODO Jerks ?
         forwardOverhead = (prices, stats) => {
             // Meh, kinda lazy way of doing that, but tests are bloated enough already
             return computeFwdFees(prices, stats.cells, stats.bits) - prices.lumpPrice;
@@ -234,7 +237,7 @@ describe("Core", () => {
 
     });
 
-    test("core state cost", async () => {
+    test("core state cost [research]", async () => {
         const smc = await blockchain.getContract(core.address);
         assert(smc.accountState, "Can't access core account state");
         // Runtime doesn't see assert here lol
@@ -249,7 +252,22 @@ describe("Core", () => {
         const stateCell = beginCell().store(storeStateInit(smc.accountState.state)).endCell();
         console.log("State init stats:", collectCellStats(stateCell, []));
     });
-    test("fast check", async () => {
-        // Just a buffer for a stuff you need to check fast
+    test("token creation fees measurements", async () => {
+        // Measure stateinit forwarding
+        const minFwdFee = estimateTokenLaunchDeployFwd({
+                startTime: Math.round(Date.now() / 1000) + 3600,
+                totalSupply: toNano("1000000"),
+                metadata: { uri: "http://another_shotcoin.meow" },
+                platformSharePct: 1500
+            },
+            {
+                jettonWallet: jettonWalletCode,
+                jettonLaunch: tokenLaunchCode,
+                jettonLaunchUserVault: userVaultCode,
+                derivedJettonMaster: jettonMasterCode
+            },
+            launchConfig
+        );
+        console.info(`Token Launch deployment message forward fee: ${minFwdFee}`);
     });
 });

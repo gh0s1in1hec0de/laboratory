@@ -1,5 +1,6 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
 import { SendMessageParams, tokenLauncherConfigToCell } from "./utils";
+import { BASECHAIN } from "../tests/utils";
 import {
     type TokenLaunchStorage,
     BalanceUpdateMode,
@@ -19,8 +20,8 @@ export class TokenLaunch implements Contract {
         return new TokenLaunch(address);
     }
 
-    static createFromConfig(config: TokenLaunchStorage, code: Cell, workchain = 0) {
-        const data = tokenLauncherConfigToCell(config);
+    static createFromConfig(config: TokenLaunchStorage | Cell, code: Cell, workchain = BASECHAIN) {
+        const data = config instanceof Cell ? config : tokenLauncherConfigToCell(config);
         const init = { code, data };
         return new TokenLaunch(contractAddress(workchain, init), init);
     }
