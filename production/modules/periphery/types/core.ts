@@ -1,4 +1,4 @@
-import { Address, BitString, Cell, Dictionary, Slice } from "@ton/core";
+import { Address, Cell, Dictionary, Slice } from "@ton/core";
 import { Maybe } from "@ton/ton/dist/utils/maybe";
 
 export type LaunchConfig = {
@@ -16,6 +16,13 @@ export type LaunchConfig = {
     claimDurationMs: number,
 };
 
+export type Contracts = {
+    jettonLaunch: Cell,
+    jettonLaunchUserVault: Cell,
+    derivedJettonMaster: Cell,
+    jettonWallet: Cell,
+}
+
 export type CoreStorage = {
     chief: Address,
     utilJettonMasterAddress: Address,
@@ -24,10 +31,5 @@ export type CoreStorage = {
     notFundedLaunches: Maybe<Dictionary<Address, Slice>>,
     notFundedLaunchesAmount: number,
     launchConfig: LaunchConfig,
-    contracts: {
-        jettonLaunch: Cell,
-        jettonLaunchUserVault: Cell,
-        derivedJettonMaster: Cell,
-        jettonWallet: Cell,
-    };
+    contracts: Contracts,
 };

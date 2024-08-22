@@ -1,4 +1,5 @@
 import { Address, toNano, Slice, beginCell } from "@ton/core";
+import { BlockchainTransaction } from "@ton/sandbox";
 
 export const BASECHAIN = 0;
 export const randomAddress = (wc: number = BASECHAIN) => {
@@ -34,4 +35,15 @@ export const getRandomInt = (min: number, max: number) => {
 
 export const getRandomTon = (min: number, max: number): bigint => {
     return toNano(getRandom(min, max).toFixed(9));
+};
+
+export const printTxsLogs = (txs: BlockchainTransaction[], title?: string) => {
+    let txIndex = 1;
+    if (title) console.info(`[*] ${title}`);
+    for (const tx of txs) {
+        console.info(` - transaction #${txIndex}`);
+        console.log(tx.vmLogs);
+        txIndex += 1;
+    }
+
 };

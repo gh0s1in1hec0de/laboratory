@@ -19,7 +19,7 @@
     int pub_jet_limit = muldiv(launch_conf::jet_pub_limit_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int dex_jet_share = muldiv(launch_conf::jet_dex_share_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int platform_share = muldiv(platform_share_pct, total_supply, PERCENTAGE_DENOMINATOR);
-    int creator_buyback_jet_limit = total_supply - wl_jet_limit - pub_jet_limit - dex_jet_share - platform_share;
+    int creator_buyback_jet_limit = total_supply - (wl_jet_limit + pub_jet_limit + dex_jet_share + platform_share);
     ;; Temporary - just x2 lower than wl upper bound price
     int creator_jet_price = launch_conf::ton_limit_for_wl_round / (wl_jet_limit * 2);
 

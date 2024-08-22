@@ -99,7 +99,7 @@
     );
 }
 
-(int, int, int, int, int, int, int, int, int, int, int) get_launch_config() method_id {
+(int, int, int, int, int, int, int, int, int, int, int, int) get_launch_config() method_id {
     load_data();
     return (
         launch_conf::min_ton_for_sale_success,
@@ -114,6 +114,7 @@
 
         launch_conf::creator_round_duration_ms,
         launch_conf::wl_round_duration_ms,
-        launch_conf::pub_round_duration_ms
+        launch_conf::pub_round_duration_ms,
+        launch_conf::claim_duration_ms
     );
 }

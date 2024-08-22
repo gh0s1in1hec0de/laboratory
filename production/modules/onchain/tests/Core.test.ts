@@ -1,17 +1,19 @@
-import { Address, beginCell, Cell, storeMessage, toNano, Transaction } from "@ton/core";
+import { Address, beginCell, Cell, fromNano, storeMessage, storeStateInit, toNano, Transaction } from "@ton/core";
 import { CommonJettonMaster } from "../wrappers/CommonJettonMaster";
 import {
     collectCellStats, computedGeneric, computeFwdFees, computeFwdFeesVerbose,
     FullFees, GasPrices, getGasPrices, getMsgPrices, getStoragePrices,
-    MsgPrices, StorageStats, StorageValue,
+    MsgPrices, printTxsLogs, randomAddress, StorageStats, StorageValue,
 } from "./utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
+import { findTransactionRequired } from "@ton/test-utils";
 import { TokenLaunch } from "../wrappers/TokenLaunch";
 import { UserVault } from "../wrappers/UserVault";
 import { LaunchConfig } from "starton-periphery";
 import { compile } from "@ton/blueprint";
+import { ok as assert } from "node:assert";
 import { Core } from "../wrappers/Core";
-import { TonClient4 } from "@ton/ton";
+import { JettonWallet, TonClient4 } from "@ton/ton";
 import { Factory } from "@dedust/sdk";
 import "@ton/test-utils";
 import {
@@ -23,10 +25,11 @@ import {
     internal,
 
 } from "@ton/sandbox";
-import { randomAddress } from "@ton/test-utils";
+import { CommonJettonWallet } from "../wrappers/CommonJettonWallet";
 
+const PRINT_TX_LOGS = false;
 
-describe("TokenLaunch", () => {
+describe("Core", () => {
     let coreCode = new Cell();
     let core: SandboxContract<Core>;
 
@@ -58,7 +61,9 @@ describe("TokenLaunch", () => {
     // Custom values
     let utilityJettonSupply: bigint;
     // Function initialization
+
     let printTxGasStats: (name: string, trans: Transaction) => bigint;
+    // `force_ref` is set to `true` for bony-in-a-ref cases
     let estimateBodyFee: (body: Cell, force_ref: boolean, prices?: MsgPrices) => FullFees;
     let estimateBurnFwd: (prices?: MsgPrices) => bigint;
     let forwardOverhead: (prices: MsgPrices, stats: StorageStats) => bigint;
@@ -70,6 +75,10 @@ describe("TokenLaunch", () => {
         state_init: bigint
     ) => bigint;
 
+    let estimateTransferFwd: (amount: bigint, fwd_amount: bigint,
+        fwd_payload: Cell | null,
+        custom_payload: Cell | null,
+        prices?: MsgPrices) => bigint;
     beforeAll(async () => {
         coreCode = await compile("Core");
         tokenLaunchCode = await compile("TokenLaunch");
@@ -83,13 +92,9 @@ describe("TokenLaunch", () => {
                 endpoint: await getHttpV4Endpoint({ network: "mainnet" }),
             })))
         });
-        // Looks like this overloading doesn't give us any game-changing information
-        // blockchain.verbosity = {
-        //     print: true,
-        //     blockchainLogs: true,
-        //     vmLogs: "vm_logs_full",
-        //     debugLogs: true,
-        // };
+        // https://github.com/ton-org/sandbox?tab=readme-ov-file#viewing-logs
+        // We can also use approach, described in the link above, but seems like these logs are too intricate
+        // and it is enough to use just `vmLogs` from txs
         blockchain.now = Math.floor(Date.now() / 1000);
 
         msgPrices = getMsgPrices(blockchain.config, 0);
@@ -146,7 +151,7 @@ describe("TokenLaunch", () => {
                 coreCode
             )
         );
-
+        // Measures fees for code execution (computational fee)
         printTxGasStats = (name, transaction) => {
             const txComputed = computedGeneric(transaction);
             console.log(`${name} used ${txComputed.gasUsed} gas`);
@@ -155,7 +160,7 @@ describe("TokenLaunch", () => {
         };
 
         estimateBodyFee = (body, forceRef, prices) => {
-            // const curPrice = prices || msgPrices;
+            const curPrice = prices || msgPrices;
             const mockAddr = new Address(0, Buffer.alloc(32, "A"));
             const testMsg = internal({
                 from: mockAddr,
@@ -168,7 +173,25 @@ describe("TokenLaunch", () => {
             return computeFwdFeesVerbose(prices || msgPrices, stats.cells, stats.bits);
         };
 
-        // Jerks
+        estimateTransferFwd = (jetton_amount, fwd_amount,fwd_payload, custom_payload, prices) => {
+            // Purpose is to account for the first biggest one fwd fee.
+            // So, we use fwd_amount here only for body calculation
+
+            const mockFrom = randomAddress(0);
+            const mockTo   = randomAddress(0);
+
+            const body     = CommonJettonWallet.transferMessage(jetton_amount, mockTo,
+                mockFrom, custom_payload,
+                fwd_amount, fwd_payload);
+
+            const curPrices = prices || msgPrices;
+            const feesRes   = estimateBodyFee(body, true, curPrices);
+            const reverse   = feesRes.remaining * 65536n / (65536n - curPrices.firstFrac);
+            expect(reverse).toBeGreaterThanOrEqual(feesRes.total);
+            return reverse;
+        }
+
+        // TODO Jerks ?
         forwardOverhead = (prices, stats) => {
             // Meh, kinda lazy way of doing that, but tests are bloated enough already
             return computeFwdFees(prices, stats.cells, stats.bits) - prices.lumpPrice;
@@ -179,15 +202,11 @@ describe("TokenLaunch", () => {
             // const execute = send + recv;
             return fwdTotal + send + recv + storage + 1n;
         };
-    });
+    }, 20000);
 
     it("should deploy", async () => {
-        const deployResult = await core.sendDeploy({ value: toNano("10"), via: chief.getSender() });
-
-        for (const tx of deployResult.transactions) {
-            console.log(tx.vmLogs)
-            console.log(`=== NEW TX ===`);
-        }
+        const deployResult = await core.sendDeploy({ value: toNano("2"), via: chief.getSender() });
+        if (PRINT_TX_LOGS) printTxsLogs(deployResult.transactions, "Core deployment VM logs");
 
         expect(deployResult.transactions).toHaveTransaction({
             from: chief.address,
@@ -195,10 +214,40 @@ describe("TokenLaunch", () => {
             deploy: true,
             success: true
         });
+        expect(deployResult.transactions).not.toHaveTransaction({
+            on: chief.address,
+            from: core.address,
+            inMessageBounced: true
+        });
+        // Doesn't work with inactive contracts
+        expect(await core.getLaunchConfig()).toEqual(launchConfig);
+
+        const deploymentTx = findTransactionRequired(deployResult.transactions, {
+            from: chief.address,
+            to: core.address,
+            deploy: true,
+            success: true
+        });
+
+        // const gasFees = printTxGasStats("Core deployment transaction:", deploymentTx);
+        // console.log(fromNano(gasFees));
+
     });
 
-    test("contract is active", async () => {
-        console.log(await core.getLaunchConfig());
+    test("core state cost", async () => {
+        const smc = await blockchain.getContract(core.address);
+        assert(smc.accountState, "Can't access core account state");
+        // Runtime doesn't see assert here lol
+        if (smc.accountState.type !== "active")
+            throw new Error("Wallet account is not active");
+        assert(smc.account.account, "Can't access core account!");
+
+        console.log(
+            "Core ~ storage stats (dictionary is empty):",
+            smc.account.account.storageStats.used
+        );
+        const stateCell = beginCell().store(storeStateInit(smc.accountState.state)).endCell();
+        console.log("State init stats:", collectCellStats(stateCell, []));
     });
     test("fast check", async () => {
         // Just a buffer for a stuff you need to check fast
