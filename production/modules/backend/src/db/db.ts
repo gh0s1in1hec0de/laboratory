@@ -1,9 +1,11 @@
 import type { SqlClient } from "./types";
+import { useLogger } from "../logger";
 import postgres from "postgres";
 import * as path from "path";
 import * as fs from "fs";
 
 export async function createPostgresClient(): Promise<SqlClient> {
+    const logger = useLogger();
     const sql = postgres({
         host: "db",
         port: 5432,
@@ -15,7 +17,7 @@ export async function createPostgresClient(): Promise<SqlClient> {
     });
     await sql.listen("user_balance_error", async (payload) => {
         const { id, action, details } = JSON.parse(payload);
-        console.error(`new user balance error#${id}: action#${action} - ${details}`);
+        logger.error(`new user balance error#${id}: action#${action} - ${details}`);
     });
     return sql;
 }
@@ -23,9 +25,10 @@ export async function createPostgresClient(): Promise<SqlClient> {
 export const globalClient = await createPostgresClient();
 
 export async function applyMigrations() {
+    const logger = useLogger();
     const directoryPath = path.join(__dirname, "migrations");
     const files = fs.readdirSync(directoryPath).sort();
-
+    logger.info(globalClient);
     try {
         // Open a transaction
         await globalClient.begin(async sql => {
@@ -35,7 +38,7 @@ export async function applyMigrations() {
                     // Here we call text we got from migration .sql file as a query
                     await sql.unsafe(migration);
                 } catch (_e) {
-                    console.info(`seems like migration ${file} had already been applied`);
+                    logger.info(`seems like migration ${file} had already been applied`);
                 }
             }
         });

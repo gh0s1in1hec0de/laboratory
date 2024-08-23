@@ -7,7 +7,7 @@ export function WalletInfo(){
     return null;
   }
 
-  console.log(wallet)
+  // console.log(wallet)
 
   return(
     <div style={{ marginBottom: "20px" }}>

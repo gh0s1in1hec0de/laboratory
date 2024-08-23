@@ -5,10 +5,12 @@ import {
 import { handleTokenLaunchUpdates } from "./tokenLaunch.ts";
 import { retrieveAllUnknownTransactions } from "./api.ts";
 import type { Address } from "@ton/ton";
+import { useLogger } from "../logger";
 import { delay } from "../utils.ts";
 import * as db from "../db";
 
 export async function handleCoreUpdates(coreAddress: RawAddressString) {
+    const logger = useLogger();
     let currentHeight = await db.getCoreHeight(coreAddress) ?? 0n;
     let iteration = 0;
     while (true) {
@@ -50,7 +52,7 @@ export async function handleCoreUpdates(coreAddress: RawAddressString) {
             if (iteration % 5 === 0) await db.setCoreHeight(coreAddress, currentHeight, true);
             await delay(5000); // TODO Determine synthetic delay
         } catch (e) {
-            console.error(`failed to load new launches for core(${coreAddress}) update with error: ${e}`);
+            logger.error(`failed to load new launches for core(${coreAddress}) update with error: ${e}`);
         }
     }
 }

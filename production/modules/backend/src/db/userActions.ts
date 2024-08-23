@@ -1,6 +1,7 @@
 import type { UserActionType, SqlClient, UserAction } from "./types";
 import type { RawAddressString } from "starton-periphery";
 import { ok as assert } from "assert";
+import { useLogger } from "../logger";
 import { globalClient } from "./db";
 
 export async function storeUserAction(
@@ -44,6 +45,7 @@ export async function getUserActions(
 }
 
 export async function storeUserActions(userActions: UserAction[]) {
+    const logger = useLogger();
     try {
         await globalClient.begin(async txClient => {
             for (const action of userActions) {
@@ -53,6 +55,6 @@ export async function storeUserActions(userActions: UserAction[]) {
     } catch (e) {
         const actor = userActions[0].actor;
         const timestamp = userActions[0].timestamp;
-        console.error(`failed to record user actions fo ${actor}[${timestamp}] in tx with error: ${e}`);
+        logger.error(`failed to record user actions fo ${actor}[${timestamp}] in tx with error: ${e}`);
     }
 }

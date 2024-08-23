@@ -1,4 +1,4 @@
-import {useIsConnectionRestored, useTonAddress, useTonConnectUI, useTonWallet} from "@tonconnect/ui-react";
+import {useIsConnectionRestored, useTonConnectUI, useTonWallet} from "@tonconnect/ui-react";
 import {useState} from "react";
 import {beginCell} from "@ton/ton";
 
@@ -8,7 +8,7 @@ export function SendTransaction() {
   const [tonConnectUI] = useTonConnectUI();
   const [isLoadingTransaction, setIsLoadingTransaction] = useState(false);
   // 0QClQ1XYD9gcXqQtLYRuMNepTo8H9MeRswP7ptvObBrI5sCC
-  const address = useTonAddress();
+  // const address = useTonAddress();
 
   let content: string;
   switch (true) {

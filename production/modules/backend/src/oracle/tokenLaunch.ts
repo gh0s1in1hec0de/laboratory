@@ -9,11 +9,13 @@ import {
     UserVaultOps,
 } from "starton-periphery";
 import { retrieveAllUnknownTransactions } from "./api";
+import { useLogger } from "../logger";
 import { delay } from "../utils";
 import * as db from "../db";
 
 export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) {
-    console.debug(`new token launch updates handler for ${launchAddress} is up`);
+    const logger = useLogger();
+    logger.debug(`new token launch updates handler for ${launchAddress} is up`);
     const tokenLaunch = await db.getTokenLaunch(launchAddress);
     // TODO Proper error handling
     if (!tokenLaunch) return;
@@ -90,7 +92,7 @@ export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) 
             currentHeight = newTxs[newTxs.length - 1].lt;
             await delay(2000); // TODO Determine synthetic delay
         } catch (e) {
-            console.error(`failed to handle launch ${launchAddress} update with error: ${e}`);
+            logger.error(`failed to handle launch ${launchAddress} update with error: ${e}`);
         }
     }
 }

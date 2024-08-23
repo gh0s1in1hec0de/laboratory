@@ -1,5 +1,7 @@
 // The raw address string format is chosen to standardize the stored addresses.
 // It will help to avoid errors based on addresses' formats.
+import { useLogger } from "./logger";
+
 export enum Network {
     Mainnet = "mainnet",
     Testnet = "testnet"
@@ -10,6 +12,7 @@ export async function maybeBruteforceOverload<T>(
     retries = 4,
     maxDelay = 3350
 ): Promise<T> {
+    const logger = useLogger();
     let attempt = 1;
     let delay = 750;
     while (attempt < retries) {
@@ -18,7 +21,7 @@ export async function maybeBruteforceOverload<T>(
         try {
             return await operation;
         } catch (e) {
-            console.error(`operation sucked (attempt #${attempt}) with error: ${e}`);
+            logger.error(`operation sucked (attempt #${attempt}) with error: ${e}`);
         }
         await new Promise(resolve => setTimeout(resolve, waitTime));
         delay = Math.min(delay * 2, maxDelay);

@@ -3,6 +3,7 @@ import type { LamportTime, RawAddressString } from "starton-periphery";
 import { currentNetwork, mainnetKeys, testnetKeys } from "../config";
 import { delay, maybeBruteforceOverload, Network } from "../utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
+import { useLogger } from "../logger";
 
 // RR bitch (RoundRobin, not Rolls-Royce)
 class BalancedTonClient {
@@ -73,8 +74,9 @@ export async function retrieveAllUnknownTransactions(
         limit: number,
     }
 ): Promise<Transaction[]> {
-    console.debug(`[*] ${retrieveAllUnknownTransactions.name}`); // THIS CODE IS A FUCKING JOKE BTW
-    console.debug(` - start txs parsing for account ${address} from ${stopAt}`);
+    const logger = useLogger();
+    logger.debug(`[*] ${retrieveAllUnknownTransactions.name}`); // THIS CODE IS A FUCKING JOKE BTW
+    logger.debug(` - start txs parsing for account ${address} from ${stopAt}`);
     const newTransactions: Transaction[] = [];
     const limit = parsingOptions?.limit ?? 100;
     let startFrom: { lt: LamportTime, hash: string } | undefined = undefined;
@@ -82,7 +84,7 @@ export async function retrieveAllUnknownTransactions(
     let iterationIndex = 1;
     while (true) {
         if (iterationIndex > 1) {
-            console.log(`exceeded update limit(${limit} per request) for address ${address} at ${new Date(Date.now()).toString()}`);
+            logger.warn(`exceeded update limit(${limit} per request) for address ${address} at ${new Date(Date.now()).toString()}`);
             await delay(750);
         }
 
@@ -100,7 +102,7 @@ export async function retrieveAllUnknownTransactions(
     }
     // No updates happened case
     if (newTransactions.length == 0) {
-        console.debug(` - no updates for ${address}`);
+        logger.debug(` - no updates for ${address}`);
         return [];
     }
     // From oldest to newest
@@ -109,7 +111,7 @@ export async function retrieveAllUnknownTransactions(
         if (a.lt > b.lt) return 1;
         return 0;
     });
-    console.debug(`found ${newTransactions.length} new transactions for ${address}`);
+    logger.debug(`found ${newTransactions.length} new transactions for ${address}`);
     return newTransactions;
 }
 
