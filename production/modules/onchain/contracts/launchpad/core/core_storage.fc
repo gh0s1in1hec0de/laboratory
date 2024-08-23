@@ -1,7 +1,7 @@
 #include "../../stdlib.fc";
 #include "core_context.fc";
 
-() load_data() inline_ref {
+() load_data() impure inline_ref {
     slice ds = get_data().begin_parse();
     this::chief = ds~load_msg_addr();
     this::util_jetton_master_address = ds~load_msg_addr();
@@ -30,10 +30,10 @@
 
     cell contracts = ds~load_ref();
     slice contarcts_slice = contracts.begin_parse();
-    code::jetton_launch = contarcts_slice~load_ref();
+    code::token_launch = contarcts_slice~load_ref();
     code::user_vault = contarcts_slice~load_ref();
 
-    code::derived_jetton_master = contarcts_slice~load_ref();
+    code::jetton_master = contarcts_slice~load_ref();
     code::jetton_wallet = contarcts_slice~load_ref();
     contarcts_slice.end_parse();
 
@@ -42,9 +42,9 @@
 
 () save_data() impure inline_ref {
     cell contracts = begin_cell()
-        .store_ref(code::jetton_launch)
+        .store_ref(code::token_launch)
         .store_ref(code::user_vault)
-        .store_ref(code::derived_jetton_master)
+        .store_ref(code::jetton_master)
         .store_ref(code::jetton_wallet)
         .end_cell();
     cell launch_config = begin_cell()

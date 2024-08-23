@@ -9,7 +9,6 @@ export type JettonWalletConfig = {
 
 export function jettonWalletConfigToCell(config: JettonWalletConfig): Cell {
     return beginCell()
-        .storeUint(0, 4) // status
         .storeCoins(0) // jetton balance
         .storeAddress(config.ownerAddress)
         .storeAddress(config.jettonMasterAddress)

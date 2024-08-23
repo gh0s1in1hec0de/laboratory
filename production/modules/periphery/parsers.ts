@@ -153,5 +153,5 @@ export function parseMetadataCell(metadataCell: Cell): TokenMetadata {
     const cs = metadataCell.beginParse();
     const uri = cs.loadStringTail();
     cs.endParse();
-    return { uri: uri };
+    return { uri };
 }

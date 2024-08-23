@@ -8,7 +8,7 @@
 #include "tl_context.fc";
 #include "tl_storage.fc";
 
-() handle_owner_buyout(int query_id, int msg_value) impure inline {
+() handle_creator_buyout(int query_id, int msg_value) impure inline {
     throw_unless(error::wrong_time, now() < creator_round::const::end_time);
     (int accessible_user_value, int opn) = check_amount_is_enough_for_creator_buyout(msg_value);
     (int jettons_amount, int remainder) = divmod(accessible_user_value, creator_round::const::fut_jet_price);
@@ -47,8 +47,7 @@
             util_jet_wallet_address,
             initiator,
             accessible_user_value > 0 ? accessible_user_value : 1,
-            begin_cell().store_uint(0, 1) ;; Just preventing exit code 9 (maybe I'm just silly)
-
+            null() ;; Just preventing exit code 9 (maybe I'm just silly)
         );
         ;; Taking all the value remains from transfer notification to attach
         send_raw_message(chargeback_transfer_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
@@ -63,7 +62,7 @@
         util_jet_wallet_address,
         initiator,
         0,
-        begin_cell().store_uint(0, 1)
+        null()
     );
     send_raw_message(return_transfer_msg, 0);
 
@@ -201,7 +200,7 @@
         util_jet_wallet_address,
         initiator,
         1, ;; 1 nanoton to notify user about tokens
-        begin_cell().store_uint(0, 1)
+        null()
     );
 
     send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
@@ -264,7 +263,7 @@
         util_jet_wallet_address,
         recipient,
         1,
-        begin_cell().store_uint(0, 1)
+        null()
     );
 
     general_state::fut_jet_deployed_balance -= total_fut_jet_recipient_amount;

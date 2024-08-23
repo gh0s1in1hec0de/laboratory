@@ -5,7 +5,7 @@
 
 #include "core_context.fc";
 
-() handle_incoming_transfer(slice sender_address,  int jetton_amount) {
+() handle_incoming_transfer(slice sender_address,  int jetton_amount) impure inline {
     if (~ equal_slices_bits(sender_address, this::util_jetton_wallet_address)) {
         return ();
     }
@@ -14,12 +14,12 @@
 
 ;; We use TEP-74 Metadata standard
 ;; We determine start time manually to be able to calculate address of lunch off-chain before its actual deploy
-() create_launch(int query_id, slice sender_address, int total_supply, int platform_share_pct, cell metadata_cell, int start_time) {
+() create_launch(int query_id, slice sender_address, int total_supply, int platform_share_pct, cell metadata_cell, int start_time) impure inline  {
     int wl_jet_limit = muldiv(launch_conf::jet_wl_limit_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int pub_jet_limit = muldiv(launch_conf::jet_pub_limit_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int dex_jet_share = muldiv(launch_conf::jet_dex_share_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int platform_share = muldiv(platform_share_pct, total_supply, PERCENTAGE_DENOMINATOR);
-    int creator_buyback_jet_limit = total_supply - wl_jet_limit - pub_jet_limit - dex_jet_share - platform_share;
+    int creator_buyback_jet_limit = total_supply - (wl_jet_limit + pub_jet_limit + dex_jet_share + platform_share);
     ;; Temporary - just x2 lower than wl upper bound price
     int creator_jet_price = launch_conf::ton_limit_for_wl_round / (wl_jet_limit * 2);
 
@@ -85,7 +85,7 @@
         .store_address_none()
         .store_address_none()
         .store_ref(metadata_cell)
-        .store_ref(code::derived_jetton_master)
+        .store_ref(code::jetton_master)
         .store_ref(code::jetton_wallet)
         .store_ref(code::user_vault)
         .end_cell();
@@ -98,10 +98,10 @@
         .store_ref(sale_state)
         .store_ref(tools)
         .end_cell();
-    cell token_launch_stateinit = calculate_contract_state_init(code::jetton_launch, data);
+    cell token_launch_stateinit = calculate_contract_state_init(code::token_launch, data);
     slice token_launch_address = calculate_contract_address(token_launch_stateinit);
     (cell _fut_jet_master_stateinit, slice fut_jet_master_address) = calculate_fut_jet_master_data(
-        code::derived_jetton_master,
+        code::jetton_master,
         total_supply,
         token_launch_address,
         address_none(),
@@ -129,25 +129,27 @@
         .store_coins(msg_value)
         .store_statinit_ref_and_body_ref(token_launch_stateinit, msg_body)
         .end_cell();
-    this::not_funded_launches.dict_set(ADDRESS_SIZE, pack_address(token_launch_address), null());
+    this::not_funded_launches~dict_set(ADDRESS_SIZE, pack_address(token_launch_address), "");
     this::not_funded_launches_amount += 1;
     send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
-() init_callback(int query_id, int attached_value, slice sender_address) {
+() init_callback(int query_id, int attached_value, slice sender_address) impure inline {
     (_, int found) = this::not_funded_launches~dict_delete_get?(ADDRESS_SIZE, pack_address(sender_address));
     throw_if(error::tokens_lack, this::util_jet_cur_balance < launch_conf::util_jet_reward_amount);
+    this::util_jet_cur_balance -= launch_conf::util_jet_reward_amount;
     throw_unless(error::unauthorized_access, found);
     this::not_funded_launches_amount -= 1;
 
+    int tl_compute_fee = get_compute_fee(MY_WORKCHAIN, RECORD_REWARD_JETTONS_ENROLLMENT_GAS_CONSUMPTION);
     cell msg = build_jetton_transfer_msg(
         query_id,
-        JETTON_MIN_TRANSFER_FEE + get_compute_fee(MY_WORKCHAIN, RECORD_REWARD_JETTONS_ENROLLMENT_GAS_CONSUMPTION),
+        JETTON_MIN_TRANSFER_FEE + tl_compute_fee,
         launch_conf::util_jet_reward_amount,
         this::util_jetton_wallet_address,
         sender_address,
-        1,
-        begin_cell().store_uint(UTIL_JET_REWARD_ENROLLMENT, UTIL_JET_SEND_MODE_SIZE)
+        tl_compute_fee,
+        begin_cell().store_uint(UTIL_JET_REWARD_ENROLLMENT, UTIL_JET_SEND_MODE_SIZE).end_cell()
     );
     send_raw_message(msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }

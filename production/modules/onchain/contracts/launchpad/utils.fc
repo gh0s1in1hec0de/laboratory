@@ -4,7 +4,7 @@
 const MY_WORKCHAIN = BASECHAIN;
 const int ADDRESS_SIZE = 264; ;; 256 + 8
 
-const PERCENTAGE_DENOMINATOR = 1000;
+const PERCENTAGE_DENOMINATOR = 100000;
 const BALANCE_UPD_MODE_SIZE = 4;
 const UTIL_JET_SEND_MODE_SIZE = 4;
 
@@ -50,7 +50,7 @@ cell build_jetton_transfer_msg(
     slice our_wallet_address,
     slice recipient,
     int forward_ton_amount,
-    builder payload
+    cell payload
 ) inline_ref {
     cell msg_body = begin_cell()
         .store_op(op::transfer)
@@ -58,11 +58,12 @@ cell build_jetton_transfer_msg(
         .store_coins(jetton_amount)
         .store_slice(recipient) ;; To
         .store_slice(my_address()) ;; Address, that will get excesses after operation
+        .store_maybe_ref(null())
         .store_coins(forward_ton_amount)
-        .store_builder(payload)
+        .store_maybe_ref(payload)
         .end_cell();
     return begin_cell()
-        .store_msg_flags_and_address_none(NON_BOUNCEABLE) ;; As we are not able to handle this situation
+        .store_msg_flags_and_address_none(BOUNCEABLE) ;; Handle bouncing
         .store_slice(our_wallet_address)
         .store_coins(value)
         .store_only_body_ref(msg_body)
@@ -217,5 +218,18 @@ cell pack_fut_jet_master_data(int total_supply, slice admin, slice next_admin, c
     );
     slice jetton_master_address = calculate_contract_address(jetton_master_stateinit);
     return (jetton_master_stateinit, jetton_master_address);
+}
+
+cell simple_transfer(slice dest, int value, slice comment) {
+    builder msg = begin_cell()
+        .store_msg_flags_and_address_none(BOUNCEABLE)
+        .store_slice(dest)
+        .store_coins(value)
+        .store_prefix_only_body()
+        .store_op(0);
+    if (comment.slice_bits() > 0) {
+        msg = msg.store_slice(comment);
+    }
+    return msg.end_cell();
 }
 

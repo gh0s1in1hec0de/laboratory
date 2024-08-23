@@ -6,6 +6,15 @@ const ONE_TON = 1000000000;
 const 1_MONTH = 30 * 24 * 3600;
 const 2_MONTHS = 60 * 24 * 3600;
 
+{-
+  Here will be just some of my thoughts, decisions explanations and notes.
+  As gas coalculation and contract are already bloated as fuck I'll try to compress and simplify some of
+    gas calculation parts without lost of quality and predictability (imo). The first practice, that is different from
+    stablecoin-contract is unification of contract storage and stateinit consuption. I don't split them, as
+    it is possible just measure the case of most loaded storage structure and set it everywhere. Fees difference in this case is insignificant.
+
+-}
+
 ;; Precompiled constants
 ;; All of the contents are result of contract emulation tests
 
@@ -15,19 +24,14 @@ const JETTON_MIN_TRANSFER_FEE = 30000000;
 ;; https://docs.ton.org/develop/smart-contracts/fees#fees-for-sending-ton
 const SIMPLE_TRANSFER_FEE = 6000000;
 
-const USER_VAULT_BITS  = 1;
-const USER_VAULT_CELLS = 1;
-const TOKEN_LAUNCH_BITS  = 1;
-const TOKEN_LAUNCH_CELLS = 1;
+const USER_VAULT_STATE_BITS  = 1;
+const USER_VAULT_STATE_CELLS = 1;
+;; Use `loadAtMax` to measure
+const TOKEN_LAUNCH_STATE_BITS  = 48441;
+const TOKEN_LAUNCH_STATE_CELLS = 120;
 
-const USER_VAULT_INITSTATE_BITS  = 1;
-const USER_VAULT_INITSTATE_CELLS = 1;
-
-const JETTON_MINTER_INITSTATE_BITS = 1;
-const JETTON_MINTER_INITSTATE_CELLS = 1;
-
-const TOKEN_LAUNCH_INITSTATE_BITS = 1;
-const TOKEN_LAUNCH_INITSTATE_CELLS = 1;
+const JETTON_MINTER_STATE_BITS = 1;
+const JETTON_MINTER_STATE_CELLS = 1;
 
 ;; Message that contains info about user's balance updates
 const BALANCE_UPDATE_MSG_BITS = 1;
@@ -56,23 +60,23 @@ const RECEIVE_BALANCE_UPDATE_CONSUMPTION = 1;
 const RECEIVE_CLAIM_CONSUMPTION = 1;
 
 int calculate_user_vault_min_storage_fee() inline {
-    return get_storage_fee(MY_WORKCHAIN, 2_MONTHS, USER_VAULT_BITS, USER_VAULT_CELLS);
+    return get_storage_fee(MY_WORKCHAIN, 2_MONTHS, USER_VAULT_STATE_BITS, USER_VAULT_STATE_CELLS);
 }
 
 int calculate_token_launch_min_storage_fee(int duration) inline {
-    return get_storage_fee(MY_WORKCHAIN, duration, TOKEN_LAUNCH_BITS, TOKEN_LAUNCH_CELLS);
+    return get_storage_fee(MY_WORKCHAIN, duration, TOKEN_LAUNCH_STATE_BITS, TOKEN_LAUNCH_STATE_CELLS);
 }
 
 int forward_user_vault_init_state_overhead() inline {
-    return get_simple_forward_fee(MY_WORKCHAIN, USER_VAULT_INITSTATE_BITS, USER_VAULT_INITSTATE_CELLS);
+    return get_simple_forward_fee(MY_WORKCHAIN, USER_VAULT_STATE_BITS, USER_VAULT_STATE_CELLS);
 }
 
 int forward_jetton_minter_init_state_overhead() inline {
-    return get_simple_forward_fee(MY_WORKCHAIN, JETTON_MINTER_INITSTATE_BITS, JETTON_MINTER_INITSTATE_CELLS);
+    return get_simple_forward_fee(MY_WORKCHAIN, JETTON_MINTER_STATE_BITS, JETTON_MINTER_STATE_CELLS);
 }
 
 int forward_token_launch_init_state_overhead() inline {
-    return get_simple_forward_fee(MY_WORKCHAIN, TOKEN_LAUNCH_INITSTATE_BITS, TOKEN_LAUNCH_INITSTATE_CELLS);
+    return get_simple_forward_fee(MY_WORKCHAIN, TOKEN_LAUNCH_STATE_BITS, TOKEN_LAUNCH_STATE_CELLS);
 }
 
 ;;; Accounts unified balance-update message forwarding, user vault stateinit & storage fee overhead
@@ -199,14 +203,16 @@ int check_amount_is_enough_for_jetton_claim(int msg_value) {
     return msg_value - required_gas;
 }
 
-;; Creation of a new token launch
-const CREATE_LAUNCH_GAS_CONSUMPTION = 1;
-const INIT_MSG_BITS = 1;
-const INIT_MSG_CELLS = 1;
-const INITIALIZATION_GAS_CONSUMPTION = 1;
+;; Measured in "new launch creation through core"
+const CREATE_LAUNCH_GAS_CONSUMPTION = 32940;
+;; Manual bits counting from core/operations.fc#L~120
+const INIT_MSG_BITS = 897; ;; 32 + 64 + 3 x (3+8+256)
+const INIT_MSG_CELLS = 2; ;; body in ref + stateinit in ref (TODO should it be accounted here?)
+const INITIALIZATION_GAS_CONSUMPTION = 15217;
 ;; Body contains only OP
-const INIT_CALLBACK_MSG_BITS = 1;
-const INIT_CALLBACK_MSG_CELLS = 1;
+const INIT_CALLBACK_MSG_BITS = 96;
+const INIT_CALLBACK_MSG_CELLS = 0;
+
 const INIT_CALLBACK_GAS_CONSUMPTION = 1;
 const RECORD_REWARD_JETTONS_ENROLLMENT_GAS_CONSUMPTION = 1;
 int get_amount_for_token_launch_deploy() {

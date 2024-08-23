@@ -9,7 +9,7 @@ export enum CoreOps {
     // We'll use it for config parsing maybe
     init = 0x18add407,
     // Tracking new launches
-    create_launch = 0x0eedbf42,
+    createLaunch = 0x0eedbf42,
     upgrade = 0x055d212a,
 }
 
