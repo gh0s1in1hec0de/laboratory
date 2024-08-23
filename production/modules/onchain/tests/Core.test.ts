@@ -1,18 +1,17 @@
-import { Address, beginCell, Cell, storeMessage, storeStateInit, toNano, Transaction } from "@ton/core";
 import { CommonJettonMaster } from "../wrappers/CommonJettonMaster";
 import {
-    collectCellStats, computedGeneric, computeFwdFees, computeFwdFeesVerbose,
-    FullFees, GasPrices, getGasPrices, getMsgPrices, getStoragePrices,
-    MsgPrices, printTxsLogs, randomAddress, StorageStats, StorageValue,
+    FullFees, GasPrices, getStoragePrices, getMsgPrices, StorageValue,
+    collectCellStats, computedGeneric, computeFwdFees, getGasPrices,
+    MsgPrices, printTxsLogs, StorageStats, computeFwdFeesVerbose,
 } from "./utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
-import { Contracts, LaunchConfig } from "starton-periphery";
 import { findTransactionRequired } from "@ton/test-utils";
 import { CreateLaunchParams } from "../wrappers/types";
 import { TokenLaunch } from "../wrappers/TokenLaunch";
 import { UserVault } from "../wrappers/UserVault";
-import { compile } from "@ton/blueprint";
+import { LaunchConfig, TokensLaunchOps } from "starton-periphery";
 import { ok as assert } from "node:assert";
+import { compile } from "@ton/blueprint";
 import { Core } from "../wrappers/Core";
 import { TonClient4 } from "@ton/ton";
 import { Factory } from "@dedust/sdk";
@@ -24,8 +23,18 @@ import {
     SandboxContract,
     Blockchain,
     internal,
-
 } from "@ton/sandbox";
+import {
+    storeStateInit,
+    storeMessage,
+    Transaction,
+    beginCell,
+    StateInit,
+    fromNano,
+    Address,
+    toNano,
+    Cell,
+} from "@ton/core";
 
 const PRINT_TX_LOGS = false;
 
@@ -56,18 +65,25 @@ describe("Core", () => {
     let launchConfig: LaunchConfig;
 
     // TODO Can't init atm
-    let stateInitStats: StorageStats;
-    let storageDuration: number;
+    let tokenLaunchStorageStats: StorageStats;
+    let storageDurationMin: number;
+    let storageDurationMax: number;
 
     // Custom values
+    //
     let utilityJettonSupply: bigint;
-    // Function initialization
+    let exampleCreateLaunchParams: CreateLaunchParams;
 
+    // Functions initialization:
+    //
     let printTxGasStats: (name: string, trans: Transaction) => bigint;
     // `force_ref` is set to `true` for bony-in-a-ref cases
-    let estimateBodyFee: (body: Cell, force_ref: boolean, prices?: MsgPrices) => FullFees;
-    let estimateBurnFwd: (prices?: MsgPrices) => bigint;
-    let forwardOverhead: (prices: MsgPrices, stats: StorageStats) => bigint;
+    let estimateBodyFwdFee: (body: Cell, force_ref: boolean, prices?: MsgPrices) => FullFees;
+    // Returns total fee (performing reverse-check before)
+    let estimateBodyFwdFeeWithReverseCheck: (body: Cell, force_ref: boolean, prices?: MsgPrices) => bigint;
+
+    let forwardStateinitOverhead: (prices: MsgPrices, stats: StorageStats) => bigint;
+    // `TODO` - Rewrite to unified format
     let calcSendFees: (send_fee: bigint,
         recv_fee: bigint,
         fwd_fee: bigint,
@@ -76,20 +92,22 @@ describe("Core", () => {
         state_init: bigint
     ) => bigint;
 
-    let estimateTokenLaunchDeployFwd: (
-        launchCreationParams: CreateLaunchParams,
-        code: Contracts,
-        tokenLaunchParams: LaunchConfig,
-        prices?: MsgPrices
-    ) => bigint;
-
     beforeAll(async () => {
-        coreCode = await compile("Core");
-        tokenLaunchCode = await compile("TokenLaunch");
-        userVaultCode = await compile("UserVault");
-        jettonMasterCode = await compile("CommonJettonMaster");
-        jettonWalletCode = await compile("CommonJettonWallet");
+        [
+            coreCode,
+            tokenLaunchCode,
+            userVaultCode,
+            jettonMasterCode,
+            jettonWalletCode
+        ] = await Promise.all([
+            compile("Core"),
+            compile("TokenLaunch"),
+            compile("UserVault"),
+            compile("CommonJettonMaster"),
+            compile("CommonJettonWallet")
+        ]);
         console.info("contracts compiled yaay^^");
+        tokenLaunchStorageStats = new StorageStats(46851n, 115n);
 
         blockchain = await Blockchain.create({
             storage: new RemoteBlockchainStorage(wrapTonClient4ForRemote(new TonClient4({
@@ -106,6 +124,12 @@ describe("Core", () => {
         storagePrices = getStoragePrices(blockchain.config);
 
         utilityJettonSupply = toNano("1000000"); // Replace with well-counted value
+        exampleCreateLaunchParams = {
+            startTime: Math.round(Date.now() / 1000) + 3600,
+            totalSupply: toNano("1000000"),
+            metadata: { uri: "http://another_shitcoin.meow" },
+            platformSharePct: 1500
+        };
 
         // Me btw
         chief = await blockchain.treasury("chief");
@@ -147,25 +171,24 @@ describe("Core", () => {
                     notFundedLaunchesAmount: 0,
                     launchConfig,
                     contracts: {
-                        jettonLaunch: tokenLaunchCode,
-                        jettonLaunchUserVault: userVaultCode,
-                        derivedJettonMaster: jettonMasterCode,
+                        tokenLaunch: tokenLaunchCode,
+                        userVault: userVaultCode,
+                        jettonMaster: jettonMasterCode,
                         jettonWallet: jettonWalletCode
                     }
                 },
                 coreCode
             )
         );
-        // Measures fees for code execution (computational fee)
+        // Measures fees for code execution (computational fee) and returns nanotons value
         printTxGasStats = (name, transaction) => {
             const txComputed = computedGeneric(transaction);
             console.log(`${name} used ${txComputed.gasUsed} gas`);
-            console.log(`${name} gas cost: ${txComputed.gasFees}`);
+            console.log(`${name} gas cost is ${txComputed.gasFees}(${fromNano(txComputed.gasFees)} TONs)`);
             return txComputed.gasFees;
         };
 
-        estimateBodyFee = (body, forceRef, prices) => {
-            const curPrice = prices || msgPrices;
+        estimateBodyFwdFee = (body, forceRef, prices) => {
             const mockAddr = new Address(0, Buffer.alloc(32, "A"));
             const testMsg = internal({
                 from: mockAddr,
@@ -178,24 +201,14 @@ describe("Core", () => {
             return computeFwdFeesVerbose(prices || msgPrices, stats.cells, stats.bits);
         };
 
-        estimateTokenLaunchDeployFwd = (launchCreationParams: CreateLaunchParams, code: Contracts, tokenLaunchParams: LaunchConfig, prices?: MsgPrices) => {
-            const { body } = Core.tokenCreationMessage(
-                creator.address,
-                chief.address,
-                utilityJettonMaster.address,
-                launchCreationParams,
-                code,
-                tokenLaunchParams
-            );
-
-            const curPrices = prices || msgPrices;
-            const feesRes = estimateBodyFee(body, true, curPrices);
-            const reverse = feesRes.remaining * 65536n / (65536n - curPrices.firstFrac);
+        estimateBodyFwdFeeWithReverseCheck = (body, forceRef, prices) => {
+            const feesRes = estimateBodyFwdFee(body, forceRef, prices);
+            const reverse = feesRes.remaining * 65536n / (65536n - (prices || msgPrices).firstFrac);
             expect(reverse).toBeGreaterThanOrEqual(feesRes.total);
             return reverse;
         };
 
-        forwardOverhead = (prices, stats) => {
+        forwardStateinitOverhead = (prices, stats) => {
             // Meh, kinda lazy way of doing that, but tests are bloated enough already
             return computeFwdFees(prices, stats.cells, stats.bits) - prices.lumpPrice;
         };
@@ -234,7 +247,6 @@ describe("Core", () => {
 
         // const gasFees = printTxGasStats("Core deployment transaction:", deploymentTx);
         // console.log(fromNano(gasFees));
-
     });
 
     test("core state cost [research]", async () => {
@@ -245,6 +257,7 @@ describe("Core", () => {
             throw new Error("Wallet account is not active");
         assert(smc.account.account, "Can't access core account!");
 
+        // Why does `smc.account.account.storageStats.used` and `collectCellStats(stateCell, [])` this two values differ?
         console.log(
             "Core ~ storage stats (dictionary is empty):",
             smc.account.account.storageStats.used
@@ -254,20 +267,91 @@ describe("Core", () => {
     });
     test("token creation fees measurements", async () => {
         // Measure stateinit forwarding
-        const minFwdFee = estimateTokenLaunchDeployFwd({
-                startTime: Math.round(Date.now() / 1000) + 3600,
-                totalSupply: toNano("1000000"),
-                metadata: { uri: "http://another_shotcoin.meow" },
-                platformSharePct: 1500
-            },
+        const code = {
+            tokenLaunch: tokenLaunchCode,
+            userVault: userVaultCode,
+            jettonMaster: jettonMasterCode,
+            jettonWallet: jettonWalletCode,
+
+        };
+        const { bodyCell, stateInitData } = Core.tokenCreationMessage(
+            creator.address, chief.address, utilityJettonMaster.address,
+            exampleCreateLaunchParams, code, launchConfig
+        );
+        // Body will be stored in a reference - then `force_ref` is true
+        const unifiedCheckFees = estimateBodyFwdFeeWithReverseCheck(bodyCell, true);
+        console.info(`Token Launch deployment message forward fee: ${unifiedCheckFees}`);
+        const tokenLaunchState: StateInit = {
+            code: tokenLaunchCode,
+            data: stateInitData
+        };
+        const stateCell = beginCell().store(storeStateInit(tokenLaunchState)).endCell();
+        const stateInitStats = collectCellStats(stateCell, []);
+        console.log("Token Launch state init stats:", stateInitStats);
+        const stateInitOverhead = forwardStateinitOverhead(msgPrices, stateInitStats);
+        // TODO Measure with deployed one
+        console.log(`Token Launch state forward fee: ${stateInitOverhead}(${fromNano(stateInitOverhead)} TON)`);
+
+        // Loading Token Launch storage's field with max possible values
+        const loadedTokenLaunchStateInit = TokenLaunch.buildStateData(
+            creator.address, chief.address, exampleCreateLaunchParams, code, launchConfig, true
+        );
+        const loadedTokenLaunchState: StateInit = {
+            code: tokenLaunchCode,
+            data: loadedTokenLaunchStateInit
+        };
+        const loadedStateCell = beginCell().store(storeStateInit(loadedTokenLaunchState)).endCell();
+        const loadedStateInitStats = collectCellStats(loadedStateCell, []);
+        console.log("Loaded Token Launch state init stats:", loadedStateInitStats);
+        const loadedStateInitOverhead = forwardStateinitOverhead(msgPrices, loadedStateInitStats);
+        console.log(`Loaded Token Launch loaded state forward fee: ${loadedStateInitOverhead}(${fromNano(loadedStateInitOverhead)} TON)`);
+
+    });
+
+    test("core should be able to deploy new token launches", async () => {
+        // TODO At some reason this code can determine jetton launch address in deterministic manner
+        //    I think, that the main problem is math there
+        const tokenLaunchState = TokenLaunch.buildStateData(
+            creator.address,
+            chief.address,
+            exampleCreateLaunchParams,
             {
+                tokenLaunch: tokenLaunchCode,
+                userVault: userVaultCode,
+                jettonMaster: jettonMasterCode,
                 jettonWallet: jettonWalletCode,
-                jettonLaunch: tokenLaunchCode,
-                jettonLaunchUserVault: userVaultCode,
-                derivedJettonMaster: jettonMasterCode
+
             },
             launchConfig
         );
-        console.info(`Token Launch deployment message forward fee: ${minFwdFee}`);
+        // const tokenLaunch = TokenLaunch.createFromConfig(tokenLaunchState, tokenLaunchCode);
+        const createLaunchResult = await core.sendCreateLaunch(
+            {
+                via: creator.getSender(),
+                value: toNano("10"),
+                queryId: 0n
+            },
+            exampleCreateLaunchParams
+        );
+        printTxsLogs(createLaunchResult.transactions, "Launch Creation VM logs");
+        expect(createLaunchResult.transactions).toHaveTransaction({
+            from: core.address,
+            deploy: true,
+            success: true
+        });
+        // expect(createLaunchResult.transactions).not.toHaveTransaction({
+        //     from: core.address,
+        //     inMessageBounced: true
+        // });
+
+        const deploymentTx = findTransactionRequired(createLaunchResult.transactions, {
+            from: core.address,
+            op: TokensLaunchOps.init,
+            deploy: true,
+            success: true
+        });
+        const gasFees = printTxGasStats("Token launch deployment transaction:", deploymentTx);
+        const tokenLaunch = TokenLaunch.createFromAddress(deploymentTx.inMessage!.info!.dest! as Address);
+        console.log(await blockchain.openContract(tokenLaunch).getConfig());
     });
 });

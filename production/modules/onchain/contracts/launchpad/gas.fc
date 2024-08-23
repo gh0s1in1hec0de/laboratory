@@ -26,8 +26,9 @@ const USER_VAULT_INITSTATE_CELLS = 1;
 const JETTON_MINTER_INITSTATE_BITS = 1;
 const JETTON_MINTER_INITSTATE_CELLS = 1;
 
-const TOKEN_LAUNCH_INITSTATE_BITS = 1;
-const TOKEN_LAUNCH_INITSTATE_CELLS = 1;
+;; Loaded storage upper bounds, TODO replace with deployed stats if needed
+const TOKEN_LAUNCH_INITSTATE_BITS = 46851;
+const TOKEN_LAUNCH_INITSTATE_CELLS = 115;
 
 ;; Message that contains info about user's balance updates
 const BALANCE_UPDATE_MSG_BITS = 1;
@@ -203,7 +204,7 @@ int check_amount_is_enough_for_jetton_claim(int msg_value) {
 const CREATE_LAUNCH_GAS_CONSUMPTION = 1;
 const INIT_MSG_BITS = 1;
 const INIT_MSG_CELLS = 1;
-const INITIALIZATION_GAS_CONSUMPTION = 1;
+const INITIALIZATION_GAS_CONSUMPTION = 15217;
 ;; Body contains only OP
 const INIT_CALLBACK_MSG_BITS = 1;
 const INIT_CALLBACK_MSG_CELLS = 1;

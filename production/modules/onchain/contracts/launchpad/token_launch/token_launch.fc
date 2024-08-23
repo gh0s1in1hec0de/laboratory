@@ -60,6 +60,7 @@
 
 
 () recv_internal(int contract_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+    ;; Donations are always welcome
     if (in_msg_body.slice_empty?() | in_msg_body.slice_bits() < 32) {
         return ();
     }
@@ -84,12 +85,17 @@
     throw_unless(error::wrong_time, now() > general_state::const::start_time);
     throw_unless(error::uninitialized, this::const::is_initialized?);
 
+    if (this::operational_needs > ONE_TON) {
+        cell msg = simple_transfer(this::const::chief_address, this::operational_needs, null());
+        send_raw_message(msg, SEND_MODE_IGNORE_ERRORS);
+    }
+
     ;; - CN: can be sent by anyone
     ;; if there is a commission balance, returns it back to the user
     if (op == op::tl::creator_buyout) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::creator_address));
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
-        handle_owner_buyout(query_id, attached_value);
+        handle_creator_buyout(query_id, attached_value);
         save_data();
         return ();
     }
@@ -108,7 +114,7 @@
     -}
     if (op == op::transfer_notification) {
         ;; Verify, that sender is our utility token wallet and no one other
-        route_incoming_transfer(query_id, attached_value, sender_address, in_msg_body~load_coins(),  in_msg_body~load_msg_addr(), in_msg_body);
+        route_incoming_transfer(query_id, attached_value, sender_address, in_msg_body~load_coins(), in_msg_body~load_msg_addr(), in_msg_body);
         save_data();
         return ();
     }
@@ -227,5 +233,16 @@ slice get_user_vault_address(slice user_address) method_id {
         wl_round::const::end_time,
         public_round::const::end_time,
         general_state::const::end_time
+    );
+}
+
+(int, int, int, int, int) get_config() method_id {
+    load_data();
+    return (
+        wl_round::const::fut_jet_limit,
+        public_round::const::fut_jet_limit,
+        config::const::fut_jet_dex_amount,
+        config::const::fut_jet_platform_amount,
+        creator_round::const::fut_jet_limit
     );
 }

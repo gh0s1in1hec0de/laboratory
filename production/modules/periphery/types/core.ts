@@ -17,9 +17,9 @@ export type LaunchConfig = {
 };
 
 export type Contracts = {
-    jettonLaunch: Cell,
-    jettonLaunchUserVault: Cell,
-    derivedJettonMaster: Cell,
+    tokenLaunch: Cell,
+    userVault: Cell,
+    jettonMaster: Cell,
     jettonWallet: Cell,
 }
 

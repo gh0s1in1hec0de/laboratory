@@ -100,123 +100,31 @@ export class Core implements Contract {
         };
     }
 
-    // TODO Stateinit calculation should be removed
     // `../contracts/launchpad/core.operations.fc#L17`
-    static tokenCreationMessage(creator: Address, chief: Address, utilJettonMasterAddress: Address, {
-            totalSupply,
-            platformSharePct,
-            metadata,
-            startTime
-        }: CreateLaunchParams,
+    static tokenCreationMessage(
+        creator: Address, chief: Address,
+        utilJettonMasterAddress: Address,
+        createLaunchParams: CreateLaunchParams,
         code: Contracts,
         staticLaunchParameters: LaunchConfig
-    ): { stateinit: Cell, body: Cell } {
-        const PERCENTAGE_DENOMINATOR = 100000n;
+    ): { stateInitData: Cell, stateInitCell: Cell, bodyCell: Cell, } {
+        const { metadata } = createLaunchParams;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
+        const data = TokenLaunch.buildStateData(creator, chief, createLaunchParams, code, staticLaunchParameters);
 
-        const wlJetLimit = BigInt(staticLaunchParameters.jetWlLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
-        const pubJetLimit = BigInt(staticLaunchParameters.jetPubLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
-        const dexJetShare = BigInt(staticLaunchParameters.jetDexSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
-        const platformShare = BigInt(platformSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
-        const creatorBuybackJetLimit = totalSupply - (wlJetLimit + pubJetLimit + dexJetShare + platformShare);
-
-        const creatorJetPrice = staticLaunchParameters.tonLimitForWlRound / (BigInt(wlJetLimit) * 2n);
-
-        const generalState = beginCell()
-            .storeInt(startTime, 32)
-            .storeCoins(totalSupply)
-            .storeCoins(0)
-            .storeCoins(0)
-            .storeCoins(0)
-            .storeInt(
-                startTime
-                + staticLaunchParameters.creatorRoundDurationMs
-                + staticLaunchParameters.wlRoundDurationMs
-                + staticLaunchParameters.pubRoundDurationMs
-                + staticLaunchParameters.claimDurationMs,
-                32
-            )
-            .endCell();
-        const creatorRoundState = beginCell()
-            .storeCoins(creatorBuybackJetLimit)
-            .storeCoins(0)
-            .storeCoins(0)
-            .storeCoins(creatorJetPrice)
-            .storeInt(
-                startTime
-                + staticLaunchParameters.creatorRoundDurationMs,
-                32
-            )
-            .endCell();
-        const wlRoundState = beginCell()
-            .storeCoins(wlJetLimit)
-            .storeCoins(staticLaunchParameters.tonLimitForWlRound)
-            .storeCoins(staticLaunchParameters.utilJetWlPassAmount)
-            .storeCoins(staticLaunchParameters.utilJetBurnPerWlPassAmount)
-            .storeInt(
-                startTime
-                + staticLaunchParameters.creatorRoundDurationMs
-                + staticLaunchParameters.wlRoundDurationMs,
-                32
-            )
-            .endCell();
-        const pubRoundState = beginCell()
-            .storeCoins(pubJetLimit)
-            .storeCoins(0)
-            .storeCoins(wlJetLimit)
-            .storeCoins(0)
-            .storeInt(
-                startTime
-                + staticLaunchParameters.creatorRoundDurationMs
-                + staticLaunchParameters.wlRoundDurationMs
-                + staticLaunchParameters.pubRoundDurationMs,
-                32
-            )
-            .endCell();
-        const saleState = beginCell()
-            .storeRef(generalState)
-            .storeRef(creatorRoundState)
-            .storeRef(wlRoundState)
-            .storeRef(pubRoundState)
-            .endCell();
-        const saleConfig = beginCell()
-            .storeCoins(totalSupply)
-            .storeCoins(staticLaunchParameters.minTonForSaleSuccess)
-            .storeCoins(dexJetShare)
-            .storeCoins(platformShare)
-            .storeCoins(staticLaunchParameters.utilJetRewardAmount)
-            .endCell();
-        const tools = beginCell()
-            .storeAddress(null)
-            .storeAddress(null)
-            .storeAddress(null)
-            .storeRef(packedMetadata)
-            .storeRef(code.derivedJettonMaster)
-            .storeRef(code.jettonWallet)
-            .storeRef(code.jettonLaunchUserVault)
-            .endCell();
-        const data = beginCell()
-            .storeInt(0n, 1) // HAHAH BITCH TRY TO PASS 1 AS `value` AND YOU'LL GET THE MOST IDIOTIC ERROR IN THE WORLD
-            .storeCoins(0)
-            .storeAddress(chief)
-            .storeAddress(creator)
-            .storeRef(saleConfig)
-            .storeRef(saleState)
-            .storeRef(tools)
-            .endCell();
-        const tokenLaunchStateinit = beginCell()
+        const tokenLaunchStateInit = beginCell()
             .storeUint(0, 2)
-            .storeMaybeRef(code.jettonLaunch)
+            .storeMaybeRef(code.tokenLaunch)
             .storeMaybeRef(data)
             .storeUint(0, 1)
             .endCell();
-        const tokenLaunch = TokenLaunch.createFromConfig(data, code.jettonLaunch);
+        const tokenLaunch = TokenLaunch.createFromConfig(data, code.tokenLaunch);
         const futJetMaster = CommonJettonMaster.createFromConfig({
                 admin: tokenLaunch.address,
                 jetton_content: packedMetadata,
                 wallet_code: code.jettonWallet
             },
-            code.derivedJettonMaster
+            code.jettonMaster
         );
         const tokenLaunchFutJetWalletAddress = CommonJettonWallet.createFromConfig({
             ownerAddress: tokenLaunch.address,
@@ -227,8 +135,9 @@ export class Core implements Contract {
             jettonMasterAddress: utilJettonMasterAddress
         }, code.jettonWallet);
         return {
-            stateinit: tokenLaunchStateinit,
-            body: beginCell()
+            stateInitData: data,
+            stateInitCell: tokenLaunchStateInit,
+            bodyCell: beginCell()
                 .storeUint(TokensLaunchOps.init, 32)
                 .storeUint(0, 64)
                 .storeAddress(tokenLaunchFutJetWalletAddress.address)

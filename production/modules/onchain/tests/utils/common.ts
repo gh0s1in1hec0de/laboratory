@@ -1,5 +1,5 @@
-import { Address, toNano, Slice, beginCell } from "@ton/core";
 import { BlockchainTransaction } from "@ton/sandbox";
+import { Address, toNano } from "@ton/core";
 
 export const BASECHAIN = 0;
 export const randomAddress = (wc: number = BASECHAIN) => {
@@ -10,11 +10,8 @@ export const randomAddress = (wc: number = BASECHAIN) => {
     return new Address(wc, buf);
 };
 
-// Good old days
-// export const noneAddress = (isSlice: boolean = false, wc: number = BASECHAIN) => {
-//     if (isSlice) return beginCell().storeUint(0, 2).endCell().beginParse();
-//     else return new Address(wc, Buffer.alloc(32, 0));
-// };
+export const CoinsMaxValue = 2n ** 120n - 1n;
+export const ThirtyTwoIntMaxValue = 2n ** 31n - 1n; // 1 bit for sign :)
 
 export const differentAddress = (old: Address) => {
     let newAddr: Address;

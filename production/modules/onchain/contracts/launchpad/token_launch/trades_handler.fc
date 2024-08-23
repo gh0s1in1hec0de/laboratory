@@ -8,7 +8,7 @@
 #include "tl_context.fc";
 #include "tl_storage.fc";
 
-() handle_owner_buyout(int query_id, int msg_value) impure inline {
+() handle_creator_buyout(int query_id, int msg_value) impure inline {
     throw_unless(error::wrong_time, now() < creator_round::const::end_time);
     (int accessible_user_value, int opn) = check_amount_is_enough_for_creator_buyout(msg_value);
     (int jettons_amount, int remainder) = divmod(accessible_user_value, creator_round::const::fut_jet_price);

@@ -1,6 +1,6 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
-import { SendMessageParams, tokenLauncherConfigToCell } from "./utils";
-import { BASECHAIN } from "../tests/utils";
+import { SendMessageParams, tokenLaunchConfigToCell } from "./utils";
+import { BASECHAIN, CoinsMaxValue, ThirtyTwoIntMaxValue } from "../tests/utils";
 import {
     type TokenLaunchStorage,
     BalanceUpdateMode,
@@ -9,8 +9,11 @@ import {
     SaleMoneyFlow,
     LaunchData,
     OP_LENGTH,
-    Coins,
+    Coins, Contracts, LaunchConfig,
 } from "starton-periphery";
+import { tokenMetadataToCell } from "./CommonJettonMaster";
+import { CreateLaunchParams } from "./types";
+import { randomAddress } from "@ton/test-utils";
 
 export class TokenLaunch implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
@@ -21,7 +24,7 @@ export class TokenLaunch implements Contract {
     }
 
     static createFromConfig(config: TokenLaunchStorage | Cell, code: Cell, workchain = BASECHAIN) {
-        const data = config instanceof Cell ? config : tokenLauncherConfigToCell(config);
+        const data = config instanceof Cell ? config : tokenLaunchConfigToCell(config);
         const init = { code, data };
         return new TokenLaunch(contractAddress(workchain, init), init);
     }
@@ -109,5 +112,122 @@ export class TokenLaunch implements Contract {
             syntheticJetReserve: stack.readBigNumber(),
             syntheticTonReserve: stack.readBigNumber(),
         };
+    }
+
+    async getConfig(provider: ContractProvider): Promise<any> {
+        let { stack } = await provider.get("get_config", []);
+        return {
+            wlRoundFutJetLimit: stack.readBigNumber(),
+            pubRoundFutJetLimit: stack.readBigNumber(),
+            futJetDexAmount: stack.readBigNumber(),
+            platformAmount: stack.readBigNumber(),
+            creatorFutJetLimit: stack.readBigNumber(),
+        };
+    }
+
+    static buildStateData(creator: Address, chief: Address, {
+            totalSupply,
+            platformSharePct,
+            metadata,
+            startTime
+        }: CreateLaunchParams,
+        code: Contracts,
+        staticLaunchParameters: LaunchConfig,
+        loadAtMax = false
+    ) {
+        const PERCENTAGE_DENOMINATOR = 100000n;
+        const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
+
+        const wlJetLimit = BigInt(staticLaunchParameters.jetWlLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
+        const pubJetLimit = BigInt(staticLaunchParameters.jetPubLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
+        const dexJetShare = BigInt(staticLaunchParameters.jetDexSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
+        const platformShare = BigInt(platformSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
+        const creatorBuybackJetLimit = totalSupply - (wlJetLimit + pubJetLimit + dexJetShare + platformShare);
+
+        const creatorJetPrice = staticLaunchParameters.tonLimitForWlRound / (BigInt(wlJetLimit) * 2n);
+
+        console.log(wlJetLimit, pubJetLimit, dexJetShare, platformShare, creatorJetPrice);
+        const generalState = beginCell()
+            .storeInt(loadAtMax ? ThirtyTwoIntMaxValue : startTime, 32)
+            .storeCoins(loadAtMax ? CoinsMaxValue : totalSupply)
+            .storeCoins(loadAtMax ? CoinsMaxValue : 0)
+            .storeCoins(loadAtMax ? CoinsMaxValue : 0)
+            .storeCoins(loadAtMax ? CoinsMaxValue : 0)
+            .storeInt(
+                loadAtMax ? ThirtyTwoIntMaxValue : startTime
+                    + staticLaunchParameters.creatorRoundDurationMs
+                    + staticLaunchParameters.wlRoundDurationMs
+                    + staticLaunchParameters.pubRoundDurationMs
+                    + staticLaunchParameters.claimDurationMs,
+                32
+            )
+            .endCell();
+        const creatorRoundState = beginCell()
+            .storeCoins(loadAtMax ? CoinsMaxValue : creatorBuybackJetLimit)
+            .storeCoins(loadAtMax ? CoinsMaxValue : 0)
+            .storeCoins(loadAtMax ? CoinsMaxValue : 0)
+            .storeCoins(loadAtMax ? CoinsMaxValue : creatorJetPrice)
+            .storeInt(
+                loadAtMax ? ThirtyTwoIntMaxValue : startTime
+                    + staticLaunchParameters.creatorRoundDurationMs,
+                32
+            )
+            .endCell();
+        const wlRoundState = beginCell()
+            .storeCoins(loadAtMax ? CoinsMaxValue : wlJetLimit)
+            .storeCoins(loadAtMax ? CoinsMaxValue : staticLaunchParameters.tonLimitForWlRound)
+            .storeCoins(loadAtMax ? CoinsMaxValue : staticLaunchParameters.utilJetWlPassAmount)
+            .storeCoins(loadAtMax ? CoinsMaxValue : staticLaunchParameters.utilJetBurnPerWlPassAmount)
+            .storeInt(
+                loadAtMax ? ThirtyTwoIntMaxValue : startTime
+                    + staticLaunchParameters.creatorRoundDurationMs
+                    + staticLaunchParameters.wlRoundDurationMs,
+                32
+            )
+            .endCell();
+        const pubRoundState = beginCell()
+            .storeCoins(loadAtMax ? CoinsMaxValue : pubJetLimit)
+            .storeCoins(loadAtMax ? CoinsMaxValue : 0)
+            .storeCoins(loadAtMax ? CoinsMaxValue : wlJetLimit)
+            .storeCoins(loadAtMax ? CoinsMaxValue : 0)
+            .storeInt(
+                loadAtMax ? ThirtyTwoIntMaxValue : startTime
+                    + staticLaunchParameters.creatorRoundDurationMs
+                    + staticLaunchParameters.wlRoundDurationMs
+                    + staticLaunchParameters.pubRoundDurationMs,
+                32
+            )
+            .endCell();
+        const saleState = beginCell()
+            .storeRef(generalState)
+            .storeRef(creatorRoundState)
+            .storeRef(wlRoundState)
+            .storeRef(pubRoundState)
+            .endCell();
+        const saleConfig = beginCell()
+            .storeCoins(loadAtMax ? CoinsMaxValue : totalSupply)
+            .storeCoins(loadAtMax ? CoinsMaxValue : staticLaunchParameters.minTonForSaleSuccess)
+            .storeCoins(loadAtMax ? CoinsMaxValue : dexJetShare)
+            .storeCoins(loadAtMax ? CoinsMaxValue : platformShare)
+            .storeCoins(loadAtMax ? CoinsMaxValue : staticLaunchParameters.utilJetRewardAmount)
+            .endCell();
+        const tools = beginCell()
+            .storeAddress(loadAtMax ? randomAddress() : null)
+            .storeAddress(loadAtMax ? randomAddress() : null)
+            .storeAddress(loadAtMax ? randomAddress() : null)
+            .storeRef(packedMetadata)
+            .storeRef(code.jettonMaster)
+            .storeRef(code.jettonWallet)
+            .storeRef(code.userVault)
+            .endCell();
+        return beginCell()
+            .storeBit(0)
+            .storeCoins(loadAtMax ? CoinsMaxValue : 0)
+            .storeAddress(chief)
+            .storeAddress(creator)
+            .storeRef(saleConfig)
+            .storeRef(saleState)
+            .storeRef(tools)
+            .endCell();
     }
 }

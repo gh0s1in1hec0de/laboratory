@@ -44,13 +44,13 @@ cell build_content_cell(slice metadata_uri) inline {
 ;;  Warning! Builders should point to a separate cell if exceeds the rest of memory of `internal_transfer`
 ;; See tlb/jetton.tlb#L3
 cell build_jetton_transfer_msg(
-    int query_id,
-    int value,
-    int jetton_amount,
-    slice our_wallet_address,
-    slice recipient,
-    int forward_ton_amount,
-    builder payload
+int query_id,
+int value,
+int jetton_amount,
+slice our_wallet_address,
+slice recipient,
+int forward_ton_amount,
+builder payload
 ) inline_ref {
     cell msg_body = begin_cell()
         .store_op(op::transfer)
@@ -217,5 +217,18 @@ cell pack_fut_jet_master_data(int total_supply, slice admin, slice next_admin, c
     );
     slice jetton_master_address = calculate_contract_address(jetton_master_stateinit);
     return (jetton_master_stateinit, jetton_master_address);
+}
+
+cell simple_transfer(slice dest, int value, slice comment) {
+    builder msg = begin_cell()
+        .store_msg_flags_and_address_none(BOUNCEABLE)
+        .store_slice(dest)
+        .store_coins(value)
+        .store_prefix_only_body()
+        .store_op(0);
+    if (comment.slice_bits() > 0) {
+        msg = msg.store_slice(comment);
+    }
+    return msg.end_cell();
 }
 

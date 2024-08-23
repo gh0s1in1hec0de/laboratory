@@ -85,7 +85,7 @@
         .store_address_none()
         .store_address_none()
         .store_ref(metadata_cell)
-        .store_ref(code::derived_jetton_master)
+        .store_ref(code::jetton_master)
         .store_ref(code::jetton_wallet)
         .store_ref(code::user_vault)
         .end_cell();
@@ -98,10 +98,10 @@
         .store_ref(sale_state)
         .store_ref(tools)
         .end_cell();
-    cell token_launch_stateinit = calculate_contract_state_init(code::jetton_launch, data);
+    cell token_launch_stateinit = calculate_contract_state_init(code::token_launch, data);
     slice token_launch_address = calculate_contract_address(token_launch_stateinit);
     (cell _fut_jet_master_stateinit, slice fut_jet_master_address) = calculate_fut_jet_master_data(
-        code::derived_jetton_master,
+        code::jetton_master,
         total_supply,
         token_launch_address,
         address_none(),
@@ -129,7 +129,7 @@
         .store_coins(msg_value)
         .store_statinit_ref_and_body_ref(token_launch_stateinit, msg_body)
         .end_cell();
-    this::not_funded_launches~dict_set(ADDRESS_SIZE, pack_address(token_launch_address), null());
+    this::not_funded_launches~dict_set(ADDRESS_SIZE, pack_address(token_launch_address), "");
     this::not_funded_launches_amount += 1;
     send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
