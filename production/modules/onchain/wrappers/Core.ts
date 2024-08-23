@@ -1,6 +1,6 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
 import { CommonJettonMaster, tokenMetadataToCell } from "./CommonJettonMaster";
-import { CreateLaunchParams, StateType, UpgradeParams } from "./types";
+import { LaunchParams, StateType, UpgradeParams } from "./types";
 import { coreConfigToCell, SendMessageParams } from "./utils";
 import { CommonJettonWallet } from "./CommonJettonWallet";
 import { TokenLaunch } from "./TokenLaunch";
@@ -39,7 +39,7 @@ export class Core implements Contract {
         });
     }
 
-    async sendCreateLaunch(provider: ContractProvider, sendMessageParams: SendMessageParams, params: CreateLaunchParams) {
+    async sendCreateLaunch(provider: ContractProvider, sendMessageParams: SendMessageParams, params: LaunchParams) {
         const { startTime, totalSupply, platformSharePct, metadata } = params;
         const { queryId, via, value } = sendMessageParams;
         const packagedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
@@ -104,13 +104,13 @@ export class Core implements Contract {
     static tokenCreationMessage(
         creator: Address, chief: Address,
         utilJettonMasterAddress: Address,
-        createLaunchParams: CreateLaunchParams,
+        createLaunchParams: LaunchParams,
         code: Contracts,
         staticLaunchParameters: LaunchConfig
     ): { stateInitData: Cell, stateInitCell: Cell, bodyCell: Cell, } {
         const { metadata } = createLaunchParams;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
-        const data = TokenLaunch.buildStateData(creator, chief, createLaunchParams, code, staticLaunchParameters);
+        const data = TokenLaunch.buildState(creator, chief, createLaunchParams, code, staticLaunchParameters);
 
         const tokenLaunchStateInit = beginCell()
             .storeUint(0, 2)

@@ -6,7 +6,7 @@ import {
 } from "./utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import { findTransactionRequired } from "@ton/test-utils";
-import { CreateLaunchParams } from "../wrappers/types";
+import { LaunchParams } from "../wrappers/types";
 import { TokenLaunch } from "../wrappers/TokenLaunch";
 import { UserVault } from "../wrappers/UserVault";
 import { LaunchConfig, TokensLaunchOps } from "starton-periphery";
@@ -38,12 +38,16 @@ import {
 
 const PRINT_TX_LOGS = false;
 
+/* TODO
+    1. At some reason on-chain state always more on 102 bits that our off-chain calculation
+*/
+
 describe("Core", () => {
     let coreCode = new Cell();
     let core: SandboxContract<Core>;
 
     let tokenLaunchCode = new Cell();
-    let tokenLaunch: SandboxContract<TokenLaunch>;
+    let sampleTokenLaunch: SandboxContract<TokenLaunch>;
 
     let userVaultCode = new Cell();
     let userVault: SandboxContract<UserVault>;
@@ -72,7 +76,7 @@ describe("Core", () => {
     // Custom values
     //
     let utilityJettonSupply: bigint;
-    let exampleCreateLaunchParams: CreateLaunchParams;
+    let sampleLaunchParams: LaunchParams;
 
     // Functions initialization:
     //
@@ -124,7 +128,7 @@ describe("Core", () => {
         storagePrices = getStoragePrices(blockchain.config);
 
         utilityJettonSupply = toNano("1000000"); // Replace with well-counted value
-        exampleCreateLaunchParams = {
+        sampleLaunchParams = {
             startTime: Math.round(Date.now() / 1000) + 3600,
             totalSupply: toNano("1000000"),
             metadata: { uri: "http://another_shitcoin.meow" },
@@ -152,9 +156,9 @@ describe("Core", () => {
             utilJetRewardAmount: utilityJettonSupply * 33n / 10000n,
             utilJetWlPassAmount: toNano("1"), // < & v - out of pants
             utilJetBurnPerWlPassAmount: toNano("0.3"),
-            jetWlLimitPct: 3000,
-            jetPubLimitPct: 3000,
-            jetDexSharePct: 2500,
+            jetWlLimitPct: 30000,
+            jetPubLimitPct: 30000,
+            jetDexSharePct: 25000,
             creatorRoundDurationMs: ONE_HOUR_MS,
             wlRoundDurationMs: ONE_HOUR_MS,
             pubRoundDurationMs: ONE_HOUR_MS,
@@ -179,6 +183,22 @@ describe("Core", () => {
                 },
                 coreCode
             )
+        );
+        sampleTokenLaunch = blockchain.openContract(
+            TokenLaunch.createFromConfig(TokenLaunch.buildState(
+                    creator.address,
+                    chief.address,
+                    sampleLaunchParams,
+                    {
+                        tokenLaunch: tokenLaunchCode,
+                        userVault: userVaultCode,
+                        jettonMaster: jettonMasterCode,
+                        jettonWallet: jettonWalletCode,
+
+                    },
+                    launchConfig
+                ),
+                tokenLaunchCode)
         );
         // Measures fees for code execution (computational fee) and returns nanotons value
         printTxGasStats = (name, transaction) => {
@@ -254,16 +274,15 @@ describe("Core", () => {
         assert(smc.accountState, "Can't access core account state");
         // Runtime doesn't see assert here lol
         if (smc.accountState.type !== "active")
-            throw new Error("Wallet account is not active");
+            throw new Error("Core account is not active");
         assert(smc.account.account, "Can't access core account!");
 
-        // Why does `smc.account.account.storageStats.used` and `collectCellStats(stateCell, [])` this two values differ?
         console.log(
             "Core ~ storage stats (dictionary is empty):",
             smc.account.account.storageStats.used
         );
         const stateCell = beginCell().store(storeStateInit(smc.accountState.state)).endCell();
-        console.log("State init stats:", collectCellStats(stateCell, []));
+        console.log("Core state stats:", collectCellStats(stateCell, []));
     });
     test("token creation fees measurements", async () => {
         // Measure stateinit forwarding
@@ -276,7 +295,7 @@ describe("Core", () => {
         };
         const { bodyCell, stateInitData } = Core.tokenCreationMessage(
             creator.address, chief.address, utilityJettonMaster.address,
-            exampleCreateLaunchParams, code, launchConfig
+            sampleLaunchParams, code, launchConfig
         );
         // Body will be stored in a reference - then `force_ref` is true
         const unifiedCheckFees = estimateBodyFwdFeeWithReverseCheck(bodyCell, true);
@@ -293,8 +312,8 @@ describe("Core", () => {
         console.log(`Token Launch state forward fee: ${stateInitOverhead}(${fromNano(stateInitOverhead)} TON)`);
 
         // Loading Token Launch storage's field with max possible values
-        const loadedTokenLaunchStateInit = TokenLaunch.buildStateData(
-            creator.address, chief.address, exampleCreateLaunchParams, code, launchConfig, true
+        const loadedTokenLaunchStateInit = TokenLaunch.buildState(
+            creator.address, chief.address, sampleLaunchParams, code, launchConfig, true
         );
         const loadedTokenLaunchState: StateInit = {
             code: tokenLaunchCode,
@@ -309,31 +328,15 @@ describe("Core", () => {
     });
 
     test("core should be able to deploy new token launches", async () => {
-        // TODO At some reason this code can determine jetton launch address in deterministic manner
-        //    I think, that the main problem is math there
-        const tokenLaunchState = TokenLaunch.buildStateData(
-            creator.address,
-            chief.address,
-            exampleCreateLaunchParams,
-            {
-                tokenLaunch: tokenLaunchCode,
-                userVault: userVaultCode,
-                jettonMaster: jettonMasterCode,
-                jettonWallet: jettonWalletCode,
-
-            },
-            launchConfig
-        );
-        // const tokenLaunch = TokenLaunch.createFromConfig(tokenLaunchState, tokenLaunchCode);
         const createLaunchResult = await core.sendCreateLaunch(
             {
                 via: creator.getSender(),
                 value: toNano("10"),
                 queryId: 0n
             },
-            exampleCreateLaunchParams
+            sampleLaunchParams
         );
-        printTxsLogs(createLaunchResult.transactions, "Launch Creation VM logs");
+        if (PRINT_TX_LOGS) printTxsLogs(createLaunchResult.transactions, "Launch Creation VM logs");
         expect(createLaunchResult.transactions).toHaveTransaction({
             from: core.address,
             deploy: true,
@@ -351,7 +354,22 @@ describe("Core", () => {
             success: true
         });
         const gasFees = printTxGasStats("Token launch deployment transaction:", deploymentTx);
-        const tokenLaunch = TokenLaunch.createFromAddress(deploymentTx.inMessage!.info!.dest! as Address);
-        console.log(await blockchain.openContract(tokenLaunch).getConfig());
+    });
+
+    test("token launch onchain state stats", async () => {
+        const smc = await blockchain.getContract(sampleTokenLaunch.address);
+        assert(smc.accountState, "Can't access token launch state");
+        // Runtime doesn't see assert here lol
+        if (smc.accountState.type !== "active")
+            throw new Error("Token launch is not active");
+        assert(smc.account.account, "Can't access token launch!");
+
+        // Why does `smc.account.account.storageStats.used` and `collectCellStats(stateCell, [])` this two values differ?
+        console.log(
+            "Token launch ~ storage stats:",
+            smc.account.account.storageStats.used
+        );
+        const stateCell = beginCell().store(storeStateInit(smc.accountState.state)).endCell();
+        console.log("Token launch state stats:", collectCellStats(stateCell, []));
     });
 });

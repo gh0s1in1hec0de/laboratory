@@ -47,12 +47,10 @@ const int MINT_QUERY_ID = 27082006;
 
 () route_incoming_transfer(int query_id, int attached_value, slice sender_address, int jetton_amount, slice initiator, slice maybe_payload) impure inline {
     (slice util_jet_wallet_address, slice fut_jet_master_address, slice fut_jet_wallet_address, _, _, _, _) = unpack_tools(this::tools);
-    ;; CN: check sender address
     if (equal_slices_bits(sender_address, util_jet_wallet_address)) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE);
         int util_jet_enr_mode = maybe_payload~load_uint(UTIL_JET_SEND_MODE_SIZE);
 
-        ;; CN: number of tokens required for reward
         if (util_jet_enr_mode == UTIL_JET_REWARD_ENROLLMENT) {
             ;; It does mean, that utility jettons reward amount was already enrolled
             if ((general_state::reward_util_jets_balance != 0) | (config::const::reward_util_jets_total_amount != 0)) {
@@ -72,7 +70,6 @@ const int MINT_QUERY_ID = 27082006;
             general_state::reward_util_jets_balance += jetton_amount;
         }
 
-        ;; CN: number of tokens required for wl purchase
         if (util_jet_enr_mode == UTIL_JET_WL_PASS) {
             if (jetton_amount < wl_round::const::pass_util_jet_amount) {
                 cell chargeback_msg = build_jetton_transfer_msg(

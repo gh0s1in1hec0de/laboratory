@@ -11,7 +11,7 @@ export type TokenLaunchTimings = {
 };
 
 export type SaleMoneyFlow = {
-    creatorFutJEtBalance: Coins,
+    creatorFutJetBalance: Coins,
     tonInvestedTotal: Coins,
     futJetSold: Coins,
     syntheticJetReserve: Coins,
@@ -23,7 +23,6 @@ export type LaunchData = {
     creatorAddress: Address,
     metadata: Cell,
 };
-
 
 // Storage
 export type GeneralState = {

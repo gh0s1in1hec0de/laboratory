@@ -1,6 +1,9 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
 import { SendMessageParams, tokenLaunchConfigToCell } from "./utils";
 import { BASECHAIN, CoinsMaxValue, ThirtyTwoIntMaxValue } from "../tests/utils";
+import { tokenMetadataToCell } from "./CommonJettonMaster";
+import { LaunchParams } from "./types";
+import { randomAddress } from "@ton/test-utils";
 import {
     type TokenLaunchStorage,
     BalanceUpdateMode,
@@ -11,9 +14,6 @@ import {
     OP_LENGTH,
     Coins, Contracts, LaunchConfig,
 } from "starton-periphery";
-import { tokenMetadataToCell } from "./CommonJettonMaster";
-import { CreateLaunchParams } from "./types";
-import { randomAddress } from "@ton/test-utils";
 
 export class TokenLaunch implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
@@ -106,7 +106,7 @@ export class TokenLaunch implements Contract {
     async getSaleState(provider: ContractProvider): Promise<SaleMoneyFlow> {
         let { stack } = await provider.get("get_sale_money_flow", []);
         return {
-            creatorFutJEtBalance: stack.readBigNumber(),
+            creatorFutJetBalance: stack.readBigNumber(),
             tonInvestedTotal: stack.readBigNumber(),
             futJetSold: stack.readBigNumber(),
             syntheticJetReserve: stack.readBigNumber(),
@@ -122,31 +122,31 @@ export class TokenLaunch implements Contract {
             futJetDexAmount: stack.readBigNumber(),
             platformAmount: stack.readBigNumber(),
             creatorFutJetLimit: stack.readBigNumber(),
+            creatorFutJetPrice: stack.readBigNumber(),
         };
     }
 
-    static buildStateData(creator: Address, chief: Address, {
+    static buildState(creator: Address, chief: Address, {
             totalSupply,
             platformSharePct,
             metadata,
             startTime
-        }: CreateLaunchParams,
+        }: LaunchParams,
         code: Contracts,
-        staticLaunchParameters: LaunchConfig,
+        launchConfig: LaunchConfig,
         loadAtMax = false
     ) {
         const PERCENTAGE_DENOMINATOR = 100000n;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
 
-        const wlJetLimit = BigInt(staticLaunchParameters.jetWlLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
-        const pubJetLimit = BigInt(staticLaunchParameters.jetPubLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
-        const dexJetShare = BigInt(staticLaunchParameters.jetDexSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
+        const wlJetLimit = BigInt(launchConfig.jetWlLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
+        const pubJetLimit = BigInt(launchConfig.jetPubLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
+        const dexJetShare = BigInt(launchConfig.jetDexSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
         const platformShare = BigInt(platformSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
         const creatorBuybackJetLimit = totalSupply - (wlJetLimit + pubJetLimit + dexJetShare + platformShare);
 
-        const creatorJetPrice = staticLaunchParameters.tonLimitForWlRound / (BigInt(wlJetLimit) * 2n);
+        const creatorJetPrice = wlJetLimit / (BigInt(wlJetLimit) * 2n);
 
-        console.log(wlJetLimit, pubJetLimit, dexJetShare, platformShare, creatorJetPrice);
         const generalState = beginCell()
             .storeInt(loadAtMax ? ThirtyTwoIntMaxValue : startTime, 32)
             .storeCoins(loadAtMax ? CoinsMaxValue : totalSupply)
@@ -155,33 +155,33 @@ export class TokenLaunch implements Contract {
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
             .storeInt(
                 loadAtMax ? ThirtyTwoIntMaxValue : startTime
-                    + staticLaunchParameters.creatorRoundDurationMs
-                    + staticLaunchParameters.wlRoundDurationMs
-                    + staticLaunchParameters.pubRoundDurationMs
-                    + staticLaunchParameters.claimDurationMs,
+                    + launchConfig.creatorRoundDurationMs
+                    + launchConfig.wlRoundDurationMs
+                    + launchConfig.pubRoundDurationMs
+                    + launchConfig.claimDurationMs,
                 32
             )
             .endCell();
         const creatorRoundState = beginCell()
             .storeCoins(loadAtMax ? CoinsMaxValue : creatorBuybackJetLimit)
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
-            .storeCoins(loadAtMax ? CoinsMaxValue : 0)
             .storeCoins(loadAtMax ? CoinsMaxValue : creatorJetPrice)
             .storeInt(
                 loadAtMax ? ThirtyTwoIntMaxValue : startTime
-                    + staticLaunchParameters.creatorRoundDurationMs,
+                    + launchConfig.creatorRoundDurationMs,
                 32
             )
             .endCell();
         const wlRoundState = beginCell()
             .storeCoins(loadAtMax ? CoinsMaxValue : wlJetLimit)
-            .storeCoins(loadAtMax ? CoinsMaxValue : staticLaunchParameters.tonLimitForWlRound)
-            .storeCoins(loadAtMax ? CoinsMaxValue : staticLaunchParameters.utilJetWlPassAmount)
-            .storeCoins(loadAtMax ? CoinsMaxValue : staticLaunchParameters.utilJetBurnPerWlPassAmount)
+            .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.tonLimitForWlRound)
+            .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.utilJetWlPassAmount)
+            .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.utilJetBurnPerWlPassAmount)
+            .storeCoins(0)
             .storeInt(
                 loadAtMax ? ThirtyTwoIntMaxValue : startTime
-                    + staticLaunchParameters.creatorRoundDurationMs
-                    + staticLaunchParameters.wlRoundDurationMs,
+                    + launchConfig.creatorRoundDurationMs
+                    + launchConfig.wlRoundDurationMs,
                 32
             )
             .endCell();
@@ -192,9 +192,9 @@ export class TokenLaunch implements Contract {
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
             .storeInt(
                 loadAtMax ? ThirtyTwoIntMaxValue : startTime
-                    + staticLaunchParameters.creatorRoundDurationMs
-                    + staticLaunchParameters.wlRoundDurationMs
-                    + staticLaunchParameters.pubRoundDurationMs,
+                    + launchConfig.creatorRoundDurationMs
+                    + launchConfig.wlRoundDurationMs
+                    + launchConfig.pubRoundDurationMs,
                 32
             )
             .endCell();
@@ -206,10 +206,10 @@ export class TokenLaunch implements Contract {
             .endCell();
         const saleConfig = beginCell()
             .storeCoins(loadAtMax ? CoinsMaxValue : totalSupply)
-            .storeCoins(loadAtMax ? CoinsMaxValue : staticLaunchParameters.minTonForSaleSuccess)
+            .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.minTonForSaleSuccess)
             .storeCoins(loadAtMax ? CoinsMaxValue : dexJetShare)
             .storeCoins(loadAtMax ? CoinsMaxValue : platformShare)
-            .storeCoins(loadAtMax ? CoinsMaxValue : staticLaunchParameters.utilJetRewardAmount)
+            .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.utilJetRewardAmount)
             .endCell();
         const tools = beginCell()
             .storeAddress(loadAtMax ? randomAddress() : null)
@@ -221,7 +221,7 @@ export class TokenLaunch implements Contract {
             .storeRef(code.userVault)
             .endCell();
         return beginCell()
-            .storeBit(0)
+            .storeUint(0n, 1)
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
             .storeAddress(chief)
             .storeAddress(creator)

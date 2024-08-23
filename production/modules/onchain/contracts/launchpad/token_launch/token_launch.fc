@@ -236,13 +236,14 @@ slice get_user_vault_address(slice user_address) method_id {
     );
 }
 
-(int, int, int, int, int) get_config() method_id {
+(int, int, int, int, int, int) get_config() method_id {
     load_data();
     return (
         wl_round::const::fut_jet_limit,
         public_round::const::fut_jet_limit,
         config::const::fut_jet_dex_amount,
         config::const::fut_jet_platform_amount,
-        creator_round::const::fut_jet_limit
+        creator_round::const::fut_jet_limit,
+        creator_round::const::fut_jet_price
     );
 }

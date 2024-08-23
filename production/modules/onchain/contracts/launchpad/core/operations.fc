@@ -5,7 +5,7 @@
 
 #include "core_context.fc";
 
-() handle_incoming_transfer(slice sender_address,  int jetton_amount) {
+() handle_incoming_transfer(slice sender_address,  int jetton_amount) impure inline {
     if (~ equal_slices_bits(sender_address, this::util_jetton_wallet_address)) {
         return ();
     }

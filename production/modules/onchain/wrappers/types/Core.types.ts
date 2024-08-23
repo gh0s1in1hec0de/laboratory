@@ -1,7 +1,7 @@
 import { Coins, TokenMetadata } from "starton-periphery";
 import { Address, Cell } from "@ton/core";
 
-export type CreateLaunchParams = {
+export type LaunchParams = {
     startTime: number, // Unix timestamp
     totalSupply: bigint,
     platformSharePct: number,

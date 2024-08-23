@@ -33,7 +33,7 @@
     }
     if (op == op::core::create_launch) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
-        throw_unless(error::not_enough_gas, attached_value > get_amount_for_token_launch_deploy());
+        throw_unless(error::not_enough_gas, attached_value > (my_storage_due() + get_amount_for_token_launch_deploy()));
         throw_unless(error::overload, this::not_funded_launches_amount <= 20);
         create_launch(
             query_id,

@@ -27,8 +27,8 @@ const JETTON_MINTER_INITSTATE_BITS = 1;
 const JETTON_MINTER_INITSTATE_CELLS = 1;
 
 ;; Loaded storage upper bounds, TODO replace with deployed stats if needed
-const TOKEN_LAUNCH_INITSTATE_BITS = 46851;
-const TOKEN_LAUNCH_INITSTATE_CELLS = 115;
+const TOKEN_LAUNCH_INITSTATE_BITS = 48441;
+const TOKEN_LAUNCH_INITSTATE_CELLS = 120;
 
 ;; Message that contains info about user's balance updates
 const BALANCE_UPDATE_MSG_BITS = 1;
