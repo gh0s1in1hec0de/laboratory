@@ -1,7 +1,7 @@
-import { TokenMetadata } from "starton-periphery";
-import { Cell } from "@ton/core";
+import { Coins, TokenMetadata } from "starton-periphery";
+import { Address, Cell } from "@ton/core";
 
-export type CreateLaunchParams = {
+export type LaunchParams = {
     startTime: number, // Unix timestamp
     totalSupply: bigint,
     platformSharePct: number,
@@ -15,20 +15,6 @@ export type UpgradeParams = {
 
 export type StateType = {
     notFundedLaunches: Cell,
-    notFundedLaunchesAmount: bigint,
-    utilJetCurBalance: bigint,
-};
-
-export type LaunchConfigType = {
-    minTonForSaleSuccess: bigint,
-    tonLimitForWlRound: bigint,
-    utilJetRewardAmount: bigint,
-    utilJetWlPassAmount: bigint,
-    utilJetBurnPerWlPassAmount: bigint,
-    jetWlLimitPct: bigint,
-    jetPubLimitPct: bigint,
-    jetDexSharePct: bigint,
-    creatorRoundDurationMs: bigint,
-    wlRoundDurationMs: bigint,
-    pubRoundDurationMs: bigint,
+    notFundedLaunchesAmount: number,
+    utilJetCurBalance: Coins,
 };

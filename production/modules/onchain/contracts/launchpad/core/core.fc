@@ -28,11 +28,12 @@
             this::util_jetton_master_address,
             code::jetton_wallet
         );
+        save_data();
         return ();
     }
     if (op == op::core::create_launch) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
-        throw_unless(error::not_enough_gas, attached_value > get_amount_for_token_launch_deploy());
+        throw_unless(error::not_enough_gas, attached_value > (my_storage_due() + get_amount_for_token_launch_deploy()));
         throw_unless(error::overload, this::not_funded_launches_amount <= 20);
         create_launch(
             query_id,
@@ -98,7 +99,7 @@
     );
 }
 
-(int, int, int, int, int, int, int, int, int, int, int) get_launch_config() method_id {
+(int, int, int, int, int, int, int, int, int, int, int, int) get_launch_config() method_id {
     load_data();
     return (
         launch_conf::min_ton_for_sale_success,
@@ -113,6 +114,7 @@
 
         launch_conf::creator_round_duration_ms,
         launch_conf::wl_round_duration_ms,
-        launch_conf::pub_round_duration_ms
+        launch_conf::pub_round_duration_ms,
+        launch_conf::claim_duration_ms
     );
 }

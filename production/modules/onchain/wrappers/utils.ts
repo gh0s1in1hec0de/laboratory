@@ -22,9 +22,9 @@ export type SendMessageParams = {
 
 export function coreConfigToCell(config: CoreStorage): Cell {
     const contractsCell = beginCell()
-        .storeRef(config.contracts.jettonLaunch)
-        .storeRef(config.contracts.jettonLaunchUserVault)
-        .storeRef(config.contracts.derivedJettonMaster)
+        .storeRef(config.contracts.tokenLaunch)
+        .storeRef(config.contracts.userVault)
+        .storeRef(config.contracts.jettonMaster)
         .storeRef(config.contracts.jettonWallet)
         .endCell();
 
@@ -40,6 +40,7 @@ export function coreConfigToCell(config: CoreStorage): Cell {
         .storeInt(config.launchConfig.creatorRoundDurationMs, 32)
         .storeInt(config.launchConfig.wlRoundDurationMs, 32)
         .storeInt(config.launchConfig.pubRoundDurationMs, 32)
+        .storeInt(config.launchConfig.claimDurationMs, 32)
         .endCell();
 
     return beginCell()
@@ -132,26 +133,21 @@ function packageToolsInCell(tools: Tools) {
         .endCell();
 }
 
-export function tokenLauncherConfigToCell(config: TokenLaunchStorage): Cell {
+export function tokenLaunchConfigToCell(config: TokenLaunchStorage): Cell {
     const {
         creatorAddress,
         chiefAddress,
         operationalNeeds,
         isInitialized
     } = config;
-
-    const saleConfigCell = packageSaleConfigInCell(config.saleConfig);
-    const saleStateCell = packageSaleStateInCell(config.saleState);
-    const toolsCell = packageToolsInCell(config.tools);
-
     return beginCell()
         .storeBit(isInitialized)
         .storeCoins(operationalNeeds)
         .storeAddress(chiefAddress)
         .storeAddress(creatorAddress)
-        .storeRef(saleConfigCell)
-        .storeRef(saleStateCell)
-        .storeRef(toolsCell)
+        .storeRef(packageSaleConfigInCell(config.saleConfig))
+        .storeRef(packageSaleStateInCell(config.saleState))
+        .storeRef(packageToolsInCell(config.tools))
         .endCell();
 }
 

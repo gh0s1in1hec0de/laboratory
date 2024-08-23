@@ -5,6 +5,7 @@ import { useLogger } from "./logger";
 import { greeting } from "./utils";
 import Elysia, { t } from "elysia";
 import dotenv from "dotenv";
+import * as db from "./db";
 
 dotenv.config();
 greeting();
