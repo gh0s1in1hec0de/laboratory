@@ -1,8 +1,8 @@
 import type { UserActionType, SqlClient, UserAction } from "./types";
 import type { RawAddressString } from "starton-periphery";
 import { ok as assert } from "assert";
-import { useLogger } from "../logger";
 import { globalClient } from "./db";
+import { logger } from "../logger";
 
 export async function storeUserAction(
     {
@@ -45,7 +45,7 @@ export async function getUserActions(
 }
 
 export async function storeUserActions(userActions: UserAction[]) {
-    const logger = useLogger();
+    const logger = logger();
     try {
         await globalClient.begin(async txClient => {
             for (const action of userActions) {

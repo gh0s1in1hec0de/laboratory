@@ -9,12 +9,12 @@ import {
     UserVaultOps,
 } from "starton-periphery";
 import { retrieveAllUnknownTransactions } from "./api";
-import { useLogger } from "../logger";
+import { logger } from "../logger";
 import { delay } from "../utils";
 import * as db from "../db";
 
 export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) {
-    const logger = useLogger();
+    const logger = logger();
     logger.debug(`new token launch updates handler for ${launchAddress} is up`);
     const tokenLaunch = await db.getTokenLaunch(launchAddress);
     // TODO Proper error handling

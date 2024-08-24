@@ -5,12 +5,12 @@ import {
 import { handleTokenLaunchUpdates } from "./tokenLaunch.ts";
 import { retrieveAllUnknownTransactions } from "./api.ts";
 import type { Address } from "@ton/ton";
-import { useLogger } from "../logger";
 import { delay } from "../utils.ts";
+import { logger } from "../logger";
 import * as db from "../db";
 
 export async function handleCoreUpdates(coreAddress: RawAddressString) {
-    const logger = useLogger();
+    const logger = logger();
     let currentHeight = await db.getCoreHeight(coreAddress) ?? 0n;
     let iteration = 0;
     while (true) {

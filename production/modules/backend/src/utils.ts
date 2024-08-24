@@ -1,6 +1,6 @@
 // The raw address string format is chosen to standardize the stored addresses.
 // It will help to avoid errors based on addresses' formats.
-import { useLogger } from "./logger";
+import { logger } from "./logger";
 
 export enum Network {
     Mainnet = "mainnet",
@@ -12,7 +12,7 @@ export async function maybeBruteforceOverload<T>(
     retries = 4,
     maxDelay = 3350
 ): Promise<T> {
-    const logger = useLogger();
+    const logger = logger();
     let attempt = 1;
     let delay = 750;
     while (attempt < retries) {

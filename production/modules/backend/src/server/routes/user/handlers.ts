@@ -1,7 +1,7 @@
-import { useLogger } from "../../../logger";
+import { logger } from "../../../logger";
 
 export async function getGreeting() {
-    const logger = useLogger();
+    const logger = logger();
 
     try {
         return "Hello from user routes!";

@@ -3,7 +3,7 @@ import type { LamportTime, RawAddressString } from "starton-periphery";
 import { currentNetwork, mainnetKeys, testnetKeys } from "../config";
 import { delay, maybeBruteforceOverload, Network } from "../utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
-import { useLogger } from "../logger";
+import { logger } from "../logger";
 
 // RR bitch (RoundRobin, not Rolls-Royce)
 class BalancedTonClient {
@@ -74,7 +74,7 @@ export async function retrieveAllUnknownTransactions(
         limit: number,
     }
 ): Promise<Transaction[]> {
-    const logger = useLogger();
+    const logger = logger();
     logger.debug(`[*] ${retrieveAllUnknownTransactions.name}`); // THIS CODE IS A FUCKING JOKE BTW
     logger.debug(` - start txs parsing for account ${address} from ${stopAt}`);
     const newTransactions: Transaction[] = [];

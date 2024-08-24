@@ -1,4 +1,4 @@
-import { AppMode, getConfig } from "../config.ts";
+import { AppMode, getConfig } from "./config.ts";
 import WinstonTelegram from "winston-telegram";
 import winston, { type Logger } from "winston";
 import "winston-daily-rotate-file";
@@ -49,7 +49,7 @@ const format = combine(
     customFormat
 );
 
-export function getLoggerConfig(): Logger {
+export function configureLogger(): Logger {
     const { mode, logger } = getConfig();
     const {
         dev_thread_id,
@@ -87,4 +87,13 @@ export function getLoggerConfig(): Logger {
             })
         ]
     });
+}
+
+let maybeLogger: Logger | null = null;
+
+export function logger(): Logger {
+    if (!maybeLogger) {
+        maybeLogger = configureLogger();
+    }
+    return maybeLogger;
 }
