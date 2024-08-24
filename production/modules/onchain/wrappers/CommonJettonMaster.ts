@@ -1,6 +1,6 @@
 import { TokenMetadata } from "starton-periphery";
 import { CommonJettonWallet } from "./CommonJettonWallet";
-import { Op } from "./JettonConstants";
+import { JettonOps } from "./JettonConstants";
 import {
     Contract,
     contractAddress,
@@ -97,12 +97,12 @@ export class CommonJettonMaster implements Contract {
         await provider.internal(via, {
             value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell().storeUint(Op.top_up, 32).storeUint(0, 64).endCell(),
+            body: beginCell().storeUint(JettonOps.TopUp, 32).storeUint(0, 64).endCell(),
         });
     }
 
     static mintMessage(to: Address, jetton_amount: bigint, from?: Address | null, response?: Address | null, customPayload?: Cell | null, forward_ton_amount: bigint = 0n, total_ton_amount: bigint = 0n) {
-        const mintMsg = beginCell().storeUint(Op.internal_transfer, 32)
+        const mintMsg = beginCell().storeUint(JettonOps.InternalTransfer, 32)
             .storeUint(0, 64)
             .storeCoins(jetton_amount)
             .storeAddress(from)
@@ -110,7 +110,7 @@ export class CommonJettonMaster implements Contract {
             .storeCoins(forward_ton_amount)
             .storeMaybeRef(customPayload)
             .endCell();
-        return beginCell().storeUint(Op.mint, 32).storeUint(0, 64) // op, queryId
+        return beginCell().storeUint(JettonOps.Mint, 32).storeUint(0, 64) // op, queryId
             .storeAddress(to)
             .storeCoins(total_ton_amount)
             .storeRef(mintMsg)
@@ -119,7 +119,7 @@ export class CommonJettonMaster implements Contract {
 
     static parseMintInternalMessage(slice: Slice) {
         const op = slice.loadUint(32);
-        if (op !== Op.internal_transfer) throw new Error("Invalid op");
+        if (op !== JettonOps.InternalTransfer) throw new Error("Invalid op");
         const queryId = slice.loadUint(64);
         const jettonAmount = slice.loadCoins();
         const fromAddress = slice.loadAddress();
@@ -139,7 +139,7 @@ export class CommonJettonMaster implements Contract {
 
     static parseMintMessage(slice: Slice) {
         const op = slice.loadUint(32);
-        if (op !== Op.mint) throw new Error("Invalid op");
+        if (op !== JettonOps.Mint) throw new Error("Invalid op");
         const queryId = slice.loadUint(64);
         const toAddress = slice.loadAddress();
         const tonAmount = slice.loadCoins();
@@ -171,7 +171,7 @@ export class CommonJettonMaster implements Contract {
     /* provide_wallet_address#2c76b973 query_id:uint64 owner_address:MsgAddress include_address:Bool = InternalMsgBody;
     */
     static discoveryMessage(owner: Address, include_address: boolean) {
-        return beginCell().storeUint(Op.provide_wallet_address, 32).storeUint(0, 64) // op, queryId
+        return beginCell().storeUint(JettonOps.ProvideWalletAddress, 32).storeUint(0, 64) // op, queryId
             .storeAddress(owner).storeBit(include_address)
             .endCell();
     }
@@ -185,13 +185,13 @@ export class CommonJettonMaster implements Contract {
     }
 
     static topUpMessage() {
-        return beginCell().storeUint(Op.top_up, 32).storeUint(0, 64) // op, queryId
+        return beginCell().storeUint(JettonOps.TopUp, 32).storeUint(0, 64) // op, queryId
             .endCell();
     }
 
     static parseTopUp(slice: Slice) {
         const op = slice.loadUint(32);
-        if (op !== Op.top_up) throw new Error("Invalid op");
+        if (op !== JettonOps.TopUp) throw new Error("Invalid op");
         const queryId = slice.loadUint(64);
         endParse(slice);
         return {
@@ -208,14 +208,14 @@ export class CommonJettonMaster implements Contract {
     }
 
     static changeAdminMessage(newOwner: Address) {
-        return beginCell().storeUint(Op.change_admin, 32).storeUint(0, 64) // op, queryId
+        return beginCell().storeUint(JettonOps.ChangeAdmin, 32).storeUint(0, 64) // op, queryId
             .storeAddress(newOwner)
             .endCell();
     }
 
     static parseChangeAdmin(slice: Slice) {
         const op = slice.loadUint(32);
-        if (op !== Op.change_admin) throw new Error("Invalid op");
+        if (op !== JettonOps.ChangeAdmin) throw new Error("Invalid op");
         const queryId = slice.loadUint(64);
         const newAdminAddress = slice.loadAddress();
         endParse(slice);
@@ -234,12 +234,12 @@ export class CommonJettonMaster implements Contract {
     }
 
     static claimAdminMessage(query_id: bigint = 0n) {
-        return beginCell().storeUint(Op.claim_admin, 32).storeUint(query_id, 64).endCell();
+        return beginCell().storeUint(JettonOps.ClaimAdmin, 32).storeUint(query_id, 64).endCell();
     }
 
     static parseClaimAdmin(slice: Slice) {
         const op = slice.loadUint(32);
-        if (op !== Op.claim_admin) throw new Error("Invalid op");
+        if (op !== JettonOps.ClaimAdmin) throw new Error("Invalid op");
         const queryId = slice.loadUint(64);
         endParse(slice);
         return {
@@ -257,14 +257,14 @@ export class CommonJettonMaster implements Contract {
 
     static changeContentMessage(content: Cell | TokenMetadata) {
         const contentString = content instanceof Cell ? content.beginParse().loadStringTail() : content.uri;
-        return beginCell().storeUint(Op.change_metadata_url, 32).storeUint(0, 64) // op, queryId
+        return beginCell().storeUint(JettonOps.ChangeMetadataUrl, 32).storeUint(0, 64) // op, queryId
             .storeStringTail(contentString)
             .endCell();
     }
 
     static parseChangeContent(slice: Slice) {
         const op = slice.loadUint(32);
-        if (op !== Op.change_metadata_url) throw new Error("Invalid op");
+        if (op !== JettonOps.ChangeMetadataUrl) throw new Error("Invalid op");
         const queryId = slice.loadUint(64);
         const newMetadataUrl = slice.loadStringTail();
         endParse(slice);
@@ -283,16 +283,16 @@ export class CommonJettonMaster implements Contract {
     }
 
     static lockWalletMessage(lock_address: Address, lock: number, amount: bigint, query_id: bigint | number = 0) {
-        return beginCell().storeUint(Op.call_to, 32).storeUint(query_id, 64)
+        return beginCell().storeUint(JettonOps.CallTo, 32).storeUint(query_id, 64)
             .storeAddress(lock_address)
             .storeCoins(amount)
-            .storeRef(beginCell().storeUint(Op.set_status, 32).storeUint(query_id, 64).storeUint(lock, 4).endCell())
+            .storeRef(beginCell().storeUint(JettonOps.SetStatus, 32).storeUint(query_id, 64).storeUint(lock, 4).endCell())
             .endCell();
     }
 
     static parseSetStatus(slice: Slice) {
         const op = slice.loadUint(32);
-        if (op !== Op.set_status) throw new Error("Invalid op");
+        if (op !== JettonOps.SetStatus) throw new Error("Invalid op");
         const queryId = slice.loadUint(64);
         const newStatus = slice.loadUint(4);
         endParse(slice);
@@ -304,7 +304,7 @@ export class CommonJettonMaster implements Contract {
 
     static parseCallTo(slice: Slice, refPrser: (slice: Slice) => any) {
         const op = slice.loadUint(32);
-        if (op !== Op.call_to) throw new Error("Invalid op");
+        if (op !== JettonOps.CallTo) throw new Error("Invalid op");
         const queryId = slice.loadUint(64);
         const toAddress = slice.loadAddress();
         const tonAmount = slice.loadCoins();
@@ -333,7 +333,7 @@ export class CommonJettonMaster implements Contract {
             custom_payload,
             forward_amount,
             forward_payload);
-        return beginCell().storeUint(Op.call_to, 32).storeUint(query_id, 64)
+        return beginCell().storeUint(JettonOps.CallTo, 32).storeUint(query_id, 64)
             .storeAddress(from)
             .storeCoins(value)
             .storeRef(transferMessage)
@@ -342,7 +342,7 @@ export class CommonJettonMaster implements Contract {
 
     static parseTransfer(slice: Slice) {
         const op = slice.loadUint(32);
-        if (op !== Op.transfer) throw new Error("Invalid op");
+        if (op !== JettonOps.Transfer) throw new Error("Invalid op");
         const queryId = slice.loadUint(64);
         const jettonAmount = slice.loadCoins();
         const toAddress = slice.loadAddress();
@@ -390,7 +390,7 @@ export class CommonJettonMaster implements Contract {
         value: bigint = toNano("0.1"),
         query_id: bigint | number = 0) {
 
-        return beginCell().storeUint(Op.call_to, 32).storeUint(query_id, 64)
+        return beginCell().storeUint(JettonOps.CallTo, 32).storeUint(query_id, 64)
             .storeAddress(to)
             .storeCoins(value)
             .storeRef(CommonJettonWallet.burnMessage(burn_amount, response, null))
@@ -399,7 +399,7 @@ export class CommonJettonMaster implements Contract {
 
     static parseBurn(slice: Slice) {
         const op = slice.loadUint(32);
-        if (op !== Op.burn) throw new Error("Invalid op");
+        if (op !== JettonOps.Burn) throw new Error("Invalid op");
         const queryId = slice.loadUint(64);
         const jettonAmount = slice.loadCoins();
         const responseAddress = slice.loadAddress();
@@ -429,7 +429,7 @@ export class CommonJettonMaster implements Contract {
     }
 
     static upgradeMessage(new_code: Cell, new_data: Cell, query_id: bigint | number = 0) {
-        return beginCell().storeUint(Op.upgrade, 32).storeUint(query_id, 64)
+        return beginCell().storeUint(JettonOps.Upgrade, 32).storeUint(query_id, 64)
             .storeRef(new_data)
             .storeRef(new_code)
             .endCell();
@@ -437,7 +437,7 @@ export class CommonJettonMaster implements Contract {
 
     static parseUpgrade(slice: Slice) {
         const op = slice.loadUint(32);
-        if (op !== Op.upgrade) throw new Error("Invalid op");
+        if (op !== JettonOps.Upgrade) throw new Error("Invalid op");
         const queryId = slice.loadUint(64);
         const newData = slice.loadRef();
         const newCode = slice.loadRef();

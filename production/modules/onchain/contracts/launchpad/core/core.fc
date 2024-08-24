@@ -16,9 +16,10 @@
 
     load_data(); ;; Now we have our contract data available in globals
 
-
     if (msg_flags & 1) {
-        ;; Is bounced
+        return ();
+    }
+    if (op == op::excesses) {
         return ();
     }
 
@@ -31,6 +32,7 @@
         save_data();
         return ();
     }
+
     if (op == op::core::create_launch) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         throw_unless(error::not_enough_gas, attached_value > (my_storage_due() + get_amount_for_token_launch_deploy()));

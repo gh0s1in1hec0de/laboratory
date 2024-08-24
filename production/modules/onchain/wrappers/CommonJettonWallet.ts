@@ -1,6 +1,6 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode, toNano } from '@ton/core';
 import {endParse} from "./CommonJettonMaster";
-import { Op } from './JettonConstants';
+import { JettonOps } from './JettonConstants';
 
 export type JettonWalletConfig = {
     ownerAddress: Address,
@@ -79,7 +79,7 @@ export class CommonJettonWallet implements Contract {
                            forward_ton_amount: bigint,
                            forwardPayload: Cell | null) {
 
-        return beginCell().storeUint(Op.transfer, 32).storeUint(0, 64) // op, queryId
+        return beginCell().storeUint(JettonOps.Transfer, 32).storeUint(0, 64) // op, queryId
                           .storeCoins(jetton_amount)
                           .storeAddress(to)
                           .storeAddress(responseAddress)
@@ -110,7 +110,7 @@ export class CommonJettonWallet implements Contract {
     static burnMessage(jetton_amount: bigint,
                        responseAddress:Address | null,
                        customPayload: Cell | null) {
-        return beginCell().storeUint(Op.burn, 32).storeUint(0, 64) // op, queryId
+        return beginCell().storeUint(JettonOps.Burn, 32).storeUint(0, 64) // op, queryId
                           .storeCoins(jetton_amount).storeAddress(responseAddress)
                           .storeMaybeRef(customPayload)
                .endCell();

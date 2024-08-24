@@ -8,6 +8,7 @@ export const QUERY_ID_LENGTH = 64;
 export enum CoreOps {
     // We'll use it for config parsing maybe
     init = 0x18add407,
+    initCallback = 0x5d988a60,
     // Tracking new launches
     createLaunch = 0x0eedbf42,
     upgrade = 0x055d212a,

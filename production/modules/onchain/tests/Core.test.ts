@@ -37,6 +37,7 @@ import {
     toNano,
     Cell,
 } from "@ton/core";
+import { JettonOps } from "../wrappers/JettonConstants";
 
 const MAINNET_MOCK = !!process.env.MAINNET_MOCK;
 const PRINT_TX_LOGS = !!process.env.PRINT_TX_LOGS;
@@ -162,7 +163,7 @@ describe("Core", () => {
         launchConfig = {
             minTonForSaleSuccess: 0n,
             tonLimitForWlRound: toNano("1000"), // Seems correct
-            utilJetRewardAmount,
+            utilJetRewardAmount: 0n,
             utilJetWlPassAmount: toNano("1"), // < & v - out of pants
             utilJetBurnPerWlPassAmount: toNano("0.3"),
             jetWlLimitPct: 30000,
@@ -378,29 +379,32 @@ describe("Core", () => {
             success: true
         });
         console.log(await coreUtilityJettonWallet.getWalletData());
-
-        // TODO fully fix deployment
-        expect(createLaunchResult.transactions).toHaveTransaction({
-            from: core.address,
-            inMessageBounced: true
-        });
-
         const createLaunchTx = findTransactionRequired(createLaunchResult.transactions, {
             from: creator.address,
             to: core.address,
             op: CoreOps.createLaunch,
             success: true
         });
-        const createLaunchTxGasConsumption = printTxGasStats("Token launch creation transaction:", createLaunchTx);
+        printTxGasStats("Token launch creation transaction:", createLaunchTx);
         const deploymentTx = findTransactionRequired(createLaunchResult.transactions, {
             from: core.address,
             op: TokensLaunchOps.init,
             deploy: true,
             success: true
         });
-        const deploymentGasConsumption = printTxGasStats("Token launch deployment transaction:", deploymentTx);
+        printTxGasStats("Token launch deployment transaction:", deploymentTx);
 
+        const initCallbackTx = findTransactionRequired(createLaunchResult.transactions, {
+            op: CoreOps.initCallback,
+        });
+        printTxGasStats("Token launch init callback transaction:", initCallbackTx);
 
+        const enrollmentNotificationTx = findTransactionRequired(createLaunchResult.transactions, {
+            op: JettonOps.TransferNotification,
+            success: true
+        });
+        printTxGasStats("Utility token enrollment notification to new token launch transaction:", enrollmentNotificationTx);
+        // TODO Check token launch recorded balance
     });
     test("token launch onchain state stats", async () => {
         const smc = await blockchain.getContract(sampleTokenLaunch.address);

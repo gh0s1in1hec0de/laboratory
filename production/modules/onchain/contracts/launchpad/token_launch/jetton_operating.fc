@@ -49,7 +49,14 @@ const int MINT_QUERY_ID = 27082006;
     (slice util_jet_wallet_address, slice fut_jet_master_address, slice fut_jet_wallet_address, _, _, _, _) = unpack_tools(this::tools);
     if (equal_slices_bits(sender_address, util_jet_wallet_address)) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE);
-        int util_jet_enr_mode = maybe_payload~load_uint(UTIL_JET_SEND_MODE_SIZE);
+
+        cell forward_payload = maybe_payload~load_maybe_ref();
+        ;; TODO replace with better error
+        throw_if(error::bad_request, null?(forward_payload));
+
+        slice forward_payload_slice = forward_payload.begin_parse();
+        int util_jet_enr_mode = forward_payload_slice~load_uint(UTIL_JET_SEND_MODE_SIZE);
+        forward_payload_slice.end_parse();
 
         if (util_jet_enr_mode == UTIL_JET_REWARD_ENROLLMENT) {
             ;; It does mean, that utility jettons reward amount was already enrolled

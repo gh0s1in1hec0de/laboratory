@@ -78,7 +78,7 @@
         .store_coins(launch_conf::min_ton_for_sale_success)
         .store_coins(dex_jet_share)
         .store_coins(platform_share)
-        .store_coins(launch_conf::util_jet_reward_amount)
+        .store_coins(0)
         .end_cell();
     cell tools = begin_cell()
         .store_address_none()

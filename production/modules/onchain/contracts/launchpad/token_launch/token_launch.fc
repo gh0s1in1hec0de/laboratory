@@ -82,9 +82,35 @@
         return ();
     }
 
+    {- TODO?
+   Rewrite balance - freeze not just contract balance, but add inspection for -
+   - One month storage fee - its dummy, but fuck dinamic calc, it is lower bound
+   - Total amount of tons, that was locked
+   - Fees, that was prepared for token deploy
+   -}
+
+    {-
+       Crucial point for our contract, as we determine following operations based on it:
+       - WL buy (by detecting WL-pass amount of utility jettons)
+       - WL tokens initial deposit (happens, when contract is just created and need its own utility jettons reward amount)
+       - Minting all the supply of derived token to our balance (after successfull launch, is needed for distributing)
+    -}
+
+    if (op == op::transfer_notification) {
+        ;; Verify, that sender is our utility token wallet and no one other
+        route_incoming_transfer(query_id, attached_value, sender_address, in_msg_body~load_coins(), in_msg_body~load_msg_addr(), in_msg_body);
+        save_data();
+        return ();
+    }
+    if (op == op::excesses) {
+        return ();
+    }
+
+    ;; Check with new position
     ;; We can't perform any operations before actual start and initialization
     throw_unless(error::wrong_time, now() > general_state::const::start_time);
     throw_unless(error::uninitialized, this::const::is_initialized?);
+
 
     if (this::operational_needs > ONE_TON) {
         cell msg = simple_transfer(this::const::chief_address, this::operational_needs, null());
@@ -100,25 +126,7 @@
         save_data();
         return ();
     }
-    {- TODO?
-       Rewrite balance - freeze not just contract balance, but add inspection for -
-       - One month storage fee - its dummy, but fuck dinamic calc, it is lower bound
-       - Total amount of tons, that was locked
-       - Fees, that was prepared for token deploy
-    -}
 
-    {-
-       Crucial point for our contract, as we determine following operations based on it:
-       - WL buy (by detecting WL-pass amount of utility jettons)
-       - WL tokens initial deposit (happens, when contract is just created and need its own utility jettons reward amount)
-       - Minting all the supply of derived token to our balance (after successfull launch, is needed for distributing)
-    -}
-    if (op == op::transfer_notification) {
-        ;; Verify, that sender is our utility token wallet and no one other
-        route_incoming_transfer(query_id, attached_value, sender_address, in_msg_body~load_coins(), in_msg_body~load_msg_addr(), in_msg_body);
-        save_data();
-        return ();
-    }
     if (op == op::tl::wl_callback) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE);
         handle_wl_callback(query_id, attached_value, sender_address, in_msg_body~load_bool(), in_msg_body~load_msg_addr());
@@ -191,12 +199,6 @@
         set_code(new_code);
         return ();
     }
-
-    ;; Should I change it somehow?
-    if (op == op::excesses) {
-        return ();
-    }
-
     throw(error::wrong_op);
 }
 

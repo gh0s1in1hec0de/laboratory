@@ -1,5 +1,6 @@
 import { getSwaggerDocsConfig, userRoutes } from "./server";
 import { swagger } from "@elysiajs/swagger";
+import { getUserByAddress } from "./db";
 import { getConfig } from "./config";
 import { useLogger } from "./logger";
 import { greeting } from "./utils";
@@ -49,9 +50,15 @@ async function main() {
             }),
             open(ws) {
                 const { address } = ws.data.query;
-                // todo check address in db
+                const user = db.getUserByAddress(address);
+
+                if (!user){
+                    logger.warn(`Client with ${address} not found!`);
+                    return;
+                }
+
                 users.set(address, ws);
-                console.log(`Client connected: ${address}`);
+                logger.info(`Client connected: ${address}`);
             },
             message(ws, message) {
                 // ...
@@ -60,7 +67,7 @@ async function main() {
                 const { address } = ws.data.query;
 
                 users.delete(address);
-                console.log(`Client disconnected: ${address}`);
+                logger.info(`Client disconnected: ${address}`);
             },
         })
         .use(userRoutes)
