@@ -5,7 +5,6 @@ import { globalClient } from "./db";
 
 // Returns `null` to show that nothing was found the explicit way
 export async function getActiveTokenLaunches(client?: SqlClient): Promise<StoredTokenLaunch[] | null> {
-    console.log(globalClient);
     const res = await (client || globalClient)<StoredTokenLaunch[]>`
         SELECT *
         FROM token_launches
