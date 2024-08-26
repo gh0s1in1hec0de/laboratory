@@ -48,6 +48,7 @@ export enum BalanceUpdateMode {
     TotalWithdrawal = 5
 }
 
+export const UTIL_JET_SEND_MODE_SIZE = 4;
 export enum UtilJettonsEnrollmentMode {
     UtilJettonRewardEnrollment = 1,
     UtilJettonWlPass = 2

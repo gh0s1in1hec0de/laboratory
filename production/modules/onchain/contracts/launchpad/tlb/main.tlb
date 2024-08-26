@@ -57,8 +57,8 @@ upgrade#055d212a query_id:uint64 new_data:^Cell new_code:^Cell = TokenLaunchMsg;
 
 
 /* === USER VAULT === */
-// 267 + 124 x 3 = 639
-_ owner:MsgAddressInt wl_invested:Coins public_invested:Coins token_balance:Coins = UserVaultStorage;
+// 267 x 2 + 1 + 124 x 3 = 907
+_ owner:MsgAddressInt token_launch:MsgAddressInt has_whitelist:uint1  wl_invested:Coins public_invested:Coins token_balance:Coins = UserVaultStorage;
 // 32 + 64 + 4 + 124 x 2 = 348
 balance_update#00399d7a query_id:uint64 mode:uint4 tons:Coins fut_jettons:Coins = UserVaultUpdate;
 // 32 + 64 = 96

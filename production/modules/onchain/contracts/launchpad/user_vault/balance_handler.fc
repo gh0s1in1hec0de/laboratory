@@ -28,13 +28,13 @@ cell build_withdraw_confirmation_message(int is_refund?, int query_id, int wl_to
         .store_coins(wl_tons)
         .store_coins(pub_tons)
         .store_coins(jettons)
-        .store_slice(this::owner_addr);
+        .store_slice(this::owner);
     if (is_refund?) {
         msg_body = msg_body.store_uint(refund_mode, BALANCE_UPD_MODE_SIZE);
     }
     cell msg = begin_cell()
         .store_msg_flags_and_address_none(BOUNCEABLE)
-        .store_slice(this::token_launch_addr)
+        .store_slice(this::token_launch)
         .store_coins(0)
         .store_only_body_ref(msg_body.end_cell())
         .end_cell();
@@ -43,17 +43,16 @@ cell build_withdraw_confirmation_message(int is_refund?, int query_id, int wl_to
 
 cell build_wl_callback(int query_id, int should_burn?) inline {
     ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
-    ;; Bits: 32 + 64 + 1 + 267 < 1023
     cell msg_body = begin_cell()
         .store_op(op::tl::wl_callback)
         .store_query_id(query_id)
         .store_bool(should_burn?)
-        .store_slice(this::owner_addr)
+        .store_slice(this::owner)
         .end_cell();
     cell msg = begin_cell()
-        ;; There is no sense to handle bouncing of this message as we won't be able to fix this issue directly
+    ;; There is no sense to handle bouncing of this message as we won't be able to fix this issue directly
         .store_msg_flags_and_address_none(NON_BOUNCEABLE)
-        .store_slice(this::token_launch_addr)
+        .store_slice(this::token_launch)
         .store_coins(0)
         .store_only_body_ref(msg_body)
         .end_cell();
@@ -65,8 +64,11 @@ cell build_wl_callback(int query_id, int should_burn?) inline {
 () handle_balance_update(int query_id, int mode, int ton_balance_update, int jetton_balance_update) impure inline {
     if (mode == BALANCE_UPD_DEPOSIT_WL) {
         throw_if(error::unreachable, jetton_balance_update > 0);
-        cell wl_callback = build_wl_callback(query_id, this::wl_ton_balance == 0 ? TRUE : FALSE);
 
+        cell wl_callback = build_wl_callback(query_id, ~ this::has_whitelist?);
+        ifnot (this::has_whitelist?) {
+            this::has_whitelist? = TRUE;
+        }
         this::wl_ton_balance += ton_balance_update;
         {-
            Making sure that we leave our storage fee TONs on contract, it will be returned after complete withdrawal
@@ -84,7 +86,7 @@ cell build_wl_callback(int query_id, int should_burn?) inline {
         ;; As we don't send any callbacks - return excesses directly
         cell msg = begin_cell()
             .store_msg_flags_and_address_none(NON_BOUNCEABLE)
-            .store_slice(this::owner_addr)
+            .store_slice(this::owner)
             .store_coins(0)
             .store_prefix_only_body()
             .store_op(op::excesses)

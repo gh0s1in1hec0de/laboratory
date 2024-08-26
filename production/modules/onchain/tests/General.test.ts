@@ -1,11 +1,14 @@
-import { CoreOps, LaunchConfig, TokensLaunchOps } from "starton-periphery";
+import {
+    UTIL_JET_SEND_MODE_SIZE, UtilJettonsEnrollmentMode, TokensLaunchOps, CoreOps, LaunchConfig,
+} from "starton-periphery";
 // sherochka and masherochka be like:
 import { CommonJettonMaster } from "../wrappers/CommonJettonMaster";
 import { CommonJettonWallet } from "../wrappers/CommonJettonWallet";
 import {
     FullFees, GasPrices, getStoragePrices, getMsgPrices, StorageValue,
     collectCellStats, computedGeneric, computeFwdFees, getGasPrices,
-    MsgPrices, printTxsLogs, StorageStats, computeFwdFeesVerbose, BASECHAIN, computeGasFee,
+    MsgPrices, printTxsLogs, StorageStats, computeFwdFeesVerbose,
+    BASECHAIN, computeGasFee,
 } from "./utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import { findTransactionRequired } from "@ton/test-utils";
@@ -69,10 +72,10 @@ describe("Core", () => {
     let blockchain: Blockchain;
     let chief: SandboxContract<TreasuryContract>;
     let creator: SandboxContract<TreasuryContract>;
+    let consumer: SandboxContract<TreasuryContract>;
     let msgPrices: MsgPrices;
     let gasPrices: GasPrices;
     let storagePrices: StorageValue;
-    let launchConfig: LaunchConfig;
 
     // TODO Can't init atm
     let tokenLaunchStorageStats: StorageStats;
@@ -81,6 +84,7 @@ describe("Core", () => {
 
     // Custom values
     //
+    let launchConfig: LaunchConfig;
     let utilityJettonSupply: bigint;
     let sampleLaunchParams: LaunchParams;
     let utilJetRewardAmount: bigint;
@@ -96,14 +100,6 @@ describe("Core", () => {
     let estimateBodyFwdFeeWithReverseCheck: (body: Cell, force_ref: boolean, prices?: MsgPrices) => bigint;
 
     let forwardStateinitOverhead: (prices: MsgPrices, stats: StorageStats) => bigint;
-    // `TODO` - Rewrite to unified format
-    let calcSendFees: (send_fee: bigint,
-        recv_fee: bigint,
-        fwd_fee: bigint,
-        fwd_amount: bigint,
-        storage_fee: bigint,
-        state_init: bigint
-    ) => bigint;
 
     beforeAll(async () => {
         [
@@ -149,6 +145,7 @@ describe("Core", () => {
         // Me btw
         chief = await blockchain.treasury("chief", { balance: toNano("1000"), resetBalanceIfZero: true });
         creator = await blockchain.treasury("creator");
+        consumer = await blockchain.treasury("consumer");
 
         utilityJettonMaster = blockchain.openContract(
             CommonJettonMaster.createFromConfig(
@@ -252,12 +249,6 @@ describe("Core", () => {
             // Meh, kinda lazy way of doing that, but tests are bloated enough already
             return computeFwdFees(prices, stats.cells, stats.bits) - prices.lumpPrice;
         };
-
-        calcSendFees = (send, recv, fwd, fwd_amount, storage, state_init) => {
-            const fwdTotal = fwd_amount + (fwd_amount > 0n ? fwd * 2n : fwd) + state_init;
-            // const execute = send + recv;
-            return fwdTotal + send + recv + storage + 1n;
-        };
     }, 20000);
     describe("core and launch correct deployment", () => {
         it("core's correct & successful deployment", async () => {
@@ -299,14 +290,11 @@ describe("Core", () => {
                 toNano("0.01"), toNano("1")
             );
             if (PRINT_TX_LOGS) printTxsLogs(mintResult.transactions, "Core deployment VM logs");
-
-
             expect(mintResult.transactions).toHaveTransaction({
                 on: core.address,
                 from: coreUtilityJettonWallet.address,
                 success: true
             });
-
             const enrollmentNotificationTx = findTransactionRequired(mintResult.transactions, {
                 on: core.address,
                 from: coreUtilityJettonWallet.address,
@@ -322,8 +310,7 @@ describe("Core", () => {
             const smc = await blockchain.getContract(core.address);
             assert(smc.accountState, "Can't access core account state");
             // Runtime doesn't see assert here lol
-            if (smc.accountState.type !== "active")
-                throw new Error("Core account is not active");
+            if (smc.accountState.type !== "active") throw new Error("Core account is not active");
             assert(smc.account.account, "Can't access core account!");
 
             console.log(
@@ -421,6 +408,7 @@ describe("Core", () => {
         });
     });
     describe("token launch operations", () => {
+        // TODO To add check on limit constraint
         test("creator can buy his own tokens out", async () => {
             blockchain.now = sampleLaunchStartTime + 1;
 
@@ -447,6 +435,50 @@ describe("Core", () => {
 
             const tokenLaunchState = await sampleTokenLaunch.getSaleState();
             expect(mockedCreatorPrice).toEqual(tokenLaunchState.creatorFutJetBalance);
+        });
+        test.skip("whitelist purchase unavailable until the specified time", async () => {
+            // TODO
+        });
+        // TODO Check one-time burn effect
+        test("wl purchase works correctly", async () => {
+            blockchain.now = sampleLaunchStartTime + 1 + launchConfig.creatorRoundDurationMs;
+            const mintedBalance = launchConfig.utilJetWlPassAmount * 2n;
+            const mintResult = await utilityJettonMaster.sendMint(
+                chief.getSender(),
+                consumer.address,
+                mintedBalance,
+                null, null, null,
+                toNano("0.01"), toNano("1")
+            );
+            expect(mintResult.transactions).toHaveTransaction({
+                on: consumer.address,
+                op: JettonOps.TransferNotification,
+                success: true
+            });
+            const consumerWallet = blockchain.openContract(
+                CommonJettonWallet.createFromConfig({
+                    jettonMasterAddress: utilityJettonMaster.address,
+                    ownerAddress: consumer.address
+                }, jettonWalletCode)
+            );
+            expect((await consumerWallet.getWalletData()).balance).toEqual(mintedBalance);
+
+            const wlPurchase = await consumerWallet.sendTransfer(
+                consumer.getSender(),
+                toNano("11"),
+                launchConfig.utilJetWlPassAmount,
+                sampleTokenLaunch.address,
+                consumer.address,
+                null, toNano("10"),
+                beginCell()
+                    .storeUint(UtilJettonsEnrollmentMode.UtilJettonWlPass, UTIL_JET_SEND_MODE_SIZE)
+                    .endCell()
+            );
+            console.log(`sample token launch address: ${sampleTokenLaunch.address}`);
+            // Just triggering logs
+            // expect(wlPurchase.transactions).toHaveTransaction({
+            //     op: CoreOps.init
+            // });
         });
     });
 });

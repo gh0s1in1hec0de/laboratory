@@ -37,24 +37,24 @@
             util_jet_wallet_address,
             initiator,
             accessible_user_value > 0 ? accessible_user_value : 1,
-            null() ;; Just preventing exit code 9 (maybe I'm just silly)
+            null()
         );
         ;; Taking all the value remains from transfer notification to attach
-        send_raw_message(chargeback_transfer_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
+        send_raw_message(chargeback_transfer_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
         return ();
     }
     ;; Send back all the jettons except burn amount
     ;; If bounced - tokens stays on our balance
     cell return_transfer_msg = build_jetton_transfer_msg(
         query_id,
-        0,
+        JETTON_MIN_TRANSFER_FEE,
         wl_round::const::pass_util_jet_amount - wl_round::const::burn_util_jet_amount,
         util_jet_wallet_address,
         initiator,
-        0,
+        1,
         null()
     );
-    send_raw_message(return_transfer_msg, 0);
+    send_raw_message(return_transfer_msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 
     ;; We attach value only for routong messages
     int value = get_wl_purchase_gas_consumption() - get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_GAS_CONSUMPTION);
@@ -68,7 +68,7 @@
         0
     );
 
-    send_raw_message(msg, SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     wl_round::ton_invested_total += accessible_user_value;
     this::operational_needs += opn;
     general_state::total_tons_collected += accessible_user_value;

@@ -51,7 +51,6 @@ const int MINT_QUERY_ID = 27082006;
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE);
 
         cell forward_payload = maybe_payload~load_maybe_ref();
-        ;; TODO replace with better error
         throw_if(error::bad_request, null?(forward_payload));
 
         slice forward_payload_slice = forward_payload.begin_parse();

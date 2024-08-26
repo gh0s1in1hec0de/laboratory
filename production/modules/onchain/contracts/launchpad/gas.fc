@@ -47,10 +47,6 @@ const CLAIM_MSG_CELLS = 1;
 const BALANCE_UPDATE_BITS = 1; ;; estimation looks like: body = 32+64+124+(3+8+256)+(3+8+256)
 const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
 
-;; file#L`line_num` - maunal bits counting
-const WL_CALLBACK_MSG_BITS = 1; ;; estimation looks like: body = 32+64+124+(3+8+256)+(3+8+256)
-const WL_CALLBACK_MSG_CELLS = 1; ;; body always in ref
-
 ;; Gas
 ;; Gas constants are calculated in the main test suite.
 ;; First the related transaction is found, and then it's
@@ -109,12 +105,16 @@ const CREATOR_BUYOUT_GAS_CONSUMPTION = 14561;
 
 ;; === Whitelist Purchase ===
 const WL_PURCHASE_GAS_CONSUMPTION = 1;
+const WL_CALLBACK_MSG_BITS = 364; ;;
+const WL_CALLBACK_MSG_CELLS = 1; ;; body always in ref
 const WL_CALLBACK_GAS_CONSUMPTION = 1;
 int get_wl_purchase_gas_consumption() inline_ref {
     return get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_GAS_CONSUMPTION)
+    + JETTON_MIN_TRANSFER_FEE ;; Return main chunk of tokens immidiatly
     + get_balance_update_gas_cost()
     + get_forward_fee(MY_WORKCHAIN, WL_CALLBACK_MSG_BITS, WL_CALLBACK_MSG_CELLS)
-    + get_compute_fee(MY_WORKCHAIN, WL_CALLBACK_GAS_CONSUMPTION);
+    + get_compute_fee(MY_WORKCHAIN, WL_CALLBACK_GAS_CONSUMPTION)
+    + JETTON_MIN_TRANSFER_FEE; ;; For whitelisted users' case
 }
 
 (int, int) check_amount_is_enough_for_wl_purchase(int msg_value) inline {
@@ -180,7 +180,7 @@ int get_jetton_deployment_gas_cost() inline_ref {
 int get_claim_gas_cost() inline_ref {
     return
     ;; Forwarding claim message
-     get_forward_fee(MY_WORKCHAIN, CLAIM_MSG_BITS, CLAIM_MSG_CELLS)
+    get_forward_fee(MY_WORKCHAIN, CLAIM_MSG_BITS, CLAIM_MSG_CELLS)
     ;; User-vault side request processing
     + get_compute_fee(MY_WORKCHAIN, RECEIVE_CLAIM_CONSUMPTION)
     + calculate_user_vault_min_storage_fee();
@@ -217,15 +217,15 @@ const INIT_CALLBACK_GAS_CONSUMPTION = 12643;
 const RECORD_REWARD_JETTONS_ENROLLMENT_GAS_CONSUMPTION = 14491;
 int get_amount_for_token_launch_deploy() inline {
     return get_compute_fee(MY_WORKCHAIN, CREATE_LAUNCH_GAS_CONSUMPTION)
-        + get_forward_fee(MY_WORKCHAIN, INIT_MSG_BITS, INIT_MSG_CELLS)
-        + calculate_token_launch_min_storage_fee(2_MONTHS)
-        + forward_token_launch_init_state_overhead()
-        + get_compute_fee(MY_WORKCHAIN, INITIALIZATION_GAS_CONSUMPTION)
-        + get_forward_fee(MY_WORKCHAIN, INIT_CALLBACK_MSG_BITS, INIT_CALLBACK_MSG_CELLS)
-        + get_compute_fee(MY_WORKCHAIN, INIT_CALLBACK_GAS_CONSUMPTION)
-        + JETTON_MIN_TRANSFER_FEE
-        + get_compute_fee(MY_WORKCHAIN, RECORD_REWARD_JETTONS_ENROLLMENT_GAS_CONSUMPTION)
-        ;; Creator of new token launch should pay for the future jetton deployment
-        + get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_GAS_CONSUMPTION)
-        + get_jetton_deployment_gas_cost();
+    + get_forward_fee(MY_WORKCHAIN, INIT_MSG_BITS, INIT_MSG_CELLS)
+    + calculate_token_launch_min_storage_fee(2_MONTHS)
+    + forward_token_launch_init_state_overhead()
+    + get_compute_fee(MY_WORKCHAIN, INITIALIZATION_GAS_CONSUMPTION)
+    + get_forward_fee(MY_WORKCHAIN, INIT_CALLBACK_MSG_BITS, INIT_CALLBACK_MSG_CELLS)
+    + get_compute_fee(MY_WORKCHAIN, INIT_CALLBACK_GAS_CONSUMPTION)
+    + JETTON_MIN_TRANSFER_FEE
+    + get_compute_fee(MY_WORKCHAIN, RECORD_REWARD_JETTONS_ENROLLMENT_GAS_CONSUMPTION)
+    ;; Creator of new token launch should pay for the future jetton deployment
+    + get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_GAS_CONSUMPTION)
+    + get_jetton_deployment_gas_cost();
 }
