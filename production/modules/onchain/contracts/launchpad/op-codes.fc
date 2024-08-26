@@ -35,6 +35,7 @@ const error::unauthorized_access = 73;
 const error::not_valid_wallet = 74;
 
 const error::unreachable = 666;
+const error::meowreachable = 777;
 const error::uninitialized = 404;
 const error::already_initialized = 423;
 const error::balance_overlimit = 411;

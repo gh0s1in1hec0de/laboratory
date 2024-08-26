@@ -247,11 +247,12 @@ slice get_user_vault_address(slice user_address) method_id {
         config::const::fut_jet_dex_amount,
         config::const::fut_jet_platform_amount,
         creator_round::const::fut_jet_limit,
-        creator_round::const::fut_jet_price
+        creator_round::const::fut_jet_price_reversed
     );
 }
 
-(int, int) get_jeton_balances() method_id {
+;; Needed more for checks & verifications
+(int, int) get_jetton_balances() method_id {
     load_data();
     return (
         general_state::fut_jet_deployed_balance,

@@ -1,5 +1,9 @@
+#include "gas.fc";
 #include "../stdlib.fc";
 #include "op-codes.fc";
+
+;; Just a big number out of head (the only requirement - it should not be lower than actual amount)
+const MAX_WL_ROUND_TON_LIMIT = 10000 * ONE_TON;
 
 const MY_WORKCHAIN = BASECHAIN;
 const int ADDRESS_SIZE = 264; ;; 256 + 8

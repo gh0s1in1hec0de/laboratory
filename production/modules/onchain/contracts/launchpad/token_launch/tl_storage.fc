@@ -15,7 +15,7 @@
     cell creator_round_state = begin_cell()
         .store_coins(creator_round::const::fut_jet_limit)
         .store_coins(creator_round::creator_fut_jet_balance)
-        .store_coins(creator_round::const::fut_jet_price)
+        .store_coins(creator_round::const::fut_jet_price_reversed)
         .store_int(creator_round::const::end_time, 32)
         .end_cell();
     cell wl_round_state = begin_cell()
@@ -94,7 +94,7 @@
     slice creator_round_state_slice = creator_round_state.begin_parse();
     creator_round::const::fut_jet_limit = creator_round_state_slice~load_coins();
     creator_round::creator_fut_jet_balance = creator_round_state_slice~load_coins();
-    creator_round::const::fut_jet_price = creator_round_state_slice~load_coins();
+    creator_round::const::fut_jet_price_reversed = creator_round_state_slice~load_coins();
     creator_round::const::end_time = creator_round_state_slice~load_int(32);
     creator_round_state_slice.end_parse();
 

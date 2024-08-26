@@ -75,6 +75,7 @@ const int MINT_QUERY_ID = 27082006;
             }
             config::const::reward_util_jets_total_amount += jetton_amount;
             general_state::reward_util_jets_balance += jetton_amount;
+            this::const::is_initialized? = TRUE;
         }
 
         if (util_jet_enr_mode == UTIL_JET_WL_PASS) {

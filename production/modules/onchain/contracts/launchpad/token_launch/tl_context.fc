@@ -33,7 +33,7 @@ global int   general_state::const::end_time;
 global int   creator_round::const::fut_jet_limit;
 ;; Amount of tokens, that creator bought back
 global int   creator_round::creator_fut_jet_balance;
-global int   creator_round::const::fut_jet_price;
+global int   creator_round::const::fut_jet_price_reversed;
 global int   creator_round::const::end_time;
 
 ;; Amount of jettons, that can be sold through WL round

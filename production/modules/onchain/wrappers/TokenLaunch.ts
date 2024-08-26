@@ -1,4 +1,4 @@
-import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
+import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode, toNano } from "@ton/core";
 import {
     type TokenLaunchStorage, BalanceUpdateMode, LaunchData,
     QUERY_ID_LENGTH, SaleMoneyFlow, TokensLaunchOps,
@@ -6,6 +6,7 @@ import {
 } from "starton-periphery";
 import { randomAddress } from "@ton/test-utils";
 import { BASECHAIN } from "../tests/utils";
+import { ok as assert } from "node:assert";
 import { LaunchParams } from "./types";
 import {
     tokenLaunchConfigToCell,
@@ -16,6 +17,10 @@ import {
 } from "./utils";
 
 export class TokenLaunch implements Contract {
+    public static PERCENTAGE_DENOMINATOR = 100000n;
+    // 10k TON
+    public static MAX_WL_ROUND_TON_LIMIT = 10000n * toNano("1");
+
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
     }
 
@@ -27,6 +32,18 @@ export class TokenLaunch implements Contract {
         const data = config instanceof Cell ? config : tokenLaunchConfigToCell(config);
         const init = { code, data };
         return new TokenLaunch(contractAddress(workchain, init), init);
+    }
+
+    async sendCreatorBuyout(provider: ContractProvider, sendMessageParams: SendMessageParams) {
+        const { queryId, via, value } = sendMessageParams;
+
+        const body = beginCell()
+            .storeUint(TokensLaunchOps.creatorBuyout, OP_LENGTH)
+            .storeUint(queryId, QUERY_ID_LENGTH)
+            .endCell();
+        await provider.internal(via, {
+            value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
+        });
     }
 
     async sendPublicBuy(provider: ContractProvider, sendMessageParams: SendMessageParams) {
@@ -126,6 +143,36 @@ export class TokenLaunch implements Contract {
         };
     }
 
+    async getJettonBalances(provider: ContractProvider): Promise<{
+        futJetDeployedBalance: Coins,
+        rewardUtilJetsBalance: Coins
+    }> {
+        let { stack } = await provider.get("get_jetton_balances", []);
+        return {
+            futJetDeployedBalance: stack.readBigNumber(),
+            rewardUtilJetsBalance: stack.readBigNumber(),
+        };
+    }
+
+    public static validateValue(total: Coins, fee: Coins): { purified: Coins, opn: Coins } {
+        assert(!(fee > total), "not enough gas");
+        const extra = total - fee;
+        const purified = extra * 99n / 100n;
+        assert(purified > 0, "balance lack");
+        return { purified, opn: extra - purified };
+
+    }
+
+    public static getCreatorAmountOut(expectedFee: Coins, value: Coins, wlJetLimit: Coins, tonLimitForWlRound: Coins) {
+        const { purified } = this.validateValue(value, expectedFee);
+        const creatorJettonPrice = this.getCreatorJettonPrice(wlJetLimit, tonLimitForWlRound);
+        return purified * creatorJettonPrice / TokenLaunch.MAX_WL_ROUND_TON_LIMIT;
+    }
+
+    public static getCreatorJettonPrice(wlJetLimit: Coins, tonLimitForWlRound: Coins) {
+        return wlJetLimit * 2n * this.MAX_WL_ROUND_TON_LIMIT / tonLimitForWlRound;
+    }
+
     static buildState(creator: Address, chief: Address, {
             totalSupply,
             platformSharePct,
@@ -136,16 +183,14 @@ export class TokenLaunch implements Contract {
         launchConfig: LaunchConfig,
         loadAtMax = false
     ) {
-        const PERCENTAGE_DENOMINATOR = 100000n;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
 
-        const wlJetLimit = BigInt(launchConfig.jetWlLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
-        const pubJetLimit = BigInt(launchConfig.jetPubLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
-        const dexJetShare = BigInt(launchConfig.jetDexSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
-        const platformShare = BigInt(platformSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
+        const wlJetLimit = BigInt(launchConfig.jetWlLimitPct) * totalSupply / this.PERCENTAGE_DENOMINATOR;
+        const pubJetLimit = BigInt(launchConfig.jetPubLimitPct) * totalSupply / this.PERCENTAGE_DENOMINATOR;
+        const dexJetShare = BigInt(launchConfig.jetDexSharePct) * totalSupply / this.PERCENTAGE_DENOMINATOR;
+        const platformShare = BigInt(platformSharePct) * totalSupply / this.PERCENTAGE_DENOMINATOR;
         const creatorBuybackJetLimit = totalSupply - (wlJetLimit + pubJetLimit + dexJetShare + platformShare);
-
-        const creatorJetPrice = wlJetLimit / (BigInt(wlJetLimit) * 2n);
+        const creatorJetPrice = this.getCreatorJettonPrice(wlJetLimit, launchConfig.tonLimitForWlRound);
 
         const generalState = beginCell()
             .storeInt(loadAtMax ? ThirtyTwoIntMaxValue : startTime, 32)
@@ -209,7 +254,7 @@ export class TokenLaunch implements Contract {
             .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.minTonForSaleSuccess)
             .storeCoins(loadAtMax ? CoinsMaxValue : dexJetShare)
             .storeCoins(loadAtMax ? CoinsMaxValue : platformShare)
-            .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.utilJetRewardAmount)
+            .storeCoins(loadAtMax ? CoinsMaxValue : 0n)
             .endCell();
         const tools = beginCell()
             .storeAddress(loadAtMax ? randomAddress() : null)

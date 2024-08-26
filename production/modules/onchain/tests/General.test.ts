@@ -5,7 +5,7 @@ import { CommonJettonWallet } from "../wrappers/CommonJettonWallet";
 import {
     FullFees, GasPrices, getStoragePrices, getMsgPrices, StorageValue,
     collectCellStats, computedGeneric, computeFwdFees, getGasPrices,
-    MsgPrices, printTxsLogs, StorageStats, computeFwdFeesVerbose,
+    MsgPrices, printTxsLogs, StorageStats, computeFwdFeesVerbose, BASECHAIN, computeGasFee,
 } from "./utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import { findTransactionRequired } from "@ton/test-utils";
@@ -84,6 +84,7 @@ describe("Core", () => {
     let utilityJettonSupply: bigint;
     let sampleLaunchParams: LaunchParams;
     let utilJetRewardAmount: bigint;
+    let sampleLaunchStartTime: number;
 
     // Functions initialization:
     //
@@ -137,8 +138,9 @@ describe("Core", () => {
         storagePrices = getStoragePrices(blockchain.config);
 
         utilityJettonSupply = toNano("1000000"); // Replace with well-counted value
+        sampleLaunchStartTime = Math.round(Date.now() / 1000) + 3600;
         sampleLaunchParams = {
-            startTime: Math.round(Date.now() / 1000) + 3600,
+            startTime: sampleLaunchStartTime,
             totalSupply: toNano("1000000"),
             metadata: { uri: "http://another_shitcoin.meow" },
             platformSharePct: 1500
@@ -202,7 +204,6 @@ describe("Core", () => {
         );
 
         // As we determine it in dynamic manner - the first enrollment of utility tokens is whole `utilJetRewardAmount`
-        launchConfig.utilJetRewardAmount = 0n;
         sampleTokenLaunch = blockchain.openContract(
             TokenLaunch.createFromConfig(TokenLaunch.buildState(
                     creator.address,
@@ -219,7 +220,6 @@ describe("Core", () => {
                 ),
                 tokenLaunchCode)
         );
-        launchConfig.utilJetRewardAmount = utilJetRewardAmount;
 
         printTxGasStats = (name, transaction) => {
             const txComputed = computedGeneric(transaction);
@@ -259,172 +259,194 @@ describe("Core", () => {
             return fwdTotal + send + recv + storage + 1n;
         };
     }, 20000);
+    describe("core and launch correct deployment", () => {
+        it("core's correct & successful deployment", async () => {
+            const deployResult = await core.sendDeploy({ value: toNano("2"), via: chief.getSender() });
+            if (PRINT_TX_LOGS) printTxsLogs(deployResult.transactions, "Core deployment VM logs");
 
-    it("core's correct & successful deployment", async () => {
-        const deployResult = await core.sendDeploy({ value: toNano("2"), via: chief.getSender() });
-        if (PRINT_TX_LOGS) printTxsLogs(deployResult.transactions, "Core deployment VM logs");
-
-        expect(deployResult.transactions).toHaveTransaction({
-            from: chief.address,
-            to: core.address,
-            deploy: true,
-            success: true
+            expect(deployResult.transactions).toHaveTransaction({
+                from: chief.address,
+                to: core.address,
+                deploy: true,
+                success: true
+            });
+            expect(deployResult.transactions).not.toHaveTransaction({
+                on: chief.address,
+                from: core.address,
+                inMessageBounced: true
+            });
+            // Doesn't work with inactive contracts
+            expect(await core.getLaunchConfig()).toEqual(launchConfig);
         });
-        expect(deployResult.transactions).not.toHaveTransaction({
-            on: chief.address,
-            from: core.address,
-            inMessageBounced: true
+        it("core utility jettons enrollment detection", async () => {
+            const deploymentResult = await utilityJettonMaster.sendDeploy(
+                chief.getSender(),
+                toNano("2") // Warning! Must be provided enough money for storage-due reserves
+            );
+            expect(deploymentResult.transactions).toHaveTransaction({
+                on: utilityJettonMaster.address,
+                from: chief.address,
+                deploy: true,
+                success: true
+            });
+            // Minting 10 reward-chunks
+            const enrollment = utilJetRewardAmount * 10n;
+            const mintResult = await utilityJettonMaster.sendMint(
+                chief.getSender(),
+                core.address,
+                enrollment,
+                null, null, null,
+                toNano("0.01"), toNano("1")
+            );
+            if (PRINT_TX_LOGS) printTxsLogs(mintResult.transactions, "Core deployment VM logs");
+
+
+            expect(mintResult.transactions).toHaveTransaction({
+                on: core.address,
+                from: coreUtilityJettonWallet.address,
+                success: true
+            });
+
+            const enrollmentNotificationTx = findTransactionRequired(mintResult.transactions, {
+                on: core.address,
+                from: coreUtilityJettonWallet.address,
+                success: true
+            });
+            printTxGasStats("Utility token enrollment to core transaction:", enrollmentNotificationTx);
+
+            // Verifying that contract recognized this enrollment and has recorded necessary data
+            expect((await core.getState()).utilJetCurBalance === enrollment);
         });
-        // Doesn't work with inactive contracts
-        expect(await core.getLaunchConfig()).toEqual(launchConfig);
-    });
-    it("core utility jettons enrollment detection", async () => {
-        const deploymentResult = await utilityJettonMaster.sendDeploy(
-            chief.getSender(),
-            toNano("2") // Warning! Must be provided enough money for storage-due reserves
-        );
-        expect(deploymentResult.transactions).toHaveTransaction({
-            on: utilityJettonMaster.address,
-            from: chief.address,
-            deploy: true,
-            success: true
+        // TODO Use it to replace dynamic storage-due check with static one
+        test.skip("core state specs", async () => {
+            const smc = await blockchain.getContract(core.address);
+            assert(smc.accountState, "Can't access core account state");
+            // Runtime doesn't see assert here lol
+            if (smc.accountState.type !== "active")
+                throw new Error("Core account is not active");
+            assert(smc.account.account, "Can't access core account!");
+
+            console.log(
+                "Core ~ storage stats (dictionary is empty):",
+                smc.account.account.storageStats.used
+            );
+            const stateCell = beginCell().store(storeStateInit(smc.accountState.state)).endCell();
+            console.log("Core state stats:", collectCellStats(stateCell, []));
         });
-        // Minting 10 reward-chunks
-        const enrollment = utilJetRewardAmount * 10n;
-        const mintResult = await utilityJettonMaster.sendMint(
-            chief.getSender(),
-            core.address,
-            enrollment,
-            null, null, null,
-            toNano("0.01"), toNano("1")
-        );
-        if (PRINT_TX_LOGS) printTxsLogs(mintResult.transactions, "Core deployment VM logs");
+        test("token creation fees measurements", async () => {
+            // Measure stateinit forwarding
+            const code = {
+                tokenLaunch: tokenLaunchCode,
+                userVault: userVaultCode,
+                jettonMaster: jettonMasterCode,
+                jettonWallet: jettonWalletCode,
 
-
-        expect(mintResult.transactions).toHaveTransaction({
-            on: core.address,
-            from: coreUtilityJettonWallet.address,
-            success: true
-        });
-
-        const enrollmentNotificationTx = findTransactionRequired(mintResult.transactions, {
-            on: core.address,
-            from: coreUtilityJettonWallet.address,
-            success: true
-        });
-        printTxGasStats("Utility token enrollment to core transaction:", enrollmentNotificationTx);
-
-        // Verifying that contract recognized this enrollment and has recorded necessary data
-        expect((await core.getState()).utilJetCurBalance === enrollment);
-    });
-    // TODO Use it to replace dynamic storage-due check with static one
-    test.skip("core state specs", async () => {
-        const smc = await blockchain.getContract(core.address);
-        assert(smc.accountState, "Can't access core account state");
-        // Runtime doesn't see assert here lol
-        if (smc.accountState.type !== "active")
-            throw new Error("Core account is not active");
-        assert(smc.account.account, "Can't access core account!");
-
-        console.log(
-            "Core ~ storage stats (dictionary is empty):",
-            smc.account.account.storageStats.used
-        );
-        const stateCell = beginCell().store(storeStateInit(smc.accountState.state)).endCell();
-        console.log("Core state stats:", collectCellStats(stateCell, []));
-    });
-    // TODO Clean-up
-    test("token creation fees measurements", async () => {
-        // Measure stateinit forwarding
-        const code = {
-            tokenLaunch: tokenLaunchCode,
-            userVault: userVaultCode,
-            jettonMaster: jettonMasterCode,
-            jettonWallet: jettonWalletCode,
-
-        };
-        const { bodyCell, tokenLaunchStateInit } = Core.tokenCreationMessage(
-            creator.address, chief.address, utilityJettonMaster.address,
-            sampleLaunchParams, code, launchConfig
-        );
-        const loadedTokenLaunchStateInit = TokenLaunch.buildState(
-            creator.address, chief.address, sampleLaunchParams, code, launchConfig, true
-        );
-        // Body will be stored in a reference - then `force_ref` is true
-        const unifiedCheckFees = estimateBodyFwdFeeWithReverseCheck(bodyCell, true);
-        console.info(`Token Launch deployment message forward fee: ${unifiedCheckFees}`);
-        for (const [i, stateInit] of [tokenLaunchStateInit, loadedTokenLaunchStateInit].entries()) {
-            const tokenLaunchState: StateInit = {
-                code: tokenLaunchCode,
-                data: stateInit
             };
-            const stateCell = beginCell().store(storeStateInit(tokenLaunchState)).endCell();
-            const stateInitStats = collectCellStats(stateCell, []);
-            console.log(`${i ? "T" : "Loaded t"}oken launch state stats: ${stateInitStats}`);
-            const stateInitOverhead = forwardStateinitOverhead(msgPrices, stateInitStats);
-            console.log(`${i ? "T" : "Loaded t"}oken launch state forward fee: ${stateInitOverhead}(${fromNano(stateInitOverhead)} TON)`);
-        }
-    });
-    // All the aspects of it from fees measurements to security
-    test("new launch creation through core", async () => {
-        const createLaunchResult = await core.sendCreateLaunch(
-            {
-                via: creator.getSender(),
-                value: toNano("0.17"), // Should work with 0.14?
-                queryId: 0n
-            },
-            sampleLaunchParams
-        );
-        if (PRINT_TX_LOGS) printTxsLogs(createLaunchResult.transactions, "Launch Creation VM logs");
-        expect(createLaunchResult.transactions).toHaveTransaction({
-            from: core.address,
-            deploy: true,
-            success: true
+            const { bodyCell, tokenLaunchStateInit } = Core.tokenCreationMessage(
+                creator.address, chief.address, utilityJettonMaster.address,
+                sampleLaunchParams, code, launchConfig
+            );
+            const loadedTokenLaunchStateInit = TokenLaunch.buildState(
+                creator.address, chief.address, sampleLaunchParams, code, launchConfig, true
+            );
+            // Body will be stored in a reference - then `force_ref` is true
+            const unifiedCheckFees = estimateBodyFwdFeeWithReverseCheck(bodyCell, true);
+            console.info(`Token Launch deployment message forward fee: ${unifiedCheckFees}`);
+            for (const [i, stateInit] of [tokenLaunchStateInit, loadedTokenLaunchStateInit].entries()) {
+                const tokenLaunchState: StateInit = {
+                    code: tokenLaunchCode,
+                    data: stateInit
+                };
+                const stateCell = beginCell().store(storeStateInit(tokenLaunchState)).endCell();
+                const stateInitStats = collectCellStats(stateCell, []);
+                console.log(`${i ? "T" : "Loaded t"}oken launch state stats: ${stateInitStats}`);
+                const stateInitOverhead = forwardStateinitOverhead(msgPrices, stateInitStats);
+                console.log(`${i ? "T" : "Loaded t"}oken launch state forward fee: ${stateInitOverhead}(${fromNano(stateInitOverhead)} TON)`);
+            }
         });
-        const createLaunchTx = findTransactionRequired(createLaunchResult.transactions, {
-            from: creator.address,
-            to: core.address,
-            op: CoreOps.createLaunch,
-            success: true
-        });
-        printTxGasStats("Token launch creation request to core transaction:", createLaunchTx);
-        const deploymentTx = findTransactionRequired(createLaunchResult.transactions, {
-            from: core.address,
-            op: TokensLaunchOps.init,
-            deploy: true,
-            success: true
-        });
-        printTxGasStats("New token launch deployment transaction:", deploymentTx);
+        // All the aspects of it from fees measurements to security
+        test("new launch creation through core", async () => {
+            const createLaunchResult = await core.sendCreateLaunch(
+                {
+                    via: creator.getSender(),
+                    value: toNano("0.16"), // Should work with 0.14?
+                    queryId: 0n
+                },
+                sampleLaunchParams
+            );
+            if (PRINT_TX_LOGS) printTxsLogs(createLaunchResult.transactions, "Launch Creation VM logs");
+            const createLaunchTx = findTransactionRequired(createLaunchResult.transactions, {
+                from: creator.address,
+                to: core.address,
+                op: CoreOps.createLaunch,
+                success: true
+            });
+            printTxGasStats("Token launch creation request to core transaction:", createLaunchTx);
+            const deploymentTx = findTransactionRequired(createLaunchResult.transactions, {
+                from: core.address,
+                op: TokensLaunchOps.init,
+                deploy: true,
+                success: true
+            });
+            printTxGasStats("New token launch deployment transaction:", deploymentTx);
+            const initCallbackTx = findTransactionRequired(createLaunchResult.transactions, {
+                op: CoreOps.initCallback,
+            });
+            printTxGasStats("Token launch init callback transaction:", initCallbackTx);
+            console.log(`Sample token launch address: ${sampleTokenLaunch.address}`);
+            const enrollmentNotificationTx = findTransactionRequired(createLaunchResult.transactions, {
+                on: sampleTokenLaunch.address,
+                op: JettonOps.TransferNotification,
+                success: true
+            });
+            printTxGasStats("Utility token enrollment notification to new token launch transaction:", enrollmentNotificationTx);
 
-        const initCallbackTx = findTransactionRequired(createLaunchResult.transactions, {
-            op: CoreOps.initCallback,
+            const coreStateAfterLaunchCreation = await core.getState();
+            expect(coreStateAfterLaunchCreation.notFundedLaunches).toEqual(null); // need-to-be-funded dictionary is clean
+            expect(coreStateAfterLaunchCreation.utilJetCurBalance).toEqual(utilJetRewardAmount * 9n); // Util jettons chunk been sent to new launch
+            expect((await sampleTokenLaunch.getJettonBalances()).rewardUtilJetsBalance).toEqual(utilJetRewardAmount); // Token launch handled an enrollment
         });
-        printTxGasStats("Token launch init callback transaction:", initCallbackTx);
+        test.skip("token launch onchain state stats", async () => {
+            const smc = await blockchain.getContract(sampleTokenLaunch.address);
+            assert(smc.accountState, "Can't access token launch state");
+            // Runtime doesn't see assert here lol
+            if (smc.accountState.type !== "active") throw new Error("Token launch is not active");
+            assert(smc.account.account, "Can't access token launch!");
+            console.log(
+                "Token launch ~ storage stats:",
+                smc.account.account.storageStats.used
+            );
+            const stateCell = beginCell().store(storeStateInit(smc.accountState.state)).endCell();
+            console.log("Token launch state stats:", collectCellStats(stateCell, []));
+        });
+    });
+    describe("token launch operations", () => {
+        test("creator can buy his own tokens out", async () => {
+            blockchain.now = sampleLaunchStartTime + 1;
 
-        const enrollmentNotificationTx = findTransactionRequired(createLaunchResult.transactions, {
-            on: sampleTokenLaunch.address,
-            op: JettonOps.TransferNotification,
-            success: true
+            const value = toNano("0.5");
+            const gasPrices = getGasPrices(blockchain.config, BASECHAIN);
+            const expectedFee = computeGasFee(gasPrices, 14561n); // Computed by printTxGasStats later
+
+            const mockedCreatorPrice = TokenLaunch.getCreatorAmountOut(
+                expectedFee, value,
+                BigInt(launchConfig.jetWlLimitPct) * sampleLaunchParams.totalSupply / TokenLaunch.PERCENTAGE_DENOMINATOR,
+                launchConfig.tonLimitForWlRound
+            );
+            const buyoutTransactionResult = await sampleTokenLaunch.sendCreatorBuyout({
+                via: creator.getSender(), value, queryId: 0n
+            });
+
+            const buyoutTx = findTransactionRequired(buyoutTransactionResult.transactions, {
+                from: creator.address,
+                on: sampleTokenLaunch.address,
+                op: TokensLaunchOps.creatorBuyout,
+                success: true
+            });
+            printTxGasStats("Creator buyout transaction:", buyoutTx);
+
+            const tokenLaunchState = await sampleTokenLaunch.getSaleState();
+            expect(mockedCreatorPrice).toEqual(tokenLaunchState.creatorFutJetBalance);
         });
-        printTxGasStats("Utility token enrollment notification to new token launch transaction:", enrollmentNotificationTx);
-        const coreStateAfterLaunchCreation = await core.getState();
-        expect(coreStateAfterLaunchCreation.notFundedLaunches).toEqual(null); // need-to-be-funded dictionary is clean
-        expect(coreStateAfterLaunchCreation.utilJetCurBalance).toEqual(utilJetRewardAmount * 9n); // Util jettons chunk been sent to new launch
-    });
-    test.skip("token launch onchain state stats", async () => {
-        const smc = await blockchain.getContract(sampleTokenLaunch.address);
-        assert(smc.accountState, "Can't access token launch state");
-        // Runtime doesn't see assert here lol
-        if (smc.accountState.type !== "active") throw new Error("Token launch is not active");
-        assert(smc.account.account, "Can't access token launch!");
-        console.log(
-            "Token launch ~ storage stats:",
-            smc.account.account.storageStats.used
-        );
-        const stateCell = beginCell().store(storeStateInit(smc.accountState.state)).endCell();
-        console.log("Token launch state stats:", collectCellStats(stateCell, []));
-    });
-    test.skip("creator can buy his own tokens out", async () => {
-        // TODO Ask about decimals in chat
     });
 });

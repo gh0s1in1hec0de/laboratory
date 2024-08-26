@@ -5,7 +5,7 @@
 
 #include "core_context.fc";
 
-() handle_incoming_transfer(slice sender_address,  int jetton_amount) impure inline {
+() handle_incoming_transfer(slice sender_address, int jetton_amount) impure inline {
     if (~ equal_slices_bits(sender_address, this::util_jetton_wallet_address)) {
         return ();
     }
@@ -14,7 +14,7 @@
 
 ;; We use TEP-74 Metadata standard
 ;; We determine start time manually to be able to calculate address of lunch off-chain before its actual deploy
-() create_launch(int query_id, slice sender_address, int total_supply, int platform_share_pct, cell metadata_cell, int start_time) impure inline  {
+() create_launch(int query_id, slice sender_address, int total_supply, int platform_share_pct, cell metadata_cell, int start_time) impure inline {
     int wl_jet_limit = muldiv(launch_conf::jet_wl_limit_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int pub_jet_limit = muldiv(launch_conf::jet_pub_limit_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int dex_jet_share = muldiv(launch_conf::jet_dex_share_pct, total_supply, PERCENTAGE_DENOMINATOR);
@@ -22,14 +22,13 @@
     int creator_buyback_jet_limit = total_supply - (wl_jet_limit + pub_jet_limit + dex_jet_share + platform_share);
 
     {- Creator price dilemma
-       As for me, it is much better to determine fixed creator price on core's side, as it gives us flexibility in terms of
-       price determination conditions/formulas (even doing it on backend lol). But, we have problems with decimals, as there is no floating points in func.
-       So, now:
+       Here we store not price of one token, but price of one ton in terms of tokens
+       To minimize inacurracy and chance of associated risks, we'll mult it by max value of ton_limit_for_wl_round
+       We don't even need constraint for wl_jet_limit, as we won't get 0 even in case of wl_jet_limit = 1 ;)
 
-       (max: 100k ton -> 10^12) /  (max: ((2 ^ 120 - 1) / n(2 < n <= 10)) * 2) =>  (max: ((2 ^ 120 - 1) / n(1 < n <= 5)))
-       ton_limit_for_wl_round / (wl_jet_limit * 2)
+       TLDR: amount of "nano"jettons per one nanoton (multiplied by custom precision)
     -}
-    int creator_jet_price = launch_conf::ton_limit_for_wl_round / (wl_jet_limit * 2); ;; TODO replace lol
+    int creator_jet_price_reversed = muldiv(wl_jet_limit * 2, MAX_WL_ROUND_TON_LIMIT, launch_conf::ton_limit_for_wl_round);
 
     cell general_state = begin_cell()
         .store_int(start_time, 32)
@@ -49,7 +48,7 @@
     cell creator_round_state = begin_cell()
         .store_coins(creator_buyback_jet_limit)
         .store_coins(0)
-        .store_coins(creator_jet_price)
+        .store_coins(creator_jet_price_reversed)
         .store_int(start_time + launch_conf::creator_round_duration_ms, 32)
         .end_cell();
     cell wl_round_state = begin_cell()
@@ -123,7 +122,8 @@
     slice util_jet_wallet_address = calculate_user_jetton_wallet_address(
         token_launch_address, this::util_jetton_master_address, code::jetton_wallet
     );
-    int msg_value = get_amount_for_token_launch_deploy();
+    ;; In fact, this is
+    int msg_value = get_amount_for_token_launch_deploy() - get_compute_fee(MY_WORKCHAIN, CREATE_LAUNCH_GAS_CONSUMPTION);
     cell msg_body = begin_cell()
         .store_op(op::tl::init)
         .store_query_id(query_id)
