@@ -20,8 +20,16 @@
     int dex_jet_share = muldiv(launch_conf::jet_dex_share_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int platform_share = muldiv(platform_share_pct, total_supply, PERCENTAGE_DENOMINATOR);
     int creator_buyback_jet_limit = total_supply - (wl_jet_limit + pub_jet_limit + dex_jet_share + platform_share);
-    ;; Temporary - just x2 lower than wl upper bound price
-    int creator_jet_price = launch_conf::ton_limit_for_wl_round / (wl_jet_limit * 2);
+
+    {- Creator price dilemma
+       As for me, it is much better to determine fixed creator price on core's side, as it gives us flexibility in terms of
+       price determination conditions/formulas (even doing it on backend lol). But, we have problems with decimals, as there is no floating points in func.
+       So, now:
+
+       (max: 100k ton -> 10^12) /  (max: ((2 ^ 120 - 1) / n(2 < n <= 10)) * 2) =>  (max: ((2 ^ 120 - 1) / n(1 < n <= 5)))
+       ton_limit_for_wl_round / (wl_jet_limit * 2)
+    -}
+    int creator_jet_price = launch_conf::ton_limit_for_wl_round / (wl_jet_limit * 2); ;; TODO replace lol
 
     cell general_state = begin_cell()
         .store_int(start_time, 32)

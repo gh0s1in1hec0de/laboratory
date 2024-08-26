@@ -1,11 +1,12 @@
-import { TokenMetadata } from "starton-periphery";
 import { CommonJettonWallet } from "./CommonJettonWallet";
+import { TokenMetadata } from "starton-periphery";
+import { tokenMetadataToCell } from "./utils";
 import { JettonOps } from "./JettonConstants";
 import {
-    Contract,
-    contractAddress,
     ContractProvider,
+    contractAddress,
     beginCell,
+    Contract,
     SendMode,
     Address,
     toNano,
@@ -13,12 +14,6 @@ import {
     Slice,
     Cell,
 } from "@ton/core";
-
-export function tokenMetadataToCell(content: TokenMetadata): Cell {
-    return beginCell()
-        .storeStringRefTail(content.uri) // Snake logic under the hood
-        .endCell();
-}
 
 export type JettonMinterConfig = {
     admin: Address,

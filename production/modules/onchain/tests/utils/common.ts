@@ -10,9 +10,6 @@ export const randomAddress = (wc: number = BASECHAIN) => {
     return new Address(wc, buf);
 };
 
-export const CoinsMaxValue = 2n ** 120n - 1n;
-export const ThirtyTwoIntMaxValue = 2n ** 31n - 1n; // 1 bit for sign :)
-
 export const differentAddress = (old: Address) => {
     let newAddr: Address;
     do {

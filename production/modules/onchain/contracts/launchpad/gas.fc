@@ -27,8 +27,8 @@ const SIMPLE_TRANSFER_FEE = 6000000;
 const USER_VAULT_STATE_BITS  = 1;
 const USER_VAULT_STATE_CELLS = 1;
 ;; Use `loadAtMax` to measure
-const TOKEN_LAUNCH_STATE_BITS  = 48441;
-const TOKEN_LAUNCH_STATE_CELLS = 120;
+const TOKEN_LAUNCH_STATE_BITS  = 48480;
+const TOKEN_LAUNCH_STATE_CELLS = 122;
 
 const JETTON_MINTER_STATE_BITS = 1;
 const JETTON_MINTER_STATE_CELLS = 1;
@@ -131,7 +131,7 @@ int get_wl_purchase_gas_consumption() inline_ref {
 
 ;; === Public Purchase ===
 const PUB_PURCHASE_GAS_CONSUMPTION = 1;
-(int, int) check_amount_is_enough_for_public_purchase(int msg_value) {
+(int, int) check_amount_is_enough_for_public_purchase(int msg_value) inline {
     return validate_value(
         msg_value,
         get_compute_fee(MY_WORKCHAIN, PUB_PURCHASE_GAS_CONSUMPTION) + get_balance_update_gas_cost()
@@ -141,7 +141,7 @@ const PUB_PURCHASE_GAS_CONSUMPTION = 1;
 ;; === Refund ===
 const REFUND_REQUEST_GAS_CONSUMPTION = 1;
 const REFUND_CONFIRMATION_GAS_CONSUMPTION = 1;
-() check_amount_is_enough_for_refund(int msg_value) {
+() check_amount_is_enough_for_refund(int msg_value) inline {
     int required_gas =
     get_compute_fee(MY_WORKCHAIN, REFUND_REQUEST_GAS_CONSUMPTION)
     + get_balance_update_gas_cost()
@@ -164,7 +164,7 @@ const CLAIM_ADMIN_MSG_BITS = 1;
 const CLAIM_ADMIN_MSG_CELLS = 1;
 const CLAIM_ADMIN_GAS_CONSUMPTION = 1;
 ;;; Warning! This function does not include computation fee on token launch's side
-int get_jetton_deploy_gas_cost() {
+int get_jetton_deployment_gas_cost() inline_ref {
     return get_forward_fee(MY_WORKCHAIN, MINT_MSG_BITS, MINT_MSG_CELLS)
     + forward_jetton_minter_init_state_overhead()
     + get_compute_fee(MY_WORKCHAIN, MINT_GAS_CONSUMPTION)
@@ -204,19 +204,18 @@ int check_amount_is_enough_for_jetton_claim(int msg_value) {
 }
 
 ;; Measured in "new launch creation through core"
-const CREATE_LAUNCH_GAS_CONSUMPTION = 32940;
+const CREATE_LAUNCH_GAS_CONSUMPTION = 33245;
 ;; Manual bits counting from core/operations.fc#L~120
 const INIT_MSG_BITS = 897; ;; 32 + 64 + 3 x (3+8+256)
 const INIT_MSG_CELLS = 2; ;; body in ref + stateinit in ref (TODO should it be accounted here?)
-const INITIALIZATION_GAS_CONSUMPTION = 15217;
+const INITIALIZATION_GAS_CONSUMPTION = 15320;
 ;; Body contains only OP
 const INIT_CALLBACK_MSG_BITS = 96;
 const INIT_CALLBACK_MSG_CELLS = 0;
 
-const INIT_CALLBACK_GAS_CONSUMPTION = 15320;
-
+const INIT_CALLBACK_GAS_CONSUMPTION = 12715;
 const RECORD_REWARD_JETTONS_ENROLLMENT_GAS_CONSUMPTION = 14415;
-int get_amount_for_token_launch_deploy() {
+int get_amount_for_token_launch_deploy() inline {
     return get_compute_fee(MY_WORKCHAIN, CREATE_LAUNCH_GAS_CONSUMPTION)
         + get_forward_fee(MY_WORKCHAIN, INIT_MSG_BITS, INIT_MSG_CELLS)
         + calculate_token_launch_min_storage_fee(2_MONTHS)
@@ -228,5 +227,5 @@ int get_amount_for_token_launch_deploy() {
         + get_compute_fee(MY_WORKCHAIN, RECORD_REWARD_JETTONS_ENROLLMENT_GAS_CONSUMPTION)
         ;; Creator of new token launch should pay for the future jetton deployment
         + get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_GAS_CONSUMPTION)
-        + get_jetton_deploy_gas_cost();
+        + get_jetton_deployment_gas_cost();
 }

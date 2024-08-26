@@ -166,7 +166,7 @@
         int launch_success_treshold =
         general_state::total_tons_collected + this::operational_needs
         + get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_GAS_CONSUMPTION)
-        + get_jetton_deploy_gas_cost()
+        + get_jetton_deployment_gas_cost()
         + calculate_token_launch_min_storage_fee(1_MONTH);
         throw_if(error::balance_lack, contract_balance < launch_success_treshold);
 
@@ -250,3 +250,13 @@ slice get_user_vault_address(slice user_address) method_id {
         creator_round::const::fut_jet_price
     );
 }
+
+(int, int) get_jeton_balances() method_id {
+    load_data();
+    return (
+        general_state::fut_jet_deployed_balance,
+        general_state::reward_util_jets_balance
+    );
+}
+
+
