@@ -1,11 +1,10 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode, toNano } from "@ton/core";
 import {
+    BASECHAIN, BalanceUpdateMode, LaunchData, validateValue,
     QUERY_ID_LENGTH, SaleMoneyFlow, TokensLaunchOps,
     OP_LENGTH, Coins, Contracts, LaunchConfig,
-    BASECHAIN, BalanceUpdateMode, LaunchData,
 } from "starton-periphery";
 import { randomAddress } from "@ton/test-utils";
-import { ok as assert } from "node:assert";
 import { LaunchParams } from "./types";
 import {
     ThirtyTwoIntMaxValue,
@@ -149,28 +148,21 @@ export class TokenLaunch implements Contract {
         };
     }
 
-    async getJettonBalances(provider: ContractProvider): Promise<{
+    async getInnerData(provider: ContractProvider): Promise<{
         futJetDeployedBalance: Coins,
-        rewardUtilJetsBalance: Coins
+        rewardUtilJetsBalance: Coins,
+        operationalNeeds: Coins
     }> {
-        let { stack } = await provider.get("get_jetton_balances", []);
+        let { stack } = await provider.get("get_inner_data", []);
         return {
             futJetDeployedBalance: stack.readBigNumber(),
             rewardUtilJetsBalance: stack.readBigNumber(),
+            operationalNeeds: stack.readBigNumber(),
         };
     }
 
-    public static validateValue(total: Coins, fee: Coins): { purified: Coins, opn: Coins } {
-        assert(!(fee > total), "not enough gas");
-        const extra = total - fee;
-        const purified = extra * 99n / 100n;
-        assert(purified > 0, "balance lack");
-        return { purified, opn: extra - purified };
-
-    }
-
     static getCreatorAmountOut(expectedFee: Coins, value: Coins, wlJetLimit: Coins, tonLimitForWlRound: Coins): Coins {
-        const { purified } = this.validateValue(value, expectedFee);
+        const { purified } = validateValue(value, expectedFee);
         const creatorJettonPrice = this.getCreatorJettonPrice(wlJetLimit, tonLimitForWlRound);
         return purified * creatorJettonPrice / TokenLaunch.MAX_WL_ROUND_TON_LIMIT;
     }
@@ -179,7 +171,13 @@ export class TokenLaunch implements Contract {
         return wlJetLimit * 2n * this.MAX_WL_ROUND_TON_LIMIT / tonLimitForWlRound;
     }
 
-    static buildState({ creator, chief, launchConfig, launchParams, code }: StateParams, loadAtMax: boolean = false): Cell {
+    static buildState({
+        creator,
+        chief,
+        launchConfig,
+        launchParams,
+        code
+    }: StateParams, loadAtMax: boolean = false): Cell {
         const { startTime, totalSupply, platformSharePct, metadata } = launchParams;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
 

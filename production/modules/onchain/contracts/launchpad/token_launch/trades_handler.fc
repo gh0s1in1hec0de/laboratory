@@ -187,7 +187,7 @@
         wl_round::const::burn_util_jet_amount,
         util_jet_wallet_address,
         should_burn? ? "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c"a : initiator,
-        1, ;; 1 nanoton to notify user about tokens
+        1,
         null()
     );
 

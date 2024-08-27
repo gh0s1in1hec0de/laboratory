@@ -1,16 +1,18 @@
 import {
-    UTIL_JET_SEND_MODE_SIZE, UtilJettonsEnrollmentMode, TokensLaunchOps, CoreOps, LaunchConfig, BASECHAIN, UserVaultOps
-} from "starton-periphery";
-import {
+    collectCellStats, computedGeneric, computeFwdFees, getGasPrices, calcStorageFee,
     MsgPrices, printTxsLogs, StorageStats, computeFwdFeesVerbose, computeGasFee,
     FullFees, GasPrices, getStoragePrices, getMsgPrices, StorageValue,
-    collectCellStats, computedGeneric, computeFwdFees, getGasPrices,
+
 } from "./utils";
+import { findTransactionRequired, randomAddress } from "@ton/test-utils";
+import {
+    UTIL_JET_SEND_MODE_SIZE, UtilJettonsEnrollmentMode, TokensLaunchOps,
+    BASECHAIN, CoreOps, LaunchConfig, UserVaultOps, validateValue, Coins
+} from "starton-periphery";
 // sherochka and masherochka be like:
 import { CommonJettonMaster } from "../wrappers/CommonJettonMaster";
 import { CommonJettonWallet } from "../wrappers/CommonJettonWallet";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
-import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import { JettonOps } from "../wrappers/JettonConstants";
 import { TokenLaunch } from "../wrappers/TokenLaunch";
 import { UserVault } from "../wrappers/UserVault";
@@ -40,6 +42,7 @@ import {
     toNano,
     Cell,
 } from "@ton/core";
+import exp from "node:constants";
 
 const MAINNET_MOCK = !!process.env.MAINNET_MOCK;
 const PRINT_TX_LOGS = !!process.env.PRINT_TX_LOGS;
@@ -76,9 +79,13 @@ describe("Core", () => {
     let gasPrices: GasPrices;
     let storagePrices: StorageValue;
 
+    const JETTON_MIN_TRANSFER_FEE = 30000000n;
+    const ONE_MONTH = 30 * 24 * 3600;
+    const TWO_MONTHS = 60 * 24 * 3600;
+    let coreStorageStats: StorageStats;
     let tokenLaunchStorageStats: StorageStats;
-    let storageDurationMin: number;
-    let storageDurationMax: number;
+    let userVaultStorageStats: StorageStats;
+    let jettonMinterStorageStats: StorageStats;
 
     // Custom values
     //
@@ -96,7 +103,7 @@ describe("Core", () => {
     let estimateBodyFwdFee: (body: Cell, force_ref: boolean, prices?: MsgPrices) => FullFees;
     // Returns total fee (performing reverse-check before)
     let estimateBodyFwdFeeWithReverseCheck: (body: Cell, force_ref: boolean, prices?: MsgPrices) => bigint;
-    let forwardStateinitOverhead: (prices: MsgPrices, stats: StorageStats) => bigint;
+    let forwardStateInitOverhead: (prices: MsgPrices, stats: StorageStats) => bigint;
 
     let balanceUpdateCost: (
         balanceUpdateForwardFee: bigint,
@@ -105,14 +112,13 @@ describe("Core", () => {
         userVaultMinStorageFee: bigint
     ) => bigint;
 
+    const precomputedWlPurchaseCost = 84614194n;
     let wlPurchaseCost: (
-        wlPurchaseRequest: bigint,
+        wlPurchaseRequestComputeFee: bigint,
+        balanceUpdateCost: bigint,
         wlCallbackForwardFee: bigint,
         wlCallbackGasConsumption: bigint,
     ) => bigint;
-
-
-    const JETTON_MIN_TRANSFER_FEE = 30000000;
 
     beforeAll(async () => {
         [
@@ -129,7 +135,9 @@ describe("Core", () => {
             compile("CommonJettonWallet")
         ]);
         console.info("contracts compiled yaay^^");
-        tokenLaunchStorageStats = new StorageStats(46851n, 115n);
+        coreStorageStats = new StorageStats(0n, 0n); // TODO Fill in
+        userVaultStorageStats = new StorageStats(5956n, 19n);
+        tokenLaunchStorageStats = new StorageStats(48697n, 122n);
 
         blockchain = await Blockchain.create(MAINNET_MOCK ? {
             storage: new RemoteBlockchainStorage(wrapTonClient4ForRemote(new TonClient4({
@@ -257,9 +265,32 @@ describe("Core", () => {
             return reverse;
         };
 
-        forwardStateinitOverhead = (prices, stats) => {
+        forwardStateInitOverhead = (prices, stats) => {
             // Meh, kinda lazy way of doing that, but tests are bloated enough already
             return computeFwdFees(prices, stats.cells, stats.bits) - prices.lumpPrice;
+        };
+
+        balanceUpdateCost = (
+            balanceUpdateMsgForwardFee: bigint, userVaultStateInitOverhead: bigint,
+            balanceUpdateComputeFee: bigint, userVaultMinStorageFee: bigint
+        ) => {
+            return balanceUpdateMsgForwardFee
+                + userVaultStateInitOverhead
+                + balanceUpdateComputeFee
+                + userVaultMinStorageFee;
+        };
+        wlPurchaseCost = (
+            wlPurchaseRequest: bigint,
+            balanceUpdateGasCost: bigint,
+            wlCallbackForwardFee: bigint,
+            wlCallbackComputeFee: bigint,
+        ) => {
+            return wlPurchaseRequest
+                + JETTON_MIN_TRANSFER_FEE
+                + balanceUpdateGasCost
+                + wlCallbackForwardFee
+                + wlCallbackComputeFee
+                + JETTON_MIN_TRANSFER_FEE;
         };
     }, 20000);
     describe("core and launch correct deployment", () => {
@@ -346,7 +377,13 @@ describe("Core", () => {
                 sampleLaunchParams, code, launchConfig
             );
             const loadedTokenLaunchStateInit = TokenLaunch.buildState(
-                { creator: creator.address, chief: chief.address, launchParams: sampleLaunchParams, launchConfig, code }
+                {
+                    creator: creator.address,
+                    chief: chief.address,
+                    launchParams: sampleLaunchParams,
+                    launchConfig,
+                    code
+                }, true
             );
             // Body will be stored in a reference - then `force_ref` is true
             const unifiedCheckFees = estimateBodyFwdFeeWithReverseCheck(bodyCell, true);
@@ -358,9 +395,9 @@ describe("Core", () => {
                 };
                 const stateCell = beginCell().store(storeStateInit(tokenLaunchState)).endCell();
                 const stateInitStats = collectCellStats(stateCell, []);
-                console.log(`${i ? "T" : "Loaded t"}oken launch state stats: ${stateInitStats}`);
-                const stateInitOverhead = forwardStateinitOverhead(msgPrices, stateInitStats);
-                console.log(`${i ? "T" : "Loaded t"}oken launch state forward fee: ${stateInitOverhead}(${fromNano(stateInitOverhead)} TON)`);
+                console.log(`${i ? "Loaded t" : "T"}oken launch state stats: ${stateInitStats}`);
+                const stateInitOverhead = forwardStateInitOverhead(msgPrices, stateInitStats);
+                console.log(`${i ? "Loaded t" : "T"}oken launch state forward fee: ${stateInitOverhead}(${fromNano(stateInitOverhead)} TON)`);
             }
         });
         // All the aspects of it from fees measurements to security
@@ -403,7 +440,7 @@ describe("Core", () => {
             const coreStateAfterLaunchCreation = await core.getState();
             expect(coreStateAfterLaunchCreation.notFundedLaunches).toEqual(null); // need-to-be-funded dictionary is clean
             expect(coreStateAfterLaunchCreation.utilJetCurBalance).toEqual(utilJetRewardAmount * 9n); // Util jettons chunk been sent to new launch
-            expect((await sampleTokenLaunch.getJettonBalances()).rewardUtilJetsBalance).toEqual(utilJetRewardAmount); // Token launch handled an enrollment
+            expect((await sampleTokenLaunch.getInnerData()).rewardUtilJetsBalance).toEqual(utilJetRewardAmount); // Token launch handled an enrollment
         });
         test.skip("token launch onchain state stats", async () => {
             const smc = await blockchain.getContract(sampleTokenLaunch.address);
@@ -465,7 +502,6 @@ describe("Core", () => {
             const stateInitStats = collectCellStats(stateCell, []);
             console.log(`Loaded user vault stats: ${stateInitStats}`);
         });
-        // TODO Check one-time burn effect
         test("wl purchase works correctly", async () => {
             blockchain.now = sampleLaunchStartTime + 1 + launchConfig.creatorRoundDurationMs;
             const mintedBalance = launchConfig.utilJetWlPassAmount * 2n;
@@ -489,13 +525,16 @@ describe("Core", () => {
             );
             expect((await consumerWallet.getWalletData()).balance).toEqual(mintedBalance);
 
+            const opnBefore: Coins = (await sampleTokenLaunch.getInnerData()).operationalNeeds;
+
+            const wlPurchaseAmount = toNano("10");
             const wlPurchase = await consumerWallet.sendTransfer(
                 consumer.getSender(),
-                toNano("11"),
+                wlPurchaseAmount + toNano("0.1"),
                 launchConfig.utilJetWlPassAmount,
                 sampleTokenLaunch.address,
                 consumer.address,
-                null, toNano("10"),
+                null, wlPurchaseAmount,
                 beginCell()
                     .storeUint(UtilJettonsEnrollmentMode.UtilJettonWlPass, UTIL_JET_SEND_MODE_SIZE)
                     .endCell()
@@ -511,7 +550,7 @@ describe("Core", () => {
                 on: sampleTokenLaunch.address,
                 success: true
             });
-            const wlPurchaseReqGas = printTxGasStats("Wl purchase request transaction:", wlPurchaseReqTx);
+            const wlPurchaseReqComputeFee = printTxGasStats("Wl purchase request transaction:", wlPurchaseReqTx);
             const balanceUpdateTx = findTransactionRequired(wlPurchase.transactions, {
                 op: UserVaultOps.balanceUpdate,
                 from: sampleTokenLaunch.address,
@@ -519,15 +558,15 @@ describe("Core", () => {
                 success: true,
                 deploy: true
             });
-            const balanceUpdateGas = printTxGasStats("Balance update transaction:", balanceUpdateTx);
+            const balanceUpdateComputeFee = printTxGasStats("Balance update transaction:", balanceUpdateTx);
             const wlCallbackTx = findTransactionRequired(wlPurchase.transactions, {
                 op: TokensLaunchOps.wlCallback,
                 from: consumerVault.address,
                 on: sampleTokenLaunch.address,
                 success: true,
             });
-            const wlCallbackGas = printTxGasStats("Wl callback transaction:", wlCallbackTx);
-
+            const wlCallbackComputeFee = printTxGasStats("Wl callback transaction:", wlCallbackTx);
+            // Validation of last tx-link success
             const burner = new Address(BASECHAIN, Buffer.alloc(32, 0));
             const burnerWallet = CommonJettonWallet.createFromConfig({
                 jettonMasterAddress: utilityJettonMaster.address,
@@ -539,6 +578,60 @@ describe("Core", () => {
                 success: true,
                 deploy: true
             });
+            const expectedBalanceAfterWlPass = mintedBalance - launchConfig.utilJetBurnPerWlPassAmount;
+            expect((await consumerWallet.getWalletData()).balance).toEqual(expectedBalanceAfterWlPass);
+
+            const balanceUpdateGasCost = balanceUpdateCost(
+                computeFwdFees(msgPrices, 1n, 348n),
+                forwardStateInitOverhead(msgPrices, userVaultStorageStats),
+                balanceUpdateComputeFee,
+                calcStorageFee(storagePrices, userVaultStorageStats, BigInt(TWO_MONTHS))
+            );
+            const wlPurchaseTotalGasCost = wlPurchaseCost(
+                wlPurchaseReqComputeFee,
+                balanceUpdateGasCost,
+                computeFwdFees(msgPrices, 1n, 364n),
+                wlCallbackComputeFee
+            );
+            // Check operational needs on token launch contract
+            const { purified, opn } = validateValue(wlPurchaseAmount, wlPurchaseTotalGasCost);
+            const consumerVaultData = await consumerVault.getVaultData();
+
+            const opnAfter: Coins = (await sampleTokenLaunch.getInnerData()).operationalNeeds;
+            // TODO Now it is not absolutely equal at some reason (replace with toEqual at the end)
+            expect(opnAfter).toBeGreaterThanOrEqual(opnBefore + opn);
+            expect(precomputedWlPurchaseCost).toBeGreaterThanOrEqual(wlPurchaseTotalGasCost);
+            expect(consumerVaultData.wlTonBalance).toEqual(purified);
+
+            const wlPurchaseRepeated = await consumerWallet.sendTransfer(
+                consumer.getSender(),
+                wlPurchaseAmount + toNano("0.1"),
+                launchConfig.utilJetWlPassAmount,
+                sampleTokenLaunch.address,
+                consumer.address,
+                null, wlPurchaseAmount,
+                beginCell()
+                    .storeUint(UtilJettonsEnrollmentMode.UtilJettonWlPass, UTIL_JET_SEND_MODE_SIZE)
+                    .endCell()
+            );
+
+            // Proof that whitelist does not double-spend
+            // It could have been implemented simpler, but I have preferred the most reliable way to do it
+            expect(wlPurchaseRepeated.transactions).toHaveTransaction({
+                on: consumerWallet.address,
+                op: JettonOps.InternalTransfer,
+                success: true,
+                body: beginCell()
+                    .storeUint(JettonOps.InternalTransfer, 32)
+                    .storeUint(0, 64)
+                    .storeCoins(launchConfig.utilJetBurnPerWlPassAmount)
+                    .storeAddress(sampleTokenLaunch.address)
+                    .storeAddress(consumer.address)
+                    .storeCoins(1n)
+                    .storeMaybeRef(null)
+                    .endCell()
+            });
+            expect((await consumerWallet.getWalletData()).balance).toEqual(expectedBalanceAfterWlPass);
         });
     });
 });

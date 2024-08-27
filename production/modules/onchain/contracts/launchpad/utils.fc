@@ -61,7 +61,7 @@ cell build_jetton_transfer_msg(
         .store_query_id(query_id)
         .store_coins(jetton_amount)
         .store_slice(recipient) ;; To
-        .store_slice(my_address()) ;; Address, that will get excesses after operation
+        .store_slice(recipient) ;; Address, that will get excesses after operation
         .store_maybe_ref(null())
         .store_coins(forward_ton_amount)
         .store_maybe_ref(payload)
