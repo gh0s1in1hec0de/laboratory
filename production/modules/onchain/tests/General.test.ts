@@ -1,17 +1,16 @@
 import {
-    UTIL_JET_SEND_MODE_SIZE, UtilJettonsEnrollmentMode, TokensLaunchOps, CoreOps, LaunchConfig,
+    UTIL_JET_SEND_MODE_SIZE, UtilJettonsEnrollmentMode, TokensLaunchOps, CoreOps, LaunchConfig, BASECHAIN, UserVaultOps
 } from "starton-periphery";
+import {
+    MsgPrices, printTxsLogs, StorageStats, computeFwdFeesVerbose, computeGasFee,
+    FullFees, GasPrices, getStoragePrices, getMsgPrices, StorageValue,
+    collectCellStats, computedGeneric, computeFwdFees, getGasPrices,
+} from "./utils";
 // sherochka and masherochka be like:
 import { CommonJettonMaster } from "../wrappers/CommonJettonMaster";
 import { CommonJettonWallet } from "../wrappers/CommonJettonWallet";
-import {
-    FullFees, GasPrices, getStoragePrices, getMsgPrices, StorageValue,
-    collectCellStats, computedGeneric, computeFwdFees, getGasPrices,
-    MsgPrices, printTxsLogs, StorageStats, computeFwdFeesVerbose,
-    BASECHAIN, computeGasFee,
-} from "./utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
-import { findTransactionRequired } from "@ton/test-utils";
+import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import { JettonOps } from "../wrappers/JettonConstants";
 import { TokenLaunch } from "../wrappers/TokenLaunch";
 import { UserVault } from "../wrappers/UserVault";
@@ -77,7 +76,6 @@ describe("Core", () => {
     let gasPrices: GasPrices;
     let storagePrices: StorageValue;
 
-    // TODO Can't init atm
     let tokenLaunchStorageStats: StorageStats;
     let storageDurationMin: number;
     let storageDurationMax: number;
@@ -98,8 +96,23 @@ describe("Core", () => {
     let estimateBodyFwdFee: (body: Cell, force_ref: boolean, prices?: MsgPrices) => FullFees;
     // Returns total fee (performing reverse-check before)
     let estimateBodyFwdFeeWithReverseCheck: (body: Cell, force_ref: boolean, prices?: MsgPrices) => bigint;
-
     let forwardStateinitOverhead: (prices: MsgPrices, stats: StorageStats) => bigint;
+
+    let balanceUpdateCost: (
+        balanceUpdateForwardFee: bigint,
+        userVaultStateInitOverhead: bigint,
+        balanceUpdateComputeFee: bigint,
+        userVaultMinStorageFee: bigint
+    ) => bigint;
+
+    let wlPurchaseCost: (
+        wlPurchaseRequest: bigint,
+        wlCallbackForwardFee: bigint,
+        wlCallbackGasConsumption: bigint,
+    ) => bigint;
+
+
+    const JETTON_MIN_TRANSFER_FEE = 30000000;
 
     beforeAll(async () => {
         [
@@ -175,7 +188,7 @@ describe("Core", () => {
         };
         // Stuff, related to core
         core = blockchain.openContract(
-            Core.createFromConfig(
+            Core.createFromState(
                 {
                     chief: chief.address,
                     utilJettonMasterAddress: utilityJettonMaster.address,
@@ -202,19 +215,18 @@ describe("Core", () => {
 
         // As we determine it in dynamic manner - the first enrollment of utility tokens is whole `utilJetRewardAmount`
         sampleTokenLaunch = blockchain.openContract(
-            TokenLaunch.createFromConfig(TokenLaunch.buildState(
-                    creator.address,
-                    chief.address,
-                    sampleLaunchParams,
-                    {
+            TokenLaunch.createFromState({
+                    creator: creator.address,
+                    chief: chief.address,
+                    launchParams: sampleLaunchParams,
+                    code: {
                         tokenLaunch: tokenLaunchCode,
                         userVault: userVaultCode,
                         jettonMaster: jettonMasterCode,
                         jettonWallet: jettonWalletCode,
 
-                    },
-                    launchConfig
-                ),
+                    }, launchConfig
+                },
                 tokenLaunchCode)
         );
 
@@ -334,7 +346,7 @@ describe("Core", () => {
                 sampleLaunchParams, code, launchConfig
             );
             const loadedTokenLaunchStateInit = TokenLaunch.buildState(
-                creator.address, chief.address, sampleLaunchParams, code, launchConfig, true
+                { creator: creator.address, chief: chief.address, launchParams: sampleLaunchParams, launchConfig, code }
             );
             // Body will be stored in a reference - then `force_ref` is true
             const unifiedCheckFees = estimateBodyFwdFeeWithReverseCheck(bodyCell, true);
@@ -436,8 +448,22 @@ describe("Core", () => {
             const tokenLaunchState = await sampleTokenLaunch.getSaleState();
             expect(mockedCreatorPrice).toEqual(tokenLaunchState.creatorFutJetBalance);
         });
+        // TODO wrong-time check, wrong sum refund
         test.skip("whitelist purchase unavailable until the specified time", async () => {
-            // TODO
+
+        });
+        test("loaded user vault state specs", async () => {
+            const loadedUserVaultState = UserVault.buildState({
+                owner: randomAddress(),
+                tokenLaunch: randomAddress()
+            }, true);
+            const contractState: StateInit = {
+                code: userVaultCode,
+                data: loadedUserVaultState
+            };
+            const stateCell = beginCell().store(storeStateInit(contractState)).endCell();
+            const stateInitStats = collectCellStats(stateCell, []);
+            console.log(`Loaded user vault stats: ${stateInitStats}`);
         });
         // TODO Check one-time burn effect
         test("wl purchase works correctly", async () => {
@@ -474,11 +500,45 @@ describe("Core", () => {
                     .storeUint(UtilJettonsEnrollmentMode.UtilJettonWlPass, UTIL_JET_SEND_MODE_SIZE)
                     .endCell()
             );
-            console.log(`sample token launch address: ${sampleTokenLaunch.address}`);
-            // Just triggering logs
-            // expect(wlPurchase.transactions).toHaveTransaction({
-            //     op: CoreOps.init
-            // });
+            const consumerVault = blockchain.openContract(
+                UserVault.createFromState({
+                    owner: consumer.address,
+                    tokenLaunch: sampleTokenLaunch.address
+                }, userVaultCode)
+            );
+            const wlPurchaseReqTx = findTransactionRequired(wlPurchase.transactions, {
+                op: JettonOps.TransferNotification,
+                on: sampleTokenLaunch.address,
+                success: true
+            });
+            const wlPurchaseReqGas = printTxGasStats("Wl purchase request transaction:", wlPurchaseReqTx);
+            const balanceUpdateTx = findTransactionRequired(wlPurchase.transactions, {
+                op: UserVaultOps.balanceUpdate,
+                from: sampleTokenLaunch.address,
+                on: consumerVault.address,
+                success: true,
+                deploy: true
+            });
+            const balanceUpdateGas = printTxGasStats("Balance update transaction:", balanceUpdateTx);
+            const wlCallbackTx = findTransactionRequired(wlPurchase.transactions, {
+                op: TokensLaunchOps.wlCallback,
+                from: consumerVault.address,
+                on: sampleTokenLaunch.address,
+                success: true,
+            });
+            const wlCallbackGas = printTxGasStats("Wl callback transaction:", wlCallbackTx);
+
+            const burner = new Address(BASECHAIN, Buffer.alloc(32, 0));
+            const burnerWallet = CommonJettonWallet.createFromConfig({
+                jettonMasterAddress: utilityJettonMaster.address,
+                ownerAddress: burner
+            }, jettonWalletCode);
+            expect(wlPurchase.transactions).toHaveTransaction({
+                on: burnerWallet.address,
+                op: JettonOps.InternalTransfer,
+                success: true,
+                deploy: true
+            });
         });
     });
 });

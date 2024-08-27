@@ -23,7 +23,7 @@ export type Contracts = {
     jettonWallet: Cell,
 }
 
-export type CoreStorage = {
+export type CoreState = {
     chief: Address,
     utilJettonMasterAddress: Address,
     utilJettonWalletAddress: Maybe<Address>,

@@ -1,7 +1,7 @@
 import { BlockchainTransaction } from "@ton/sandbox";
+import { BASECHAIN } from "starton-periphery";
 import { Address, toNano } from "@ton/core";
 
-export const BASECHAIN = 0;
 export const randomAddress = (wc: number = BASECHAIN) => {
     const buf = Buffer.alloc(32);
     for (let i = 0; i < buf.length; i++) {

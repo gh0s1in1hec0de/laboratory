@@ -2,6 +2,9 @@ export type RawAddressString = string;
 export type LamportTime = bigint;
 export type Coins = bigint;
 
+export const BASECHAIN = 0;
+export const TRUE = -1n;
+export const FALSE = 0n;
 export const OP_LENGTH = 32;
 export const QUERY_ID_LENGTH = 64;
 

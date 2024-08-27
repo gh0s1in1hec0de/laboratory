@@ -74,22 +74,6 @@ cell build_jetton_transfer_msg(
         .end_cell();
 }
 
-cell build_jetton_burn_msg(int query_id, int jetton_amount, slice our_wallet_address) inline {
-    cell msg_body = begin_cell()
-        .store_op(op::burn)
-        .store_query_id(query_id)
-        .store_coins(jetton_amount)
-        .store_slice(my_address()) ;; Address, that will get excesses after operation
-        .end_cell();
-    ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
-    return begin_cell()
-        .store_msg_flags_and_address_none(NON_BOUNCEABLE)
-        .store_slice(our_wallet_address)
-        .store_coins(0)
-        .store_only_body_ref(msg_body)
-        .end_cell();
-}
-
 int get_amount_out(int amount_in, int reserve_in, int reserve_out) impure inline {
     ;; We calculate K according to AMM (Automatic Meow-Meow) formula x*y<=K, where x and y are assets' amounts
     ;; New amount of first asset, that should be in pool
@@ -137,13 +121,14 @@ slice calculate_contract_address(cell state_init) inline_ref {
         .begin_parse();
 }
 
-cell pack_user_vault_data(slice owner_address, slice launch_contract_address, int wl_invested, int public_invested, int token_balance) inline {
+cell pack_user_vault_data(slice owner_address, slice launch_contract_address, int has_whitelist?, int wl_invested, int public_invested, int jetton_balance) inline {
     return begin_cell()
         .store_slice(owner_address)
         .store_slice(launch_contract_address)
+        .store_bool(has_whitelist?)
         .store_coins(wl_invested)
         .store_coins(public_invested)
-        .store_coins(token_balance)
+        .store_coins(jetton_balance)
         .end_cell();
 }
 
@@ -153,6 +138,7 @@ cell pack_user_vault_data(slice owner_address, slice launch_contract_address, in
         pack_user_vault_data(
             sender_address,
             my_address(),
+            FALSE,
             0,
             0,
             0

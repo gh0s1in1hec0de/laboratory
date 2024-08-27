@@ -1,15 +1,15 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
-import { coreConfigToCell, SendMessageParams, tokenMetadataToCell } from "./utils";
+import { SendMessageParams, tokenMetadataToCell } from "./utils";
 import { LaunchParams, StateType, UpgradeParams } from "./types";
 import { CommonJettonMaster } from "./CommonJettonMaster";
 import { CommonJettonWallet } from "./CommonJettonWallet";
 import { TokenLaunch } from "./TokenLaunch";
-import { BASECHAIN } from "../tests/utils";
 import {
     TokensLaunchOps,
     QUERY_ID_LENGTH,
     LaunchConfig,
-    CoreStorage,
+    CoreState,
+    BASECHAIN,
     OP_LENGTH,
     Contracts,
     CoreOps,
@@ -24,8 +24,8 @@ export class Core implements Contract {
         return new Core(address);
     }
 
-    static createFromConfig(config: CoreStorage, code: Cell, workchain = BASECHAIN) {
-        const data = coreConfigToCell(config);
+    static createFromState(state: CoreState, code: Cell, workchain = BASECHAIN) {
+        const data = this.buildState(state);
         const init = { code, data };
         return new Core(contractAddress(workchain, init), init);
     }
@@ -110,7 +110,13 @@ export class Core implements Contract {
     ): { tokenLaunchStateInit: Cell, stateInitCell: Cell, bodyCell: Cell, } {
         const { metadata } = createLaunchParams;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
-        const data = TokenLaunch.buildState(creator, chief, createLaunchParams, code, staticLaunchParameters);
+        const data = TokenLaunch.buildState({
+            creator,
+            chief,
+            launchParams: createLaunchParams,
+            code,
+            launchConfig: staticLaunchParameters
+        });
 
         const tokenLaunchStateInit = beginCell()
             .storeUint(0, 2)
@@ -118,7 +124,7 @@ export class Core implements Contract {
             .storeMaybeRef(data)
             .storeUint(0, 1)
             .endCell();
-        const tokenLaunch = TokenLaunch.createFromConfig(data, code.tokenLaunch);
+        const tokenLaunch = TokenLaunch.createFromState(data, code.tokenLaunch);
         const futJetMaster = CommonJettonMaster.createFromConfig({
                 admin: tokenLaunch.address,
                 jetton_content: packedMetadata,
@@ -145,5 +151,38 @@ export class Core implements Contract {
                 .storeAddress(futJetMaster.address)
                 .endCell()
         };
+    }
+
+    static buildState(state: CoreState): Cell {
+        const contractsCell = beginCell()
+            .storeRef(state.contracts.tokenLaunch)
+            .storeRef(state.contracts.userVault)
+            .storeRef(state.contracts.jettonMaster)
+            .storeRef(state.contracts.jettonWallet)
+            .endCell();
+        const launchConfigCell = beginCell()
+            .storeCoins(state.launchConfig.minTonForSaleSuccess)
+            .storeCoins(state.launchConfig.tonLimitForWlRound)
+            .storeCoins(state.launchConfig.utilJetRewardAmount)
+            .storeCoins(state.launchConfig.utilJetWlPassAmount)
+            .storeCoins(state.launchConfig.utilJetBurnPerWlPassAmount)
+            .storeUint(state.launchConfig.jetWlLimitPct, 16)
+            .storeUint(state.launchConfig.jetPubLimitPct, 16)
+            .storeUint(state.launchConfig.jetDexSharePct, 16)
+            .storeInt(state.launchConfig.creatorRoundDurationMs, 32)
+            .storeInt(state.launchConfig.wlRoundDurationMs, 32)
+            .storeInt(state.launchConfig.pubRoundDurationMs, 32)
+            .storeInt(state.launchConfig.claimDurationMs, 32)
+            .endCell();
+        return beginCell()
+            .storeAddress(state.chief)
+            .storeAddress(state.utilJettonMasterAddress)
+            .storeAddress(state.utilJettonWalletAddress)
+            .storeCoins(state.utilJetCurBalance)
+            .storeDict(state.notFundedLaunches)
+            .storeUint(state.notFundedLaunchesAmount, 8)
+            .storeRef(launchConfigCell)
+            .storeRef(contractsCell)
+            .endCell();
     }
 }

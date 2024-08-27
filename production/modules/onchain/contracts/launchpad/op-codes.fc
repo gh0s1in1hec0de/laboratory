@@ -1,12 +1,12 @@
 ;; Jetton Startndard OPs
 const op::mint = 0x642b7d07; ;; Only master can handle it
 const op::claim_admin = 0xfb88e119;
-const op::internal_transfer = 0x178d4519;
-const op::transfer = 0xf8a7ea5;
-const op::transfer_notification = 0x7362d09c;
-const op::excesses = 0xd53276db;
+const op::internal_transfer = 0x178d4519; ;; 395134233
+const op::transfer = 0xf8a7ea5; ;; 260734629
+const op::transfer_notification = 0x7362d09c; ;; 1935855772
+const op::excesses = 0xd53276db; ;; 3576854235
 const op::burn_notification = 0x7bdd97de;
-const op::burn = 0x595f07bc;
+const op::burn = 0x595f07bc; ;; 1499400124
 
 ;; Contract-realted OPs
 const op::upgrade = 0x055d212a;

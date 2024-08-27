@@ -24,7 +24,7 @@
     }
 }
 
-() handle_wl_purchase(int query_id, int attached_value, slice sender_address, slice initiator) impure inline {
+() handle_wl_purchase(int query_id, int attached_value, slice initiator) impure inline {
     throw_if(error::wrong_time, (now() < creator_round::const::end_time) | (now() > wl_round::const::end_time));
     (int accessible_user_value, int opn) = check_amount_is_enough_for_wl_purchase(attached_value);
     (slice util_jet_wallet_address, _, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
@@ -57,12 +57,12 @@
     send_raw_message(return_transfer_msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 
     ;; We attach value only for routong messages
-    int value = get_wl_purchase_gas_consumption() - get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_GAS_CONSUMPTION);
+    int value = get_wl_purchase_gas_consumption() - get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION);
     cell msg = build_balance_update_message(
         user_vault_code,
         query_id,
         value,
-        sender_address,
+        initiator,
         BALANCE_UPD_DEPOSIT_WL,
         accessible_user_value,
         0
@@ -178,17 +178,15 @@
     send_raw_message(simple_transfer_message, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
-() handle_wl_callback(int query_id, int _attached_value, slice sender_address, int should_burn?, slice initiator) impure inline {
+() handle_wl_callback(int query_id, slice sender_address, int should_burn?, slice initiator) impure inline {
     (slice util_jet_wallet_address, _, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
     verify_user_vault(user_vault_code, sender_address, initiator);
-    cell msg = should_burn?
-    ? build_jetton_burn_msg(query_id, wl_round::const::burn_util_jet_amount, util_jet_wallet_address)
-    : build_jetton_transfer_msg(
+    cell msg = build_jetton_transfer_msg(
         query_id,
         0,
         wl_round::const::burn_util_jet_amount,
         util_jet_wallet_address,
-        initiator,
+        should_burn? ? "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c"a : initiator,
         1, ;; 1 nanoton to notify user about tokens
         null()
     );

@@ -1,15 +1,9 @@
 import { endParse } from "./CommonJettonMaster";
 import { JettonOps } from "./JettonConstants";
 import {
-    Address,
-    beginCell,
-    Cell,
-    Contract,
-    contractAddress,
-    ContractProvider,
-    Sender,
-    SendMode,
-    toNano
+    Address, beginCell, Cell, Contract,
+    contractAddress, ContractProvider,
+    Sender, SendMode, toNano
 } from "@ton/core";
 
 export type JettonWalletConfig = {

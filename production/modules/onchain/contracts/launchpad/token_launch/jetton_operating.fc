@@ -91,7 +91,7 @@ const int MINT_QUERY_ID = 27082006;
                 send_raw_message(chargeback_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
                 return ();
             }
-            handle_wl_purchase(query_id, attached_value, sender_address, initiator);
+            handle_wl_purchase(query_id, attached_value, initiator);
         }
     }
     ;; `ifs` oreder defined this way for reasons of efficiency

@@ -24,8 +24,8 @@ const JETTON_MIN_TRANSFER_FEE = 30000000;
 ;; https://docs.ton.org/develop/smart-contracts/fees#fees-for-sending-ton
 const SIMPLE_TRANSFER_FEE = 6000000;
 
-const USER_VAULT_STATE_BITS  = 1;
-const USER_VAULT_STATE_CELLS = 1;
+const USER_VAULT_STATE_BITS  = 5876;
+const USER_VAULT_STATE_CELLS = 19;
 ;; Use `loadAtMax` to measure
 const TOKEN_LAUNCH_STATE_BITS  = 48480;
 const TOKEN_LAUNCH_STATE_CELLS = 122;
@@ -33,27 +33,21 @@ const TOKEN_LAUNCH_STATE_CELLS = 122;
 const JETTON_MINTER_STATE_BITS = 1;
 const JETTON_MINTER_STATE_CELLS = 1;
 
-;; Message that contains info about user's balance updates
-const BALANCE_UPDATE_MSG_BITS = 1;
-const BALANCE_UPDATE_MSG_CELLS = 1;
-;; Both - refund and claim confirmation message - they differ by op, but have the same structure and info
-const WITHDRAW_CONFIRMATION_MSG_BITS = 1;
-const WITHDRAW_CONFIRMATION_MSG_CELLS = 1;
+;; refund_confirmation & jetton_claim_confirmation in main.tlb, still unified but took the upper bound (with `mode`)
+const WITHDRAW_CONFIRMATION_MSG_BITS = 739;
+const WITHDRAW_CONFIRMATION_MSG_CELLS = 1; ;; ref body
 ;; Claim request to user vault
-const CLAIM_MSG_BITS = 1;
-const CLAIM_MSG_CELLS = 1;
+const CLAIM_MSG_BITS = 96;
+const CLAIM_MSG_CELLS = 1; ;; not in a ref but im paranoid guy
 
 ;; file#L`line_num` - maunal bits counting
-const BALANCE_UPDATE_BITS = 1; ;; estimation looks like: body = 32+64+124+(3+8+256)+(3+8+256)
+const BALANCE_UPDATE_BITS = 348;
 const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
 
 ;; Gas
 ;; Gas constants are calculated in the main test suite.
 ;; First the related transaction is found, and then it's
 ;; resulting gas consumption is printed to the console.
-
-const RECEIVE_BALANCE_UPDATE_CONSUMPTION = 1;
-const RECEIVE_CLAIM_CONSUMPTION = 1;
 
 int calculate_user_vault_min_storage_fee() inline {
     return get_storage_fee(MY_WORKCHAIN, 2_MONTHS, USER_VAULT_STATE_BITS, USER_VAULT_STATE_CELLS);
@@ -75,14 +69,15 @@ int forward_token_launch_init_state_overhead() inline {
     return get_simple_forward_fee(MY_WORKCHAIN, TOKEN_LAUNCH_STATE_BITS, TOKEN_LAUNCH_STATE_CELLS);
 }
 
+const BALANCE_UPDATE_MSG_BITS = 348;
+const BALANCE_UPDATE_MSG_CELLS = 1;
+const RECEIVE_BALANCE_UPDATE_CONSUMPTION = 7477;
 ;;; Accounts unified balance-update message forwarding, user vault stateinit & storage fee overhead
 ;;; and receiving balance update gas consumption
 int get_balance_update_gas_cost() inline_ref {
     return
     get_forward_fee(MY_WORKCHAIN, BALANCE_UPDATE_MSG_BITS, BALANCE_UPDATE_MSG_CELLS)
     + forward_user_vault_init_state_overhead()
-    ;; + get_compute_fee(MY_WORKCHAIN, SEND_BALANCE_UPDATE_CONSUMPTION)
-    ;; TODO Does it always consume the same amount of gas? Seems like all the values are close, so we may take the upper bound (but now fees are separate)
     + get_compute_fee(MY_WORKCHAIN, RECEIVE_BALANCE_UPDATE_CONSUMPTION)
     + calculate_user_vault_min_storage_fee();
 }
@@ -104,17 +99,17 @@ const CREATOR_BUYOUT_GAS_CONSUMPTION = 14561;
 }
 
 ;; === Whitelist Purchase ===
-const WL_PURCHASE_GAS_CONSUMPTION = 1;
+const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 26620;
 const WL_CALLBACK_MSG_BITS = 364; ;;
 const WL_CALLBACK_MSG_CELLS = 1; ;; body always in ref
-const WL_CALLBACK_GAS_CONSUMPTION = 1;
+const WL_CALLBACK_GAS_CONSUMPTION = 13566;
 int get_wl_purchase_gas_consumption() inline_ref {
-    return get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_GAS_CONSUMPTION)
+    return get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION)
     + JETTON_MIN_TRANSFER_FEE ;; Return main chunk of tokens immidiatly
     + get_balance_update_gas_cost()
     + get_forward_fee(MY_WORKCHAIN, WL_CALLBACK_MSG_BITS, WL_CALLBACK_MSG_CELLS)
     + get_compute_fee(MY_WORKCHAIN, WL_CALLBACK_GAS_CONSUMPTION)
-    + JETTON_MIN_TRANSFER_FEE; ;; For whitelisted users' case
+    + JETTON_MIN_TRANSFER_FEE; ;; Refund / burn
 }
 
 (int, int) check_amount_is_enough_for_wl_purchase(int msg_value) inline {
@@ -177,6 +172,7 @@ int get_jetton_deployment_gas_cost() inline_ref {
 ;; === Jetton Claim ===
 
 ;; Don't need stateinit as if vault doesn't exist, then there is nothing to claim
+const RECEIVE_CLAIM_CONSUMPTION = 1;
 int get_claim_gas_cost() inline_ref {
     return
     ;; Forwarding claim message

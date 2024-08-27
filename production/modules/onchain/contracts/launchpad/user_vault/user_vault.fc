@@ -6,7 +6,7 @@
 #include "balance_handler.fc";
 #include "uv_context.fc";
 
-() load_data() inline_ref {
+() load_data() impure inline_ref {
     slice ds = get_data().begin_parse();
     this::owner = ds~load_msg_addr();
     this::token_launch = ds~load_msg_addr();
@@ -72,7 +72,14 @@
     throw(error::wrong_op);
 }
 
-(slice, int, int, int) get_vault_data() method_id {
+(slice, slice, int, int, int, int) get_vault_data() method_id {
     load_data();
-    return (this::owner, this::wl_ton_balance, this::public_ton_balance, this::jetton_balance);
+    return (
+        this::owner,
+        this::token_launch,
+        this::has_whitelist?,
+        this::wl_ton_balance,
+        this::public_ton_balance,
+        this::jetton_balance
+    );
 }

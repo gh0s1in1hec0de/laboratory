@@ -129,7 +129,7 @@
 
     if (op == op::tl::wl_callback) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE);
-        handle_wl_callback(query_id, attached_value, sender_address, in_msg_body~load_bool(), in_msg_body~load_msg_addr());
+        handle_wl_callback(query_id, sender_address, in_msg_body~load_bool(), in_msg_body~load_msg_addr());
         ;; Nothing to save as no changes to state were done
         return ();
     }

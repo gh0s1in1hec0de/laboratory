@@ -1,20 +1,26 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode, toNano } from "@ton/core";
 import {
-    type TokenLaunchStorage, BalanceUpdateMode, LaunchData,
     QUERY_ID_LENGTH, SaleMoneyFlow, TokensLaunchOps,
     OP_LENGTH, Coins, Contracts, LaunchConfig,
+    BASECHAIN, BalanceUpdateMode, LaunchData,
 } from "starton-periphery";
 import { randomAddress } from "@ton/test-utils";
-import { BASECHAIN } from "../tests/utils";
 import { ok as assert } from "node:assert";
 import { LaunchParams } from "./types";
 import {
-    tokenLaunchConfigToCell,
     ThirtyTwoIntMaxValue,
     tokenMetadataToCell,
     SendMessageParams,
     CoinsMaxValue,
 } from "./utils";
+
+export type StateParams = {
+    creator: Address,
+    chief: Address,
+    launchParams: LaunchParams,
+    code: Contracts,
+    launchConfig: LaunchConfig,
+};
 
 export class TokenLaunch implements Contract {
     public static PERCENTAGE_DENOMINATOR = 100000n;
@@ -28,8 +34,8 @@ export class TokenLaunch implements Contract {
         return new TokenLaunch(address);
     }
 
-    static createFromConfig(config: TokenLaunchStorage | Cell, code: Cell, workchain = BASECHAIN) {
-        const data = config instanceof Cell ? config : tokenLaunchConfigToCell(config);
+    static createFromState(state: StateParams | Cell, code: Cell, workchain = BASECHAIN) {
+        const data = state instanceof Cell ? state : this.buildState(state);
         const init = { code, data };
         return new TokenLaunch(contractAddress(workchain, init), init);
     }
@@ -163,26 +169,18 @@ export class TokenLaunch implements Contract {
 
     }
 
-    public static getCreatorAmountOut(expectedFee: Coins, value: Coins, wlJetLimit: Coins, tonLimitForWlRound: Coins) {
+    static getCreatorAmountOut(expectedFee: Coins, value: Coins, wlJetLimit: Coins, tonLimitForWlRound: Coins): Coins {
         const { purified } = this.validateValue(value, expectedFee);
         const creatorJettonPrice = this.getCreatorJettonPrice(wlJetLimit, tonLimitForWlRound);
         return purified * creatorJettonPrice / TokenLaunch.MAX_WL_ROUND_TON_LIMIT;
     }
 
-    public static getCreatorJettonPrice(wlJetLimit: Coins, tonLimitForWlRound: Coins) {
+    static getCreatorJettonPrice(wlJetLimit: Coins, tonLimitForWlRound: Coins): Coins {
         return wlJetLimit * 2n * this.MAX_WL_ROUND_TON_LIMIT / tonLimitForWlRound;
     }
 
-    static buildState(creator: Address, chief: Address, {
-            totalSupply,
-            platformSharePct,
-            metadata,
-            startTime
-        }: LaunchParams,
-        code: Contracts,
-        launchConfig: LaunchConfig,
-        loadAtMax = false
-    ) {
+    static buildState({ creator, chief, launchConfig, launchParams, code }: StateParams, loadAtMax: boolean = false): Cell {
+        const { startTime, totalSupply, platformSharePct, metadata } = launchParams;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
 
         const wlJetLimit = BigInt(launchConfig.jetWlLimitPct) * totalSupply / this.PERCENTAGE_DENOMINATOR;
