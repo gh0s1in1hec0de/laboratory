@@ -252,11 +252,12 @@ slice get_user_vault_address(slice user_address) method_id {
 }
 
 ;; Needed more for checks & verifications
-(int, int) get_jetton_balances() method_id {
+(int, int, int) get_inner_data() method_id {
     load_data();
     return (
         general_state::fut_jet_deployed_balance,
-        general_state::reward_util_jets_balance
+        general_state::reward_util_jets_balance,
+        this::operational_needs
     );
 }
 

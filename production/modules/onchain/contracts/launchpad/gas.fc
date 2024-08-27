@@ -24,10 +24,10 @@ const JETTON_MIN_TRANSFER_FEE = 30000000;
 ;; https://docs.ton.org/develop/smart-contracts/fees#fees-for-sending-ton
 const SIMPLE_TRANSFER_FEE = 6000000;
 
-const USER_VAULT_STATE_BITS  = 5876;
+const USER_VAULT_STATE_BITS  = 5956;
 const USER_VAULT_STATE_CELLS = 19;
 ;; Use `loadAtMax` to measure
-const TOKEN_LAUNCH_STATE_BITS  = 48480;
+const TOKEN_LAUNCH_STATE_BITS  = 48697;
 const TOKEN_LAUNCH_STATE_CELLS = 122;
 
 const JETTON_MINTER_STATE_BITS = 1;
@@ -99,10 +99,10 @@ const CREATOR_BUYOUT_GAS_CONSUMPTION = 14561;
 }
 
 ;; === Whitelist Purchase ===
-const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 26620;
+const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 26660;
 const WL_CALLBACK_MSG_BITS = 364; ;;
 const WL_CALLBACK_MSG_CELLS = 1; ;; body always in ref
-const WL_CALLBACK_GAS_CONSUMPTION = 13566;
+const WL_CALLBACK_GAS_CONSUMPTION = 13558;
 int get_wl_purchase_gas_consumption() inline_ref {
     return get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION)
     + JETTON_MIN_TRANSFER_FEE ;; Return main chunk of tokens immidiatly
@@ -200,7 +200,7 @@ int check_amount_is_enough_for_jetton_claim(int msg_value) {
 }
 
 ;; Measured in "new launch creation through core"
-const CREATE_LAUNCH_GAS_CONSUMPTION = 32471;
+const CREATE_LAUNCH_GAS_CONSUMPTION = 32504;
 ;; Manual bits counting from core/operations.fc#L~120
 const INIT_MSG_BITS = 897; ;; 32 + 64 + 3 x (3+8+256)
 const INIT_MSG_CELLS = 2; ;; body in ref + stateinit in ref (TODO should it be accounted here?)
@@ -209,7 +209,7 @@ const INITIALIZATION_GAS_CONSUMPTION = 15320;
 const INIT_CALLBACK_MSG_BITS = 96;
 const INIT_CALLBACK_MSG_CELLS = 0;
 
-const INIT_CALLBACK_GAS_CONSUMPTION = 12643;
+const INIT_CALLBACK_GAS_CONSUMPTION = 12635;
 const RECORD_REWARD_JETTONS_ENROLLMENT_GAS_CONSUMPTION = 14491;
 int get_amount_for_token_launch_deploy() inline {
     return get_compute_fee(MY_WORKCHAIN, CREATE_LAUNCH_GAS_CONSUMPTION)

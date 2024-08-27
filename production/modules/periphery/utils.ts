@@ -1,5 +1,6 @@
-import { TokenLaunchStorage, TokenLaunchTimings, TokenMetadata } from "./types";
+import { Coins, TokenLaunchStorage, TokenLaunchTimings, TokenMetadata } from "./types";
 import { beginCell, Cell } from "@ton/core";
+import { ok as assert } from "node:assert";
 
 export function parseTokenLaunchTimings(tokenLaunchStorage: TokenLaunchStorage): TokenLaunchTimings {
     return {
@@ -15,4 +16,12 @@ export function tokenMetadataToCell(content: TokenMetadata): Cell {
     return beginCell()
         .storeStringRefTail(content.uri) // Snake logic under the hood
         .endCell();
+}
+
+export function validateValue(total: Coins, fee: Coins): { purified: Coins, opn: Coins } {
+    assert(!(fee > total), "not enough gas");
+    const extra = total - fee;
+    const purified = extra * 99n / 100n;
+    assert(purified > 0, "balance lack");
+    return { purified, opn: extra - purified };
 }
