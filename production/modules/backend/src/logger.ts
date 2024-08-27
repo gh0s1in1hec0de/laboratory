@@ -49,7 +49,7 @@ const format = combine(
     customFormat
 );
 
-export function configureLogger(): Logger {
+function configureLogger(): Logger {
     const { mode, logger } = getConfig();
     const {
         dev_thread_id,

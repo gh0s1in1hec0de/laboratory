@@ -19,7 +19,7 @@ class BalancedTonClient {
         if (this.currentKeyIndex < this.keys.length - 1) this.currentKeyIndex += 1;
         else this.currentKeyIndex = 0;
         const apiKey = this.keys[this.currentKeyIndex];
-        console.debug(` - tonclient apikey for operation: ${apiKey}`);
+        logger().debug(` - tonclient apikey for operation: ${apiKey}`);
         return new TonClient({
             endpoint: `https://${currentNetwork() === "testnet" ? "testnet." : ""}toncenter.com/api/v2/jsonRPC`,
             apiKey
@@ -33,7 +33,7 @@ const tonClient4 = new TonClient4({ endpoint: await getHttpV4Endpoint({ network:
 // Works with TonClient4 under the hood, includes last account's `lamport_time`
 export async function getAccount(address: RawAddressString, seqno?: number) {
     const seqno_ = seqno ? seqno : (await tonClient4.getLastBlock()).last.seqno;
-    console.debug(`Seqno has been ${seqno ? "provided manually" : "taken from api"}: ${seqno_}`);
+    logger().debug(`Seqno has been ${seqno ? "provided manually" : "taken from api"}: ${seqno_}`);
     // Do we really need it here?
     return maybeBruteforceOverload<any>(tonClient4.getAccount(seqno_, Address.parse(address)));
 }
@@ -74,9 +74,8 @@ export async function retrieveAllUnknownTransactions(
         limit: number,
     }
 ): Promise<Transaction[]> {
-    const logger = logger();
-    logger.debug(`[*] ${retrieveAllUnknownTransactions.name}`); // THIS CODE IS A FUCKING JOKE BTW
-    logger.debug(` - start txs parsing for account ${address} from ${stopAt}`);
+    logger().debug(`[*] ${retrieveAllUnknownTransactions.name}`); // THIS CODE IS A FUCKING JOKE BTW
+    logger().debug(` - start txs parsing for account ${address} from ${stopAt}`);
     const newTransactions: Transaction[] = [];
     const limit = parsingOptions?.limit ?? 100;
     let startFrom: { lt: LamportTime, hash: string } | undefined = undefined;
@@ -84,7 +83,7 @@ export async function retrieveAllUnknownTransactions(
     let iterationIndex = 1;
     while (true) {
         if (iterationIndex > 1) {
-            logger.warn(`exceeded update limit(${limit} per request) for address ${address} at ${new Date(Date.now()).toString()}`);
+            logger().warn(`exceeded update limit(${limit} per request) for address ${address} at ${new Date(Date.now()).toString()}`);
             await delay(750);
         }
 
@@ -102,7 +101,7 @@ export async function retrieveAllUnknownTransactions(
     }
     // No updates happened case
     if (newTransactions.length == 0) {
-        logger.debug(` - no updates for ${address}`);
+        logger().debug(` - no updates for ${address}`);
         return [];
     }
     // From oldest to newest
@@ -111,7 +110,7 @@ export async function retrieveAllUnknownTransactions(
         if (a.lt > b.lt) return 1;
         return 0;
     });
-    logger.debug(`found ${newTransactions.length} new transactions for ${address}`);
+    logger().debug(`found ${newTransactions.length} new transactions for ${address}`);
     return newTransactions;
 }
 

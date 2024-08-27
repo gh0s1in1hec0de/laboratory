@@ -5,6 +5,8 @@ import * as path from "path";
 import * as fs from "fs";
 
 let cachedGlobalClient: SqlClient | null = null;
+export const globalClient = await createPostgresClient();
+
 export async function createPostgresClient(): Promise<SqlClient> {
     if (!cachedGlobalClient) {
         cachedGlobalClient = postgres({
@@ -23,12 +25,11 @@ export async function createPostgresClient(): Promise<SqlClient> {
     }
     return cachedGlobalClient;
 }
-export const globalClient = await createPostgresClient();
 
 export async function applyMigrations() {
     const directoryPath = path.join(__dirname, "migrations");
     const files = fs.readdirSync(directoryPath).sort();
-    logger().info(globalClient);
+		
     try {
         // Open a transaction
         await globalClient.begin(async sql => {

@@ -14,8 +14,7 @@ import { delay } from "../utils";
 import * as db from "../db";
 
 export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) {
-    const logger = logger();
-    logger.debug(`new token launch updates handler for ${launchAddress} is up`);
+    logger().debug(`new token launch updates handler for ${launchAddress} is up`);
     const tokenLaunch = await db.getTokenLaunch(launchAddress);
     // TODO Proper error handling
     if (!tokenLaunch) return;
@@ -92,7 +91,7 @@ export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) 
             currentHeight = newTxs[newTxs.length - 1].lt;
             await delay(2000); // TODO Determine synthetic delay
         } catch (e) {
-            logger.error(`failed to handle launch ${launchAddress} update with error: ${e}`);
+            logger().error(`failed to handle launch ${launchAddress} update with error: ${e}`);
         }
     }
 }

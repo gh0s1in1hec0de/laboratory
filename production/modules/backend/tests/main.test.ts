@@ -1,4 +1,4 @@
-import { getAccount, getTransactionsForAccount, retrieveAllUnknownTransactions } from "../src/oracle/api";
+import { getAccount, getTransactionsForAccount, retrieveAllUnknownTransactions } from "../src/oracle";
 import type { RawAddressString } from "starton-periphery";
 import { test, describe, beforeAll } from "bun:test";
 import { Address, type Transaction } from "@ton/ton";

@@ -45,7 +45,6 @@ export async function getUserActions(
 }
 
 export async function storeUserActions(userActions: UserAction[]) {
-    const logger = logger();
     try {
         await globalClient.begin(async txClient => {
             for (const action of userActions) {
@@ -55,6 +54,6 @@ export async function storeUserActions(userActions: UserAction[]) {
     } catch (e) {
         const actor = userActions[0].actor;
         const timestamp = userActions[0].timestamp;
-        logger.error(`failed to record user actions fo ${actor}[${timestamp}] in tx with error: ${e}`);
+        logger().error(`failed to record user actions fo ${actor}[${timestamp}] in tx with error: ${e}`);
     }
 }

@@ -10,7 +10,6 @@ import { logger } from "../logger";
 import * as db from "../db";
 
 export async function handleCoreUpdates(coreAddress: RawAddressString) {
-    const logger = logger();
     let currentHeight = await db.getCoreHeight(coreAddress) ?? 0n;
     let iteration = 0;
     while (true) {
@@ -52,7 +51,7 @@ export async function handleCoreUpdates(coreAddress: RawAddressString) {
             if (iteration % 5 === 0) await db.setCoreHeight(coreAddress, currentHeight, true);
             await delay(5000); // TODO Determine synthetic delay
         } catch (e) {
-            logger.error(`failed to load new launches for core(${coreAddress}) update with error: ${e}`);
+            logger().error(`failed to load new launches for core(${coreAddress}) update with error: ${e}`);
         }
     }
 }
