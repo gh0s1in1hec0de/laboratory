@@ -482,7 +482,7 @@ describe("Core", () => {
             });
             printTxGasStats("Creator buyout transaction:", buyoutTx);
 
-            const tokenLaunchState = await sampleTokenLaunch.getSaleState();
+            const tokenLaunchState = await sampleTokenLaunch.getSaleMoneyFlow();
             expect(mockedCreatorPrice).toEqual(tokenLaunchState.creatorFutJetBalance);
         });
         // TODO wrong-time check, wrong sum refund
@@ -558,7 +558,7 @@ describe("Core", () => {
                 success: true,
                 deploy: true
             });
-            const balanceUpdateComputeFee = printTxGasStats("Balance update transaction:", balanceUpdateTx);
+            const balanceUpdateComputeFee = printTxGasStats("Balance update (wl buy) transaction:", balanceUpdateTx);
             const wlCallbackTx = findTransactionRequired(wlPurchase.transactions, {
                 op: TokensLaunchOps.wlCallback,
                 from: consumerVault.address,
@@ -602,6 +602,7 @@ describe("Core", () => {
             expect(opnAfter).toBeGreaterThanOrEqual(opnBefore + opn);
             expect(precomputedWlPurchaseCost).toBeGreaterThanOrEqual(wlPurchaseTotalGasCost);
             expect(consumerVaultData.wlTonBalance).toEqual(purified);
+            // console.log(`Consumer first time wl ton balance: ${fromNano(consumerVaultData.wlTonBalance!)}`)
 
             const wlPurchaseRepeated = await consumerWallet.sendTransfer(
                 consumer.getSender(),
@@ -632,6 +633,55 @@ describe("Core", () => {
                     .endCell()
             });
             expect((await consumerWallet.getWalletData()).balance).toEqual(expectedBalanceAfterWlPass);
+        });
+        // Predict with get amount out
+        test("public buy works the proper way ", async () => {
+            blockchain.now = sampleLaunchStartTime + 1 + launchConfig.creatorRoundDurationMs + launchConfig.wlRoundDurationMs;
+            const firstPublicBuyer = await blockchain.treasury("public_buyer_1");
+            const secondPublicBuyer = await blockchain.treasury("public_buyer_2");
+
+            console.log(await sampleTokenLaunch.getSaleMoneyFlow());
+            const firstPublicBuyResult = await sampleTokenLaunch.sendPublicBuy({
+                queryId: 1n,
+                value: toNano("1"),
+                via: firstPublicBuyer.getSender()
+            });
+            console.log(await sampleTokenLaunch.getSaleMoneyFlow());
+            const secondPublicBuyResult = await sampleTokenLaunch.sendPublicBuy({
+                queryId: 2n,
+                value: toNano("1"),
+                via: secondPublicBuyer.getSender()
+            });
+            console.log(await sampleTokenLaunch.getSaleMoneyFlow());
+
+            const [firstPublicBuyerVault, secondPublicBuyerVault] = await Promise.all(
+                [firstPublicBuyer, secondPublicBuyer].map((buyer) => {
+                    return blockchain.openContract(
+                        UserVault.createFromState({
+                            owner: buyer.address,
+                            tokenLaunch: sampleTokenLaunch.address
+                        }, userVaultCode)
+                    );
+                })
+            );
+            const publicBuyRequest = findTransactionRequired(firstPublicBuyResult.transactions, {
+                on: sampleTokenLaunch.address,
+                op: TokensLaunchOps.publicBuy,
+                success: true
+            });
+            printTxGasStats("Public buy request transaction: ", publicBuyRequest);
+            const balanceUpdatePub = findTransactionRequired(firstPublicBuyResult.transactions, {
+                on: firstPublicBuyerVault.address,
+                op: UserVaultOps.balanceUpdate,
+                deploy: true,
+                success: true
+            });
+            printTxGasStats("Balance update (public buy) transaction: ", balanceUpdatePub);
+            const [firstPublicBuyerVaultData, secondPublicBuyerVaultData] = await Promise.all(
+                [firstPublicBuyerVault, secondPublicBuyerVault].map((buyer) => buyer.getVaultData())
+            );
+            console.log(fromNano(firstPublicBuyerVaultData.jettonBalance!));
+            console.log(fromNano(secondPublicBuyerVaultData.jettonBalance!));
         });
     });
 });

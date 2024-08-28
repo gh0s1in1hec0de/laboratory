@@ -1,5 +1,5 @@
 import { Coins, TokenLaunchStorage, TokenLaunchTimings, TokenMetadata } from "./types";
-import { beginCell, Cell } from "@ton/core";
+import { beginCell, Cell, fromNano, toNano } from "@ton/core";
 import { ok as assert } from "node:assert";
 
 export function parseTokenLaunchTimings(tokenLaunchStorage: TokenLaunchStorage): TokenLaunchTimings {
@@ -24,4 +24,16 @@ export function validateValue(total: Coins, fee: Coins): { purified: Coins, opn:
     const purified = extra * 99n / 100n;
     assert(purified > 0, "balance lack");
     return { purified, opn: extra - purified };
+}
+
+export function jettonToNano(amount: number | bigint | string, decimals: number = 6) {
+    const nineDecimalsRes = toNano(amount);
+    if (decimals > 9) return nineDecimalsRes * BigInt(9 - decimals);
+    if (decimals < 9) return nineDecimalsRes / BigInt(decimals - 9);
+    return nineDecimalsRes;
+}
+
+export function jettonFromNano(amount: number | bigint | string, decimals: number = 6) {
+    assert(decimals <= 9, "not supported yet");
+    return fromNano(decimals < 9 ? BigInt(amount) * BigInt(9 - decimals) : amount);
 }

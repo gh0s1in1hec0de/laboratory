@@ -71,6 +71,7 @@ int forward_token_launch_init_state_overhead() inline {
 
 const BALANCE_UPDATE_MSG_BITS = 348;
 const BALANCE_UPDATE_MSG_CELLS = 1;
+;; Wl mode as the most consumpting were taken
 const RECEIVE_BALANCE_UPDATE_CONSUMPTION = 7477;
 ;;; Accounts unified balance-update message forwarding, user vault stateinit & storage fee overhead
 ;;; and receiving balance update gas consumption
@@ -125,7 +126,7 @@ int get_wl_purchase_gas_consumption() inline_ref {
 }
 
 ;; === Public Purchase ===
-const PUB_PURCHASE_GAS_CONSUMPTION = 1;
+const PUB_PURCHASE_GAS_CONSUMPTION = 22271;
 (int, int) check_amount_is_enough_for_public_purchase(int msg_value) inline {
     return validate_value(
         msg_value,

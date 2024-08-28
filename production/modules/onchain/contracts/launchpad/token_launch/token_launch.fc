@@ -216,9 +216,10 @@ slice get_user_vault_address(slice user_address) method_id {
     return user_vault_address;
 }
 
-(int, int, int, int, int) get_sale_money_flow() method_id {
+(int, int, int, int, int, int) get_sale_money_flow() method_id {
     load_data();
     return (
+        general_state::total_tons_collected,
         creator_round::creator_fut_jet_balance,
         wl_round::ton_invested_total,
         public_round::fut_jet_sold,

@@ -11,9 +11,10 @@ export type TokenLaunchTimings = {
 };
 
 export type SaleMoneyFlow = {
+    totalTonsCollected: Coins,
     creatorFutJetBalance: Coins,
-    tonInvestedTotal: Coins,
-    futJetSold: Coins,
+    wlRoundTonInvestedTotal: Coins,
+    publicRoundFutJetSold: Coins,
     syntheticJetReserve: Coins,
     syntheticTonReserve: Coins,
 }

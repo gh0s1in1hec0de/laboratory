@@ -125,12 +125,13 @@ export class TokenLaunch implements Contract {
         return stack.readAddress();
     }
 
-    async getSaleState(provider: ContractProvider): Promise<SaleMoneyFlow> {
+    async getSaleMoneyFlow(provider: ContractProvider): Promise<SaleMoneyFlow> {
         let { stack } = await provider.get("get_sale_money_flow", []);
         return {
+            totalTonsCollected: stack.readBigNumber(),
             creatorFutJetBalance: stack.readBigNumber(),
-            tonInvestedTotal: stack.readBigNumber(),
-            futJetSold: stack.readBigNumber(),
+            wlRoundTonInvestedTotal: stack.readBigNumber(),
+            publicRoundFutJetSold: stack.readBigNumber(),
             syntheticJetReserve: stack.readBigNumber(),
             syntheticTonReserve: stack.readBigNumber(),
         };
