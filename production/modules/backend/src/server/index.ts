@@ -31,21 +31,14 @@ let maybeServer: ElysiaAPI | null;
 
 export function getServer(): ElysiaAPI {
     if (!maybeServer) {
-        maybeServer = createServer();
+      maybeServer = createServer();
+      logger().info(`elysia server is running at ${maybeServer.server?.hostname}:${maybeServer.server?.port}`);
+      logger().info(`swagger docs are available at http://${maybeServer.server?.hostname}:${maybeServer.server?.port}/api/swagger`);
     }
     return maybeServer;
 }
 
-export function sendMessageToWsClient(userAddress: string, tokenAddress: string, message: string) {
-    if (!maybeServer) {
-        logger().error("server is not created!");
-        return;
-    }
-  
-    const msg = {
-        userAddress,
-        text: message
-    };
-  
-    maybeServer.server?.publish(`${tokenAddress}`, JSON.stringify(msg));
+export function sendMessageToWsClient(topicName: string, message: string[]) {
+    // hash of op, query_id (milisec) and sender_address
+    getServer().server?.publish(`${topicName}`, JSON.stringify(message));
 }

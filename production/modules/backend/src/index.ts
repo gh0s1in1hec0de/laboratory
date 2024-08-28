@@ -22,15 +22,11 @@ async function main() {
     // We parse current launches we have to manage with our promise-workers
     // const storedActiveLaunches = await db.getActiveTokenLaunches();
   
-    const { server } = getServer();
-    
-    logger().info(`elysia server is running at ${server?.hostname}:${server?.port}`);
-    logger().info(`swagger docs are available at http://${server?.hostname}:${server?.port}/api/swagger`);
-  
+    const server = getServer();
   
     // Test
     for (let i = 0; i < 10; i++) {
-        sendMessageToWsClient("", "exampleTokenAddress", "meow");
+        sendMessageToWsClient("exampleTokenAddress", ["meow"]);
         await delay(5000);
     }
   

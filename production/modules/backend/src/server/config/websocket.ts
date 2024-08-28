@@ -7,11 +7,11 @@ export function WebSocket() {
             query: t.Object({
                 address: t.String(),
                 tgId: t.String(),
-                tokenAddress: t.String()
+                topicName: t.String()
             }),
             open(ws) {
                 // TODO probably send it through headers
-                const { address, tgId, tokenAddress } = ws.data.query;
+                const { address, tgId, topicName } = ws.data.query;
         
                 // TODO refactor with tg id
                 // const user = db.getUserByAddress(address);
@@ -20,7 +20,7 @@ export function WebSocket() {
                 //     return;
                 // }
         
-                ws.subscribe(`${tokenAddress}`);
+                ws.subscribe(`${topicName}`);
                 logger().info(`Client connected: ${address}`);
             },
             close(ws) {
