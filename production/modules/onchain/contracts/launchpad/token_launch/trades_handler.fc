@@ -118,7 +118,7 @@
 }
 
 ;; Forgot about creator refund lol
-() handle_refund_request(int query_id, int attached_value, slice sender_address, int mode, int refund_value) impure inline {
+() handle_refund_request(int query_id, int attached_value, slice sender_address, int mode) impure inline {
     ;; If jetton is deployed - than pool is already created and there is no refund option
     throw_if(error::wrong_time, general_state::fut_jet_deployed_balance > 0);
     {- Should be triggered only in case if user tries to get refund after all the rounds
@@ -142,7 +142,7 @@
         0, ;; Should be rewritten by message sending mode
         sender_address,
         mode,
-        refund_value,
+        0,
         0
     );
     send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);

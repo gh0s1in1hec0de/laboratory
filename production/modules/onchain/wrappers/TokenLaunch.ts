@@ -66,18 +66,15 @@ export class TokenLaunch implements Contract {
     async sendRefundRequest(
         provider: ContractProvider,
         sendMessageParams: SendMessageParams,
-        params: {
-            mode: BalanceUpdateMode,
-            refundValue: Coins,
-        }) {
-        const { refundValue, mode } = params;
+        mode: BalanceUpdateMode,
+        ) {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
             .storeUint(TokensLaunchOps.refundRequest, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
             .storeUint(mode, 4)
-            .storeCoins(refundValue)
+            .storeCoins(666n)
             .endCell();
         await provider.internal(via, {
             value, sendMode: SendMode.PAY_GAS_SEPARATELY, body

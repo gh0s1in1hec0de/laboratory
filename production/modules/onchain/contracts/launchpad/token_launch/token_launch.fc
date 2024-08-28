@@ -141,7 +141,7 @@
     }
     if (op == op::tl::refund_request) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
-        handle_refund_request(query_id, attached_value, sender_address, in_msg_body~load_uint(4), in_msg_body~load_coins());
+        handle_refund_request(query_id, attached_value, sender_address, in_msg_body~load_uint(4));
         return ();
     }
     if (op == op::tl::refund_confirmation) {

@@ -28,7 +28,7 @@ export async function storeUserAction(
 }
 
 // Returns `null` to show that nothing was found the explicit way
-export async function getUserActions(
+export async function getCallerActions(
     actor: RawAddressString,
     type?: UserActionType,
     tokenLaunch?: RawAddressString,
@@ -44,6 +44,7 @@ export async function getUserActions(
     return res.length ? res : null;
 }
 
+// In fact it is caller actions, but I decided to leave naming as it is
 export async function storeUserActions(userActions: UserAction[]) {
     try {
         await globalClient.begin(async txClient => {

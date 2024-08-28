@@ -9,10 +9,17 @@ export type StoredHeight = {
     contractAddress: RawAddressString,
     height: LamportTime,
 }
+export type TelegramId = string;
 export type StoredUser = {
-    address: RawAddressString,
+    invitedBy: TelegramId,
+    telegramId: TelegramId,
     nickname: string | null,
-};
+}
+
+export type Caller = {
+    user: TelegramId | null,
+    address: RawAddressString,
+}
 
 export type StoredTokenLaunch = {
     address: RawAddressString,
@@ -45,7 +52,7 @@ export type UserAction = {
 };
 
 export type StoredUserBalance = {
-    actor: RawAddressString,
+    caller: RawAddressString,
     tokenLaunch: RawAddressString,
     whitelistTons: Coins,
     publicTons: Coins,

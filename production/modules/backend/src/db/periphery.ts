@@ -17,6 +17,7 @@ export async function getCoreHeight(address: RawAddressString, client?: SqlClien
     const res = await (client || globalClient)<{ height: LamportTime }[]>`
         SELECT height
         from heights
+        WHERE contract_address = ${address}
     `;
     return res.length ? res[0].height : null;
 
