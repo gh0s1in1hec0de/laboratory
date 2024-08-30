@@ -1,7 +1,8 @@
-import { getServer, sendMessageToWsClient } from "./server";
-import { delay, greeting } from "./utils";
 import { getConfig } from "./config";
+import { getServer } from "./server";
+import { greeting } from "./utils";
 import { logger } from "./logger";
+import { getBot } from "./bot";
 import dotenv from "dotenv";
 import * as db from "./db";
 
@@ -14,7 +15,7 @@ logger().info(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_US
 
 if (config.db.should_migrate) {
     logger().info("applying migrations to clean database...");
-    await db.applyMigrations();
+    // await db.applyMigrations();
 }
 const { address, height, force_height } = config.oracle.core;
 // if (height) await db.setCoreHeight(address, height, force_height);
@@ -23,8 +24,9 @@ async function main() {
     // We parse current launches we have to manage with our promise-workers
     // const storedActiveLaunches = await db.getActiveTokenLaunches();
   
-    const server = getServer();
-    
+    // const server = getServer();
+    const bot = getBot();
+    bot.start();
   
     // if (Address.parse(address)) handleCoreUpdates(address);
 }

@@ -31,6 +31,9 @@ type Config = {
             version: string,
         },
     },
+    bot: {
+      token: string,
+    },
     logger: {
       bot_token: string,
       chat_id: number,

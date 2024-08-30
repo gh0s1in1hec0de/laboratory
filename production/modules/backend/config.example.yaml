@@ -21,6 +21,9 @@ server:
     title: "Starton API Documentation"
     version: "1.0.0"
 
+bot:
+  token: ""
+
 logger:
   bot_token: ""
   chat_id: -0

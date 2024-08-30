@@ -10,7 +10,7 @@ export async function getTokenLaunches({
     search = "",
     limit
 }: GetTokenLaunchesRequest): Promise<StoredTokenLaunchResponse | undefined> {
-    try{
+    try {
         const res = await getSortedTokenLaunches(
             page,
             limit,
