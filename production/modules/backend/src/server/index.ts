@@ -1,9 +1,9 @@
+import { TokenLaunchRoutes, UserRoutes } from "./routes";
 import { getSwaggerConfig, WebSocket } from "./config";
 import { swagger } from "@elysiajs/swagger";
 import { ok as assert } from "node:assert";
 import { getConfig } from "../config.ts";
 import { logger } from "../logger.ts";
-import { UserRoutes } from "./routes";
 import Elysia from "elysia";
 
 function createServer() {
@@ -21,6 +21,7 @@ function createServer() {
         })))
         .use(WebSocket())
         .use(UserRoutes())
+        .use(TokenLaunchRoutes())
         .onError((err) => {
             logger().error(err);
         })

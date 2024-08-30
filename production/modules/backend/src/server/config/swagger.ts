@@ -3,7 +3,7 @@ import { OpenAPIV3 } from "openapi-types";
 
 export enum SwaggerTags {
   User = "User",
-  Test = "Test",
+  TokenLaunch = "Token Launch",
 }
 
 type SwaggerTagObject = {
@@ -28,9 +28,9 @@ const allSwaggerTags: Record<SwaggerTags, SwaggerTagObject> = {
         name: SwaggerTags.User,
         description: "Endpoints for User data",
     },
-    [SwaggerTags.Test]: {
-        name: SwaggerTags.Test,
-        description: "Endpoints for Test data"
+    [SwaggerTags.TokenLaunch]: {
+        name: SwaggerTags.TokenLaunch,
+        description: "Endpoints for Token Launch"
     },
 };
 

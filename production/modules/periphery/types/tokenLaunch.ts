@@ -4,9 +4,9 @@ import { Coins } from "./general";
 // Getters
 export type TokenLaunchTimings = {
     startTime: Date,
-    creatorRoundTime: Date,
-    wlRoundTime: Date,
-    publicRoundTime: Date,
+    creatorRoundEndTime: Date,
+    wlRoundEndTime: Date,
+    publicRoundEndTime: Date,
     endTime: Date,
 };
 

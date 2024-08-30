@@ -28,6 +28,11 @@ export type StoredTokenLaunch = {
     timings: TokenLaunchTimings,
 };
 
+export interface StoredTokenLaunchResponse {
+  storedTokenLaunch: StoredTokenLaunch[],
+  hasMore: boolean,
+}
+
 export enum UserActionType {
     WhiteListBuy = "whitelist_buy",
     PublicBuy = "public_buy",

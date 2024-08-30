@@ -24,11 +24,13 @@ CREATE TABLE callers
 
 CREATE TABLE token_launches
 (
-    address  address PRIMARY KEY,
-    creator  address NOT NULL REFERENCES callers (address),
+    address    address PRIMARY KEY,
+    creator    address     NOT NULL REFERENCES callers (address),
+    name       TEXT UNIQUE NOT NULL,
     -- Now it is JSONB, but, after we'll determine format of metadata, we should rewrite this as explicit fields | or not
-    metadata JSONB   NOT NULL,
-    timings  JSONB   NOT NULL
+    metadata   JSONB       NOT NULL,
+    timings    JSONB       NOT NULL,
+    created_at TIMESTAMP   NOT NULL DEFAULT now()
 );
 
 -- This table can easily solve the problem of whitelists for each token-sale

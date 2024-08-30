@@ -24,12 +24,7 @@ async function main() {
     // const storedActiveLaunches = await db.getActiveTokenLaunches();
   
     const server = getServer();
-  
-    // Test
-    for (let i = 0; i < 10; i++) {
-        sendMessageToWsClient("exampleTokenAddress", ["meow"]);
-        await delay(5000);
-    }
+    
   
     // if (Address.parse(address)) handleCoreUpdates(address);
 }

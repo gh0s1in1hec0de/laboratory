@@ -5,9 +5,9 @@ import { ok as assert } from "node:assert";
 export function parseTokenLaunchTimings(tokenLaunchStorage: TokenLaunchStorage): TokenLaunchTimings {
     return {
         startTime: new Date(tokenLaunchStorage.saleState.general.startTime * 1000),
-        creatorRoundTime: new Date(tokenLaunchStorage.saleState.creatorRound.endTime * 1000),
-        wlRoundTime: new Date(tokenLaunchStorage.saleState.wlRound.endTime * 1000),
-        publicRoundTime: new Date(tokenLaunchStorage.saleState.pubRound.endTime * 1000),
+        creatorRoundEndTime: new Date(tokenLaunchStorage.saleState.creatorRound.endTime * 1000),
+        wlRoundEndTime: new Date(tokenLaunchStorage.saleState.wlRound.endTime * 1000),
+        publicRoundEndTime: new Date(tokenLaunchStorage.saleState.pubRound.endTime * 1000),
         endTime: new Date(tokenLaunchStorage.saleState.general.endTime * 1000),
     };
 }
@@ -44,4 +44,13 @@ export function jettonToNano(amount: number | bigint | string, decimals: number 
 export function jettonFromNano(amount: number | bigint | string, decimals: number = 6) {
     assert(decimals <= 9, "not supported yet");
     return fromNano(decimals < 9 ? BigInt(amount) * BigInt(9 - decimals) : amount);
+}
+
+export enum SortOrder {
+  ASC = 'ASC',
+  DESC = 'DESC'
+}
+
+export enum SortField {
+  CREATED_AT = 'created_at'
 }
