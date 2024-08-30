@@ -1,7 +1,8 @@
-import { Address, Cell, Dictionary, Slice } from "@ton/core";
+import { Address, Dictionary, Slice } from "@ton/core";
 import { Maybe } from "@ton/ton/dist/utils/maybe";
+import { Contracts } from "../../types";
 
-export type LaunchConfig = {
+export type LaunchConfigV1 = {
     minTonForSaleSuccess: bigint,
     tonLimitForWlRound: bigint,
     utilJetRewardAmount: bigint,
@@ -16,20 +17,13 @@ export type LaunchConfig = {
     claimDurationMs: number,
 };
 
-export type Contracts = {
-    tokenLaunch: Cell,
-    userVault: Cell,
-    jettonMaster: Cell,
-    jettonWallet: Cell,
-}
-
-export type CoreState = {
+export type CoreStateV1 = {
     chief: Address,
     utilJettonMasterAddress: Address,
     utilJettonWalletAddress: Maybe<Address>,
     utilJetCurBalance: bigint,
     notFundedLaunches: Maybe<Dictionary<Address, Slice>>,
     notFundedLaunchesAmount: number,
-    launchConfig: LaunchConfig,
+    launchConfig: LaunchConfigV1,
     contracts: Contracts,
 };

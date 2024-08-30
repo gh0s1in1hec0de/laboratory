@@ -1,33 +1,33 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
-import { SendMessageParams, tokenMetadataToCell } from "./utils";
-import { LaunchParams, StateType, UpgradeParams } from "./types";
-import { CommonJettonMaster } from "./CommonJettonMaster";
-import { CommonJettonWallet } from "./CommonJettonWallet";
-import { TokenLaunch } from "./TokenLaunch";
+import { SendMessageParams, tokenMetadataToCell } from "../utils";
+import { LaunchParams, UpgradeParams } from "../types";
+import { JettonMaster } from "../JettonMaster";
+import { JettonWallet } from "../JettonWallet";
+import { TokenLaunchV1 } from "./TokenLaunchV1";
 import {
     TokensLaunchOps,
     QUERY_ID_LENGTH,
-    LaunchConfig,
-    CoreState,
+    LaunchConfigV1,
+    CoreStateV1,
     BASECHAIN,
     OP_LENGTH,
     Contracts,
-    CoreOps,
+    CoreOps, Coins,
 } from "starton-periphery";
 
 
-export class Core implements Contract {
+export class CoreV1 implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
     }
 
     static createFromAddress(address: Address) {
-        return new Core(address);
+        return new CoreV1(address);
     }
 
-    static createFromState(state: CoreState, code: Cell, workchain = BASECHAIN) {
+    static createFromState(state: CoreStateV1, code: Cell, workchain = BASECHAIN) {
         const data = this.buildState(state);
         const init = { code, data };
-        return new Core(contractAddress(workchain, init), init);
+        return new CoreV1(contractAddress(workchain, init), init);
     }
 
     async sendDeploy(provider: ContractProvider, sendMessageParams: Omit<SendMessageParams, "queryId">) {
@@ -73,7 +73,11 @@ export class Core implements Contract {
     }
 
     // possibly unnecessarily
-    async getState(provider: ContractProvider): Promise<StateType> {
+    async getState(provider: ContractProvider): Promise<{
+        notFundedLaunches: Cell | null,
+        notFundedLaunchesAmount: number,
+        utilJetCurBalance: Coins,
+    }> {
         let { stack } = await provider.get("get_state", []);
         return {
             notFundedLaunches: stack.readCellOpt(),
@@ -82,7 +86,7 @@ export class Core implements Contract {
         };
     }
 
-    async getLaunchConfig(provider: ContractProvider): Promise<LaunchConfig> {
+    async getLaunchConfig(provider: ContractProvider): Promise<LaunchConfigV1> {
         let { stack } = await provider.get("get_launch_config", []);
         return {
             minTonForSaleSuccess: stack.readBigNumber(),
@@ -106,11 +110,11 @@ export class Core implements Contract {
         utilJettonMasterAddress: Address,
         createLaunchParams: LaunchParams,
         code: Contracts,
-        staticLaunchParameters: LaunchConfig
+        staticLaunchParameters: LaunchConfigV1
     ): { tokenLaunchStateInit: Cell, stateInitCell: Cell, bodyCell: Cell, } {
         const { metadata } = createLaunchParams;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
-        const data = TokenLaunch.buildState({
+        const data = TokenLaunchV1.buildState({
             creator,
             chief,
             launchParams: createLaunchParams,
@@ -124,19 +128,19 @@ export class Core implements Contract {
             .storeMaybeRef(data)
             .storeUint(0, 1)
             .endCell();
-        const tokenLaunch = TokenLaunch.createFromState(data, code.tokenLaunch);
-        const futJetMaster = CommonJettonMaster.createFromConfig({
+        const tokenLaunch = TokenLaunchV1.createFromState(data, code.tokenLaunch);
+        const futJetMaster = JettonMaster.createFromConfig({
                 admin: tokenLaunch.address,
                 jetton_content: packedMetadata,
                 wallet_code: code.jettonWallet
             },
             code.jettonMaster
         );
-        const tokenLaunchFutJetWalletAddress = CommonJettonWallet.createFromConfig({
+        const tokenLaunchFutJetWalletAddress = JettonWallet.createFromConfig({
             ownerAddress: tokenLaunch.address,
             jettonMasterAddress: futJetMaster.address
         }, code.jettonWallet);
-        const utilJetWalletAddress = CommonJettonWallet.createFromConfig({
+        const utilJetWalletAddress = JettonWallet.createFromConfig({
             ownerAddress: tokenLaunch.address,
             jettonMasterAddress: utilJettonMasterAddress
         }, code.jettonWallet);
@@ -153,7 +157,7 @@ export class Core implements Contract {
         };
     }
 
-    static buildState(state: CoreState): Cell {
+    static buildState(state: CoreStateV1): Cell {
         const contractsCell = beginCell()
             .storeRef(state.contracts.tokenLaunch)
             .storeRef(state.contracts.userVault)

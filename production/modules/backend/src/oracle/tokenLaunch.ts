@@ -1,3 +1,7 @@
+import { retrieveAllUnknownTransactions } from "./api";
+import { logger } from "../logger";
+import { delay } from "../utils";
+import * as db from "../db";
 import {
     type RawAddressString,
     parseBalanceUpdate,
@@ -8,10 +12,6 @@ import {
     TokensLaunchOps,
     UserVaultOps,
 } from "starton-periphery";
-import { retrieveAllUnknownTransactions } from "./api";
-import { logger } from "../logger";
-import { delay } from "../utils";
-import * as db from "../db";
 
 export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) {
     logger().debug(`new token launch updates handler for ${launchAddress} is up`);

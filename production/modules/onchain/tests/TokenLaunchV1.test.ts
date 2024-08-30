@@ -2,34 +2,23 @@ import {
     collectCellStats, computedGeneric, computeFwdFees, getGasPrices, calcStorageFee,
     MsgPrices, printTxsLogs, StorageStats, computeFwdFeesVerbose, computeGasFee,
     FullFees, GasPrices, getStoragePrices, getMsgPrices, StorageValue,
-
 } from "./utils";
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
+import { TokenLaunchV1 } from "../wrappers/V1/TokenLaunchV1";
+import { UserVaultV1 } from "../wrappers/V1/UserVaultV1";
 import {
-    UTIL_JET_SEND_MODE_SIZE,
-    UtilJettonsEnrollmentMode,
-    TokensLaunchOps,
-    BASECHAIN,
-    CoreOps,
-    LaunchConfig,
-    UserVaultOps,
-    validateValue,
-    Coins,
-    getAmountOut,
-    jettonFromNano,
-    BalanceUpdateMode
+    UTIL_JET_SEND_MODE_SIZE, UtilJettonsEnrollmentMode, TokensLaunchOps,
+    BASECHAIN, CoreOps, LaunchConfigV1, UserVaultOps, validateValue,
+    Coins, getAmountOut, jettonFromNano, BalanceUpdateMode
 } from "starton-periphery";
-// sherochka and masherochka be like:
-import { CommonJettonMaster } from "../wrappers/CommonJettonMaster";
-import { CommonJettonWallet } from "../wrappers/CommonJettonWallet";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
+import { JettonMaster } from "../wrappers/JettonMaster";
+import { JettonWallet } from "../wrappers/JettonWallet";
 import { JettonOps } from "../wrappers/JettonConstants";
-import { TokenLaunch } from "../wrappers/TokenLaunch";
-import { UserVault } from "../wrappers/UserVault";
 import { LaunchParams } from "../wrappers/types";
+import { CoreV1 } from "../wrappers/V1/CoreV1";
 import { ok as assert } from "node:assert";
 import { compile } from "@ton/blueprint";
-import { Core } from "../wrappers/Core";
 import { TonClient4 } from "@ton/ton";
 import { Factory } from "@dedust/sdk";
 import "@ton/test-utils";
@@ -52,7 +41,6 @@ import {
     toNano,
     Cell,
 } from "@ton/core";
-import exp from "node:constants";
 
 const MAINNET_MOCK = !!process.env.MAINNET_MOCK;
 const PRINT_TX_LOGS = !!process.env.PRINT_TX_LOGS;
@@ -63,20 +51,20 @@ const PRINT_TX_LOGS = !!process.env.PRINT_TX_LOGS;
 
 describe("Core", () => {
     let coreCode = new Cell();
-    let core: SandboxContract<Core>;
+    let core: SandboxContract<CoreV1>;
 
     let tokenLaunchCode = new Cell();
-    let sampleTokenLaunch: SandboxContract<TokenLaunch>;
+    let sampleTokenLaunch: SandboxContract<TokenLaunchV1>;
 
     let userVaultCode = new Cell();
-    let userVault: SandboxContract<UserVault>;
+    let userVault: SandboxContract<UserVaultV1>;
 
     let jettonMasterCode = new Cell();
-    let utilityJettonMaster: SandboxContract<CommonJettonMaster>;
-    let derivedJettonMaster: SandboxContract<CommonJettonMaster>;
+    let utilityJettonMaster: SandboxContract<JettonMaster>;
+    let derivedJettonMaster: SandboxContract<JettonMaster>;
 
     let jettonWalletCode = new Cell();
-    let coreUtilityJettonWallet: SandboxContract<CommonJettonWallet>;
+    let coreUtilityJettonWallet: SandboxContract<JettonWallet>;
 
     // Dedust related variables
     let factory: SandboxContract<Factory>;
@@ -100,7 +88,7 @@ describe("Core", () => {
 
     // Custom values
     //
-    let launchConfig: LaunchConfig;
+    let launchConfig: LaunchConfigV1;
     let utilityJettonSupply: bigint;
     let sampleLaunchParams: LaunchParams;
     let utilJetRewardAmount: bigint;
@@ -189,7 +177,7 @@ describe("Core", () => {
         consumer = await blockchain.treasury("consumer");
 
         utilityJettonMaster = blockchain.openContract(
-            CommonJettonMaster.createFromConfig(
+            JettonMaster.createFromConfig(
                 {
                     admin: chief.address,
                     wallet_code: jettonWalletCode,
@@ -216,7 +204,7 @@ describe("Core", () => {
         };
         // Stuff, related to core
         core = blockchain.openContract(
-            Core.createFromState(
+            CoreV1.createFromState(
                 {
                     chief: chief.address,
                     utilJettonMasterAddress: utilityJettonMaster.address,
@@ -235,7 +223,7 @@ describe("Core", () => {
                 coreCode
             )
         );
-        coreUtilityJettonWallet = blockchain.openContract(CommonJettonWallet.createFromConfig({
+        coreUtilityJettonWallet = blockchain.openContract(JettonWallet.createFromConfig({
                 ownerAddress: core.address,
                 jettonMasterAddress: utilityJettonMaster.address
             }, jettonWalletCode)
@@ -243,7 +231,7 @@ describe("Core", () => {
 
         // As we determine it in dynamic manner - the first enrollment of utility tokens is whole `utilJetRewardAmount`
         sampleTokenLaunch = blockchain.openContract(
-            TokenLaunch.createFromState({
+            TokenLaunchV1.createFromState({
                     creator: creator.address,
                     chief: chief.address,
                     launchParams: sampleLaunchParams,
@@ -319,16 +307,16 @@ describe("Core", () => {
             refundConfirmationGasConsumption: bigint,
         ) => {
             return refundRequestComputeFee
-            + balanceUpdateCost
-            + withdrawConfirmationForwardFee
-            + refundConfirmationGasConsumption
-            + SIMPLE_TRANSFER_FEE;
-        }
+                + balanceUpdateCost
+                + withdrawConfirmationForwardFee
+                + refundConfirmationGasConsumption
+                + SIMPLE_TRANSFER_FEE;
+        };
     }, 20000);
     describe("core and launch correct deployment", () => {
         it("core's correct & successful deployment", async () => {
             const deployResult = await core.sendDeploy({ value: toNano("2"), via: chief.getSender() });
-            if (PRINT_TX_LOGS) printTxsLogs(deployResult.transactions, "Core deployment VM logs");
+            if (PRINT_TX_LOGS) printTxsLogs(deployResult.transactions, "CoreV2A deployment VM logs");
 
             expect(deployResult.transactions).toHaveTransaction({
                 from: chief.address,
@@ -364,7 +352,7 @@ describe("Core", () => {
                 null, null, null,
                 toNano("0.01"), toNano("1")
             );
-            if (PRINT_TX_LOGS) printTxsLogs(mintResult.transactions, "Core deployment VM logs");
+            if (PRINT_TX_LOGS) printTxsLogs(mintResult.transactions, "CoreV2A deployment VM logs");
             expect(mintResult.transactions).toHaveTransaction({
                 on: core.address,
                 from: coreUtilityJettonWallet.address,
@@ -385,15 +373,15 @@ describe("Core", () => {
             const smc = await blockchain.getContract(core.address);
             assert(smc.accountState, "Can't access core account state");
             // Runtime doesn't see assert here lol
-            if (smc.accountState.type !== "active") throw new Error("Core account is not active");
+            if (smc.accountState.type !== "active") throw new Error("CoreV2A account is not active");
             assert(smc.account.account, "Can't access core account!");
 
             console.log(
-                "Core ~ storage stats (dictionary is empty):",
+                "CoreV2A ~ storage stats (dictionary is empty):",
                 smc.account.account.storageStats.used
             );
             const stateCell = beginCell().store(storeStateInit(smc.accountState.state)).endCell();
-            console.log("Core state stats:", collectCellStats(stateCell, []));
+            console.log("CoreV2A state stats:", collectCellStats(stateCell, []));
         });
         test("token creation fees measurements", async () => {
             // Measure stateinit forwarding
@@ -404,11 +392,11 @@ describe("Core", () => {
                 jettonWallet: jettonWalletCode,
 
             };
-            const { bodyCell, tokenLaunchStateInit } = Core.tokenCreationMessage(
+            const { bodyCell, tokenLaunchStateInit } = CoreV1.tokenCreationMessage(
                 creator.address, chief.address, utilityJettonMaster.address,
                 sampleLaunchParams, code, launchConfig
             );
-            const loadedTokenLaunchStateInit = TokenLaunch.buildState(
+            const loadedTokenLaunchStateInit = TokenLaunchV1.buildState(
                 {
                     creator: creator.address,
                     chief: chief.address,
@@ -497,9 +485,9 @@ describe("Core", () => {
             const gasPrices = getGasPrices(blockchain.config, BASECHAIN);
             const expectedFee = computeGasFee(gasPrices, 14561n); // Computed by printTxGasStats later
 
-            const mockedCreatorPrice = TokenLaunch.getCreatorAmountOut(
+            const mockedCreatorPrice = TokenLaunchV1.getCreatorAmountOut(
                 expectedFee, value,
-                BigInt(launchConfig.jetWlLimitPct) * sampleLaunchParams.totalSupply / TokenLaunch.PERCENTAGE_DENOMINATOR,
+                BigInt(launchConfig.jetWlLimitPct) * sampleLaunchParams.totalSupply / TokenLaunchV1.PERCENTAGE_DENOMINATOR,
                 launchConfig.tonLimitForWlRound
             );
             const buyoutTransactionResult = await sampleTokenLaunch.sendCreatorBuyout({
@@ -522,7 +510,7 @@ describe("Core", () => {
 
         });
         test("loaded user vault state specs", async () => {
-            const loadedUserVaultState = UserVault.buildState({
+            const loadedUserVaultState = UserVaultV1.buildState({
                 owner: randomAddress(),
                 tokenLaunch: randomAddress()
             }, true);
@@ -550,7 +538,7 @@ describe("Core", () => {
                 success: true
             });
             const consumerWallet = blockchain.openContract(
-                CommonJettonWallet.createFromConfig({
+                JettonWallet.createFromConfig({
                     jettonMasterAddress: utilityJettonMaster.address,
                     ownerAddress: consumer.address
                 }, jettonWalletCode)
@@ -572,7 +560,7 @@ describe("Core", () => {
                     .endCell()
             );
             const consumerVault = blockchain.openContract(
-                UserVault.createFromState({
+                UserVaultV1.createFromState({
                     owner: consumer.address,
                     tokenLaunch: sampleTokenLaunch.address
                 }, userVaultCode)
@@ -600,7 +588,7 @@ describe("Core", () => {
             const wlCallbackComputeFee = printTxGasStats("Wl callback transaction:", wlCallbackTx);
             // Validation of last tx-link success
             const burner = new Address(BASECHAIN, Buffer.alloc(32, 0));
-            const burnerWallet = CommonJettonWallet.createFromConfig({
+            const burnerWallet = JettonWallet.createFromConfig({
                 jettonMasterAddress: utilityJettonMaster.address,
                 ownerAddress: burner
             }, jettonWalletCode);
@@ -687,7 +675,7 @@ describe("Core", () => {
             const [firstPublicBuyerVault, secondPublicBuyerVault] = await Promise.all(
                 [consumer, secondPublicBuyer].map((buyer) => {
                     return blockchain.openContract(
-                        UserVault.createFromState({
+                        UserVaultV1.createFromState({
                             owner: buyer.address,
                             tokenLaunch: sampleTokenLaunch.address
                         }, userVaultCode)
@@ -728,7 +716,7 @@ describe("Core", () => {
             const tokenLaunchContractInstance = await blockchain.getContract(sampleTokenLaunch.address);
             console.log(`Token launch balance before refunds: ${tokenLaunchContractInstance.balance} (${fromNano(tokenLaunchContractInstance.balance)})`);
             const consumerVault = blockchain.openContract(
-                UserVault.createFromState({
+                UserVaultV1.createFromState({
                     owner: consumer.address,
                     tokenLaunch: sampleTokenLaunch.address
                 }, userVaultCode)

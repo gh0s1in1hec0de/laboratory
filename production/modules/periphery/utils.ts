@@ -1,15 +1,18 @@
-import { Coins, TokenLaunchStorage, TokenLaunchTimings, TokenMetadata } from "./types";
 import { beginCell, Cell, fromNano, toNano } from "@ton/core";
 import { ok as assert } from "node:assert";
+import { Coins, TokenMetadata } from "./standards";
+import { TokenLaunchStorageV1 } from "./V1";
+import { TokenLaunchStorageV2A } from "./V2A";
+import { TokenLaunchTimings } from "./types";
 
-export function parseTokenLaunchTimings(tokenLaunchStorage: TokenLaunchStorage): TokenLaunchTimings {
-    return {
-        startTime: new Date(tokenLaunchStorage.saleState.general.startTime * 1000),
-        creatorRoundEndTime: new Date(tokenLaunchStorage.saleState.creatorRound.endTime * 1000),
-        wlRoundEndTime: new Date(tokenLaunchStorage.saleState.wlRound.endTime * 1000),
-        publicRoundEndTime: new Date(tokenLaunchStorage.saleState.pubRound.endTime * 1000),
-        endTime: new Date(tokenLaunchStorage.saleState.general.endTime * 1000),
-    };
+export function parseTokenLaunchTimings(tokenLaunchStorage: TokenLaunchStorageV1 | TokenLaunchStorageV2A, pollingDuration: number = 14 * 86400): TokenLaunchTimings {
+  return {
+    startTime: new Date(tokenLaunchStorage.saleState.general.startTime * 1000),
+    creatorRoundEndTime: new Date(tokenLaunchStorage.saleState.creatorRound.endTime * 1000),
+    wlRoundEndTime: new Date(tokenLaunchStorage.saleState.wlRound.endTime * 1000),
+    publicRoundEndTime: new Date(tokenLaunchStorage.saleState.pubRound.endTime * 1000),
+    endTime: new Date(pollingDuration * 1000),
+  };
 }
 
 export function tokenMetadataToCell(content: TokenMetadata): Cell {

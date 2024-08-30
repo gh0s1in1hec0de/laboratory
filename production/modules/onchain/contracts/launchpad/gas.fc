@@ -49,8 +49,8 @@ const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
 ;; First the related transaction is found, and then it's
 ;; resulting gas consumption is printed to the console.
 
-int calculate_user_vault_min_storage_fee() inline {
-    return get_storage_fee(MY_WORKCHAIN, 2_MONTHS, USER_VAULT_STATE_BITS, USER_VAULT_STATE_CELLS);
+int calculate_user_vault_min_storage_fee(int duration) inline {
+    return get_storage_fee(MY_WORKCHAIN, duration, USER_VAULT_STATE_BITS, USER_VAULT_STATE_CELLS);
 }
 
 int calculate_token_launch_min_storage_fee(int duration) inline {
@@ -80,7 +80,7 @@ int get_balance_update_gas_cost() inline_ref {
     get_forward_fee(MY_WORKCHAIN, BALANCE_UPDATE_MSG_BITS, BALANCE_UPDATE_MSG_CELLS)
     + forward_user_vault_init_state_overhead()
     + get_compute_fee(MY_WORKCHAIN, RECEIVE_BALANCE_UPDATE_CONSUMPTION)
-    + calculate_user_vault_min_storage_fee();
+    + calculate_user_vault_min_storage_fee(2_MONTHS);
 }
 
 ;;; Returns purified value and operational needs
@@ -180,7 +180,7 @@ int get_claim_gas_cost() inline_ref {
     get_forward_fee(MY_WORKCHAIN, CLAIM_MSG_BITS, CLAIM_MSG_CELLS)
     ;; User-vault side request processing
     + get_compute_fee(MY_WORKCHAIN, RECEIVE_CLAIM_CONSUMPTION)
-    + calculate_user_vault_min_storage_fee();
+    + calculate_user_vault_min_storage_fee(2_MONTHS);
 }
 const CLAIM_GAS_CONSUMPTION = 1;
 const CLAIM_CONFIRMATION_GAS_CONSUMPTION = 1;
@@ -194,8 +194,8 @@ int check_amount_is_enough_for_jetton_claim(int msg_value) {
     + get_forward_fee(MY_WORKCHAIN, WITHDRAW_CONFIRMATION_MSG_BITS, WITHDRAW_CONFIRMATION_MSG_CELLS)
     ;; Our side callback processing
     + get_compute_fee(MY_WORKCHAIN, CLAIM_CONFIRMATION_GAS_CONSUMPTION)
-    ;; Transfering resulted jettons to user
-    + JETTON_MIN_TRANSFER_FEE;
+    ;; Fut. jettons + reward jettons amount
+    + JETTON_MIN_TRANSFER_FEE * 2;
     throw_unless(error::not_enough_gas, msg_value > required_gas);
     return msg_value - required_gas;
 }

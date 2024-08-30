@@ -1,16 +1,16 @@
 import { beginCell, Cell, Sender } from "@ton/core";
 import type {
-    WhitelistRoundState,
-    TokenLaunchStorage,
-    CreatorRoundState,
-    PublicRoundState,
+    WhitelistRoundStateV1,
+    TokenLaunchStorageV1,
+    CreatorRoundStateV1,
+    PublicRoundStateV1,
     TokenMetadata,
-    GeneralState,
-    CoreState,
-    SaleConfig,
-    SaleState,
+    GeneralStateV1,
+    CoreStateV1,
+    SaleConfigV1,
+    SaleStateV1,
     Coins,
-    Tools,
+    ToolsV1,
 } from "starton-periphery";
 
 export const CoinsMaxValue = 2n ** 120n - 1n;

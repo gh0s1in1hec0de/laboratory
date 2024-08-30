@@ -1,13 +1,17 @@
-import {
-    type RawAddressString, parseTokenLaunchStorage, TokensLaunchOps,
-    parseTokenLaunchTimings, parseMetadataCell, loadOpAndQueryId,
-} from "starton-periphery";
 import { handleTokenLaunchUpdates } from "./tokenLaunch.ts";
 import { retrieveAllUnknownTransactions } from "./api.ts";
 import type { Address } from "@ton/ton";
 import { delay } from "../utils.ts";
 import { logger } from "../logger";
 import * as db from "../db";
+import {
+    type RawAddressString,
+    TokensLaunchOps,
+    parseTokenLaunchTimings,
+    parseMetadataCell,
+    loadOpAndQueryId,
+    parseTokenLaunchV1Storage
+} from "starton-periphery";
 
 export async function handleCoreUpdates(coreAddress: RawAddressString) {
     let currentHeight = await db.getCoreHeight(coreAddress) ?? 0n;
@@ -35,7 +39,7 @@ export async function handleCoreUpdates(coreAddress: RawAddressString) {
                     const address: RawAddressString = (newLaunchAddress as Address).toRawString(); // Is it safe?
 
                     const newLaunchStateinit = msg.init!.data!; // As we can guarantee our contract behaviour
-                    const parsedStateinit = parseTokenLaunchStorage(newLaunchStateinit);
+                    const parsedStateinit = parseTokenLaunchV1Storage(newLaunchStateinit);
                     await db.storeTokenLaunch({
                         address,
                         creator: parsedStateinit.creatorAddress.toRawString(),
