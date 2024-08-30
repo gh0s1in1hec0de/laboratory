@@ -2,26 +2,26 @@ import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, 
 import {
     BASECHAIN, BalanceUpdateMode, LaunchData, validateValue,
     QUERY_ID_LENGTH, SaleMoneyFlow, TokensLaunchOps,
-    OP_LENGTH, Coins, Contracts, LaunchConfig,
+    OP_LENGTH, Coins, Contracts, LaunchConfigV2A
 } from "starton-periphery";
 import { randomAddress } from "@ton/test-utils";
-import { LaunchParams } from "./types";
+import { LaunchParams } from "../types";
 import {
     ThirtyTwoIntMaxValue,
     tokenMetadataToCell,
     SendMessageParams,
     CoinsMaxValue,
-} from "./utils";
+} from "../utils";
 
 export type StateParams = {
     creator: Address,
     chief: Address,
     launchParams: LaunchParams,
     code: Contracts,
-    launchConfig: LaunchConfig,
+    launchConfig: LaunchConfigV2A,
 };
 
-export class TokenLaunch implements Contract {
+export class TokenLaunchV2A implements Contract {
     public static PERCENTAGE_DENOMINATOR = 100000n;
     // 10k TON
     public static MAX_WL_ROUND_TON_LIMIT = 10000n * toNano("1");
@@ -30,13 +30,13 @@ export class TokenLaunch implements Contract {
     }
 
     static createFromAddress(address: Address) {
-        return new TokenLaunch(address);
+        return new TokenLaunchV2A(address);
     }
 
     static createFromState(state: StateParams | Cell, code: Cell, workchain = BASECHAIN) {
         const data = state instanceof Cell ? state : this.buildState(state);
         const init = { code, data };
-        return new TokenLaunch(contractAddress(workchain, init), init);
+        return new TokenLaunchV2A(contractAddress(workchain, init), init);
     }
 
     async sendCreatorBuyout(provider: ContractProvider, sendMessageParams: SendMessageParams) {
@@ -162,7 +162,7 @@ export class TokenLaunch implements Contract {
     static getCreatorAmountOut(expectedFee: Coins, value: Coins, wlJetLimit: Coins, tonLimitForWlRound: Coins): Coins {
         const { purified } = validateValue(value, expectedFee);
         const creatorJettonPrice = this.getCreatorJettonPrice(wlJetLimit, tonLimitForWlRound);
-        return purified * creatorJettonPrice / TokenLaunch.MAX_WL_ROUND_TON_LIMIT;
+        return purified * creatorJettonPrice / TokenLaunchV2A.MAX_WL_ROUND_TON_LIMIT;
     }
 
     static getCreatorJettonPrice(wlJetLimit: Coins, tonLimitForWlRound: Coins): Coins {

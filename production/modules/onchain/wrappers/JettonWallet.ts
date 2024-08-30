@@ -1,4 +1,4 @@
-import { endParse } from "./CommonJettonMaster";
+import { endParse } from "./JettonMaster";
 import { JettonOps } from "./JettonConstants";
 import {
     Address, beginCell, Cell, Contract,
@@ -31,18 +31,18 @@ export function parseJettonWalletData(data: Cell) {
     return parsed;
 }
 
-export class CommonJettonWallet implements Contract {
+export class JettonWallet implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
     }
 
     static createFromAddress(address: Address) {
-        return new CommonJettonWallet(address);
+        return new JettonWallet(address);
     }
 
     static createFromConfig(config: JettonWalletConfig, code: Cell, workchain = 0) {
         const data = jettonWalletConfigToCell(config);
         const init = { code, data };
-        return new CommonJettonWallet(contractAddress(workchain, init), init);
+        return new JettonWallet(contractAddress(workchain, init), init);
     }
 
     async sendDeploy(provider: ContractProvider, via: Sender, value: bigint) {
@@ -106,7 +106,7 @@ export class CommonJettonWallet implements Contract {
         forwardPayload: Cell | null) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: CommonJettonWallet.transferMessage(jetton_amount, to, responseAddress, customPayload, forward_ton_amount, forwardPayload),
+            body: JettonWallet.transferMessage(jetton_amount, to, responseAddress, customPayload, forward_ton_amount, forwardPayload),
             value: value
         });
 
@@ -132,7 +132,7 @@ export class CommonJettonWallet implements Contract {
         customPayload: Cell | null) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: CommonJettonWallet.burnMessage(jetton_amount, responseAddress, customPayload),
+            body: JettonWallet.burnMessage(jetton_amount, responseAddress, customPayload),
             value: value
         });
 
@@ -149,7 +149,7 @@ export class CommonJettonWallet implements Contract {
     async sendWithdrawTons(provider: ContractProvider, via: Sender) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: CommonJettonWallet.withdrawTonsMessage(),
+            body: JettonWallet.withdrawTonsMessage(),
             value: toNano("0.1")
         });
 
@@ -169,7 +169,7 @@ export class CommonJettonWallet implements Contract {
     async sendWithdrawJettons(provider: ContractProvider, via: Sender, from: Address, amount: bigint) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: CommonJettonWallet.withdrawJettonsMessage(from, amount),
+            body: JettonWallet.withdrawJettonsMessage(from, amount),
             value: toNano("0.1")
         });
 

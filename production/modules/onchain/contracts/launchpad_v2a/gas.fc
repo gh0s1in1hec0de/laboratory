@@ -80,7 +80,7 @@ int get_balance_update_gas_cost() inline_ref {
     get_forward_fee(MY_WORKCHAIN, BALANCE_UPDATE_MSG_BITS, BALANCE_UPDATE_MSG_CELLS)
     + forward_user_vault_init_state_overhead()
     + get_compute_fee(MY_WORKCHAIN, RECEIVE_BALANCE_UPDATE_CONSUMPTION)
-    + calculate_user_vault_min_storage_fee();
+    + calculate_user_vault_min_storage_fee(2_MONTHS);
 }
 
 ;;; Returns purified value and operational needs
@@ -101,15 +101,12 @@ const CREATOR_BUYOUT_GAS_CONSUMPTION = 14561;
 
 ;; === Whitelist Purchase ===
 const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 26660;
-const WL_CALLBACK_MSG_BITS = 364; ;;
-
-int get_wl_purchase_gas_consumption() inline_ref {
-    return get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION)
-    + get_balance_update_gas_cost();
-}
-
+const WL_CALLBACK_MSG_BITS = 364;
 (int, int) check_amount_is_enough_for_wl_purchase(int msg_value) impure inline {
-    return validate_value(msg_value, get_wl_purchase_gas_consumption());
+    return validate_value(
+        msg_value,
+        get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION) + get_balance_update_gas_cost()
+    );
 }
 
 ;; === Public Purchase ===
@@ -162,12 +159,9 @@ int get_jetton_deployment_gas_cost() inline_ref {
 ;; Don't need stateinit as if vault doesn't exist, then there is nothing to claim
 const RECEIVE_CLAIM_CONSUMPTION = 1;
 int get_claim_gas_cost() inline_ref {
-    return
-    ;; Forwarding claim message
-    get_forward_fee(MY_WORKCHAIN, CLAIM_MSG_BITS, CLAIM_MSG_CELLS)
-    ;; User-vault side request processing
+    return get_forward_fee(MY_WORKCHAIN, CLAIM_MSG_BITS, CLAIM_MSG_CELLS)
     + get_compute_fee(MY_WORKCHAIN, RECEIVE_CLAIM_CONSUMPTION)
-    + calculate_user_vault_min_storage_fee();
+    + calculate_user_vault_min_storage_fee(2_MONTHS);
 }
 const CLAIM_GAS_CONSUMPTION = 1;
 const CLAIM_CONFIRMATION_GAS_CONSUMPTION = 1;
@@ -193,22 +187,12 @@ const CREATE_LAUNCH_GAS_CONSUMPTION = 32504;
 const INIT_MSG_BITS = 897; ;; 32 + 64 + 3 x (3+8+256)
 const INIT_MSG_CELLS = 2; ;; body in ref + stateinit in ref (TODO should it be accounted here?)
 const INITIALIZATION_GAS_CONSUMPTION = 15320;
-;; Body contains only OP
-const INIT_CALLBACK_MSG_BITS = 96;
-const INIT_CALLBACK_MSG_CELLS = 0;
-
-const INIT_CALLBACK_GAS_CONSUMPTION = 12635;
-const RECORD_REWARD_JETTONS_ENROLLMENT_GAS_CONSUMPTION = 14491;
 int get_amount_for_token_launch_deploy() inline {
     return get_compute_fee(MY_WORKCHAIN, CREATE_LAUNCH_GAS_CONSUMPTION)
     + get_forward_fee(MY_WORKCHAIN, INIT_MSG_BITS, INIT_MSG_CELLS)
     + calculate_token_launch_min_storage_fee(2_MONTHS)
     + forward_token_launch_init_state_overhead()
     + get_compute_fee(MY_WORKCHAIN, INITIALIZATION_GAS_CONSUMPTION)
-    + get_forward_fee(MY_WORKCHAIN, INIT_CALLBACK_MSG_BITS, INIT_CALLBACK_MSG_CELLS)
-    + get_compute_fee(MY_WORKCHAIN, INIT_CALLBACK_GAS_CONSUMPTION)
-    + JETTON_MIN_TRANSFER_FEE
-    + get_compute_fee(MY_WORKCHAIN, RECORD_REWARD_JETTONS_ENROLLMENT_GAS_CONSUMPTION)
     ;; Creator of new token launch should pay for the future jetton deployment
     + get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_GAS_CONSUMPTION)
     + get_jetton_deployment_gas_cost();

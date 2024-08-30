@@ -82,6 +82,7 @@
     public_round::synthetic_ton_reserve += accessible_user_value;
 }
 
+;; TODO creator's round remainings goes to public round
 () handle_public_purchase(int query_id, int attached_value, slice sender_address) impure inline {
     throw_if(error::wrong_time, (now() < wl_round::const::end_time) | (now() >= public_round::const::end_time));
     ;; `user_value_after_fee` is always more than 0

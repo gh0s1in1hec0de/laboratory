@@ -12,7 +12,7 @@ int vault_is_empty() inline {
 int get_withdraw_message_mode() impure inline_ref {
     int msg_mode = SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL;
     ifnot (vault_is_empty()) {
-        raw_reserve(calculate_user_vault_min_storage_fee(), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        raw_reserve(calculate_user_vault_min_storage_fee(1_MONTH), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
     } else {
         msg_mode = msg_mode | SEND_MODE_DESTROY;
     }
@@ -75,14 +75,14 @@ cell build_wl_callback(int query_id, int should_burn?) inline {
            There is no sense in calculation MYSTORAGEDUE as we attached fixed fee for this operation,
            and if we overlimit user_vault_min_storage_fee - we'll get DOS XD
         -}
-        raw_reserve(calculate_user_vault_min_storage_fee(), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        raw_reserve(calculate_user_vault_min_storage_fee(1_MONTH), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
         send_raw_message(wl_callback, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     }
     if (mode == BALANCE_UPD_DEPOSIT_PUB) {
         this::public_ton_balance += ton_balance_update;
         this::jetton_balance += jetton_balance_update;
 
-        raw_reserve(calculate_user_vault_min_storage_fee(), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        raw_reserve(calculate_user_vault_min_storage_fee(1_MONTH), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
         ;; As we don't send any callbacks - return excesses directly
         cell msg = begin_cell()
             .store_msg_flags_and_address_none(NON_BOUNCEABLE)

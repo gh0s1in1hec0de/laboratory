@@ -1,4 +1,4 @@
-import { CommonJettonWallet } from "./CommonJettonWallet";
+import { JettonWallet } from "./JettonWallet";
 import { TokenMetadata } from "starton-periphery";
 import { tokenMetadataToCell } from "./utils";
 import { JettonOps } from "./JettonConstants";
@@ -74,18 +74,18 @@ export function jettonMinterConfigToCell(config: JettonMinterConfig): Cell {
         .endCell();
 }
 
-export class CommonJettonMaster implements Contract {
+export class JettonMaster implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
     }
 
     static createFromAddress(address: Address) {
-        return new CommonJettonMaster(address);
+        return new JettonMaster(address);
     }
 
     static createFromConfig(config: JettonMinterConfig, code: Cell, workchain = 0) {
         const data = jettonMinterConfigToCell(config);
         const init = { code, data };
-        return new CommonJettonMaster(contractAddress(workchain, init), init);
+        return new JettonMaster(contractAddress(workchain, init), init);
     }
 
     async sendDeploy(provider: ContractProvider, via: Sender, value: bigint) {
@@ -158,7 +158,7 @@ export class CommonJettonMaster implements Contract {
         forward_ton_amount: bigint = toNano("0.05"), total_ton_amount: bigint = toNano("0.1")) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: CommonJettonMaster.mintMessage(to, jetton_amount, from, response_addr, customPayload, forward_ton_amount, total_ton_amount),
+            body: JettonMaster.mintMessage(to, jetton_amount, from, response_addr, customPayload, forward_ton_amount, total_ton_amount),
             value: total_ton_amount,
         });
     }
@@ -174,7 +174,7 @@ export class CommonJettonMaster implements Contract {
     async sendDiscovery(provider: ContractProvider, via: Sender, owner: Address, include_address: boolean, value: bigint = toNano("0.1")) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: CommonJettonMaster.discoveryMessage(owner, include_address),
+            body: JettonMaster.discoveryMessage(owner, include_address),
             value: value,
         });
     }
@@ -197,7 +197,7 @@ export class CommonJettonMaster implements Contract {
     async sendTopUp(provider: ContractProvider, via: Sender, value: bigint = toNano("0.1")) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: CommonJettonMaster.topUpMessage(),
+            body: JettonMaster.topUpMessage(),
             value: value,
         });
     }
@@ -223,7 +223,7 @@ export class CommonJettonMaster implements Contract {
     async sendChangeAdmin(provider: ContractProvider, via: Sender, newOwner: Address) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: CommonJettonMaster.changeAdminMessage(newOwner),
+            body: JettonMaster.changeAdminMessage(newOwner),
             value: toNano("0.1"),
         });
     }
@@ -245,7 +245,7 @@ export class CommonJettonMaster implements Contract {
     async sendClaimAdmin(provider: ContractProvider, via: Sender, query_id: bigint = 0n) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: CommonJettonMaster.claimAdminMessage(query_id),
+            body: JettonMaster.claimAdminMessage(query_id),
             value: toNano("0.1")
         });
     }
@@ -272,7 +272,7 @@ export class CommonJettonMaster implements Contract {
     async sendChangeContent(provider: ContractProvider, via: Sender, content: Cell | TokenMetadata) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: CommonJettonMaster.changeContentMessage(content),
+            body: JettonMaster.changeContentMessage(content),
             value: toNano("0.1"),
         });
     }
@@ -322,7 +322,7 @@ export class CommonJettonMaster implements Contract {
         value: bigint = toNano("0.1"),
         query_id: bigint = 0n) {
 
-        const transferMessage = CommonJettonWallet.transferMessage(transfer_amount,
+        const transferMessage = JettonWallet.transferMessage(transfer_amount,
             to,
             to,
             custom_payload,
@@ -369,7 +369,7 @@ export class CommonJettonMaster implements Contract {
         query_id: bigint = 0n) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: CommonJettonMaster.forceTransferMessage(transfer_amount,
+            body: JettonMaster.forceTransferMessage(transfer_amount,
                 to, from,
                 custom_payload,
                 forward_amount,
@@ -388,7 +388,7 @@ export class CommonJettonMaster implements Contract {
         return beginCell().storeUint(JettonOps.CallTo, 32).storeUint(query_id, 64)
             .storeAddress(to)
             .storeCoins(value)
-            .storeRef(CommonJettonWallet.burnMessage(burn_amount, response, null))
+            .storeRef(JettonWallet.burnMessage(burn_amount, response, null))
             .endCell();
     }
 
@@ -418,7 +418,7 @@ export class CommonJettonMaster implements Contract {
 
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: CommonJettonMaster.forceBurnMessage(burn_amount, address, response, value, query_id),
+            body: JettonMaster.forceBurnMessage(burn_amount, address, response, value, query_id),
             value: value + toNano("0.1")
         });
     }
@@ -447,7 +447,7 @@ export class CommonJettonMaster implements Contract {
     async sendUpgrade(provider: ContractProvider, via: Sender, new_code: Cell, new_data: Cell, value: bigint = toNano("0.1"), query_id: bigint | number = 0) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: CommonJettonMaster.upgradeMessage(new_code, new_data, query_id),
+            body: JettonMaster.upgradeMessage(new_code, new_data, query_id),
             value
         });
     }

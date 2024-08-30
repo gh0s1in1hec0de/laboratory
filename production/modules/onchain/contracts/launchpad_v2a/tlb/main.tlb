@@ -20,7 +20,7 @@ _ general:^GeneralState creator_round:^CreatorRoundState wl_round:^WhitelistRoun
 _ fut_jet_master_address:MsgAddressInt fut_jet_wallet_address:MsgAddressInt
   metadata:^Cell fut_jet_master_code:^Cell wallet_code:^Cell user_vault_code:^Cell = Tools;
 
-// 124 x 5 = 620
+// 124 x 4 = 496
 _ fut_jet_total_supply:Coins min_ton_for_sale_success:Coins fut_jet_dex_amount:Coins fut_jet_platform_amount:Coins
   = SaleConfig;
 // 1 + 124 + 267 x 2 = 659
