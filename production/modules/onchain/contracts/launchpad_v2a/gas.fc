@@ -49,7 +49,7 @@ const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
 ;; First the related transaction is found, and then it's
 ;; resulting gas consumption is printed to the console.
 
-int calculate_user_vault_min_storage_fee() inline {
+int calculate_user_vault_min_storage_fee(int duration) inline {
     return get_storage_fee(MY_WORKCHAIN, 2_MONTHS, USER_VAULT_STATE_BITS, USER_VAULT_STATE_CELLS);
 }
 
@@ -94,7 +94,7 @@ int get_balance_update_gas_cost() inline_ref {
 
 ;; As we don't have any external calls, we accounting only code execution fees
 const CREATOR_BUYOUT_GAS_CONSUMPTION = 14561;
-(int, int) check_amount_is_enough_for_creator_buyout(int msg_value) inline {
+(int, int) check_amount_is_enough_for_creator_buyout(int msg_value) impure inline {
     int fee = get_compute_fee(MY_WORKCHAIN, CREATOR_BUYOUT_GAS_CONSUMPTION);
     return validate_value(msg_value, fee);
 }
@@ -102,32 +102,19 @@ const CREATOR_BUYOUT_GAS_CONSUMPTION = 14561;
 ;; === Whitelist Purchase ===
 const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 26660;
 const WL_CALLBACK_MSG_BITS = 364; ;;
-const WL_CALLBACK_MSG_CELLS = 1; ;; body always in ref
-const WL_CALLBACK_GAS_CONSUMPTION = 13558;
+
 int get_wl_purchase_gas_consumption() inline_ref {
     return get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION)
-    + JETTON_MIN_TRANSFER_FEE ;; Return main chunk of tokens immidiatly
-    + get_balance_update_gas_cost()
-    + get_forward_fee(MY_WORKCHAIN, WL_CALLBACK_MSG_BITS, WL_CALLBACK_MSG_CELLS)
-    + get_compute_fee(MY_WORKCHAIN, WL_CALLBACK_GAS_CONSUMPTION)
-    + JETTON_MIN_TRANSFER_FEE; ;; Refund / burn
+    + get_balance_update_gas_cost();
 }
 
-(int, int) check_amount_is_enough_for_wl_purchase(int msg_value) inline {
-    ;; Don't use throw here as we have to return tokens back in case of errors
-    (int validated, int opn) = (0, 0);
-    try {
-        (validated, opn) = validate_value(msg_value, get_wl_purchase_gas_consumption());
-    } catch (_, _) {
-        ;; Nothing to catch here, so I'll just leave some meows:
-        ;; meow meow meow
-    }
-    return (validated, opn);
+(int, int) check_amount_is_enough_for_wl_purchase(int msg_value) impure inline {
+    return validate_value(msg_value, get_wl_purchase_gas_consumption());
 }
 
 ;; === Public Purchase ===
 const PUB_PURCHASE_GAS_CONSUMPTION = 22271;
-(int, int) check_amount_is_enough_for_public_purchase(int msg_value) inline {
+(int, int) check_amount_is_enough_for_public_purchase(int msg_value) impure inline {
     return validate_value(
         msg_value,
         get_compute_fee(MY_WORKCHAIN, PUB_PURCHASE_GAS_CONSUMPTION) + get_balance_update_gas_cost()
@@ -184,7 +171,7 @@ int get_claim_gas_cost() inline_ref {
 }
 const CLAIM_GAS_CONSUMPTION = 1;
 const CLAIM_CONFIRMATION_GAS_CONSUMPTION = 1;
-int check_amount_is_enough_for_jetton_claim(int msg_value) {
+int check_amount_is_enough_for_jetton_claim(int msg_value) impure inline {
     int required_gas =
     ;; Our side request processing
     get_compute_fee(MY_WORKCHAIN, CLAIM_GAS_CONSUMPTION)

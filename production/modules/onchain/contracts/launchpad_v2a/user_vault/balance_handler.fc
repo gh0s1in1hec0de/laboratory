@@ -1,0 +1,124 @@
+#include "../../stdlib.fc";
+#include "../op-codes.fc";
+#include "../utils.fc";
+#include "../gas.fc";
+
+#include "uv_context.fc";
+
+int vault_is_empty() inline {
+    return this::wl_ton_balance + this::public_ton_balance + this::jetton_balance == 0 ? TRUE : FALSE;
+}
+
+int get_withdraw_message_mode() impure inline_ref {
+    int msg_mode = SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL;
+    ifnot (vault_is_empty()) {
+        raw_reserve(calculate_user_vault_min_storage_fee(1_MONTH), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+    } else {
+        msg_mode = msg_mode | SEND_MODE_DESTROY;
+    }
+    return msg_mode;
+}
+
+cell build_withdraw_confirmation_message(int is_refund?, int query_id, int wl_tons, int pub_tons, int jettons, int refund_mode) inline_ref {
+    ;; Build MessageRelaxed, see TL-B layout in stdlib.fc#L733
+    ;; 32 + 64 + 16 + 16 + 16 + 267 < 1023
+    builder msg_body = begin_cell()
+        .store_op(is_refund? ? op::tl::refund_confirmation : op::tl::jetton_claim_confirmation)
+        .store_query_id(query_id)
+        .store_coins(wl_tons)
+        .store_coins(pub_tons)
+        .store_coins(jettons)
+        .store_slice(this::owner);
+    if (is_refund?) {
+        msg_body = msg_body.store_uint(refund_mode, BALANCE_UPD_MODE_SIZE);
+    }
+    cell msg = begin_cell()
+        .store_msg_flags_and_address_none(BOUNCEABLE)
+        .store_slice(this::token_launch)
+        .store_coins(0)
+        .store_only_body_ref(msg_body.end_cell())
+        .end_cell();
+    return msg;
+}
+
+() send_excesses_if_possible(int query_id) {
+    cell msg = begin_cell()
+        .store_msg_flags_and_address_none(NON_BOUNCEABLE)
+        .store_slice(this::owner)
+        .store_coins(0)
+        .store_prefix_only_body()
+        .store_op(op::excesses)
+        .store_query_id(query_id)
+        .end_cell();
+    send_raw_message(msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_IGNORE_ERRORS);
+}
+
+;;; We repeat `save_data` here as we want to exlude completely an opportuninty of infinite refund attack through
+;;; lack of attached gas or sth. It is just safer, albeit not as concise.
+() handle_balance_update(int query_id, int mode, int ton_balance_update, int jetton_balance_update) impure inline {
+    if (mode == BALANCE_UPD_DEPOSIT_WL) {
+        throw_if(error::unreachable, jetton_balance_update > 0);
+
+        raw_reserve(calculate_user_vault_min_storage_fee(1_MONTH), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        this::wl_ton_balance += ton_balance_update;
+        {-
+           Making sure that we leave our storage fee TONs on contract, it will be returned after complete withdrawal
+           There is no sense in calculation MYSTORAGEDUE as we attached fixed fee for this operation,
+           and if we overlimit user_vault_min_storage_fee - we'll get DOS XD
+        -}
+    }
+    if (mode == BALANCE_UPD_DEPOSIT_PUB) {
+        this::public_ton_balance += ton_balance_update;
+        this::jetton_balance += jetton_balance_update;
+
+        raw_reserve(calculate_user_vault_min_storage_fee(1_MONTH), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        ;; As we don't send any callbacks - return excesses directly
+    }
+    if (mode == BALANCE_UPD_WITHDRAWAL_WL) {
+        int wl_tons = this::wl_ton_balance;
+        this::wl_ton_balance = 0;
+
+        cell msg = build_withdraw_confirmation_message(TRUE, query_id, wl_tons, 0, 0, mode);
+        send_raw_message(msg, get_withdraw_message_mode());
+    }
+    if (mode == BALANCE_UPD_WITHDRAWAL_PUB) {
+        throw_if(error::balance_lack, this::public_ton_balance > 0);
+        int pub_tons = this::public_ton_balance;
+        int jettons_to_restore = this::jetton_balance;
+
+        this::public_ton_balance = 0;
+        this::jetton_balance = 0;
+
+        cell msg = build_withdraw_confirmation_message(TRUE, query_id, 0, pub_tons, jettons_to_restore, mode);
+        send_raw_message(msg, get_withdraw_message_mode());
+    }
+    if (mode == BALANCE_UPD_WITHDRAWAL_ALL) {
+        throw_if(error::balance_lack, this::wl_ton_balance + this::public_ton_balance == 0);
+        int wl_tons = this::wl_ton_balance;
+        int pub_tons = this::public_ton_balance;
+        int jettons_to_restore = this::jetton_balance;
+
+        this::wl_ton_balance = 0;
+        this::public_ton_balance = 0;
+        this::jetton_balance = 0;
+
+        cell msg = build_withdraw_confirmation_message(TRUE, query_id, wl_tons, pub_tons, jettons_to_restore, mode);
+        send_raw_message(msg, get_withdraw_message_mode());
+    }
+    send_excesses_if_possible(query_id);
+}
+
+() handle_claim(int query_id) {
+    ;; unreacheble as it should not exist then
+    throw_if(error::unreachable, this::wl_ton_balance + this::jetton_balance == 0);
+    int wl_tons = this::wl_ton_balance;
+    int pub_tons = this::public_ton_balance;
+    int jettons_to_claim = this::jetton_balance;
+
+    this::wl_ton_balance = 0;
+    this::public_ton_balance = 0;
+    this::jetton_balance = 0;
+
+    cell msg = build_withdraw_confirmation_message(FALSE, query_id, wl_tons, pub_tons, jettons_to_claim, 6);
+    send_raw_message(msg, get_withdraw_message_mode());
+}

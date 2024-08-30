@@ -1,0 +1,47 @@
+;; Jetton Startndard OPs
+const op::mint = 0x642b7d07; ;; Only master can handle it
+const op::claim_admin = 0xfb88e119;
+const op::internal_transfer = 0x178d4519; ;; 395134233
+const op::transfer = 0xf8a7ea5; ;; 260734629
+const op::transfer_notification = 0x7362d09c; ;; 1935855772
+const op::excesses = 0xd53276db; ;; 3576854235
+const op::burn_notification = 0x7bdd97de;
+const op::burn = 0x595f07bc; ;; 1499400124
+
+;; Contract-realted OPs
+const op::upgrade = 0x055d212a;
+const op::tl::init = 0x358b2487;
+const op::tl::creator_buyout = 0x0a535100;
+const op::tl::wl_purchase = 0x4eb1e316;
+const op::tl::wl_callback = 0x390f7cfd;
+const op::tl::public_purchase = 0x32626062;
+const op::tl::jetton_claim_request = 0x16b3aef0;
+const op::tl::jetton_claim_confirmation = 0x349c1c7f;
+const op::tl::refund_request = 0x7b4587a1;
+const op::tl::refund_confirmation = 0x6f7dbcd0;
+const op::tl::deploy_jet = 0x71161970;
+
+const op::uv::balance_update = 0x00399d7a;
+const op::uv::claim = 0x556a6246;
+
+const op::core::tl_init_callback = 0x5d988a60;
+const op::core::create_launch = 0x0eedbf42;
+const op::core::init = 0x18add407;
+const op::core::upgrade_config = "upgrade_config"c;
+
+const error::not_enough_gas = 48;
+const error::invalid_op = 72;
+const error::wrong_op = 0xffff;
+const error::unauthorized_access = 73;
+const error::not_valid_wallet = 74;
+
+const error::unreachable = 666;
+const error::meowreachable = 777;
+const error::uninitialized = 404;
+const error::already_initialized = 423;
+const error::balance_overlimit = 411;
+const error::balance_lack = 417;
+const error::bad_request = 400;
+const error::tokens_lack = 433;
+const error::wrong_time = 434;
+const error::overload = 469;

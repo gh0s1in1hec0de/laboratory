@@ -1,0 +1,54 @@
+{-
+    Contract state represented in global variables for boilerplate reduce and code conciseness.
+    `const` keywoard mean that variable represents value, that is being set only once
+    in moment of initialization.
+
+    Glossary:
+    - `fut_jet` means jetton, that will be deployed in case of sale success
+-}
+
+;; === STORAGE ===
+global int   this::const::is_initialized?;
+global int   this::operational_needs;
+global slice this::const::chief_address;
+global slice this::const::creator_address;
+
+global int   config::const::fut_jet_total_supply;
+global int   config::const::min_ton_for_sale_success;
+global int   config::const::fut_jet_dex_amount;
+global int   config::const::fut_jet_platform_amount;
+
+;; === SALE STATE ===
+global int   general_state::const::start_time;
+global int   general_state::fut_jet_inner_balance;
+global int   general_state::fut_jet_deployed_balance;
+global int   general_state::total_tons_collected;
+
+global int   creator_round::fut_jet_left;
+;; Amount of tokens, that creator bought back
+global int   creator_round::fut_jet_balance;
+global int   creator_round::const::fut_jet_price_reversed;
+global int   creator_round::const::end_time;
+
+;; Amount of jettons, that can be sold through WL round
+global int   wl_round::const::fut_jet_limit;
+;; Maximum of TONs, that can be invested through WL round
+global int   wl_round::const::ton_limit;
+;; Total amount of TONs, invested in WL round. Later used for price determination.
+global int   wl_round::ton_invested_total;
+global int   wl_round::const::end_time;
+
+;; Amount of jettons, that can be sold through public round
+global int   public_round::const::fut_jet_limit;
+global int   public_round::fut_jet_sold;
+;; Synthetic reserves used to start dinamic determiantion of public round price
+;; from the point we we want it to start - last WL pirce?
+;; public_synthetic_jet_reserve should be equaled to wl_jet_limit in moment of initialization.
+;; Then is starts to change only in public phase
+global int   public_round::synthetic_jet_reserve;
+;; Equals to `wl_ton_invested_total` until public phase
+global int   public_round::synthetic_ton_reserve;
+global int   public_round::const::end_time;
+
+;; === TOOLS ===
+global cell this::tools;

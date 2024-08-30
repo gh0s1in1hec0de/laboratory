@@ -1,0 +1,117 @@
+/* === TOKEN LAUNCH === */
+
+// Storage
+// 32 + 124 x 3 = TODO
+_ start_time:int32 fut_jet_inner_balance:Coins fut_jet_deployed_balance:Coins total_tons_collected:Coins
+  = GeneralState;
+// 124 x 3 + 32 = 404
+_ creator_fut_jet_limit:Coins creator_fut_jet_balance:Coins creator_fut_jet_price:Coins creator_round_end_time:int32
+  = CreatorRoundState;
+// 124 x 3 + 32 = TODO
+_ wl_fut_jet_limit:Coins wl_ton_limit:Coins wl_ton_invested_total:Coins wl_end_time:int32
+  = WhitelistRoundState;
+// 124 x 4 + 32 = 528
+_ pub_fut_jet_limit:Coins pub_fut_jet_sold:Coins synthetic_jet_reserve:Coins synthetic_ton_reserve:Coins pub_end_time:int32
+  = PublicRoundState;
+// 0
+_ general:^GeneralState creator_round:^CreatorRoundState wl_round:^WhitelistRoundState pub_round:^PublicRoundState
+  = SaleState;
+// 267 x 2 = TODO
+_ fut_jet_master_address:MsgAddressInt fut_jet_wallet_address:MsgAddressInt
+  metadata:^Cell fut_jet_master_code:^Cell wallet_code:^Cell user_vault_code:^Cell = Tools;
+
+// 124 x 5 = 620
+_ fut_jet_total_supply:Coins min_ton_for_sale_success:Coins fut_jet_dex_amount:Coins fut_jet_platform_amount:Coins
+  = SaleConfig;
+// 1 + 124 + 267 x 2 = 659
+_ is_initialized:int1 operational_needs:Coins chief_address:MsgAddressInt creator_address: MsgAddressInt
+  sale_config:^SaleConfig sale_state: ^SaleState jet_tools: ^Tools = TokenLaunchStorage;
+
+// Token Launch Operations
+// 32 + 64 + 267 x 3 = 897
+init#5ca04142 query_id:uint64 fut_jet_wallet_address:MsgAddressInt util_jet_wallet_address:MsgAddressInt fut_jet_master_address:MsgAddressInt = TokenLaunchMsg;
+
+// Buys
+// 32 + 64 = 96
+creator_buyout#0a535100 query_id:uint64 = TokenLaunchMsg;
+// 32 + 64 = 96
+public_purchase#32626062 query_id:uint64 = TokenLaunchMsg;
+wl_purchase#4eb1e316 query_id:uint64 = TokenLaunchMsg;
+
+// Claims
+// 32 + 64 + 4 + 124 = 224
+refund_request#7b4587a1 query_id:uint64 mode:uint4 refund_value:Coins = TokenLaunchMsg;
+// 32 + 64 + 124 x 3 + 267 + 4 = 739
+refund_confirmation#6f7dbcd0 query_id:uint64 wl_tons:Coins pub_tons:Coins jettons:Coins recipient:MsgAddressInt mode:uint4 = TokenLaunchMsg;
+// 32 + 64 = 96
+jetton_claim_request#16b3aef0 query_id:uint64 = TokenLaunchMsg;
+// 32 + 64 + 124 x 3 + 267 = 735
+jetton_claim_confirmation#349c1c7f query_id:uint64 wl_tons:Coins pub_tons:Coins jettons:Coins recipient:MsgAddressInt = TokenLaunchMsg;
+
+// Utils
+// 32 + 64 = 96
+deploy_jet#71161970 query_id:uint64 = TokenLaunchMsg;
+// 32 + 64 = 96
+upgrade#055d212a query_id:uint64 new_data:^Cell new_code:^Cell = TokenLaunchMsg;
+
+
+/* === USER VAULT === */
+// 267 x 2 + 124 x 3 = 907
+_ owner:MsgAddressInt token_launch:MsgAddressInt wl_invested:Coins public_invested:Coins token_balance:Coins = UserVaultStorage;
+// 32 + 64 + 4 + 124 x 2 = 348
+balance_update#00399d7a query_id:uint64 mode:uint4 tons:Coins fut_jettons:Coins = UserVaultUpdate;
+// 32 + 64 = 96
+claim#556a6246 query_id:uint64 = UserVaultUpdate;
+
+
+/* === CORE === */
+// 0
+_ jetton_launch_code:^Cell jetton_launch_user_vault:^Cell derived_jetton_master_code:^Cell jetton_wallet_code:^Cell = Contracts;
+// 124 * 5 + 16 * 3 + 32 * 4 = 796
+_ min_ton_for_sale_success:Coins ton_limit_for_wl_round:Coins util_jet_reward_amount:Coins util_jet_wl_pass_amount:Coins util_jet_burn_per_wl_pass_amount:Coins
+  jet_wl_limit_pct:uint16 jet_pub_limit_pct:uint16 jet_dex_share_pct:uint16
+  creator_round_duration_ms:int32 wl_round_duration_ms:int32 pub_round_duration_ms:int32 claim_duration_ms:int32
+  = LaunchConfig;
+// 267 x 3 + 124 + 1 + 8 = 934
+_ chief:MsgAddressInt util_jetton_master_address:MsgAddressInt util_jetton_wallet_address:MsgAddressInt
+  // Takes one bit for contrustor to describe if it is null or refers to a hashmap root
+  // https://docs.ton.org/develop/data-formats/tl-b-types#hashmap-parsing-example
+  // https://docs.ton.org/develop/func/dictionaries#hashmap
+  util_jet_cur_balance:Coins not_funded_launches:HashmapE 0 VmStackValue
+  not_funded_launches_amount:uint8 launch_config:^LaunchConfig contracts:^Contracts
+  = CoreStorage;
+
+// 32 + 64 + 32 + 124 + 16 = 268
+create_launch#0eedbf42 query_id:uint64 start_time:int32 total_supply:Coins platform_share_pct:uint16 metadata_cell:^Cell = CoreMsg;
+// 32 + 64 = 96
+init#18add407 query_id:uint64 = CoreMsg;
+// 32 + 64 = 96
+init_callback#5d988a60 query_id:uint64 = CoreMsg;
+// 32 + 64 + 796 = 892
+// There is no direct fielt `launch_config`, it represents all the fileds `LaunchConfig` originally include, starting from `min_ton_for_sale_success`
+update_config#7fb2e4ba query_id:uint64 launch_config:LaunchConfig = CoreMsg;
+
+/* === PERIPHERY === */
+
+// Jetton master opertions we call
+// 32 + 64 + 267 + 124 = 487
+mint#642b7d07
+  query_id:uint64
+  to_address:MsgAddressInt
+  ton_amount:Coins
+  master_msg:^JettonInternalTransfer
+  = JettonMinterMsg;
+
+// 32 + 64 = 96
+claim_admin#fb88e119
+  query_id:uint64
+  = JettonMinterMsg;
+
+// token_launcher/jetton_operating.fc#L103
+// 124 x 2 = 248
+_ fut_jet_dex_amount:Coins fut_jet_platform_amount:Coins = PoolValueWithdrawPayload;
+
+/*
+Right approach in hashing this code should throw 0xf8a7ea5 CRC32 hash (no spaces and semicolons):
+transfer# query_id:uint64 amount:VarUInteger 16 destination:MsgAddress response_destination:MsgAddress custom_payload:Maybe ^Cell forward_ton_amount:VarUInteger 16 forward_payload:Either Cell ^Cell = InternalMsgBody
+*/

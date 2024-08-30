@@ -1,0 +1,225 @@
+#include "gas.fc";
+#include "../stdlib.fc";
+#include "op-codes.fc";
+
+;; Just a big number out of head (the only requirement - it should not be lower than actual amount)
+const MAX_WL_ROUND_TON_LIMIT = 10000 * ONE_TON;
+
+const MY_WORKCHAIN = BASECHAIN;
+const int ADDRESS_SIZE = 264; ;; 256 + 8
+
+const PERCENTAGE_DENOMINATOR = 100000;
+const BALANCE_UPD_MODE_SIZE = 4;
+const UTIL_JET_SEND_MODE_SIZE = 4;
+
+const BALANCE_UPD_DEPOSIT_WL = 1;
+const BALANCE_UPD_DEPOSIT_PUB = 2;
+const BALANCE_UPD_WITHDRAWAL_WL = 3;
+const BALANCE_UPD_WITHDRAWAL_PUB = 4;
+const BALANCE_UPD_WITHDRAWAL_ALL = 5;
+
+const UTIL_JET_REWARD_ENROLLMENT = 1;
+const UTIL_JET_WL_PASS = 2;
+
+slice pack_address(slice address) inline {
+    (int wc, int address_hash) = parse_std_addr(address);
+    return begin_cell().store_int(wc, 8).store_uint(address_hash, 256).end_cell().begin_parse();
+}
+
+(int, slice, int, int) extract_full_msg_data(cell in_msg_full) inline_ref {
+    slice in_msg_full_slice = in_msg_full.begin_parse();
+    int msg_flags = in_msg_full_slice~load_msg_flags();
+    slice sender_address = in_msg_full_slice~load_msg_addr();
+    in_msg_full_slice~load_msg_addr();                        ;; As recepient is our contract
+    int value = in_msg_full_slice~load_coins();
+    in_msg_full_slice~skip_dict();                            ;; skip extracurrency collection
+    in_msg_full_slice~load_coins();                           ;; skip ihr_fee
+    int fwd_fee = in_msg_full_slice~load_coins();
+    return (msg_flags, sender_address, value, fwd_fee);
+}
+
+cell build_content_cell(slice metadata_uri) inline {
+    cell content_dict = new_dict();
+    content_dict~set_token_snake_metadata_entry("uri"H, metadata_uri);
+    content_dict~set_token_snake_metadata_entry("decimals"H, "6");
+    return create_token_onchain_metadata(content_dict);
+}
+
+;;  Warning! Builders should point to a separate cell if exceeds the rest of memory of `internal_transfer`
+;; See tlb/jetton.tlb#L3
+cell build_jetton_transfer_msg(
+    int query_id,
+    int value,
+    int jetton_amount,
+    slice our_wallet_address,
+    slice recipient,
+    int forward_ton_amount,
+    cell payload
+) inline_ref {
+    cell msg_body = begin_cell()
+        .store_op(op::transfer)
+        .store_query_id(query_id)
+        .store_coins(jetton_amount)
+        .store_slice(recipient) ;; To
+        .store_slice(recipient) ;; Address, that will get excesses after operation
+        .store_maybe_ref(null())
+        .store_coins(forward_ton_amount)
+        .store_maybe_ref(payload)
+        .end_cell();
+    return begin_cell()
+        .store_msg_flags_and_address_none(BOUNCEABLE) ;; Handle bouncing
+        .store_slice(our_wallet_address)
+        .store_coins(value)
+        .store_only_body_ref(msg_body)
+        .end_cell();
+}
+
+int get_amount_out(int amount_in, int reserve_in, int reserve_out) impure inline {
+    ;; We calculate K according to AMM (Automatic Meow-Meow) formula x*y<=K, where x and y are assets' amounts
+    ;; New amount of first asset, that should be in pool
+    int new_reserve_in = reserve_in + amount_in;
+    ;; We calculate second asset value to have our x*y<=K stay correct,
+    ;; `/` division rounds `new_reserve_out` to the lower bound
+    int new_reserve_out = muldiv(reserve_in, reserve_out, new_reserve_in);
+    int amount_out = reserve_out - new_reserve_out;
+
+    throw_if(error::unreachable, amount_out < 0);
+    return amount_out;
+}
+
+{-
+   Code utils related to smart contracts addresses calculations;
+   For this contract it is crucial mechanics as we need to determine
+   addresses of user vaults and jetton wallet address correctness
+-}
+
+cell calculate_contract_state_init(cell code, cell data) inline_ref {
+    {-
+    https://github.com/ton-blockchain/ton/blob/8a9ff339927b22b72819c5125428b70c406da631/crypto/block/block.tlb#L144
+    _ split_depth:(Maybe (## 5)) special:(Maybe TickTock)
+    code:(Maybe ^Cell) data:(Maybe ^Cell)
+    library:(Maybe ^Cell) = StateInit;
+  -}
+    return begin_cell()
+        .store_uint(0, 2) ;; 0b00 - No split_depth; No special
+        .store_maybe_ref(code)
+        .store_maybe_ref(data)
+        .store_uint(0, 1) ;; Empty libraries
+        .end_cell();
+}
+
+slice calculate_contract_address(cell state_init) inline_ref {
+    {-
+       https://github.com/ton-blockchain/ton/blob/8a9ff339927b22b72819c5125428b70c406da631/crypto/block/block.tlb#L105
+       addr_std$10 anycast:(Maybe Anycast) workchain_id:int8 address:bits256  = MsgAddressInt;
+    -}
+    return begin_cell()
+        .store_uint(4, 3) ;; 0b100 = addr_std$10 tag; No anycast
+        .store_int(MY_WORKCHAIN, 8)
+        .store_uint(cell_hash(state_init), 256)
+        .end_cell() ;; can we optimize it?
+        .begin_parse();
+}
+
+cell pack_user_vault_data(slice owner_address, slice launch_contract_address, int has_whitelist?, int wl_invested, int public_invested, int jetton_balance) inline {
+    return begin_cell()
+        .store_slice(owner_address)
+        .store_slice(launch_contract_address)
+        .store_bool(has_whitelist?)
+        .store_coins(wl_invested)
+        .store_coins(public_invested)
+        .store_coins(jetton_balance)
+        .end_cell();
+}
+
+(cell, slice) calculate_user_vault_data(cell user_vault_code, slice sender_address) inline_ref {
+    cell user_vault_stateinit = calculate_contract_state_init(
+        user_vault_code,
+        pack_user_vault_data(
+            sender_address,
+            my_address(),
+            FALSE,
+            0,
+            0,
+            0
+        )
+    );
+    slice user_vault_address = calculate_contract_address(user_vault_stateinit);
+    return (user_vault_stateinit, user_vault_address);
+}
+
+() verify_user_vault(cell user_vault_code, slice vault_address, slice owner_address) impure inline_ref {
+    (cell _user_vault_stateinit, slice derived_user_vault_address) = calculate_user_vault_data(user_vault_code, owner_address);
+    throw_unless(error::unauthorized_access, equal_slices_bits(vault_address, derived_user_vault_address));
+}
+
+;; Syntax sugar for jetton wallets and user vaults
+cell pack_jetton_wallet_data(int balance, slice owner_address, slice jetton_master_address) inline {
+    return begin_cell()
+        .store_coins(balance)
+        .store_slice(owner_address)
+        .store_slice(jetton_master_address)
+        .end_cell();
+}
+
+slice calculate_user_jetton_wallet_address(slice owner_address, slice jetton_master_address, cell jetton_wallet_code) inline {
+    cell jetton_wallet_init_data = pack_jetton_wallet_data(
+        0,
+        owner_address,
+        jetton_master_address
+    );
+    return calculate_contract_address(calculate_contract_state_init(jetton_wallet_code, jetton_wallet_init_data));
+}
+
+cell build_balance_update_message(cell user_vault_code, int query_id, int msg_value, slice user_address, int balance_update_mode, int tons, int fut_jettons) inline_ref {
+    (cell user_vault_stateinit, slice user_vault_address) = calculate_user_vault_data(user_vault_code, user_address);
+    cell msg_body = begin_cell()
+        .store_op(op::uv::balance_update)
+        .store_query_id(query_id)
+        .store_uint(balance_update_mode, BALANCE_UPD_MODE_SIZE)
+        .store_coins(tons)
+        .store_coins(fut_jettons)
+        .end_cell();
+    cell msg = begin_cell()
+        .store_msg_flags_and_address_none(BOUNCEABLE)
+        .store_slice(user_vault_address)
+        .store_coins(msg_value)
+        .store_statinit_ref_and_body_ref(user_vault_stateinit, msg_body)
+        .end_cell();
+    return msg;
+}
+
+;; Jetton deployment related tools
+
+cell pack_fut_jet_master_data(int total_supply, slice admin, slice next_admin, cell wallet_code, cell metadata) inline {
+    return begin_cell()
+        .store_coins(total_supply)
+        .store_slice(admin)
+        .store_slice(next_admin) ;; Emergency case
+        .store_ref(wallet_code)
+        .store_ref(metadata)
+        .end_cell();
+}
+
+(cell, slice) calculate_fut_jet_master_data(cell master_code, int total_supply, slice admin, slice next_admin, cell wallet_code, cell metadata) inline {
+    cell jetton_master_stateinit = calculate_contract_state_init(
+        master_code,
+        pack_fut_jet_master_data(total_supply, admin, next_admin, wallet_code, metadata)
+    );
+    slice jetton_master_address = calculate_contract_address(jetton_master_stateinit);
+    return (jetton_master_stateinit, jetton_master_address);
+}
+
+cell simple_transfer(slice dest, int value, slice comment) {
+    builder msg = begin_cell()
+        .store_msg_flags_and_address_none(BOUNCEABLE)
+        .store_slice(dest)
+        .store_coins(value)
+        .store_prefix_only_body()
+        .store_op(0);
+    if (comment.slice_bits() > 0) {
+        msg = msg.store_slice(comment);
+    }
+    return msg.end_cell();
+}
+

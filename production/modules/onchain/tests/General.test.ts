@@ -17,7 +17,6 @@ import {
     Coins,
     getAmountOut,
     jettonFromNano,
-    jettonToNano,
     BalanceUpdateMode
 } from "starton-periphery";
 // sherochka and masherochka be like:
@@ -91,6 +90,7 @@ describe("Core", () => {
     let storagePrices: StorageValue;
 
     const JETTON_MIN_TRANSFER_FEE = 30000000n;
+    const SIMPLE_TRANSFER_FEE = 6000000n;
     const ONE_MONTH = 30 * 24 * 3600;
     const TWO_MONTHS = 60 * 24 * 3600;
     let coreStorageStats: StorageStats;
@@ -130,6 +130,14 @@ describe("Core", () => {
         balanceUpdateCost: bigint,
         wlCallbackForwardFee: bigint,
         wlCallbackGasConsumption: bigint,
+    ) => bigint;
+
+    const precomputedRefundCost = 1n;
+    let refundCost: (
+        refundRequestComputeFee: bigint,
+        balanceUpdateCost: bigint,
+        withdrawConfirmationForwardFee: bigint,
+        refundConfirmationGasConsumption: bigint,
     ) => bigint;
 
     beforeAll(async () => {
@@ -304,6 +312,18 @@ describe("Core", () => {
                 + wlCallbackComputeFee
                 + JETTON_MIN_TRANSFER_FEE;
         };
+        refundCost = (
+            refundRequestComputeFee: bigint,
+            balanceUpdateCost: bigint,
+            withdrawConfirmationForwardFee: bigint,
+            refundConfirmationGasConsumption: bigint,
+        ) => {
+            return refundRequestComputeFee
+            + balanceUpdateCost
+            + withdrawConfirmationForwardFee
+            + refundConfirmationGasConsumption
+            + SIMPLE_TRANSFER_FEE;
+        }
     }, 20000);
     describe("core and launch correct deployment", () => {
         it("core's correct & successful deployment", async () => {
@@ -676,7 +696,7 @@ describe("Core", () => {
             );
             const publicBuyRequest = findTransactionRequired(firstPublicBuyResult.transactions, {
                 on: sampleTokenLaunch.address,
-                op: TokensLaunchOps.publicBuy,
+                op: TokensLaunchOps.publicPurchase,
                 success: true
             });
             const publicBuyRequestComputeFees = printTxGasStats("Public buy request transaction: ", publicBuyRequest);
@@ -705,25 +725,53 @@ describe("Core", () => {
             // At this point we have a guy called consumer, that have some wl goods and public goods in his vault
             // We'll test public and wl refunds one by one, reset state and test global refund ^^
             const stateBeforeRefunds = blockchain.snapshot();
+            const tokenLaunchContractInstance = await blockchain.getContract(sampleTokenLaunch.address);
+            console.log(`Token launch balance before refunds: ${tokenLaunchContractInstance.balance} (${fromNano(tokenLaunchContractInstance.balance)})`);
             const consumerVault = blockchain.openContract(
                 UserVault.createFromState({
                     owner: consumer.address,
                     tokenLaunch: sampleTokenLaunch.address
                 }, userVaultCode)
             );
+            const saleMoneyFlowBeforeRefunds = await sampleTokenLaunch.getSaleMoneyFlow();
             const consumerVaultStateBeforeRefunds = await consumerVault.getVaultData();
+            const valueToWithdraw = consumerVaultStateBeforeRefunds.wlTonBalance!;
+            console.log(`Wl value to withdraw: ${valueToWithdraw} (${fromNano(valueToWithdraw)} TON)`);
             assert(consumerVaultStateBeforeRefunds.jettonBalance
                 && consumerVaultStateBeforeRefunds.wlTonBalance
                 && consumerVaultStateBeforeRefunds.publicTonBalance,
                 "consumer lost some of his assets"
             );
-            const publicRefundResult = await sampleTokenLaunch.sendRefundRequest({
+            const wlRefundResult = await sampleTokenLaunch.sendRefundRequest({
                     queryId: 4n,
-                    value: toNano("1"),
+                    value: toNano("0.03"),
                     via: consumer.getSender()
                 },
                 BalanceUpdateMode.WhitelistWithdrawal
             );
-        });
+            const wlRefundRequestTx = findTransactionRequired(wlRefundResult.transactions, {
+                from: sampleTokenLaunch.address,
+                to: consumerVault.address,
+                success: true,
+            });
+            const wlRefundRequestComputeFee = printTxGasStats("Whitelist refund request gas costs: ", wlRefundRequestTx);
+            const wlRefundConfirmationTx = findTransactionRequired(wlRefundResult.transactions, {
+                from: consumerVault.address,
+                to: sampleTokenLaunch.address,
+                success: true,
+            });
+            const withdrawConfirmationForwardFee = printTxGasStats("Whitelist refund confirmation gas costs: ", wlRefundConfirmationTx);
+            const consumerVaultStateAfterWlRef = await consumerVault.getVaultData();
+            const saleMoneyFlowAfterWlRef = await sampleTokenLaunch.getSaleMoneyFlow();
+
+            const refundGasConsumption = refundCost(
+                wlRefundRequestComputeFee,
+                precomputedBalanceUpdateCost,
+                computeFwdFees(msgPrices, 1n, 739n),
+                withdrawConfirmationForwardFee,
+            );
+            const { purified, opn } = validateValue(valueToWithdraw, refundGasConsumption);
+            console.log(`Token launch balance after refunds: ${tokenLaunchContractInstance.balance} (${fromNano(tokenLaunchContractInstance.balance)})`);
+        }); // creator stage remainings goes to 3rd
     });
 });

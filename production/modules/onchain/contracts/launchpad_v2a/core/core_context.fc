@@ -1,0 +1,27 @@
+;; === GLOBAL ===
+global slice this::chief;
+
+;; === LAUNCH CONFIG ===
+;; Values that creators are not responsible for
+global int launch_conf::min_ton_for_sale_success;
+global int launch_conf::ton_limit_for_wl_round;
+global int launch_conf::penny;
+
+;; As it is impossible to store fractions of percents, than we store percentages as 4-digit integers
+;; global int launch_conf::jet_creator_limit_pct;
+global int launch_conf::jet_wl_limit_pct;
+global int launch_conf::jet_pub_limit_pct;
+global int launch_conf::jet_dex_share_pct;
+
+global int launch_conf::creator_round_duration_ms;
+global int launch_conf::wl_round_duration_ms;
+global int launch_conf::pub_round_duration_ms;
+global int launch_conf::claim_duration_ms;
+
+;; === CONTRACTS ===
+global cell code::token_launch;
+global cell code::user_vault;
+global cell code::jetton_master;
+;; This code will be used in two contracts both - in util jetton and in derived jettons
+global cell code::jetton_wallet;
+
