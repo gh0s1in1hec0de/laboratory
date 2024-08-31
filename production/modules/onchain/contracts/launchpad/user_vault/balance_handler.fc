@@ -5,18 +5,9 @@
 
 #include "uv_context.fc";
 
-int vault_is_empty() inline {
-    return this::wl_ton_balance + this::public_ton_balance + this::jetton_balance == 0 ? TRUE : FALSE;
-}
-
 int get_withdraw_message_mode() impure inline_ref {
-    int msg_mode = SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL;
-    ifnot (vault_is_empty()) {
-        raw_reserve(calculate_user_vault_min_storage_fee(1_MONTH), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
-    } else {
-        msg_mode = msg_mode | SEND_MODE_DESTROY;
-    }
-    return msg_mode;
+    raw_reserve(calculate_user_vault_min_storage_fee(1_MONTH), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+    return SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL;
 }
 
 cell build_withdraw_confirmation_message(int is_refund?, int query_id, int wl_tons, int pub_tons, int jettons, int refund_mode) inline_ref {
@@ -102,7 +93,7 @@ cell build_wl_callback(int query_id, int should_burn?) inline {
         send_raw_message(msg, get_withdraw_message_mode());
     }
     if (mode == BALANCE_UPD_WITHDRAWAL_PUB) {
-        throw_if(error::balance_lack, this::public_ton_balance > 0);
+        throw_unless(error::balance_lack, this::public_ton_balance > 0);
         int pub_tons = this::public_ton_balance;
         int jettons_to_restore = this::jetton_balance;
 

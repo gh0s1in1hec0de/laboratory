@@ -15,13 +15,13 @@
     int jettons_amount = muldiv(accessible_user_value, creator_round::const::fut_jet_price_reversed, MAX_WL_ROUND_TON_LIMIT);
     throw_unless(error::meowreachable, jettons_amount > 0);
 
-    if (jettons_amount > 0) {
-        throw_if(error::balance_overlimit, creator_round::creator_fut_jet_balance + jettons_amount > creator_round::const::fut_jet_limit);
-        general_state::total_tons_collected += accessible_user_value;
-        creator_round::creator_fut_jet_balance += jettons_amount;
-        general_state::fut_jet_inner_balance -= jettons_amount;
-        this::operational_needs += opn;
-    }
+    throw_if(error::balance_overlimit, jettons_amount > creator_round::fut_jet_left);
+    creator_round::fut_jet_balance += jettons_amount;
+    creator_round::fut_jet_left -= jettons_amount;
+
+    general_state::total_tons_collected += accessible_user_value;
+    general_state::fut_jet_inner_balance -= jettons_amount;
+    this::operational_needs += opn;
 }
 
 () handle_wl_purchase(int query_id, int attached_value, slice initiator) impure inline {
@@ -85,6 +85,11 @@
 ;; TODO creator's round remainings goes to public round
 () handle_public_purchase(int query_id, int attached_value, slice sender_address) impure inline {
     throw_if(error::wrong_time, (now() < wl_round::const::end_time) | (now() >= public_round::const::end_time));
+    if (creator_round::fut_jet_left > 0) {
+        public_round::const::fut_jet_limit += creator_round::fut_jet_left;
+        creator_round::fut_jet_left = 0;
+    }
+
     ;; `user_value_after_fee` is always more than 0
     (int accessible_user_value, int opn) = check_amount_is_enough_for_public_purchase(attached_value);
     int res_jettons = get_amount_out(accessible_user_value, public_round::synthetic_ton_reserve, public_round::synthetic_jet_reserve);
@@ -128,7 +133,7 @@
     throw_unless(
         error::wrong_time,
         ~ (general_state::total_tons_collected > config::const::min_ton_for_sale_success)
-    | ~ (now() > public_round::const::end_time)
+        | ~ (now() > public_round::const::end_time)
     );
     throw_if(error::wrong_time, now() < creator_round::const::end_time);
     throw_unless(error::bad_request, (mode == 3) | (mode == 4) | (mode == 5));
@@ -161,7 +166,8 @@
             public_round::synthetic_ton_reserve -= wl_tons;
         }
     }
-    if (jettons_to_charge_back > 0) { ;; TODO Look at this lines once more
+    if (jettons_to_charge_back > 0) {
+        ;; TODO Look at this lines once more
         general_state::fut_jet_inner_balance += jettons_to_charge_back;
         public_round::fut_jet_sold -= jettons_to_charge_back;
     }
@@ -170,15 +176,18 @@
     (int pur_val, int opn) = validate_value(tons_to_refund, 0);
     this::operational_needs += opn;
 
+    ;; Here we reserve all the contract's money
+    raw_reserve(pur_val, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
+
     cell simple_transfer_message = begin_cell()
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(recipient)
-        .store_coins(pur_val)
+        .store_coins(0)
         .store_prefix_only_body()
         .store_op(0)
         .store_query_id(query_id)
         .end_cell();
-    send_raw_message(simple_transfer_message, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    send_raw_message(simple_transfer_message, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
 () handle_wl_callback(int query_id, slice sender_address, int should_burn?, slice initiator) impure inline {
@@ -208,7 +217,7 @@
         .store_query_id(query_id)
         .end_cell();
     cell msg = begin_cell()
-        ;; Figure out about fee chargeback in case of bounce
+    ;; Figure out about fee chargeback in case of bounce
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(user_vault_address)
         .store_coins(get_claim_gas_cost())
@@ -230,8 +239,8 @@
         total_fut_jet_recipient_amount += recipient_fur_jet_share;
     }
     if (equal_slices_bits(recipient, this::const::creator_address)) {
-        total_fut_jet_recipient_amount += creator_round::creator_fut_jet_balance;
-        creator_round::creator_fut_jet_balance = 0;
+        total_fut_jet_recipient_amount += creator_round::fut_jet_balance;
+        creator_round::fut_jet_balance = 0;
     }
 
     ;; TODO creator remainings

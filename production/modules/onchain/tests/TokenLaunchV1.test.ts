@@ -4,8 +4,8 @@ import {
     FullFees, GasPrices, getStoragePrices, getMsgPrices, StorageValue,
 } from "./utils";
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
-import { TokenLaunchV1 } from "../wrappers/V1/TokenLaunchV1";
-import { UserVaultV1 } from "../wrappers/V1/UserVaultV1";
+import { TokenLaunchV1 } from "../wrappers/TokenLaunchV1";
+import { UserVaultV1 } from "../wrappers/UserVaultV1";
 import {
     UTIL_JET_SEND_MODE_SIZE, UtilJettonsEnrollmentMode, TokensLaunchOps,
     BASECHAIN, CoreOps, LaunchConfigV1, UserVaultOps, validateValue,
@@ -16,7 +16,7 @@ import { JettonMaster } from "../wrappers/JettonMaster";
 import { JettonWallet } from "../wrappers/JettonWallet";
 import { JettonOps } from "../wrappers/JettonConstants";
 import { LaunchParams } from "../wrappers/types";
-import { CoreV1 } from "../wrappers/V1/CoreV1";
+import { CoreV1 } from "../wrappers/CoreV1";
 import { ok as assert } from "node:assert";
 import { compile } from "@ton/blueprint";
 import { TonClient4 } from "@ton/ton";
@@ -41,6 +41,7 @@ import {
     toNano,
     Cell,
 } from "@ton/core";
+import { type } from "node:os";
 
 const MAINNET_MOCK = !!process.env.MAINNET_MOCK;
 const PRINT_TX_LOGS = !!process.env.PRINT_TX_LOGS;
@@ -104,15 +105,15 @@ describe("Core", () => {
     let estimateBodyFwdFeeWithReverseCheck: (body: Cell, force_ref: boolean, prices?: MsgPrices) => bigint;
     let forwardStateInitOverhead: (prices: MsgPrices, stats: StorageStats) => bigint;
 
-    const precomputedBalanceUpdateCost = 7934994n;
-    let balanceUpdateCost: (
+    let balanceUpdateCost: bigint;
+    let calcBalanceUpdateCost: (
         balanceUpdateForwardFee: bigint,
         userVaultStateInitOverhead: bigint,
         balanceUpdateComputeFee: bigint,
         userVaultMinStorageFee: bigint
     ) => bigint;
 
-    const precomputedWlPurchaseCost = 84614194n;
+    const precomputedWlPurchaseCost = 85642893n;
     let wlPurchaseCost: (
         wlPurchaseRequestComputeFee: bigint,
         balanceUpdateCost: bigint,
@@ -136,15 +137,15 @@ describe("Core", () => {
             jettonMasterCode,
             jettonWalletCode
         ] = await Promise.all([
-            compile("Core"),
-            compile("TokenLaunch"),
-            compile("UserVault"),
-            compile("CommonJettonMaster"),
-            compile("CommonJettonWallet")
+            compile("CoreV1"),
+            compile("TokenLaunchV1"),
+            compile("UserVaultV1"),
+            compile("JettonMaster"),
+            compile("JettonWallet")
         ]);
         console.info("contracts compiled yaay^^");
         coreStorageStats = new StorageStats(0n, 0n); // TODO Fill in
-        userVaultStorageStats = new StorageStats(5956n, 19n);
+        userVaultStorageStats = new StorageStats(5980n, 19n);
         tokenLaunchStorageStats = new StorageStats(48697n, 122n);
 
         blockchain = await Blockchain.create(MAINNET_MOCK ? {
@@ -278,7 +279,7 @@ describe("Core", () => {
             return computeFwdFees(prices, stats.cells, stats.bits) - prices.lumpPrice;
         };
 
-        balanceUpdateCost = (
+        calcBalanceUpdateCost = (
             balanceUpdateMsgForwardFee: bigint, userVaultStateInitOverhead: bigint,
             balanceUpdateComputeFee: bigint, userVaultMinStorageFee: bigint
         ) => {
@@ -287,6 +288,12 @@ describe("Core", () => {
                 + balanceUpdateComputeFee
                 + userVaultMinStorageFee;
         };
+        balanceUpdateCost = calcBalanceUpdateCost(
+            computeFwdFees(msgPrices, 1n, 348n),
+            forwardStateInitOverhead(msgPrices, userVaultStorageStats),
+            4000000n,
+            calcStorageFee(storagePrices, userVaultStorageStats, BigInt(TWO_MONTHS))
+        );
         wlPurchaseCost = (
             wlPurchaseRequest: bigint,
             balanceUpdateGasCost: bigint,
@@ -481,11 +488,12 @@ describe("Core", () => {
         test("creator can buy his own tokens out", async () => {
             blockchain.now = sampleLaunchStartTime + 1;
 
+            const tokenLaunchConfigBefore = await sampleTokenLaunch.getConfig();
             const value = toNano("0.5");
             const gasPrices = getGasPrices(blockchain.config, BASECHAIN);
-            const expectedFee = computeGasFee(gasPrices, 14561n); // Computed by printTxGasStats later
+            const expectedFee = computeGasFee(gasPrices, 14534n); // Computed by printTxGasStats later
 
-            const mockedCreatorPrice = TokenLaunchV1.getCreatorAmountOut(
+            const expectedCreatorBalance = TokenLaunchV1.getCreatorAmountOut(
                 expectedFee, value,
                 BigInt(launchConfig.jetWlLimitPct) * sampleLaunchParams.totalSupply / TokenLaunchV1.PERCENTAGE_DENOMINATOR,
                 launchConfig.tonLimitForWlRound
@@ -502,8 +510,11 @@ describe("Core", () => {
             });
             printTxGasStats("Creator buyout transaction:", buyoutTx);
 
+            const tokenLaunchConfigAfter = await sampleTokenLaunch.getConfig();
             const tokenLaunchState = await sampleTokenLaunch.getSaleMoneyFlow();
-            expect(mockedCreatorPrice).toEqual(tokenLaunchState.creatorFutJetBalance);
+            expect(expectedCreatorBalance).toEqual(tokenLaunchState.creatorFutJetBalance);
+            expect(tokenLaunchConfigBefore.creatorFutJetLeft)
+                .toEqual(tokenLaunchState.creatorFutJetBalance + tokenLaunchConfigAfter.creatorFutJetLeft);
         });
         // TODO wrong-time check, wrong sum refund
         test.skip("whitelist purchase unavailable until the specified time", async () => {
@@ -601,7 +612,7 @@ describe("Core", () => {
             const expectedBalanceAfterWlPass = mintedBalance - launchConfig.utilJetBurnPerWlPassAmount;
             expect((await consumerWallet.getWalletData()).balance).toEqual(expectedBalanceAfterWlPass);
 
-            const balanceUpdateGasCost = balanceUpdateCost(
+            const balanceUpdateGasCost = calcBalanceUpdateCost(
                 computeFwdFees(msgPrices, 1n, 348n),
                 forwardStateInitOverhead(msgPrices, userVaultStorageStats),
                 balanceUpdateComputeFee,
@@ -609,7 +620,7 @@ describe("Core", () => {
             );
             const wlPurchaseTotalGasCost = wlPurchaseCost(
                 wlPurchaseReqComputeFee,
-                balanceUpdateGasCost,
+                balanceUpdateCost,
                 computeFwdFees(msgPrices, 1n, 364n),
                 wlCallbackComputeFee
             );
@@ -618,11 +629,11 @@ describe("Core", () => {
             const consumerVaultData = await consumerVault.getVaultData();
 
             const opnAfter: Coins = (await sampleTokenLaunch.getInnerData()).operationalNeeds;
-            // TODO Now it is not absolutely equal at some reason (replace with toEqual at the end)
+
             expect(opnAfter).toBeGreaterThanOrEqual(opnBefore + opn);
-            expect(precomputedBalanceUpdateCost).toBeGreaterThanOrEqual(balanceUpdateGasCost);
+
             expect(precomputedWlPurchaseCost).toBeGreaterThanOrEqual(wlPurchaseTotalGasCost);
-            console.log(`vault balance ${fromNano(consumerVaultData.wlTonBalance!)}; expected: ${fromNano(purified)}`);
+            console.log(`Ton vault balance ${fromNano(consumerVaultData.wlTonBalance!)}; expected: ${fromNano(purified)}`);
             expect(consumerVaultData.wlTonBalance).toEqual(purified);
 
             const wlPurchaseRepeated = await consumerWallet.sendTransfer(
@@ -659,13 +670,19 @@ describe("Core", () => {
             blockchain.now = sampleLaunchStartTime + 1 + launchConfig.creatorRoundDurationMs + launchConfig.wlRoundDurationMs;
             const secondPublicBuyer = await blockchain.treasury("public_buyer_2");
 
+            const tokenLaunchConfigBefore = await sampleTokenLaunch.getConfig();
             const totalPurchaseValue = toNano("1");
             const firstPublicBuyResult = await sampleTokenLaunch.sendPublicBuy({
                 queryId: 1n,
                 value: totalPurchaseValue,
                 via: consumer.getSender()
             });
-            const moneyFlowAfterFristPublicBuy = await sampleTokenLaunch.getSaleMoneyFlow();
+
+            const tokenLaunchConfigAfter = await sampleTokenLaunch.getConfig();
+            expect(tokenLaunchConfigAfter.creatorFutJetLeft).toEqual(0n);
+            expect(tokenLaunchConfigAfter.pubRoundFutJetLimit).toEqual(tokenLaunchConfigBefore.pubRoundFutJetLimit + tokenLaunchConfigBefore.creatorFutJetLeft);
+
+            const moneyFlowAfterFirstPublicBuy = await sampleTokenLaunch.getSaleMoneyFlow();
             await sampleTokenLaunch.sendPublicBuy({
                 queryId: 2n,
                 value: totalPurchaseValue,
@@ -694,18 +711,18 @@ describe("Core", () => {
                 success: true
             });
             printTxGasStats("Balance update (public buy) transaction: ", balanceUpdatePub);
-            const publicBuyFee = publicBuyRequestComputeFees + precomputedBalanceUpdateCost;
+            const publicBuyFee = publicBuyRequestComputeFees + balanceUpdateCost;
             const { purified, opn } = validateValue(totalPurchaseValue, publicBuyFee);
             const amountOut = getAmountOut(
                 purified,
-                moneyFlowAfterFristPublicBuy.syntheticTonReserve,
-                moneyFlowAfterFristPublicBuy.syntheticJetReserve
+                moneyFlowAfterFirstPublicBuy.syntheticTonReserve,
+                moneyFlowAfterFirstPublicBuy.syntheticJetReserve
             );
 
             const [firstPublicBuyerVaultData, secondPublicBuyerVaultData] = await Promise.all(
                 [firstPublicBuyerVault, secondPublicBuyerVault].map((buyer) => buyer.getVaultData())
             );
-            console.log(`tokens in vault: ${jettonFromNano(secondPublicBuyerVaultData.jettonBalance!)}, expected: ${jettonFromNano(amountOut)}`);
+            console.log(`public jettons in vault: ${jettonFromNano(secondPublicBuyerVaultData.jettonBalance!)}, expected: ${jettonFromNano(amountOut)}`);
             expect(secondPublicBuyerVaultData.jettonBalance!).toBeGreaterThanOrEqual(amountOut);
             expect(firstPublicBuyerVaultData.jettonBalance!).toBeGreaterThan(secondPublicBuyerVaultData.jettonBalance!);
         });
@@ -714,6 +731,7 @@ describe("Core", () => {
             // We'll test public and wl refunds one by one, reset state and test global refund ^^
             const stateBeforeRefunds = blockchain.snapshot();
             const tokenLaunchContractInstance = await blockchain.getContract(sampleTokenLaunch.address);
+            const contractBalanceBefore = tokenLaunchContractInstance.balance;
             console.log(`Token launch balance before refunds: ${tokenLaunchContractInstance.balance} (${fromNano(tokenLaunchContractInstance.balance)})`);
             const consumerVault = blockchain.openContract(
                 UserVaultV1.createFromState({
@@ -722,10 +740,13 @@ describe("Core", () => {
                 }, userVaultCode)
             );
             const saleMoneyFlowBeforeRefunds = await sampleTokenLaunch.getSaleMoneyFlow();
+            const tokenLaunchInnerDataBeforeRefunds = await sampleTokenLaunch.getInnerData();
             const consumerVaultStateBeforeRefunds = await consumerVault.getVaultData();
+
             const valueToWithdraw = consumerVaultStateBeforeRefunds.wlTonBalance!;
             console.log(`Wl value to withdraw: ${valueToWithdraw} (${fromNano(valueToWithdraw)} TON)`);
-            assert(consumerVaultStateBeforeRefunds.jettonBalance
+            assert(
+                consumerVaultStateBeforeRefunds.jettonBalance
                 && consumerVaultStateBeforeRefunds.wlTonBalance
                 && consumerVaultStateBeforeRefunds.publicTonBalance,
                 "consumer lost some of his assets"
@@ -737,29 +758,72 @@ describe("Core", () => {
                 },
                 BalanceUpdateMode.WhitelistWithdrawal
             );
+            const refundRequest = findTransactionRequired(wlRefundResult.transactions, {
+                from: consumer.address,
+                to: sampleTokenLaunch.address,
+                op: TokensLaunchOps.refundRequest,
+                success: true,
+            });
+            const refundRequestComputeFee = printTxGasStats("Whitelist refund request transaction: ", refundRequest);
             const wlRefundRequestTx = findTransactionRequired(wlRefundResult.transactions, {
                 from: sampleTokenLaunch.address,
                 to: consumerVault.address,
+                op: UserVaultOps.balanceUpdate,
                 success: true,
             });
-            const wlRefundRequestComputeFee = printTxGasStats("Whitelist refund request gas costs: ", wlRefundRequestTx);
+            printTxGasStats("Balance update (wl refund) transaction: ", wlRefundRequestTx);
+
             const wlRefundConfirmationTx = findTransactionRequired(wlRefundResult.transactions, {
                 from: consumerVault.address,
                 to: sampleTokenLaunch.address,
+                op: TokensLaunchOps.refundConfirmation,
                 success: true,
             });
-            const withdrawConfirmationForwardFee = printTxGasStats("Whitelist refund confirmation gas costs: ", wlRefundConfirmationTx);
+            const withdrawConfirmationForwardFee = printTxGasStats("Whitelist refund confirmation transaction: ", wlRefundConfirmationTx);
+
             const consumerVaultStateAfterWlRef = await consumerVault.getVaultData();
             const saleMoneyFlowAfterWlRef = await sampleTokenLaunch.getSaleMoneyFlow();
+            const tokenLaunchInnerDataAfterWlRef = await sampleTokenLaunch.getInnerData();
+            const { purified, opn } = validateValue(valueToWithdraw, 0n);
 
             const refundGasConsumption = refundCost(
-                wlRefundRequestComputeFee,
-                precomputedBalanceUpdateCost,
+                refundRequestComputeFee,
+                balanceUpdateCost,
                 computeFwdFees(msgPrices, 1n, 739n),
                 withdrawConfirmationForwardFee,
             );
-            const { purified, opn } = validateValue(valueToWithdraw, refundGasConsumption);
-            console.log(`Token launch balance after refunds: ${tokenLaunchContractInstance.balance} (${fromNano(tokenLaunchContractInstance.balance)})`);
-        }); // creator stage remainings goes to 3rd
+            console.log(`Total refund transaction cost: ${refundGasConsumption} (${fromNano(refundGasConsumption)} TON)`);
+
+            const contractBalanceAfter = tokenLaunchContractInstance.balance;
+            // These tests are able to guarantee, that refund system operating the correct way (pay attention to its mechanics, and you'll understand why ;))
+            expect(consumerVaultStateAfterWlRef.wlTonBalance).toEqual(0n);
+            expect(saleMoneyFlowBeforeRefunds.totalTonsCollected).toEqual(saleMoneyFlowAfterWlRef.totalTonsCollected + valueToWithdraw);
+            expect(contractBalanceAfter).toBeGreaterThanOrEqual(contractBalanceBefore - purified);
+            expect(tokenLaunchInnerDataAfterWlRef.operationalNeeds).toEqual(tokenLaunchInnerDataBeforeRefunds.operationalNeeds + opn);
+
+
+            const pubRefundResult = await sampleTokenLaunch.sendRefundRequest({
+                    queryId: 4n,
+                    value: toNano("0.05"),
+                    via: consumer.getSender()
+                },
+                BalanceUpdateMode.PublicWithdrawal
+            );
+            expect(pubRefundResult.transactions).toHaveTransaction({
+                from: consumerVault.address,
+                to: sampleTokenLaunch.address,
+                op: TokensLaunchOps.refundConfirmation,
+                success: true,
+            });
+            const drainedVaultData = await consumerVault.getVaultData();
+            assert(
+                !(drainedVaultData.wlTonBalance
+                    && drainedVaultData.publicTonBalance
+                    && drainedVaultData.jettonBalance),
+                "must be drained"
+            );
+
+            await blockchain.loadFrom(stateBeforeRefunds); // TODO now test out total refund
+        });
     });
 });
