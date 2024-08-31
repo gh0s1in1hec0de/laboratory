@@ -41,7 +41,6 @@ import {
     toNano,
     Cell,
 } from "@ton/core";
-import { type } from "node:os";
 
 const MAINNET_MOCK = !!process.env.MAINNET_MOCK;
 const PRINT_TX_LOGS = !!process.env.PRINT_TX_LOGS;
