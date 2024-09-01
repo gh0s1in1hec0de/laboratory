@@ -15,7 +15,7 @@ logger().info(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_US
 
 if (config.db.should_migrate) {
     logger().info("applying migrations to clean database...");
-    // await db.applyMigrations();
+    await db.applyMigrations();
 }
 const { address, height, force_height } = config.oracle.core;
 // if (height) await db.setCoreHeight(address, height, force_height);
@@ -23,11 +23,9 @@ const { address, height, force_height } = config.oracle.core;
 async function main() {
     // We parse current launches we have to manage with our promise-workers
     // const storedActiveLaunches = await db.getActiveTokenLaunches();
-  
-    // const server = getServer();
-    const bot = getBot();
-    bot.start();
-  
+    const bot = await getBot();
+    const server = getServer();
+    
     // if (Address.parse(address)) handleCoreUpdates(address);
 }
 

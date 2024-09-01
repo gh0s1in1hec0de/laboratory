@@ -1,9 +1,3 @@
-import { handleTokenLaunchUpdates } from "./tokenLaunch.ts";
-import { retrieveAllUnknownTransactions } from "./api.ts";
-import type { Address } from "@ton/ton";
-import { delay } from "../utils.ts";
-import { logger } from "../logger";
-import * as db from "../db";
 import {
     type RawAddressString,
     TokensLaunchOps,
@@ -12,6 +6,12 @@ import {
     loadOpAndQueryId,
     parseTokenLaunchV1Storage
 } from "starton-periphery";
+import { handleTokenLaunchUpdates } from "./tokenLaunch";
+import { retrieveAllUnknownTransactions } from "./api";
+import type { Address } from "@ton/ton";
+import { logger } from "../logger";
+import { delay } from "../utils";
+import * as db from "../db";
 
 export async function handleCoreUpdates(coreAddress: RawAddressString) {
     let currentHeight = await db.getCoreHeight(coreAddress) ?? 0n;

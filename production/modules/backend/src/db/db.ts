@@ -18,10 +18,10 @@ export async function createPostgresClient(): Promise<SqlClient> {
             types: { bigint: postgres.BigInt },
             transform: postgres.camel
         });
-        await cachedGlobalClient.listen("user_balance_error", async (payload) => {
-            const { id, action, details } = JSON.parse(payload);
-            logger().error(`new user balance error#${id}: action#${action} - ${details}`);
-        });
+        // await cachedGlobalClient.listen("user_balance_error", async (payload) => {
+        //     const { id, action, details } = JSON.parse(payload);
+        //     logger().error(`new user balance error#${id}: action#${action} - ${details}`);
+        // });
     }
     return cachedGlobalClient;
 }
@@ -29,7 +29,7 @@ export async function createPostgresClient(): Promise<SqlClient> {
 export async function applyMigrations() {
     const directoryPath = path.join(__dirname, "migrations");
     const files = fs.readdirSync(directoryPath).sort();
-		
+  
     try {
         // Open a transaction
         await globalClient.begin(async sql => {
@@ -43,6 +43,7 @@ export async function applyMigrations() {
                 }
             }
         });
-    } catch (e) { /* Just preventing exiting in case of already applied migrations */
+    } catch (e) {
+        logger().error(`fail to apply migrations: ${e}`);
     }
 }

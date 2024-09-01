@@ -2,8 +2,8 @@ import { TokenLaunchRoutes, UserRoutes } from "./routes";
 import { getSwaggerConfig, WebSocket } from "./config";
 import { swagger } from "@elysiajs/swagger";
 import { ok as assert } from "node:assert";
-import { getConfig } from "../config.ts";
-import { logger } from "../logger.ts";
+import { getConfig } from "../config";
+import { logger } from "../logger";
 import Elysia from "elysia";
 
 function createServer() {

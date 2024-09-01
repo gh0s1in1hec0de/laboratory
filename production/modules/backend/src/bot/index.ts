@@ -1,51 +1,51 @@
-import {Bot, HttpError, GrammyError} from "grammy";
-import {getConfig} from "../config";
-import {logger} from "../logger";
+import { getAdminFilter, getUnknownMsgReply } from "./constants";
+import { handleBotError, handleStartCommand } from "./handlers";
+import { type EmojiFlavor, emojiParser } from "@grammyjs/emoji";
+import { Bot, type Context } from "grammy";
+import { commands } from "./commands";
+import { getConfig } from "../config";
+import { logger } from "../logger";
 
-const config = getConfig();
+export type MyContext = EmojiFlavor<Context>;
+let maybeBot: Bot<MyContext> | null;
 
-function createBot(): Bot {
-  const bot: Bot = new Bot(config.bot.token);
-  
-  bot.api.setMyCommands([
-    {
-      command: "start",
-      description: "start the bot"
-    },
-    {
-      command: "hello",
-      description: "get greetings"
+export async function createBot(): Promise<Bot<MyContext>> {
+    const {
+        bot: {
+            token
+        }
+    } = getConfig();
+    
+    if (maybeBot){
+        await maybeBot.stop();
+        logger().info("bot is stopped.");
     }
-  ]);
+    
+    maybeBot = new Bot<MyContext>(token);
+    
+    maybeBot.use(emojiParser());
+    
+    await maybeBot.api.setMyCommands(commands);
   
-  bot.command("start", (ctx) => ctx.reply("Welcome! Up and running."));
-  bot.command("hello", (ctx) => ctx.reply("Hello mutherfucker"));
+    maybeBot.command("start", handleStartCommand);
+
+    maybeBot.command("list_tokens").filter(getAdminFilter, async (ctx) => {
+        await ctx.reply("Hello, admin!");
+    });
   
-  bot.on("message", (ctx) => ctx.reply("Got another message!"));
+    maybeBot.on("message", getUnknownMsgReply);
   
-  bot.catch((err) => {
-    const ctx = err.ctx;
-    logger().warn(`Error while handling update ${ctx.update.update_id}:`);
-    const e = err.error;
-    if (e instanceof GrammyError) {
-      logger().error("Error in request:", e.description);
-    } else if (e instanceof HttpError) {
-      logger().error("Could not contact Telegram:", e);
-    } else {
-      logger().error("Unknown error:", e);
-    }
-  });
+    maybeBot.catch(handleBotError);
+    
+    await maybeBot.start();
   
-  return bot;
+    return maybeBot;
 }
 
-
-let maybeBot: Bot | null;
-
-export function getBot(): Bot {
-  if (!maybeBot) {
-    maybeBot = createBot();
-    logger().info("bot is running");
-  }
-  return maybeBot;
+export async function getBot(): Promise<Bot<MyContext>> {
+    if (!maybeBot) {
+        maybeBot = await createBot();
+        logger().info("bot is running");
+    }
+    return maybeBot;
 }

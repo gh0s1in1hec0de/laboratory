@@ -23,6 +23,7 @@ server:
 
 bot:
   token: ""
+  admins: [1111, 2222]
 
 logger:
   bot_token: ""

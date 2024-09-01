@@ -33,6 +33,7 @@ type Config = {
     },
     bot: {
       token: string,
+      admins: number[],
     },
     logger: {
       bot_token: string,
