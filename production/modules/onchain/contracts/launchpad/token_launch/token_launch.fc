@@ -133,7 +133,7 @@
         ;; Nothing to save as no changes to state were done
         return ();
     }
-    if (op == op::tl::public_buy) {
+    if (op == op::tl::public_purchase) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
         handle_public_purchase(query_id, attached_value, sender_address);
         save_data();
@@ -220,7 +220,7 @@ slice get_user_vault_address(slice user_address) method_id {
     load_data();
     return (
         general_state::total_tons_collected,
-        creator_round::creator_fut_jet_balance,
+        creator_round::fut_jet_balance,
         wl_round::ton_invested_total,
         public_round::fut_jet_sold,
         public_round::synthetic_jet_reserve,
@@ -247,7 +247,7 @@ slice get_user_vault_address(slice user_address) method_id {
         public_round::const::fut_jet_limit,
         config::const::fut_jet_dex_amount,
         config::const::fut_jet_platform_amount,
-        creator_round::const::fut_jet_limit,
+        creator_round::fut_jet_left,
         creator_round::const::fut_jet_price_reversed
     );
 }

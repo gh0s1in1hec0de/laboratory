@@ -15,15 +15,13 @@
     int jettons_amount = muldiv(accessible_user_value, creator_round::const::fut_jet_price_reversed, MAX_WL_ROUND_TON_LIMIT);
     throw_unless(error::meowreachable, jettons_amount > 0);
 
-    if (jettons_amount > 0) {
-        throw_if(error::balance_overlimit, jettons_amount > creator_round::fut_jet_left);
-        creator_round::fut_jet_balance += jettons_amount;
-        creator_round::fut_jet_left -= jettons_amount;
+    throw_if(error::balance_overlimit, jettons_amount > creator_round::fut_jet_left);
+    creator_round::fut_jet_balance += jettons_amount;
+    creator_round::fut_jet_left -= jettons_amount;
 
-        general_state::total_tons_collected += accessible_user_value;
-        general_state::fut_jet_inner_balance -= jettons_amount;
-        this::operational_needs += opn;
-    }
+    general_state::total_tons_collected += accessible_user_value;
+    general_state::fut_jet_inner_balance -= jettons_amount;
+    this::operational_needs += opn;
 }
 
 () handle_wl_purchase(int query_id, int attached_value, slice initiator) impure inline {
@@ -32,11 +30,10 @@
     (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
 
     ;; We attach value only for routong messages
-    int value = get_wl_purchase_gas_consumption() - get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION);
     cell msg = build_balance_update_message(
         user_vault_code,
         query_id,
-        value,
+        get_balance_update_gas_cost(),
         initiator,
         BALANCE_UPD_DEPOSIT_WL,
         accessible_user_value,
@@ -107,7 +104,7 @@
     throw_unless(
         error::wrong_time,
         ~ (general_state::total_tons_collected > config::const::min_ton_for_sale_success)
-    | ~ (now() > public_round::const::end_time)
+        | ~ (now() > public_round::const::end_time)
     );
     throw_if(error::wrong_time, now() < creator_round::const::end_time);
     throw_unless(error::bad_request, (mode == 3) | (mode == 4) | (mode == 5));
@@ -140,7 +137,8 @@
             public_round::synthetic_ton_reserve -= wl_tons;
         }
     }
-    if (jettons_to_charge_back > 0) { ;; TODO Look at this lines once more
+    if (jettons_to_charge_back > 0) {
+        ;; TODO Look at this lines once more
         general_state::fut_jet_inner_balance += jettons_to_charge_back;
         public_round::fut_jet_sold -= jettons_to_charge_back;
     }
@@ -171,7 +169,7 @@
         .store_query_id(query_id)
         .end_cell();
     cell msg = begin_cell()
-        ;; Figure out about fee chargeback in case of bounce
+    ;; Figure out about fee chargeback in case of bounce
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(user_vault_address)
         .store_coins(get_claim_gas_cost())

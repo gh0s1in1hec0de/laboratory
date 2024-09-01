@@ -30,9 +30,9 @@ global int   general_state::total_tons_collected;
 ;; End of launch itself, you can't claim tokens after this time
 global int   general_state::const::end_time;
 
-global int   creator_round::const::fut_jet_limit;
+global int   creator_round::fut_jet_left;
 ;; Amount of tokens, that creator bought back
-global int   creator_round::creator_fut_jet_balance;
+global int   creator_round::fut_jet_balance;
 global int   creator_round::const::fut_jet_price_reversed;
 global int   creator_round::const::end_time;
 

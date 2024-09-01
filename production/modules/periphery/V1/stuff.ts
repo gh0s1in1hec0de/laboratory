@@ -47,7 +47,7 @@ export function parseTokenLaunchV1Storage(storage: Cell): TokenLaunchStorageV1 {
     const creatorRoundStateRef = saleStateSlice.loadRef();
     const creatorRoundStateSlice = creatorRoundStateRef.beginParse();
     const creatorRound: CreatorRoundStateV1 = {
-        futJetLimit: creatorRoundStateSlice.loadCoins(),
+        futJetLeft: creatorRoundStateSlice.loadCoins(),
         futJetBalance: creatorRoundStateSlice.loadCoins(),
         creatorFutJetPrice: creatorRoundStateSlice.loadCoins(),
         endTime: creatorRoundStateSlice.loadInt(32),

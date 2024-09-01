@@ -1,9 +1,9 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
-import { SendMessageParams, tokenMetadataToCell } from "../utils";
-import { LaunchParams, UpgradeParams } from "../types";
-import { JettonMaster } from "../JettonMaster";
-import { JettonWallet } from "../JettonWallet";
+import { SendMessageParams, tokenMetadataToCell } from "./utils";
+import { LaunchParams, UpgradeParams } from "./types";
 import { TokenLaunchV1 } from "./TokenLaunchV1";
+import { JettonMaster } from "./JettonMaster";
+import { JettonWallet } from "./JettonWallet";
 import {
     TokensLaunchOps,
     QUERY_ID_LENGTH,
@@ -12,9 +12,9 @@ import {
     BASECHAIN,
     OP_LENGTH,
     Contracts,
-    CoreOps, Coins,
+    CoreOps,
+    Coins,
 } from "starton-periphery";
-
 
 export class CoreV1 implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {

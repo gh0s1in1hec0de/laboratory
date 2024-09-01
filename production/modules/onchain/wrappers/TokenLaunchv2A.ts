@@ -5,13 +5,13 @@ import {
     OP_LENGTH, Coins, Contracts, LaunchConfigV2A
 } from "starton-periphery";
 import { randomAddress } from "@ton/test-utils";
-import { LaunchParams } from "../types";
+import { LaunchParams } from "./types";
 import {
     ThirtyTwoIntMaxValue,
     tokenMetadataToCell,
     SendMessageParams,
     CoinsMaxValue,
-} from "../utils";
+} from "./utils";
 
 export type StateParams = {
     creator: Address,
@@ -214,8 +214,6 @@ export class TokenLaunchV2A implements Contract {
         const wlRoundState = beginCell()
             .storeCoins(loadAtMax ? CoinsMaxValue : wlJetLimit)
             .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.tonLimitForWlRound)
-            .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.utilJetWlPassAmount)
-            .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.utilJetBurnPerWlPassAmount)
             .storeCoins(0)
             .storeInt(
                 loadAtMax ? ThirtyTwoIntMaxValue : startTime

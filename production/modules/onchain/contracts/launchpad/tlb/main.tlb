@@ -5,7 +5,7 @@
 _ start_time:int32 fut_jet_inner_balance:Coins fut_jet_deployed_balance:Coins total_tons_collected:Coins reward_util_jets_balance:Coins end_time:int32
   = GeneralState;
 // 124 x 3 + 32 = 404
-_ creator_fut_jet_limit:Coins creator_fut_jet_balance:Coins creator_fut_jet_price:Coins creator_round_end_time:int32
+_ creator_fut_jet_left:Coins creator_fut_jet_balance:Coins creator_fut_jet_price:Coins creator_round_end_time:int32
   = CreatorRoundState;
 // 124 x 5 + 32 = 652
 _ wl_fut_jet_limit:Coins wl_ton_limit:Coins wl_pass_util_jet_amount:Coins wl_burn_util_jet_amount:Coins wl_ton_invested_total:Coins wl_end_time:int32

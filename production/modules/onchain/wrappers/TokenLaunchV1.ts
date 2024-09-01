@@ -5,13 +5,13 @@ import {
     OP_LENGTH, Coins, Contracts, LaunchConfigV1,
 } from "starton-periphery";
 import { randomAddress } from "@ton/test-utils";
-import { LaunchParams } from "../types";
+import { LaunchParams } from "./types";
 import {
     ThirtyTwoIntMaxValue,
     tokenMetadataToCell,
     SendMessageParams,
     CoinsMaxValue,
-} from "../utils";
+} from "./utils";
 
 export type StateParams = {
     creator: Address,
@@ -141,7 +141,7 @@ export class TokenLaunchV1 implements Contract {
             pubRoundFutJetLimit: stack.readBigNumber(),
             futJetDexAmount: stack.readBigNumber(),
             platformAmount: stack.readBigNumber(),
-            creatorFutJetLimit: stack.readBigNumber(),
+            creatorFutJetLeft: stack.readBigNumber(),
             creatorFutJetPrice: stack.readBigNumber(),
         };
     }

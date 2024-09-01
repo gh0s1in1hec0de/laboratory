@@ -1,18 +1,18 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
-import { SendMessageParams, tokenMetadataToCell } from "../utils";
-import { JettonMaster } from "../JettonMaster";
-import { JettonWallet } from "../JettonWallet";
+import { SendMessageParams, tokenMetadataToCell } from "./utils";
+import { JettonMaster } from "./JettonMaster";
+import { JettonWallet } from "./JettonWallet";
 import {
     TokensLaunchOps,
     QUERY_ID_LENGTH,
-    LaunchConfigV1,
-    CoreStateV1,
+    LaunchConfigV2A,
+    CoreStateV2A,
     BASECHAIN,
     OP_LENGTH,
     Contracts,
     CoreOps,
 } from "starton-periphery";
-import { LaunchParams, UpgradeParams } from "../types";
+import { LaunchParams, UpgradeParams } from "./types";
 import { TokenLaunchV2A } from "./TokenLaunchv2A";
 
 export class CoreV2A implements Contract {
@@ -23,7 +23,7 @@ export class CoreV2A implements Contract {
         return new CoreV2A(address);
     }
 
-    static createFromState(state: CoreStateV1, code: Cell, workchain = BASECHAIN) {
+    static createFromState(state: CoreStateV2A, code: Cell, workchain = BASECHAIN) {
         const data = this.buildState(state);
         const init = { code, data };
         return new CoreV2A(contractAddress(workchain, init), init);
@@ -71,14 +71,12 @@ export class CoreV2A implements Contract {
         });
     }
 
-    async getLaunchConfig(provider: ContractProvider): Promise<LaunchConfigV1> {
+    async getLaunchConfig(provider: ContractProvider): Promise<LaunchConfigV2A> {
         let { stack } = await provider.get("get_launch_config", []);
         return {
             minTonForSaleSuccess: stack.readBigNumber(),
             tonLimitForWlRound: stack.readBigNumber(),
-            utilJetRewardAmount: stack.readBigNumber(),
-            utilJetWlPassAmount: stack.readBigNumber(),
-            utilJetBurnPerWlPassAmount: stack.readBigNumber(),
+            penny: stack.readBigNumber(),
             jetWlLimitPct: stack.readNumber(),
             jetPubLimitPct: stack.readNumber(),
             jetDexSharePct: stack.readNumber(),
@@ -95,7 +93,7 @@ export class CoreV2A implements Contract {
         utilJettonMasterAddress: Address,
         createLaunchParams: LaunchParams,
         code: Contracts,
-        staticLaunchParameters: LaunchConfigV1
+        staticLaunchParameters: LaunchConfigV2A
     ): { tokenLaunchStateInit: Cell, stateInitCell: Cell, bodyCell: Cell, } {
         const { metadata } = createLaunchParams;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
@@ -142,7 +140,7 @@ export class CoreV2A implements Contract {
         };
     }
 
-    static buildState(state: CoreStateV1): Cell {
+    static buildState(state: CoreStateV2A): Cell {
         const contractsCell = beginCell()
             .storeRef(state.contracts.tokenLaunch)
             .storeRef(state.contracts.userVault)
@@ -152,9 +150,6 @@ export class CoreV2A implements Contract {
         const launchConfigCell = beginCell()
             .storeCoins(state.launchConfig.minTonForSaleSuccess)
             .storeCoins(state.launchConfig.tonLimitForWlRound)
-            .storeCoins(state.launchConfig.utilJetRewardAmount)
-            .storeCoins(state.launchConfig.utilJetWlPassAmount)
-            .storeCoins(state.launchConfig.utilJetBurnPerWlPassAmount)
             .storeUint(state.launchConfig.jetWlLimitPct, 16)
             .storeUint(state.launchConfig.jetPubLimitPct, 16)
             .storeUint(state.launchConfig.jetDexSharePct, 16)
@@ -165,11 +160,6 @@ export class CoreV2A implements Contract {
             .endCell();
         return beginCell()
             .storeAddress(state.chief)
-            .storeAddress(state.utilJettonMasterAddress)
-            .storeAddress(state.utilJettonWalletAddress)
-            .storeCoins(state.utilJetCurBalance)
-            .storeDict(state.notFundedLaunches)
-            .storeUint(state.notFundedLaunchesAmount, 8)
             .storeRef(launchConfigCell)
             .storeRef(contractsCell)
             .endCell();
