@@ -100,7 +100,6 @@ export class CoreV1 implements Contract {
             creatorRoundDurationMs: stack.readNumber(),
             wlRoundDurationMs: stack.readNumber(),
             pubRoundDurationMs: stack.readNumber(),
-            claimDurationMs: stack.readNumber(),
         };
     }
 
@@ -176,7 +175,6 @@ export class CoreV1 implements Contract {
             .storeInt(state.launchConfig.creatorRoundDurationMs, 32)
             .storeInt(state.launchConfig.wlRoundDurationMs, 32)
             .storeInt(state.launchConfig.pubRoundDurationMs, 32)
-            .storeInt(state.launchConfig.claimDurationMs, 32)
             .endCell();
         return beginCell()
             .storeAddress(state.chief)

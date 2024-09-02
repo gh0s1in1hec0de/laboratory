@@ -16,7 +16,6 @@ global int launch_conf::jet_dex_share_pct;
 global int launch_conf::creator_round_duration_ms;
 global int launch_conf::wl_round_duration_ms;
 global int launch_conf::pub_round_duration_ms;
-global int launch_conf::claim_duration_ms;
 
 ;; === CONTRACTS ===
 global cell code::token_launch;

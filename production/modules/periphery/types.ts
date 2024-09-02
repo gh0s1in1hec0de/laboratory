@@ -30,3 +30,12 @@ export type LaunchData = {
     creatorAddress: Address,
     metadata: Cell,
 };
+// Shitty name to avoid naming collisions
+export type GetConfigResponse = {
+    wlRoundFutJetLimit: Coins,
+    pubRoundFutJetLimit: Coins,
+    futJetDexAmount: Coins,
+    platformAmount: Coins,
+    creatorFutJetLeft: Coins,
+    creatorFutJetPrice: Coins,
+}

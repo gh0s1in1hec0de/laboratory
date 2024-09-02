@@ -1,9 +1,10 @@
 #include "../../stdlib.fc";
 #include "../op-codes.fc";
 #include "../utils.fc";
+#include "../gas.fc";
 
-#include "core_context.fc";
 #include "core_storage.fc";
+#include "core_context.fc";
 #include "operations.fc";
 
 () recv_internal(int contract_balance, int attached_value, cell in_msg_full, slice in_msg_body) impure {
@@ -24,30 +25,30 @@
     }
 
     if (op == op::core::init) {
+        load_launch_config(launch_conf);
         save_data();
         return ();
     }
 
     if (op == op::core::create_launch) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        cell custom_conf = in_msg_body~load_maybe_ref();
+        ifnot (cell_null?(custom_conf)) {
+            load_launch_config(custom_conf);
+        } else {
+            load_launch_config(launch_conf);
+        }
         throw_unless(
             error::not_enough_gas,
             attached_value > (launch_conf::penny + my_storage_due() + get_amount_for_token_launch_deploy())
         );
-        int total_supply = in_msg_body~load_coins();
-        int platform_share_pct = in_msg_body~load_uint(16);
-        cell metadata_cell = in_msg_body~load_ref();
-        int start_time = in_msg_body~load_int(32);
-        cell custom_conf = in_msg_body~load_maybe_ref();
-
-        if (cell_null?(custom_conf))  {
-          load_launch_config(launch_conf);
-        } else {
-            load_launch_config(custom_conf);
-        }
         create_launch(
-            query_id, sender_address, total_supply,
-            platform_share_pct, metadata_cell, start_time
+            query_id,
+            sender_address,
+            in_msg_body~load_coins(),
+            in_msg_body~load_uint(16),
+            in_msg_body~load_ref(),
+            in_msg_body~load_int(32)
         );
         return ();
     }
@@ -55,7 +56,7 @@
     if (op == op::core::upgrade_config) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::chief));
         ;; Loading new launch config in global variables and save it into state
-        load_launch_config(in_msg_body);
+        load_launch_config(in_msg_body~load_ref());
         save_data();
     }
 
@@ -72,10 +73,12 @@
 }
 
 (int, int, int, int, int, int, int, int, int) get_launch_config() method_id {
-    load_data();
+    cell launch_conf = load_data();
+    load_launch_config(launch_conf);
     return (
         launch_conf::min_ton_for_sale_success,
         launch_conf::ton_limit_for_wl_round,
+        launch_conf::penny,
 
         launch_conf::jet_wl_limit_pct,
         launch_conf::jet_pub_limit_pct,
@@ -83,7 +86,6 @@
 
         launch_conf::creator_round_duration_ms,
         launch_conf::wl_round_duration_ms,
-        launch_conf::pub_round_duration_ms,
-        launch_conf::claim_duration_ms
+        launch_conf::pub_round_duration_ms
     );
 }

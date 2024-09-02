@@ -8,13 +8,14 @@ export type LaunchConfigV1 = {
     utilJetRewardAmount: bigint,
     utilJetWlPassAmount: bigint,
     utilJetBurnPerWlPassAmount: bigint,
+
     jetWlLimitPct: number,
     jetPubLimitPct: number,
     jetDexSharePct: number,
+
     creatorRoundDurationMs: number,
     wlRoundDurationMs: number,
     pubRoundDurationMs: number,
-    claimDurationMs: number,
 };
 
 export type CoreStateV1 = {

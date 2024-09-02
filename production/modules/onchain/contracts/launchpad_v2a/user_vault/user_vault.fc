@@ -70,7 +70,7 @@
     throw(error::wrong_op);
 }
 
-(slice, slice, int, int, int, int) get_vault_data() method_id {
+(slice, slice, int, int, int) get_vault_data() method_id {
     load_data();
     return (
         this::owner,

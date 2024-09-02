@@ -2,7 +2,7 @@ import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, 
 import {
     BASECHAIN, BalanceUpdateMode, LaunchData, validateValue,
     QUERY_ID_LENGTH, SaleMoneyFlow, TokensLaunchOps,
-    OP_LENGTH, Coins, Contracts, LaunchConfigV2A
+    OP_LENGTH, Coins, Contracts, LaunchConfigV2A, GetConfigResponse
 } from "starton-periphery";
 import { randomAddress } from "@ton/test-utils";
 import { LaunchParams } from "./types";
@@ -51,7 +51,19 @@ export class TokenLaunchV2A implements Contract {
         });
     }
 
-    async sendPublicBuy(provider: ContractProvider, sendMessageParams: SendMessageParams) {
+    async sendWhitelistPurchase(provider: ContractProvider, sendMessageParams: SendMessageParams) {
+        const { queryId, via, value } = sendMessageParams;
+
+        const body = beginCell()
+            .storeUint(TokensLaunchOps.wlPurchase, OP_LENGTH)
+            .storeUint(queryId, QUERY_ID_LENGTH)
+            .endCell();
+        await provider.internal(via, {
+            value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
+        });
+    }
+
+    async sendPublicPurchase(provider: ContractProvider, sendMessageParams: SendMessageParams) {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
@@ -134,27 +146,25 @@ export class TokenLaunchV2A implements Contract {
         };
     }
 
-    async getConfig(provider: ContractProvider): Promise<any> {
+    async getConfig(provider: ContractProvider): Promise<GetConfigResponse> {
         let { stack } = await provider.get("get_config", []);
         return {
             wlRoundFutJetLimit: stack.readBigNumber(),
             pubRoundFutJetLimit: stack.readBigNumber(),
             futJetDexAmount: stack.readBigNumber(),
             platformAmount: stack.readBigNumber(),
-            creatorFutJetLimit: stack.readBigNumber(),
+            creatorFutJetLeft: stack.readBigNumber(),
             creatorFutJetPrice: stack.readBigNumber(),
         };
     }
 
     async getInnerData(provider: ContractProvider): Promise<{
         futJetDeployedBalance: Coins,
-        rewardUtilJetsBalance: Coins,
         operationalNeeds: Coins
     }> {
         let { stack } = await provider.get("get_inner_data", []);
         return {
             futJetDeployedBalance: stack.readBigNumber(),
-            rewardUtilJetsBalance: stack.readBigNumber(),
             operationalNeeds: stack.readBigNumber(),
         };
     }
@@ -191,15 +201,6 @@ export class TokenLaunchV2A implements Contract {
             .storeCoins(loadAtMax ? CoinsMaxValue : totalSupply)
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
-            .storeCoins(loadAtMax ? CoinsMaxValue : 0)
-            .storeInt(
-                loadAtMax ? ThirtyTwoIntMaxValue : startTime
-                    + launchConfig.creatorRoundDurationMs
-                    + launchConfig.wlRoundDurationMs
-                    + launchConfig.pubRoundDurationMs
-                    + launchConfig.claimDurationMs,
-                32
-            )
             .endCell();
         const creatorRoundState = beginCell()
             .storeCoins(loadAtMax ? CoinsMaxValue : creatorBuybackJetLimit)
@@ -246,10 +247,8 @@ export class TokenLaunchV2A implements Contract {
             .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.minTonForSaleSuccess)
             .storeCoins(loadAtMax ? CoinsMaxValue : dexJetShare)
             .storeCoins(loadAtMax ? CoinsMaxValue : platformShare)
-            .storeCoins(loadAtMax ? CoinsMaxValue : 0n)
             .endCell();
         const tools = beginCell()
-            .storeAddress(loadAtMax ? randomAddress() : null)
             .storeAddress(loadAtMax ? randomAddress() : null)
             .storeAddress(loadAtMax ? randomAddress() : null)
             .storeRef(packedMetadata)

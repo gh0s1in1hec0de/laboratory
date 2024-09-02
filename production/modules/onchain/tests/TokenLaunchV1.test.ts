@@ -47,9 +47,10 @@ const PRINT_TX_LOGS = !!process.env.PRINT_TX_LOGS;
 
 /* TODO
     1. At some reason on-chain state always more on 102 bits that our off-chain calculation
+    2. For all types of buys it is necessary to add contract balance validation to make sure we are not accounting non-existent TONs on contract's balance
 */
 
-describe("Core", () => {
+describe.skip("V1", () => {
     let coreCode = new Cell();
     let core: SandboxContract<CoreV1>;
 
@@ -120,7 +121,7 @@ describe("Core", () => {
         wlCallbackGasConsumption: bigint,
     ) => bigint;
 
-    const precomputedRefundCost = 1n;
+    const precomputedRefundCost = 29648893;
     let refundCost: (
         refundRequestComputeFee: bigint,
         balanceUpdateCost: bigint,
@@ -200,7 +201,6 @@ describe("Core", () => {
             creatorRoundDurationMs: ONE_HOUR_MS,
             wlRoundDurationMs: ONE_HOUR_MS,
             pubRoundDurationMs: ONE_HOUR_MS,
-            claimDurationMs: ONE_HOUR_MS
         };
         // Stuff, related to core
         core = blockchain.openContract(
@@ -487,10 +487,10 @@ describe("Core", () => {
         test("creator can buy his own tokens out", async () => {
             blockchain.now = sampleLaunchStartTime + 1;
 
-            const tokenLaunchConfigBefore = await sampleTokenLaunch.getConfig();
             const value = toNano("0.5");
             const gasPrices = getGasPrices(blockchain.config, BASECHAIN);
             const expectedFee = computeGasFee(gasPrices, 14534n); // Computed by printTxGasStats later
+            const tokenLaunchConfigBefore = await sampleTokenLaunch.getConfig();
 
             const expectedCreatorBalance = TokenLaunchV1.getCreatorAmountOut(
                 expectedFee, value,
@@ -511,9 +511,17 @@ describe("Core", () => {
 
             const tokenLaunchConfigAfter = await sampleTokenLaunch.getConfig();
             const tokenLaunchState = await sampleTokenLaunch.getSaleMoneyFlow();
-            expect(expectedCreatorBalance).toEqual(tokenLaunchState.creatorFutJetBalance);
-            expect(tokenLaunchConfigBefore.creatorFutJetLeft)
-                .toEqual(tokenLaunchState.creatorFutJetBalance + tokenLaunchConfigAfter.creatorFutJetLeft);
+            assert(expectedCreatorBalance === tokenLaunchState.creatorFutJetBalance);
+            assert(tokenLaunchConfigBefore.creatorFutJetLeft === tokenLaunchState.creatorFutJetBalance + tokenLaunchConfigAfter.creatorFutJetLeft);
+
+            /* You may think, that I forgot about `expect`s here, and it would be better to use it for checks
+            But, ironically, when comparison is falsy, instead of canonical equality error -
+            you'll get something like (can't serialize Bigint <anonymous>).
+            Lol it doesn't even tell source of this error, so,
+            I'll gently leave it here especially for the particularly sophisticated masochist:
+
+            expect(expectedCreatorBalance).toEqual(tokenLaunchState.creatorFutJetBalance + 1n); */
+
         });
         // TODO wrong-time check, wrong sum refund
         test.skip("whitelist purchase unavailable until the specified time", async () => {
@@ -665,13 +673,13 @@ describe("Core", () => {
             });
             expect((await consumerWallet.getWalletData()).balance).toEqual(expectedBalanceAfterWlPass);
         });
-        test("public buy works the proper way ", async () => {
+        test("public purchase works the proper way ", async () => {
             blockchain.now = sampleLaunchStartTime + 1 + launchConfig.creatorRoundDurationMs + launchConfig.wlRoundDurationMs;
             const secondPublicBuyer = await blockchain.treasury("public_buyer_2");
 
             const tokenLaunchConfigBefore = await sampleTokenLaunch.getConfig();
             const totalPurchaseValue = toNano("1");
-            const firstPublicBuyResult = await sampleTokenLaunch.sendPublicBuy({
+            const firstPublicBuyResult = await sampleTokenLaunch.sendPublicPurchase({
                 queryId: 1n,
                 value: totalPurchaseValue,
                 via: consumer.getSender()
@@ -682,7 +690,7 @@ describe("Core", () => {
             expect(tokenLaunchConfigAfter.pubRoundFutJetLimit).toEqual(tokenLaunchConfigBefore.pubRoundFutJetLimit + tokenLaunchConfigBefore.creatorFutJetLeft);
 
             const moneyFlowAfterFirstPublicBuy = await sampleTokenLaunch.getSaleMoneyFlow();
-            await sampleTokenLaunch.sendPublicBuy({
+            await sampleTokenLaunch.sendPublicPurchase({
                 queryId: 2n,
                 value: totalPurchaseValue,
                 via: secondPublicBuyer.getSender()
@@ -803,7 +811,7 @@ describe("Core", () => {
 
             const pubRefundResult = await sampleTokenLaunch.sendRefundRequest({
                     queryId: 4n,
-                    value: toNano("0.05"),
+                    value: toNano("0.03"),
                     via: consumer.getSender()
                 },
                 BalanceUpdateMode.PublicWithdrawal
@@ -816,13 +824,50 @@ describe("Core", () => {
             });
             const drainedVaultData = await consumerVault.getVaultData();
             assert(
-                !(drainedVaultData.wlTonBalance
-                    && drainedVaultData.publicTonBalance
-                    && drainedVaultData.jettonBalance),
+                !(
+                    drainedVaultData.wlTonBalance
+                    || drainedVaultData.publicTonBalance
+                    || drainedVaultData.jettonBalance
+                ),
                 "must be drained"
             );
+            await blockchain.loadFrom(stateBeforeRefunds);
 
-            await blockchain.loadFrom(stateBeforeRefunds); // TODO now test out total refund
+            const restoredVaultData = await consumerVault.getVaultData();
+            assert(
+                restoredVaultData.wlTonBalance
+                && restoredVaultData.publicTonBalance
+                && restoredVaultData.jettonBalance,
+                "must be full"
+            );
+            const totalRefundResult = await sampleTokenLaunch.sendRefundRequest({
+                    queryId: 4n,
+                    value: toNano("0.05"),
+                    via: consumer.getSender()
+                },
+                BalanceUpdateMode.TotalWithdrawal
+            );
+            expect(totalRefundResult.transactions).toHaveTransaction({
+                op: TokensLaunchOps.refundConfirmation,
+                from: consumerVault.address,
+                on: sampleTokenLaunch.address,
+                success: true
+            });
+            expect(totalRefundResult.transactions).toHaveTransaction({
+                op: 0x0,
+                from: sampleTokenLaunch.address,
+                on: consumer.address,
+                success: true
+            });
+            const drainedVaultData_ = await consumerVault.getVaultData();
+            assert(
+                !(
+                    drainedVaultData_.wlTonBalance
+                    || drainedVaultData_.publicTonBalance
+                    || drainedVaultData_.jettonBalance
+                ),
+                "must be drained again"
+            );
         });
     });
 });

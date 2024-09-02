@@ -3,7 +3,7 @@
 
 ;; Just loader
 ;; It is made for only one purpose - load custom config, if it is provided with an ability to replace it with static one after operation
-() load_launch_config(cell launch_config) {
+() load_launch_config(cell launch_config) impure inline_ref {
     slice launch_config_slice = launch_config.begin_parse();
     launch_conf::min_ton_for_sale_success = launch_config_slice~load_coins();
     launch_conf::ton_limit_for_wl_round = launch_config_slice~load_coins();
@@ -16,7 +16,6 @@
     launch_conf::creator_round_duration_ms = launch_config_slice~load_int(32);
     launch_conf::wl_round_duration_ms = launch_config_slice~load_int(32);
     launch_conf::pub_round_duration_ms = launch_config_slice~load_int(32);
-    launch_conf::claim_duration_ms = launch_config_slice~load_int(32);
     launch_config_slice.end_parse();
 }
 
@@ -30,7 +29,6 @@ cell load_data() impure inline_ref {
     slice contarcts_slice = contracts.begin_parse();
     code::token_launch = contarcts_slice~load_ref();
     code::user_vault = contarcts_slice~load_ref();
-
     code::jetton_master = contarcts_slice~load_ref();
     code::jetton_wallet = contarcts_slice~load_ref();
     contarcts_slice.end_parse();
@@ -49,13 +47,15 @@ cell load_data() impure inline_ref {
     cell launch_config = begin_cell()
         .store_coins(launch_conf::min_ton_for_sale_success)
         .store_coins(launch_conf::ton_limit_for_wl_round)
+        .store_coins(launch_conf::penny)
+
         .store_uint(launch_conf::jet_wl_limit_pct, 16)
         .store_uint(launch_conf::jet_pub_limit_pct, 16)
         .store_uint(launch_conf::jet_dex_share_pct, 16)
+
         .store_int(launch_conf::creator_round_duration_ms, 32)
         .store_int(launch_conf::wl_round_duration_ms, 32)
         .store_int(launch_conf::pub_round_duration_ms, 32)
-        .store_int(launch_conf::claim_duration_ms, 32)
         .end_cell();
     cell data = begin_cell()
         .store_slice(this::chief)

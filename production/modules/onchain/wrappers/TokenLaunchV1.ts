@@ -2,7 +2,7 @@ import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, 
 import {
     BASECHAIN, BalanceUpdateMode, LaunchData, validateValue,
     QUERY_ID_LENGTH, SaleMoneyFlow, TokensLaunchOps,
-    OP_LENGTH, Coins, Contracts, LaunchConfigV1,
+    OP_LENGTH, Coins, Contracts, LaunchConfigV1, GetConfigResponse,
 } from "starton-periphery";
 import { randomAddress } from "@ton/test-utils";
 import { LaunchParams } from "./types";
@@ -51,7 +51,7 @@ export class TokenLaunchV1 implements Contract {
         });
     }
 
-    async sendPublicBuy(provider: ContractProvider, sendMessageParams: SendMessageParams) {
+    async sendPublicPurchase(provider: ContractProvider, sendMessageParams: SendMessageParams) {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
@@ -134,7 +134,7 @@ export class TokenLaunchV1 implements Contract {
         };
     }
 
-    async getConfig(provider: ContractProvider): Promise<any> {
+    async getConfig(provider: ContractProvider): Promise<GetConfigResponse> {
         let { stack } = await provider.get("get_config", []);
         return {
             wlRoundFutJetLimit: stack.readBigNumber(),
@@ -192,14 +192,6 @@ export class TokenLaunchV1 implements Contract {
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
-            .storeInt(
-                loadAtMax ? ThirtyTwoIntMaxValue : startTime
-                    + launchConfig.creatorRoundDurationMs
-                    + launchConfig.wlRoundDurationMs
-                    + launchConfig.pubRoundDurationMs
-                    + launchConfig.claimDurationMs,
-                32
-            )
             .endCell();
         const creatorRoundState = beginCell()
             .storeCoins(loadAtMax ? CoinsMaxValue : creatorBuybackJetLimit)
