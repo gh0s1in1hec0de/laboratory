@@ -6,7 +6,7 @@ import {
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import {
     BASECHAIN, CoreOps, LaunchConfigV2A, UserVaultOps, BalanceUpdateMode,
-    TokensLaunchOps, getAmountOut, jettonFromNano, validateValue,
+    TokensLaunchOps, getAmountOut, jettonFromNano, validateValue, getQueryId,
 } from "starton-periphery";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import { TokenLaunchV2A } from "../wrappers/TokenLaunchV2A";
@@ -465,16 +465,19 @@ describe("V2A", () => {
         test("wl purchase works correctly", async () => {
             blockchain.now = sampleLaunchStartTime + launchConfig.creatorRoundDurationMs + 1;
 
-            const totalPurchaseValue = toNano("1");
+            const totalPurchaseValue = toNano("5");
             const wlPurchaseResult = await sampleTokenLaunch.sendWhitelistPurchase({
-                queryId: 1n, // TODO replace with sorter
+                queryId: BigInt(getQueryId()),
                 value: totalPurchaseValue,
                 via: consumer.getSender()
             });
-            const wlPurchaseTx = findTransactionRequired(wlPurchaseResult.transactions, { op: TokensLaunchOps.wlPurchase });
+            const wlPurchaseTx = findTransactionRequired(wlPurchaseResult.transactions, {
+                op: TokensLaunchOps.wlPurchase,
+                success: true
+            });
             printTxGasStats("Whitelist purchase request transaction: ", wlPurchaseTx);
         });
-        test.skip("public buy works the proper way ", async () => {
+        test("public buy works the proper way ", async () => {
             blockchain.now = sampleLaunchStartTime + 1 + launchConfig.creatorRoundDurationMs + launchConfig.wlRoundDurationMs;
             const secondPublicBuyer = await blockchain.treasury("public_buyer_2");
             const [firstPublicBuyerVault, secondPublicBuyerVault] = await Promise.all(

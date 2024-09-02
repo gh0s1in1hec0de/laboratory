@@ -6,13 +6,13 @@ import { TokenLaunchStorageV2A } from "./V2A";
 import { TokenLaunchTimings } from "./types";
 
 export function parseTokenLaunchTimings(tokenLaunchStorage: TokenLaunchStorageV1 | TokenLaunchStorageV2A, pollingDuration: number = 14 * 86400): TokenLaunchTimings {
-  return {
-    startTime: new Date(tokenLaunchStorage.saleState.general.startTime * 1000),
-    creatorRoundEndTime: new Date(tokenLaunchStorage.saleState.creatorRound.endTime * 1000),
-    wlRoundEndTime: new Date(tokenLaunchStorage.saleState.wlRound.endTime * 1000),
-    publicRoundEndTime: new Date(tokenLaunchStorage.saleState.pubRound.endTime * 1000),
-    endTime: new Date(pollingDuration * 1000),
-  };
+    return {
+        startTime: new Date(tokenLaunchStorage.saleState.general.startTime * 1000),
+        creatorRoundEndTime: new Date(tokenLaunchStorage.saleState.creatorRound.endTime * 1000),
+        wlRoundEndTime: new Date(tokenLaunchStorage.saleState.wlRound.endTime * 1000),
+        publicRoundEndTime: new Date(tokenLaunchStorage.saleState.pubRound.endTime * 1000),
+        endTime: new Date(pollingDuration * 1000),
+    };
 }
 
 export function tokenMetadataToCell(content: TokenMetadata): Cell {
@@ -49,11 +49,22 @@ export function jettonFromNano(amount: number | bigint | string, decimals: numbe
     return fromNano(decimals < 9 ? BigInt(amount) * BigInt(9 - decimals) : amount);
 }
 
+export function getQueryId() {
+    const currentTimeMs = Date.now();
+    const secs = Math.floor(currentTimeMs / 1000);
+    const ms = currentTimeMs % 1000;
+
+    const remainder = secs % 17;
+    const closestDivisible = remainder ? secs - remainder : secs;
+
+    return closestDivisible * 1000 + ms;
+}
+
 export enum SortOrder {
-  ASC = 'ASC',
-  DESC = 'DESC'
+    ASC = "ASC",
+    DESC = "DESC"
 }
 
 export enum SortField {
-  CREATED_AT = 'created_at'
+    CREATED_AT = "created_at"
 }

@@ -26,15 +26,13 @@ export async function createBot(): Promise<Bot<MyContext>> {
     maybeBot.use(emojiParser());
     
     await maybeBot.api.setMyCommands(commands);
-  
     maybeBot.command("start", handleStartCommand);
-
     maybeBot.command("list_tokens").filter(getAdminFilter, async (ctx) => {
         await ctx.reply("Hello, admin!");
     });
   
     maybeBot.on("message", getUnknownMsgReply);
-  
+
     maybeBot.catch(handleBotError);
     
     await maybeBot.start();

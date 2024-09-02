@@ -93,11 +93,11 @@ export class TokenLaunchV2A implements Contract {
         });
     }
 
-    async sendDeployJet(provider: ContractProvider, sendMessageParams: SendMessageParams) {
+    async sendDeployJetton(provider: ContractProvider, sendMessageParams: SendMessageParams) {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
-            .storeUint(TokensLaunchOps.deployJet, OP_LENGTH)
+            .storeUint(TokensLaunchOps.deployJetton, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
             .endCell();
         await provider.internal(via, {

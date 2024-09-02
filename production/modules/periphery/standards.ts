@@ -28,7 +28,7 @@ export enum TokensLaunchOps {
     refundConfirmation = 0x6f7dbcd0,
     jettonClaimRequest = 0x16b3aef0,
     jettonClaimConfirmation = 0x349c1c7f,
-    deployJet = 0x71161970,
+    deployJetton = 0x71161970,
 }
 
 export enum UserVaultOps {
