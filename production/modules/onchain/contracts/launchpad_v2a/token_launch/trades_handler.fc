@@ -26,6 +26,8 @@
 
 () handle_wl_purchase(int query_id, int attached_value, slice initiator) impure inline {
     throw_if(error::wrong_time, (now() < creator_round::const::end_time) | (now() > wl_round::const::end_time));
+
+    throw_if(error::bad_request, (((query_id / 1000) % 17) != 0) | (query_id < 1000000));
     (int accessible_user_value, int opn) = check_amount_is_enough_for_wl_purchase(attached_value);
     (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
 
@@ -61,14 +63,16 @@
         public_round::const::fut_jet_limit += creator_round::fut_jet_left;
         creator_round::fut_jet_left = 0;
     }
+    if (public_round::synthetic_ton_reserve == 0) {
+        public_round::synthetic_ton_reserve = 10 * ONE_TON;
+    }
     ;; `user_value_after_fee` is always more than 0
     (int accessible_user_value, int opn) = check_amount_is_enough_for_public_purchase(attached_value);
     int res_jettons = get_amount_out(accessible_user_value, public_round::synthetic_ton_reserve, public_round::synthetic_jet_reserve);
 
     throw_unless(error::unreachable, res_jettons >= 0);
     throw_unless(error::balance_overlimit, public_round::const::fut_jet_limit >= public_round::fut_jet_sold + res_jettons);
-    throw_unless(error::balance_overlimit, general_state::fut_jet_inner_balance - wl_round::const::fut_jet_limit - res_jettons >= 0);
-    (_, _, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
+    (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
 
     ;; Taking care of our synthetic price controllers
     public_round::synthetic_ton_reserve += attached_value;
@@ -81,11 +85,10 @@
     this::operational_needs += opn;
 
     ;; Here we attach precise amount of money - as all the remainings gone on ivenstment
-    int msg_value = get_balance_update_gas_cost();
     cell msg = build_balance_update_message(
         user_vault_code,
         query_id,
-        msg_value,
+        get_balance_update_gas_cost(),
         sender_address,
         BALANCE_UPD_DEPOSIT_PUB,
         accessible_user_value,
@@ -110,7 +113,7 @@
     throw_unless(error::bad_request, (mode == 3) | (mode == 4) | (mode == 5));
     ;; We don't actually care about leftovers
     check_amount_is_enough_for_refund(attached_value);
-    (_, _, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
+    (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
 
 
     cell msg = build_balance_update_message(
@@ -126,7 +129,7 @@
 }
 
 () handle_refund_confirmation(int query_id, int _attached_value, slice sender_address, int wl_tons, int pub_tons, int jettons_to_charge_back, slice recipient) impure inline {
-    (_, _, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
+    (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
     verify_user_vault(user_vault_code, sender_address, recipient);
     int tons_to_refund = wl_tons + pub_tons;
 
@@ -138,7 +141,6 @@
         }
     }
     if (jettons_to_charge_back > 0) {
-        ;; TODO Look at this lines once more
         general_state::fut_jet_inner_balance += jettons_to_charge_back;
         public_round::fut_jet_sold -= jettons_to_charge_back;
     }
@@ -147,19 +149,22 @@
     (int pur_val, int opn) = validate_value(tons_to_refund, 0);
     this::operational_needs += opn;
 
+    ;; Here we reserve all the contract's money
+    raw_reserve(pur_val, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
+
     cell simple_transfer_message = begin_cell()
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(recipient)
-        .store_coins(pur_val)
+        .store_coins(0)
         .store_prefix_only_body()
         .store_op(0)
         .store_query_id(query_id)
         .end_cell();
-    send_raw_message(simple_transfer_message, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    send_raw_message(simple_transfer_message, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
 () handle_jetton_claim_request(int query_id, int attached_value, slice sender_address) impure inline {
-    (_, _, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
+    ( _, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
     ;; Don't need stateinit as if user vault doesn't exist - there is nothing to claim
     (_, slice user_vault_address) = calculate_user_vault_data(user_vault_code, sender_address);
     ;; We don't care about extra value as final operation (claimed jetton transfer) will take care about excesses
@@ -179,7 +184,7 @@
 }
 
 () handle_jetton_claim_confirmation(int query_id, int _attached_value, slice sender_address, int wl_tons, int jettons_to_send, slice recipient) impure inline {
-    (slice util_jet_wallet_address, _, slice fut_jet_wallet_address, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
+    (_, slice fut_jet_wallet_address, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
     verify_user_vault(user_vault_code, sender_address, recipient);
     int total_fut_jet_recipient_amount = jettons_to_send;
 

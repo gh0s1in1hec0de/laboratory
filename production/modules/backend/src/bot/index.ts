@@ -72,7 +72,7 @@ export async function createBot(): Promise<Bot<MyContext>> {
     });
 
     maybeBot.on("message", getUnknownMsgReply);
-  
+
     maybeBot.catch(handleBotError);
     
     await maybeBot.start();

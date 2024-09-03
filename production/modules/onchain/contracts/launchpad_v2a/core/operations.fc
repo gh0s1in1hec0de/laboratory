@@ -28,14 +28,6 @@
         .store_coins(total_supply)
         .store_coins(0)
         .store_coins(0)
-        .store_int(
-            start_time
-            + launch_conf::creator_round_duration_ms
-            + launch_conf::wl_round_duration_ms
-            + launch_conf::pub_round_duration_ms
-            + launch_conf::claim_duration_ms,
-            32
-        )
         .end_cell();
     cell creator_round_state = begin_cell()
         .store_coins(creator_buyback_jet_limit)
@@ -75,10 +67,8 @@
         .store_coins(launch_conf::min_ton_for_sale_success)
         .store_coins(dex_jet_share)
         .store_coins(platform_share)
-        .store_coins(0)
         .end_cell();
     cell tools = begin_cell()
-        .store_address_none()
         .store_address_none()
         .store_address_none()
         .store_ref(metadata_cell)
@@ -126,7 +116,7 @@
         .end_cell();
 
     send_raw_message(
-        simple_transfer(this::chief, launch_conf::penny, null()),
+        simple_transfer(this::chief, launch_conf::penny, "meow^^"),
         SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL
     );
     send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);

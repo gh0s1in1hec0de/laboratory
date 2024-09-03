@@ -1,5 +1,7 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
-import { SendMessageParams, tokenMetadataToCell } from "./utils";
+import { SendMessageParams, tokenMetadataToCell, packLaunchConfigToCellV2A } from "./utils";
+import { LaunchParams, UpgradeParams } from "./types";
+import { TokenLaunchV2A } from "./TokenLaunchV2A";
 import { JettonMaster } from "./JettonMaster";
 import { JettonWallet } from "./JettonWallet";
 import {
@@ -12,8 +14,6 @@ import {
     Contracts,
     CoreOps,
 } from "starton-periphery";
-import { LaunchParams, UpgradeParams } from "./types";
-import { TokenLaunchV2A } from "./TokenLaunchv2A";
 
 export class CoreV2A implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
@@ -38,14 +38,16 @@ export class CoreV2A implements Contract {
         });
     }
 
-    async sendCreateLaunch(provider: ContractProvider, sendMessageParams: SendMessageParams, params: LaunchParams) {
+    async sendCreateLaunch(provider: ContractProvider, sendMessageParams: SendMessageParams, params: LaunchParams, customConfig?: LaunchConfigV2A | Cell) {
         const { startTime, totalSupply, platformSharePct, metadata } = params;
         const { queryId, via, value } = sendMessageParams;
         const packagedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
+        const maybePackedConfig = customConfig ? (customConfig instanceof Cell ? customConfig : packLaunchConfigToCellV2A(customConfig)) : null;
 
         const body = beginCell()
             .storeUint(CoreOps.createLaunch, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
+            .storeMaybeRef(maybePackedConfig)
             .storeCoins(totalSupply)
             .storeUint(platformSharePct, 16)
             .storeRef(packagedMetadata)
@@ -77,20 +79,20 @@ export class CoreV2A implements Contract {
             minTonForSaleSuccess: stack.readBigNumber(),
             tonLimitForWlRound: stack.readBigNumber(),
             penny: stack.readBigNumber(),
+
             jetWlLimitPct: stack.readNumber(),
             jetPubLimitPct: stack.readNumber(),
             jetDexSharePct: stack.readNumber(),
+
             creatorRoundDurationMs: stack.readNumber(),
             wlRoundDurationMs: stack.readNumber(),
             pubRoundDurationMs: stack.readNumber(),
-            claimDurationMs: stack.readNumber(),
         };
     }
 
     // `../contracts/launchpad/core.operations.fc#L17`
     static tokenCreationMessage(
         creator: Address, chief: Address,
-        utilJettonMasterAddress: Address,
         createLaunchParams: LaunchParams,
         code: Contracts,
         staticLaunchParameters: LaunchConfigV2A
@@ -123,10 +125,7 @@ export class CoreV2A implements Contract {
             ownerAddress: tokenLaunch.address,
             jettonMasterAddress: futJetMaster.address
         }, code.jettonWallet);
-        const utilJetWalletAddress = JettonWallet.createFromConfig({
-            ownerAddress: tokenLaunch.address,
-            jettonMasterAddress: utilJettonMasterAddress
-        }, code.jettonWallet);
+
         return {
             tokenLaunchStateInit: data,
             stateInitCell: tokenLaunchStateInit,
@@ -134,7 +133,6 @@ export class CoreV2A implements Contract {
                 .storeUint(TokensLaunchOps.init, 32)
                 .storeUint(0, 64)
                 .storeAddress(tokenLaunchFutJetWalletAddress.address)
-                .storeAddress(utilJetWalletAddress.address)
                 .storeAddress(futJetMaster.address)
                 .endCell()
         };
@@ -147,20 +145,9 @@ export class CoreV2A implements Contract {
             .storeRef(state.contracts.jettonMaster)
             .storeRef(state.contracts.jettonWallet)
             .endCell();
-        const launchConfigCell = beginCell()
-            .storeCoins(state.launchConfig.minTonForSaleSuccess)
-            .storeCoins(state.launchConfig.tonLimitForWlRound)
-            .storeUint(state.launchConfig.jetWlLimitPct, 16)
-            .storeUint(state.launchConfig.jetPubLimitPct, 16)
-            .storeUint(state.launchConfig.jetDexSharePct, 16)
-            .storeInt(state.launchConfig.creatorRoundDurationMs, 32)
-            .storeInt(state.launchConfig.wlRoundDurationMs, 32)
-            .storeInt(state.launchConfig.pubRoundDurationMs, 32)
-            .storeInt(state.launchConfig.claimDurationMs, 32)
-            .endCell();
         return beginCell()
             .storeAddress(state.chief)
-            .storeRef(launchConfigCell)
+            .storeRef(packLaunchConfigToCellV2A(state.launchConfig))
             .storeRef(contractsCell)
             .endCell();
     }

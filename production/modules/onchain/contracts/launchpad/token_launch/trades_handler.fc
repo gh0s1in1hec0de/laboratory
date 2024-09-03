@@ -90,13 +90,16 @@
         creator_round::fut_jet_left = 0;
     }
 
+    if (public_round::synthetic_ton_reserve == 0) {
+        public_round::synthetic_ton_reserve = 10 * ONE_TON;
+    }
+
     ;; `user_value_after_fee` is always more than 0
     (int accessible_user_value, int opn) = check_amount_is_enough_for_public_purchase(attached_value);
     int res_jettons = get_amount_out(accessible_user_value, public_round::synthetic_ton_reserve, public_round::synthetic_jet_reserve);
 
     throw_unless(error::unreachable, res_jettons >= 0);
     throw_unless(error::balance_overlimit, public_round::const::fut_jet_limit >= public_round::fut_jet_sold + res_jettons);
-    throw_unless(error::balance_overlimit, general_state::fut_jet_inner_balance - wl_round::const::fut_jet_limit - res_jettons >= 0);
     (_, _, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
 
     ;; Taking care of our synthetic price controllers
@@ -243,7 +246,6 @@
         creator_round::fut_jet_balance = 0;
     }
 
-    ;; TODO creator remainings
     int total_amount_destributed_amount_users = wl_round::const::fut_jet_limit + public_round::const::fut_jet_limit;
     int utility_tokens_to_reward_user = muldiv(
         config::const::reward_util_jets_total_amount,

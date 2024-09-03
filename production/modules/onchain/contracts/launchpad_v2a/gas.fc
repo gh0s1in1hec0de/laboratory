@@ -93,7 +93,7 @@ int get_balance_update_gas_cost() inline_ref {
 }
 
 ;; As we don't have any external calls, we accounting only code execution fees
-const CREATOR_BUYOUT_GAS_CONSUMPTION = 14561;
+const CREATOR_BUYOUT_GAS_CONSUMPTION = 13552;
 (int, int) check_amount_is_enough_for_creator_buyout(int msg_value) impure inline {
     int fee = get_compute_fee(MY_WORKCHAIN, CREATOR_BUYOUT_GAS_CONSUMPTION);
     return validate_value(msg_value, fee);

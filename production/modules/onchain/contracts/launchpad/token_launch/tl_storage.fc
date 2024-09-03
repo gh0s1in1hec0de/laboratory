@@ -10,7 +10,6 @@
         .store_coins(general_state::fut_jet_deployed_balance)
         .store_coins(general_state::total_tons_collected)
         .store_coins(general_state::reward_util_jets_balance)
-        .store_int(general_state::const::end_time, 32)
         .end_cell();
     cell creator_round_state = begin_cell()
         .store_coins(creator_round::fut_jet_left)
@@ -88,7 +87,6 @@
     general_state::fut_jet_deployed_balance = general_state_slice~load_coins();
     general_state::total_tons_collected = general_state_slice~load_coins();
     general_state::reward_util_jets_balance = general_state_slice~load_coins();
-    general_state::const::end_time = general_state_slice~load_int(32);
     general_state_slice.end_parse();
 
     slice creator_round_state_slice = creator_round_state.begin_parse();

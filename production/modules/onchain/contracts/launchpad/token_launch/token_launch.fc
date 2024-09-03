@@ -229,14 +229,13 @@ slice get_user_vault_address(slice user_address) method_id {
 }
 
 ;; Shouldn't exist as we must read this data from initialization
-(int, int, int, int, int) get_sale_timings() method_id {
+(int, int, int, int) get_sale_timings() method_id {
     load_data();
     return (
         general_state::const::start_time,
         creator_round::const::end_time,
         wl_round::const::end_time,
-        public_round::const::end_time,
-        general_state::const::end_time
+        public_round::const::end_time
     );
 }
 

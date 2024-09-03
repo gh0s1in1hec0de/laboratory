@@ -27,8 +27,6 @@ global int   general_state::fut_jet_inner_balance;
 global int   general_state::reward_util_jets_balance;
 global int   general_state::fut_jet_deployed_balance;
 global int   general_state::total_tons_collected;
-;; End of launch itself, you can't claim tokens after this time
-global int   general_state::const::end_time;
 
 global int   creator_round::fut_jet_left;
 ;; Amount of tokens, that creator bought back

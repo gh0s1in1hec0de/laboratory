@@ -121,11 +121,10 @@ slice calculate_contract_address(cell state_init) inline_ref {
         .begin_parse();
 }
 
-cell pack_user_vault_data(slice owner_address, slice launch_contract_address, int has_whitelist?, int wl_invested, int public_invested, int jetton_balance) inline {
+cell pack_user_vault_data(slice owner_address, slice launch_contract_address, int wl_invested, int public_invested, int jetton_balance) inline {
     return begin_cell()
         .store_slice(owner_address)
         .store_slice(launch_contract_address)
-        .store_bool(has_whitelist?)
         .store_coins(wl_invested)
         .store_coins(public_invested)
         .store_coins(jetton_balance)
@@ -138,7 +137,6 @@ cell pack_user_vault_data(slice owner_address, slice launch_contract_address, in
         pack_user_vault_data(
             sender_address,
             my_address(),
-            FALSE,
             0,
             0,
             0
@@ -217,7 +215,7 @@ cell simple_transfer(slice dest, int value, slice comment) {
         .store_coins(value)
         .store_prefix_only_body()
         .store_op(0);
-    if (comment.slice_bits() > 0) {
+    ifnot (null?(comment)) {
         msg = msg.store_slice(comment);
     }
     return msg.end_cell();

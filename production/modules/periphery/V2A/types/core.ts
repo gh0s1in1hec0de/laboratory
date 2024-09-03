@@ -14,7 +14,6 @@ export type LaunchConfigV2A = {
     creatorRoundDurationMs: number,
     wlRoundDurationMs: number,
     pubRoundDurationMs: number,
-    claimDurationMs: number,
 };
 
 export type CoreStateV2A = {
