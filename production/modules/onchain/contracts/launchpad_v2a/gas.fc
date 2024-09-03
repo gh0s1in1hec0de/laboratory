@@ -24,8 +24,8 @@ const JETTON_MIN_TRANSFER_FEE = 30000000;
 ;; https://docs.ton.org/develop/smart-contracts/fees#fees-for-sending-ton
 const SIMPLE_TRANSFER_FEE = 6000000;
 
-const USER_VAULT_STATE_BITS  = 5956;
-const USER_VAULT_STATE_CELLS = 19;
+const USER_VAULT_STATE_BITS  = 5092;
+const USER_VAULT_STATE_CELLS = 17;
 ;; Use `loadAtMax` to measure
 const TOKEN_LAUNCH_STATE_BITS  = 48697;
 const TOKEN_LAUNCH_STATE_CELLS = 122;
@@ -50,7 +50,7 @@ const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
 ;; resulting gas consumption is printed to the console.
 
 int calculate_user_vault_min_storage_fee(int duration) inline {
-    return get_storage_fee(MY_WORKCHAIN, 2_MONTHS, USER_VAULT_STATE_BITS, USER_VAULT_STATE_CELLS);
+    return get_storage_fee(MY_WORKCHAIN, duration, USER_VAULT_STATE_BITS, USER_VAULT_STATE_CELLS);
 }
 
 int calculate_token_launch_min_storage_fee(int duration) inline {
@@ -72,7 +72,7 @@ int forward_token_launch_init_state_overhead() inline {
 const BALANCE_UPDATE_MSG_BITS = 348;
 const BALANCE_UPDATE_MSG_CELLS = 1;
 ;; Wl mode as the most consumpting were taken
-const RECEIVE_BALANCE_UPDATE_CONSUMPTION = 7477;
+const RECEIVE_BALANCE_UPDATE_CONSUMPTION = 10000;
 ;;; Accounts unified balance-update message forwarding, user vault stateinit & storage fee overhead
 ;;; and receiving balance update gas consumption
 int get_balance_update_gas_cost() inline_ref {
@@ -100,8 +100,7 @@ const CREATOR_BUYOUT_GAS_CONSUMPTION = 13552;
 }
 
 ;; === Whitelist Purchase ===
-const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 26660;
-const WL_CALLBACK_MSG_BITS = 364;
+const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 20558;
 (int, int) check_amount_is_enough_for_wl_purchase(int msg_value) impure inline {
     return validate_value(
         msg_value,
@@ -110,7 +109,7 @@ const WL_CALLBACK_MSG_BITS = 364;
 }
 
 ;; === Public Purchase ===
-const PUB_PURCHASE_GAS_CONSUMPTION = 22271;
+const PUB_PURCHASE_GAS_CONSUMPTION = 21374;
 (int, int) check_amount_is_enough_for_public_purchase(int msg_value) impure inline {
     return validate_value(
         msg_value,
@@ -132,30 +131,31 @@ const REFUND_CONFIRMATION_GAS_CONSUMPTION = 19305;
 }
 
 ;; === Token Deploy ===
-const DEPLOY_JETTON_GAS_CONSUMPTION = 1; ;; This is code we call on token launch's side
-const MINT_MSG_BITS = 1;
-const MINT_MSG_CELLS = 1;
-const MINT_GAS_CONSUMPTION = 1;
-const ACCEPT_MINTED_JETTONS_GAS_CONSUMPTION = 1;
+const DEPLOY_JETTON_REQUEST_GAS_CONSUMPTION = 15247; ;; This is code we call on token launch's side
+const MINT_MSG_BITS = 1366;
+const MINT_MSG_CELLS = 3;
+const MINT_REQUEST_GAS_CONSUMPTION = 8420;
+const MEMORY_SAFER = ONE_TON / 10;
+const ACCEPT_MINTED_JETTONS_GAS_CONSUMPTION = 10000;
 ;; See jetton_operating.fc#L103
-const JETTON_TRANSFER_FORWARD_PAYLOAD_BITS = 1;
-const JETTON_TRANSFER_FORWARD_PAYLOAD_CELLS = 1;
+const JETTON_TRANSFER_FORWARD_PAYLOAD_BITS = 0;
+const JETTON_TRANSFER_FORWARD_PAYLOAD_CELLS = 0;
 const CLAIM_ADMIN_MSG_BITS = 1;
 const CLAIM_ADMIN_MSG_CELLS = 1;
 const CLAIM_ADMIN_GAS_CONSUMPTION = 1;
-;;; Warning! This function does not include computation fee on token launch's side
 int get_jetton_deployment_gas_cost() inline_ref {
-    return get_forward_fee(MY_WORKCHAIN, MINT_MSG_BITS, MINT_MSG_CELLS)
+    return get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_REQUEST_GAS_CONSUMPTION)
+    + get_forward_fee(MY_WORKCHAIN, MINT_MSG_BITS, MINT_MSG_CELLS)
     + forward_jetton_minter_init_state_overhead()
-    + get_compute_fee(MY_WORKCHAIN, MINT_GAS_CONSUMPTION)
+    ;; ONE_TON is needed for memory safety check of jetton
+    + get_compute_fee(MY_WORKCHAIN, MINT_REQUEST_GAS_CONSUMPTION) + MEMORY_SAFER
     + JETTON_MIN_TRANSFER_FEE * 2 ;; Multiply on 2 as we send DEX part of tokens to chief in the same operation
-    + get_forward_fee(MY_WORKCHAIN, JETTON_TRANSFER_FORWARD_PAYLOAD_BITS, JETTON_TRANSFER_FORWARD_PAYLOAD_CELLS)
     + get_forward_fee(MY_WORKCHAIN, CLAIM_ADMIN_MSG_BITS, CLAIM_ADMIN_MSG_CELLS)
     + get_compute_fee(MY_WORKCHAIN, CLAIM_ADMIN_GAS_CONSUMPTION);
 }
 
 ;; === Jetton Claim ===
-
+;; TODO Smells like its overcomplicated
 ;; Don't need stateinit as if vault doesn't exist, then there is nothing to claim
 const RECEIVE_CLAIM_CONSUMPTION = 1;
 int get_claim_gas_cost() inline_ref {
@@ -185,15 +185,15 @@ int check_amount_is_enough_for_jetton_claim(int msg_value) impure inline {
 const CREATE_LAUNCH_GAS_CONSUMPTION = 32504;
 ;; Manual bits counting from core/operations.fc#L~120
 const INIT_MSG_BITS = 897; ;; 32 + 64 + 3 x (3+8+256)
-const INIT_MSG_CELLS = 2; ;; body in ref + stateinit in ref (TODO should it be accounted here?)
+const INIT_MSG_CELLS = 2; ;; body in ref + stateinit in ref (I don't know exactly if I should account it here, so be it)
 const INITIALIZATION_GAS_CONSUMPTION = 15320;
 int get_amount_for_token_launch_deploy() inline {
     return get_compute_fee(MY_WORKCHAIN, CREATE_LAUNCH_GAS_CONSUMPTION)
     + get_forward_fee(MY_WORKCHAIN, INIT_MSG_BITS, INIT_MSG_CELLS)
-    + calculate_token_launch_min_storage_fee(2_MONTHS)
     + forward_token_launch_init_state_overhead()
     + get_compute_fee(MY_WORKCHAIN, INITIALIZATION_GAS_CONSUMPTION)
     ;; Creator of new token launch should pay for the future jetton deployment
-    + get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_GAS_CONSUMPTION)
-    + get_jetton_deployment_gas_cost();
+    + get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_REQUEST_GAS_CONSUMPTION)
+    + get_jetton_deployment_gas_cost()
+    + calculate_token_launch_min_storage_fee(2_MONTHS);
 }

@@ -17,7 +17,7 @@ const op::tl::wl_callback = 0x390f7cfd;
 const op::tl::public_purchase = 0x32626062;
 const op::tl::jetton_claim_request = 0x16b3aef0;
 const op::tl::jetton_claim_confirmation = 0x349c1c7f;
-const op::tl::refund_request = 0x7b4587a1;
+const op::tl::refund_request = 0x7b4587a1; ;; 2068154273
 const op::tl::refund_confirmation = 0x6f7dbcd0;
 const op::tl::deploy_jet = 0x71161970;
 

@@ -68,7 +68,7 @@ cell build_withdraw_confirmation_message(int is_refund?, int query_id, int wl_to
         send_raw_message(msg, get_withdraw_message_mode());
     }
     if (mode == BALANCE_UPD_WITHDRAWAL_PUB) {
-        throw_if(error::balance_lack, this::public_ton_balance > 0);
+        throw_unless(error::balance_lack, this::public_ton_balance > 0);
         int pub_tons = this::public_ton_balance;
         int jettons_to_restore = this::jetton_balance;
 

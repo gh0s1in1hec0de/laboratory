@@ -81,37 +81,39 @@
     ;; as we've after sending fees we will have lower balance, than it was before compute phase
     ;; Should I change reserving system or attach SIMPLE_TRANSFER_FEE to all the fees? Second one sound bit idiotic :?
     if (this::operational_needs > ONE_TON) {
-        cell msg = simple_transfer(this::const::chief_address, this::operational_needs, "");
-        send_raw_message(msg, SEND_MODE_IGNORE_ERRORS);
+        cell msg = simple_transfer(this::const::chief_address, this::operational_needs, "meow");
+        send_raw_message(msg, SEND_MODE_REGULAR);
+        this::operational_needs = 0;
     }
 
     ;; - CN: can be sent by anyone
     ;; if there is a commission balance, returns it back to the user
     if (op == op::tl::creator_buyout) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::creator_address));
-        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        raw_reserve(attached_value, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
         handle_creator_buyout(query_id, attached_value);
         save_data();
         return ();
     }
     if (op == op::tl::wl_purchase) {
-        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        raw_reserve(attached_value, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
         handle_wl_purchase(query_id, attached_value, sender_address);
         save_data();
         return ();
     }
     if (op == op::tl::public_purchase) {
-        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        raw_reserve(attached_value, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
         handle_public_purchase(query_id, attached_value, sender_address);
         save_data();
         return ();
     }
     if (op == op::tl::refund_request) {
-        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        raw_reserve(attached_value, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
         handle_refund_request(query_id, attached_value, sender_address, in_msg_body~load_uint(4));
         return ();
     }
     if (op == op::tl::refund_confirmation) {
+
         handle_refund_confirmation(
             query_id,
             attached_value,
@@ -129,13 +131,12 @@
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::chief_address));
         accept_message();
         ;; 2 checks here - that we have collected enough money for jetton deploy and that contract has money for all the additional spendings
-        throw_if(error::balance_lack, general_state::total_tons_collected < config::const::min_ton_for_sale_success);
+        throw_if(error::bad_request, general_state::total_tons_collected < config::const::min_ton_for_sale_success);
         int launch_success_treshold =
         general_state::total_tons_collected + this::operational_needs
-        + get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_GAS_CONSUMPTION)
         + get_jetton_deployment_gas_cost()
         + calculate_token_launch_min_storage_fee(1_MONTH);
-        throw_if(error::balance_lack, contract_balance < launch_success_treshold);
+        throw_arg_if(launch_success_treshold - contract_balance,error::balance_lack, contract_balance < launch_success_treshold);
 
         deploy_launch_jetton();
         return ();

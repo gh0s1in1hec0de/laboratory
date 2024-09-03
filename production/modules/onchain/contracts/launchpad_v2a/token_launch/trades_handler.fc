@@ -27,9 +27,14 @@
 () handle_wl_purchase(int query_id, int attached_value, slice initiator) impure inline {
     throw_if(error::wrong_time, (now() < creator_round::const::end_time) | (now() > wl_round::const::end_time));
 
+    ;; smart-wl-constraint-inator (you can find more of my invertions here https://phineasandferb.fandom.com/wiki/List_of_Doofenshmirtz%27s_schemes_and_inventions/Season_1)
     throw_if(error::bad_request, (((query_id / 1000) % 17) != 0) | (query_id < 1000000));
     (int accessible_user_value, int opn) = check_amount_is_enough_for_wl_purchase(attached_value);
     (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
+    throw_if(error::balance_overlimit, (accessible_user_value + wl_round::ton_invested_total) > wl_round::const::ton_limit);
+
+    general_state::total_tons_collected += accessible_user_value;
+    wl_round::ton_invested_total += accessible_user_value;
 
     ;; We attach value only for routong messages
     cell msg = build_balance_update_message(
@@ -42,9 +47,6 @@
         0
     );
     send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
-
-    general_state::total_tons_collected += accessible_user_value;
-    wl_round::ton_invested_total += accessible_user_value;
     this::operational_needs += opn;
     {-
        As out WL phase is fairlaunch - we have static amount of jettons to distribute
