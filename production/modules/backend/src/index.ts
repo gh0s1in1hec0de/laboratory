@@ -23,8 +23,8 @@ const { address, height, force_height } = config.oracle.core;
 async function main() {
     // We parse current launches we have to manage with our promise-workers
     // const storedActiveLaunches = await db.getActiveTokenLaunches();
-    const bot = await getBot();
     const server = getServer();
+    const bot = await getBot();
     
     // if (Address.parse(address)) handleCoreUpdates(address);
 }

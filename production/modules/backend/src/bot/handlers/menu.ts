@@ -1,13 +1,14 @@
+import { getMenuKeyboard, getMenuReply } from "../constants";
 import { type CommandContext } from "grammy";
-import { getStartReply } from "../constants";
 import type { MyContext } from "../index";
 import { logger } from "../../logger";
 
-export async function handleStartCommand(ctx: CommandContext<MyContext>): Promise<void> {
+export async function handleMenuCommand(ctx: CommandContext<MyContext>): Promise<void> {
     try {
-        const startText = getStartReply(ctx);
+        const startText = getMenuReply(ctx);
         await ctx.reply(startText, {
             parse_mode: "HTML",
+            reply_markup: getMenuKeyboard()
         });
     } catch (error) {
         if (error instanceof Error) {

@@ -1,4 +1,12 @@
-import type { Coins, LamportTime, RawAddressString, TokenLaunchTimings, TokenMetadata } from "starton-periphery";
+import {
+    type Coins,
+    type LamportTime,
+    type RawAddressString,
+    SortOrder,
+    TokenLaunchFields,
+    type TokenLaunchTimings,
+    type TokenMetadata
+} from "starton-periphery";
 import { BalanceUpdateMode } from "starton-periphery";
 import type { Sql } from "postgres";
 
@@ -24,9 +32,19 @@ export type Caller = {
 export type StoredTokenLaunch = {
     address: RawAddressString,
     creator: RawAddressString,
+    name: string,
     metadata: TokenMetadata,
     timings: TokenLaunchTimings,
+    createdAt: Date,
 };
+
+export interface StoredTokenLaunchRequest {
+  page: number,
+  limit: number,
+  sort: TokenLaunchFields,
+  order: SortOrder,
+  search?: string,
+}
 
 export interface StoredTokenLaunchResponse {
   storedTokenLaunch: StoredTokenLaunch[],

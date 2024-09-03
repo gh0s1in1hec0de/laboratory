@@ -1,6 +1,5 @@
-import type { SqlClient, StoredTokenLaunch, StoredTokenLaunchResponse } from "./types";
+import type { SqlClient, StoredTokenLaunch, StoredTokenLaunchRequest, StoredTokenLaunchResponse } from "./types";
 import type { RawAddressString } from "starton-periphery";
-import { SortOrder, SortField } from "starton-periphery";
 import { ok as assert } from "assert";
 import { globalClient } from "./db";
 
@@ -41,20 +40,22 @@ export async function storeTokenLaunch(
 }
 
 export async function getSortedTokenLaunches(
-    page: number,
-    limit: number,
-    sort: SortField,
-    order: SortOrder,
-    search: string,
+    {
+        page,
+        limit,
+        sort,
+        order,
+        search,
+    }: StoredTokenLaunchRequest,
     client?: SqlClient
 ): Promise<StoredTokenLaunchResponse | null> {
     const offset = (page - 1) * limit;
-  
+
     const res = await (client || globalClient)<StoredTokenLaunch[]>`
       SELECT *
       FROM token_launches
       WHERE name ILIKE ${`%${search}%`}
-      ORDER BY ${sort} ${globalClient.unsafe(order)}
+      ORDER BY ${globalClient.unsafe(sort)} ${globalClient.unsafe(order)}
       LIMIT ${limit + 1} OFFSET ${offset}
   `;
   

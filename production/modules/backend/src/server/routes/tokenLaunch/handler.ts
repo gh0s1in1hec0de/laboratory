@@ -1,6 +1,5 @@
-import { getSortedTokenLaunches, type StoredTokenLaunchResponse } from "../../../db";
-import type { GetTokenLaunchesRequest } from "./types";
-import { logger } from "../../../logger.ts";
+import { getSortedTokenLaunches, type StoredTokenLaunchRequest, type StoredTokenLaunchResponse } from "../../../db";
+import { logger } from "../../../logger";
 import { ok as assert } from "assert";
 
 export async function getTokenLaunches({
@@ -9,15 +8,15 @@ export async function getTokenLaunches({
     order,
     search = "",
     limit
-}: GetTokenLaunchesRequest): Promise<StoredTokenLaunchResponse | undefined> {
+}: StoredTokenLaunchRequest): Promise<StoredTokenLaunchResponse | undefined> {
     try {
-        const res = await getSortedTokenLaunches(
+        const res = await getSortedTokenLaunches({
             page,
             limit,
             sort,
             order,
-            search
-        );
+            search: search.replace(/\+/g, " ")
+        });
         assert(res, "token launches not found");
         return res;
     } catch (e){

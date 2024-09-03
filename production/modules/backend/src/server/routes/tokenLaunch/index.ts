@@ -7,21 +7,7 @@ export function TokenLaunchRoutes() {
     return new Elysia({ prefix: "/tokenLaunches" })
         .get(
             "/",
-            ({
-                query: {
-                    page,
-                    limit,
-                    sort,
-                    order,
-                    search
-                }
-            }) => getTokenLaunches({
-                page,
-                limit,
-                sort,
-                order,
-                search
-            }),
+            ({ query }) => getTokenLaunches(query),
             {
                 query: GetTokenLaunchesSchema,
                 ...createDetailsForEndpoint(SwaggerTags.TokenLaunch)

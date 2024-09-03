@@ -65,6 +65,6 @@ export enum SortOrder {
     DESC = "DESC"
 }
 
-export enum SortField {
+export enum TokenLaunchFields {
     CREATED_AT = "created_at"
 }
