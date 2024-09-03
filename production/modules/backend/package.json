@@ -17,6 +17,7 @@
   "dependencies": {
     "@elysiajs/swagger": "^1.1.1",
     "@grammyjs/emoji": "^1.2.0",
+    "@grammyjs/hydrate": "^1.4.1",
     "@orbs-network/ton-access": "^2.3.3",
     "@ton/core": "^0.56.3",
     "@ton/ton": "^14.0.0",
