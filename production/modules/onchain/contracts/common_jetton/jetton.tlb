@@ -128,7 +128,7 @@ change_admin#6501f354
   new_admin_address:MsgAddress
   = JettonMinterMsg;
 
-claim_admin#fb88e119
+revoke_admin#471ffff3 
   query_id:uint64
   = JettonMinterMsg;
 

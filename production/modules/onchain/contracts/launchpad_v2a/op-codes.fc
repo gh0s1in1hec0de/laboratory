@@ -1,6 +1,6 @@
 ;; Jetton Startndard OPs
 const op::mint = 0x642b7d07; ;; Only master can handle it
-const op::claim_admin = 0xfb88e119;
+const op::revoke_admin = 0x471ffff3; ;; 1193279475
 const op::internal_transfer = 0x178d4519; ;; 395134233
 const op::transfer = 0xf8a7ea5; ;; 260734629
 const op::transfer_notification = 0x7362d09c; ;; 1935855772
@@ -18,7 +18,7 @@ const op::tl::public_purchase = 0x32626062;
 const op::tl::jetton_claim_request = 0x16b3aef0;
 const op::tl::jetton_claim_confirmation = 0x349c1c7f;
 const op::tl::refund_request = 0x7b4587a1; ;; 2068154273
-const op::tl::refund_confirmation = 0x6f7dbcd0;
+const op::tl::refund_confirmation = 0x6f7dbcd0; ;; 1870511312
 const op::tl::deploy_jet = 0x71161970;
 
 const op::uv::balance_update = 0x00399d7a;

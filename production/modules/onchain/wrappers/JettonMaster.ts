@@ -1,6 +1,6 @@
-import { JettonWallet } from "./JettonWallet";
-import { TokenMetadata } from "starton-periphery";
+import { endParse, TokenMetadata } from "starton-periphery";
 import { tokenMetadataToCell } from "./utils";
+import { JettonWallet } from "./JettonWallet";
 import { JettonOps } from "./JettonConstants";
 import {
     ContractProvider,
@@ -15,61 +15,35 @@ import {
     Cell,
 } from "@ton/core";
 
-export type JettonMinterConfig = {
-    admin: Address,
-    wallet_code: Cell,
-    jetton_content: Cell | TokenMetadata
-};
-export type JettonMinterConfigFull = {
+export type JettonMasterConfig = {
     supply: bigint,
     admin: Address,
-    //Makes no sense to update transfer admin. ...Or is it?
-    transfer_admin: Address | null,
-    wallet_code: Cell,
-    jetton_content: Cell | TokenMetadata
-}
+    walletCode: Cell,
+    jettonContent: Cell | TokenMetadata
+};
 
-export function endParse(slice: Slice) {
-    if (slice.remainingBits > 0 || slice.remainingRefs > 0) {
-        throw new Error("remaining bits in data");
-    }
-}
-
-export function jettonMinterConfigCellToConfig(config: Cell): JettonMinterConfigFull {
+export function jettonMinterConfigCellToConfig(config: Cell): JettonMasterConfig {
     const sc = config.beginParse();
-    const parsed: JettonMinterConfigFull = {
+    const parsed: JettonMasterConfig = {
         supply: sc.loadCoins(),
         admin: sc.loadAddress(),
-        transfer_admin: sc.loadMaybeAddress(),
-        wallet_code: sc.loadRef(),
-        jetton_content: sc.loadRef()
+        walletCode: sc.loadRef(),
+        jettonContent: sc.loadRef()
     };
     endParse(sc);
     return parsed;
 }
 
-export function parseJettonMinterData(data: Cell): JettonMinterConfigFull {
+export function parseJettonMinterData(data: Cell): JettonMasterConfig {
     return jettonMinterConfigCellToConfig(data);
 }
 
-export function jettonMinterConfigFullToCell(config: JettonMinterConfigFull): Cell {
-    const content = config.jetton_content instanceof Cell ? config.jetton_content : tokenMetadataToCell(config.jetton_content);
-    return beginCell()
-        .storeCoins(config.supply)
-        .storeAddress(config.admin)
-        .storeAddress(config.transfer_admin)
-        .storeRef(config.wallet_code)
-        .storeRef(content)
-        .endCell();
-}
-
-export function jettonMinterConfigToCell(config: JettonMinterConfig): Cell {
-    const content = config.jetton_content instanceof Cell ? config.jetton_content : tokenMetadataToCell(config.jetton_content);
+export function jettonMinterConfigToCell(config: JettonMasterConfig): Cell {
+    const content = config.jettonContent instanceof Cell ? config.jettonContent : tokenMetadataToCell(config.jettonContent);
     return beginCell()
         .storeCoins(0)
         .storeAddress(config.admin)
-        .storeAddress(null) // Transfer admin address
-        .storeRef(config.wallet_code)
+        .storeRef(config.walletCode)
         .storeRef(content)
         .endCell();
 }
@@ -82,7 +56,7 @@ export class JettonMaster implements Contract {
         return new JettonMaster(address);
     }
 
-    static createFromConfig(config: JettonMinterConfig, code: Cell, workchain = 0) {
+    static createFromConfig(config: JettonMasterConfig, code: Cell, workchain = 0) {
         const data = jettonMinterConfigToCell(config);
         const init = { code, data };
         return new JettonMaster(contractAddress(workchain, init), init);
@@ -225,28 +199,6 @@ export class JettonMaster implements Contract {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: JettonMaster.changeAdminMessage(newOwner),
             value: toNano("0.1"),
-        });
-    }
-
-    static claimAdminMessage(query_id: bigint = 0n) {
-        return beginCell().storeUint(JettonOps.ClaimAdmin, 32).storeUint(query_id, 64).endCell();
-    }
-
-    static parseClaimAdmin(slice: Slice) {
-        const op = slice.loadUint(32);
-        if (op !== JettonOps.ClaimAdmin) throw new Error("Invalid op");
-        const queryId = slice.loadUint(64);
-        endParse(slice);
-        return {
-            queryId
-        };
-    }
-
-    async sendClaimAdmin(provider: ContractProvider, via: Sender, query_id: bigint = 0n) {
-        await provider.internal(via, {
-            sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: JettonMaster.claimAdminMessage(query_id),
-            value: toNano("0.1")
         });
     }
 

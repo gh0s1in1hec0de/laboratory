@@ -3,7 +3,7 @@ import { logger } from "../../../logger";
 import { ok as assert } from "assert";
 
 export async function getTokenLaunches({
-    sort,
+    sortBy,
     page,
     order,
     search = "",
@@ -13,7 +13,7 @@ export async function getTokenLaunches({
         const res = await getSortedTokenLaunches({
             page,
             limit,
-            sort,
+            sortBy: sort,
             order,
             search: search.replace(/\+/g, " ")
         });

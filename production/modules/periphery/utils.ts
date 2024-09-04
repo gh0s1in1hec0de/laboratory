@@ -1,4 +1,4 @@
-import { beginCell, Cell, fromNano, toNano } from "@ton/core";
+import { beginCell, Cell, fromNano, Slice, toNano } from "@ton/core";
 import { ok as assert } from "node:assert";
 import { Coins, TokenMetadata } from "./standards";
 import { TokenLaunchStorageV1 } from "./V1";
@@ -20,6 +20,14 @@ export function tokenMetadataToCell(content: TokenMetadata): Cell {
         .storeStringRefTail(content.uri) // Snake logic under the hood
         .endCell();
 }
+
+
+export function endParse(slice: Slice) {
+    if (slice.remainingBits > 0 || slice.remainingRefs > 0) {
+        throw new Error("remaining bits in data");
+    }
+}
+
 
 export function validateValue(total: Coins, fee: Coins): { purified: Coins, opn: Coins } {
     assert(!(fee > total), "not enough gas");

@@ -38,10 +38,8 @@
         } else {
             load_launch_config(launch_conf);
         }
-        throw_unless(
-            error::not_enough_gas,
-            attached_value > (launch_conf::penny + my_storage_due() + get_amount_for_token_launch_deploy())
-        );
+        int total_cost = launch_conf::penny + calculate_core_min_storage_fee(10 * ONE_DAY) + get_amount_for_token_launch_deploy();
+        throw_if(error::not_enough_gas, attached_value < total_cost);
         create_launch(
             query_id,
             sender_address,
@@ -50,6 +48,15 @@
             in_msg_body~load_ref(),
             in_msg_body~load_int(32)
         );
+        cell msg = begin_cell()
+            .store_msg_flags_and_address_none(NON_BOUNCEABLE)
+            .store_slice(sender_address)
+            .store_coins(attached_value - total_cost)
+            .store_prefix_only_body()
+            .store_op(op::excesses)
+            .store_query_id(query_id)
+            .end_cell();
+        send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_IGNORE_ERRORS);
         return ();
     }
 

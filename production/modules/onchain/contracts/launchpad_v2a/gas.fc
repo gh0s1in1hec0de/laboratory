@@ -3,8 +3,9 @@
 #include "op-codes.fc";
 
 const ONE_TON = 1000000000;
-const 1_MONTH = 30 * 24 * 3600;
-const 2_MONTHS = 60 * 24 * 3600;
+const ONE_DAY = 24 * 3600;
+const ONE_MONTH = 30 * ONE_DAY;
+const TWO_MONTHS = 60 * ONE_DAY;
 
 {-
   Here will be just some of my thoughts, decisions explanations and notes.
@@ -24,23 +25,21 @@ const JETTON_MIN_TRANSFER_FEE = 30000000;
 ;; https://docs.ton.org/develop/smart-contracts/fees#fees-for-sending-ton
 const SIMPLE_TRANSFER_FEE = 6000000;
 
+const CORE_STATE_BITS  = 47510;
+const CORE_STATE_CELLS = 122;
+;; Use `loadAtMax` to measure
+const TOKEN_LAUNCH_STATE_BITS  = 43857;
+const TOKEN_LAUNCH_STATE_CELLS = 111;
+
 const USER_VAULT_STATE_BITS  = 5092;
 const USER_VAULT_STATE_CELLS = 17;
-;; Use `loadAtMax` to measure
-const TOKEN_LAUNCH_STATE_BITS  = 48697;
-const TOKEN_LAUNCH_STATE_CELLS = 122;
 
-const JETTON_MINTER_STATE_BITS = 1;
-const JETTON_MINTER_STATE_CELLS = 1;
+const JETTON_MASTER_STATE_BITS = 16703;
+const JETTON_MASTER_STATE_CELLS = 35;
 
 ;; refund_confirmation & jetton_claim_confirmation in main.tlb, still unified but took the upper bound (with `mode`)
 const WITHDRAW_CONFIRMATION_MSG_BITS = 739;
 const WITHDRAW_CONFIRMATION_MSG_CELLS = 1; ;; ref body
-;; Claim request to user vault
-const CLAIM_MSG_BITS = 96;
-const CLAIM_MSG_CELLS = 1; ;; not in a ref but im paranoid guy
-
-;; file#L`line_num` - maunal bits counting
 const BALANCE_UPDATE_BITS = 348;
 const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
 
@@ -48,6 +47,10 @@ const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
 ;; Gas constants are calculated in the main test suite.
 ;; First the related transaction is found, and then it's
 ;; resulting gas consumption is printed to the console.
+
+int calculate_core_min_storage_fee(int duration) inline {
+    return get_storage_fee(MY_WORKCHAIN, duration, CORE_STATE_BITS, CORE_STATE_CELLS);
+}
 
 int calculate_user_vault_min_storage_fee(int duration) inline {
     return get_storage_fee(MY_WORKCHAIN, duration, USER_VAULT_STATE_BITS, USER_VAULT_STATE_CELLS);
@@ -57,12 +60,16 @@ int calculate_token_launch_min_storage_fee(int duration) inline {
     return get_storage_fee(MY_WORKCHAIN, duration, TOKEN_LAUNCH_STATE_BITS, TOKEN_LAUNCH_STATE_CELLS);
 }
 
+int calculate_jetton_master_min_storage_fee(int duration) inline {
+    return get_storage_fee(MY_WORKCHAIN, duration, JETTON_MASTER_STATE_BITS, JETTON_MASTER_STATE_CELLS);
+}
+
 int forward_user_vault_init_state_overhead() inline {
     return get_simple_forward_fee(MY_WORKCHAIN, USER_VAULT_STATE_BITS, USER_VAULT_STATE_CELLS);
 }
 
-int forward_jetton_minter_init_state_overhead() inline {
-    return get_simple_forward_fee(MY_WORKCHAIN, JETTON_MINTER_STATE_BITS, JETTON_MINTER_STATE_CELLS);
+int forward_jetton_master_init_state_overhead() inline {
+    return get_simple_forward_fee(MY_WORKCHAIN, JETTON_MASTER_STATE_BITS, JETTON_MASTER_STATE_CELLS);
 }
 
 int forward_token_launch_init_state_overhead() inline {
@@ -80,7 +87,7 @@ int get_balance_update_gas_cost() inline_ref {
     get_forward_fee(MY_WORKCHAIN, BALANCE_UPDATE_MSG_BITS, BALANCE_UPDATE_MSG_CELLS)
     + forward_user_vault_init_state_overhead()
     + get_compute_fee(MY_WORKCHAIN, RECEIVE_BALANCE_UPDATE_CONSUMPTION)
-    + calculate_user_vault_min_storage_fee(2_MONTHS);
+    + calculate_user_vault_min_storage_fee(TWO_MONTHS);
 }
 
 ;;; Returns purified value and operational needs
@@ -130,38 +137,58 @@ const REFUND_CONFIRMATION_GAS_CONSUMPTION = 19305;
     throw_if(error::not_enough_gas, msg_value < required_gas);
 }
 
-;; === Token Deploy ===
-const DEPLOY_JETTON_REQUEST_GAS_CONSUMPTION = 15247; ;; This is code we call on token launch's side
+;; === Jetton Deploy ===
+const DEPLOY_JETTON_REQUEST_GAS_CONSUMPTION = 16000;
 const MINT_MSG_BITS = 1366;
 const MINT_MSG_CELLS = 3;
-const MINT_REQUEST_GAS_CONSUMPTION = 8420;
-const MEMORY_SAFER = ONE_TON / 10;
-const ACCEPT_MINTED_JETTONS_GAS_CONSUMPTION = 10000;
-;; See jetton_operating.fc#L103
-const JETTON_TRANSFER_FORWARD_PAYLOAD_BITS = 0;
-const JETTON_TRANSFER_FORWARD_PAYLOAD_CELLS = 0;
-const CLAIM_ADMIN_MSG_BITS = 1;
-const CLAIM_ADMIN_MSG_CELLS = 1;
-const CLAIM_ADMIN_GAS_CONSUMPTION = 1;
-int get_jetton_deployment_gas_cost() inline_ref {
-    return get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_REQUEST_GAS_CONSUMPTION)
-    + get_forward_fee(MY_WORKCHAIN, MINT_MSG_BITS, MINT_MSG_CELLS)
-    + forward_jetton_minter_init_state_overhead()
-    ;; ONE_TON is needed for memory safety check of jetton
-    + get_compute_fee(MY_WORKCHAIN, MINT_REQUEST_GAS_CONSUMPTION) + MEMORY_SAFER
-    + JETTON_MIN_TRANSFER_FEE * 2 ;; Multiply on 2 as we send DEX part of tokens to chief in the same operation
-    + get_forward_fee(MY_WORKCHAIN, CLAIM_ADMIN_MSG_BITS, CLAIM_ADMIN_MSG_CELLS)
-    + get_compute_fee(MY_WORKCHAIN, CLAIM_ADMIN_GAS_CONSUMPTION);
+const MINT_REQUEST_GAS_CONSUMPTION = 8000;
+const JETTONS_ENROLLMENT_ACCEPTANCE_GAS_CONSUMPTION = 20000;
+const JETTON_TRANSFER_TO_CHIEF_FORWARD_PAYLOAD_BITS = 248; ;; See token_launch/jetton_operating.fc
+const JETTON_TRANSFER_TO_CHIEF_FORWARD_PAYLOAD_CELLS = 1;
+const JETTON_TRANSFER_TO_CHIEF_ENROLLMENT_GAS_CONSUMPTION = 500;
+const REVOKE_ADMIN_MSG_BITS = 96;
+const REVOKE_ADMIN_MSG_CELLS = 1;
+const REVOKE_ADMIN_GAS_CONSUMPTION = 2814;
+
+int get_jetton_deployment_request_gas_cost() inline_ref {
+    return
+    get_forward_fee(MY_WORKCHAIN, MINT_MSG_BITS, MINT_MSG_CELLS)
+    + forward_jetton_master_init_state_overhead()
+    + calculate_jetton_master_min_storage_fee(7 * ONE_DAY)
+    + get_compute_fee(MY_WORKCHAIN, MINT_REQUEST_GAS_CONSUMPTION)
+    {- In fact, this is payment for only one transfer, but, as transfer fees calculated dynamically on top of fwd_fess
+    of previous message (which is much lager), its validation asks for a bigger amount.
+    All the remainings (as it's guaranteed that actual operation is much cheaper) will be returned as excesses. -}
+    + (JETTON_MIN_TRANSFER_FEE * 2)
+    + get_compute_fee(MY_WORKCHAIN, JETTONS_ENROLLMENT_ACCEPTANCE_GAS_CONSUMPTION);
 }
+
+int get_jetton_deployment_callback_gas_cost() inline_ref {
+    return
+    get_forward_fee(MY_WORKCHAIN, REVOKE_ADMIN_MSG_BITS, REVOKE_ADMIN_MSG_CELLS)
+    + get_compute_fee(MY_WORKCHAIN, REVOKE_ADMIN_GAS_CONSUMPTION)
+    + JETTON_MIN_TRANSFER_FEE
+    + get_forward_fee(MY_WORKCHAIN, JETTON_TRANSFER_TO_CHIEF_FORWARD_PAYLOAD_BITS, JETTON_TRANSFER_TO_CHIEF_FORWARD_PAYLOAD_CELLS)
+    + get_compute_fee(MY_WORKCHAIN, JETTON_TRANSFER_TO_CHIEF_ENROLLMENT_GAS_CONSUMPTION);
+}
+
+int get_jetton_deployment_total_gas_cost() inline_ref {
+    return get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_REQUEST_GAS_CONSUMPTION)
+    + get_jetton_deployment_request_gas_cost()
+    + get_jetton_deployment_callback_gas_cost();
+}
+
 
 ;; === Jetton Claim ===
 ;; TODO Smells like its overcomplicated
 ;; Don't need stateinit as if vault doesn't exist, then there is nothing to claim
 const RECEIVE_CLAIM_CONSUMPTION = 1;
+const CLAIM_MSG_BITS = 96;
+const CLAIM_MSG_CELLS = 1; ;; not in a ref but im paranoid guy
 int get_claim_gas_cost() inline_ref {
     return get_forward_fee(MY_WORKCHAIN, CLAIM_MSG_BITS, CLAIM_MSG_CELLS)
     + get_compute_fee(MY_WORKCHAIN, RECEIVE_CLAIM_CONSUMPTION)
-    + calculate_user_vault_min_storage_fee(2_MONTHS);
+    + calculate_user_vault_min_storage_fee(TWO_MONTHS);
 }
 const CLAIM_GAS_CONSUMPTION = 1;
 const CLAIM_CONFIRMATION_GAS_CONSUMPTION = 1;
@@ -182,7 +209,7 @@ int check_amount_is_enough_for_jetton_claim(int msg_value) impure inline {
 }
 
 ;; Measured in "new launch creation through core"
-const CREATE_LAUNCH_GAS_CONSUMPTION = 32504;
+const CREATE_LAUNCH_GAS_CONSUMPTION = 28996;
 ;; Manual bits counting from core/operations.fc#L~120
 const INIT_MSG_BITS = 897; ;; 32 + 64 + 3 x (3+8+256)
 const INIT_MSG_CELLS = 2; ;; body in ref + stateinit in ref (I don't know exactly if I should account it here, so be it)
@@ -192,8 +219,6 @@ int get_amount_for_token_launch_deploy() inline {
     + get_forward_fee(MY_WORKCHAIN, INIT_MSG_BITS, INIT_MSG_CELLS)
     + forward_token_launch_init_state_overhead()
     + get_compute_fee(MY_WORKCHAIN, INITIALIZATION_GAS_CONSUMPTION)
-    ;; Creator of new token launch should pay for the future jetton deployment
-    + get_compute_fee(MY_WORKCHAIN, DEPLOY_JETTON_REQUEST_GAS_CONSUMPTION)
-    + get_jetton_deployment_gas_cost()
-    + calculate_token_launch_min_storage_fee(2_MONTHS);
+    + get_jetton_deployment_total_gas_cost()
+    + calculate_token_launch_min_storage_fee(TWO_MONTHS);
 }

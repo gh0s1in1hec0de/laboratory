@@ -18,40 +18,42 @@ export async function createBot(): Promise<Bot<MyContext>> {
             token
         }
     } = getConfig();
-    
+
     maybeBot = new Bot<MyContext, MyApi>(token);
-    
+
     maybeBot.use(emojiParser());
     maybeBot.use(hydrate());
     maybeBot.api.config.use(hydrateApi());
-    
+
     await maybeBot.api.setMyCommands(commands);
-  
+
     maybeBot.command("start", handleStartCommand);
     maybeBot.command("menu").filter(getAdminFilter, handleMenuCommand);
-  
+
     const initSortData: StoredTokenLaunchRequest = {
         page: 1,
         limit: 10,
-        sort: TokenLaunchFields.CREATED_AT,
+        sortBy: TokenLaunchFields.CREATED_AT,
         order: SortOrder.ASC,
         search: ""
     };
 
     let page = 1;
-    
+
     maybeBot.callbackQuery("list", async (ctx) => {
         await handleListTokensCommand(ctx, {
             ...initSortData,
             page
         });
     });
-  
+
     maybeBot.callbackQuery("add", async (ctx) => {
+        await ctx.answerCallbackQuery();
         await ctx.reply("In development");
     });
 
     maybeBot.callbackQuery(["next", "prev", "update"], async (ctx) => {
+        await ctx.answerCallbackQuery();
         const newPage = ctx.callbackQuery.data == "next" ? page += 1
             : ctx.callbackQuery.data == "prev" ? page -= 1
                 : page = 1;
@@ -59,9 +61,8 @@ export async function createBot(): Promise<Bot<MyContext>> {
             ...initSortData,
             page: newPage
         });
-        await ctx.answerCallbackQuery();
     });
-  
+
     maybeBot.callbackQuery("back", async (ctx) => {
         const startText = getMenuReply(ctx);
         await ctx.callbackQuery.message!.editText(startText, {
@@ -74,9 +75,9 @@ export async function createBot(): Promise<Bot<MyContext>> {
     maybeBot.on("message", getUnknownMsgReply);
 
     maybeBot.catch(handleBotError);
-    
+
     await maybeBot.start();
-  
+
     return maybeBot;
 }
 

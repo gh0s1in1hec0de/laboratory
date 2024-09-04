@@ -7,8 +7,8 @@ import type { MyContext } from "./index";
  * COMMON
  */
 interface ICommand {
-  command: string,
-  description: string,
+    command: string,
+    description: string,
 }
 
 export const commands: ICommand[] = [
@@ -17,9 +17,9 @@ export const commands: ICommand[] = [
 ];
 
 export enum Emoji {
-  Wallet = "purse",
-  File = "open_file_folder",
-  Skull = "skull_and_crossbones"
+    Wallet = "purse",
+    File = "open_file_folder",
+    Skull = "skull_and_crossbones"
 }
 
 
@@ -57,7 +57,7 @@ export function getTokenLaunchesReply(storedTokenLaunch: StoredTokenLaunch[]): s
             month: "2-digit",
             year: "numeric"
         }).format(new Date(createdAt));
-    
+
         return `${index + 1}. ${name} - ${formattedDate} - ${address}`;
     }).join("\n");
 }
@@ -78,11 +78,11 @@ export function getMenuKeyboard(): InlineKeyboard {
 
 export function getListTokenLaunchesKeyboard(hasMore: boolean, page: number): InlineKeyboard {
     const keyboard = new InlineKeyboard();
-  
+
     page > 1 ? keyboard.text("« prev", "prev") : keyboard.text(".", "nothing");
     keyboard.text("· stay ·", "stay");
     hasMore ? keyboard.text("next »", "next").row() : keyboard.text(".", "nothing").row();
-  
+
     return keyboard.text("< back to menu", "back");
 }
 
@@ -101,12 +101,12 @@ export async function getAdminFilter(ctx: MyContext | HearsContext<MyContext>): 
             admins
         }
     } = getConfig();
-    
+
     if (!admins.includes(ctx.from!.id)) {
         await ctx.reply("Fuck off, you are not an admin...");
         await ctx.stopPoll();
         return false;
     }
-    
+
     return true;
 }

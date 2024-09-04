@@ -62,7 +62,10 @@
 
     if (op == op::tl::init) {
         throw_if(error::already_initialized, this::const::is_initialized?);
-        raw_reserve(calculate_token_launch_min_storage_fee(2_MONTHS), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        raw_reserve(
+            calculate_token_launch_min_storage_fee(TWO_MONTHS) + get_jetton_deployment_total_gas_cost(),
+            RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL
+        );
         initialize(query_id, sender_address, in_msg_body~load_msg_addr(), in_msg_body~load_msg_addr());
         save_data();
         return ();
@@ -76,15 +79,11 @@
     throw_unless(error::wrong_time, now() > general_state::const::start_time);
     throw_unless(error::uninitialized, this::const::is_initialized?);
 
-
-    ;; TODO The code below may trigger bounce in this lines: raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);,
-    ;; as we've after sending fees we will have lower balance, than it was before compute phase
-    ;; Should I change reserving system or attach SIMPLE_TRANSFER_FEE to all the fees? Second one sound bit idiotic :?
-    if (this::operational_needs > ONE_TON) {
-        cell msg = simple_transfer(this::const::chief_address, this::operational_needs, "meow");
-        send_raw_message(msg, SEND_MODE_REGULAR);
-        this::operational_needs = 0;
-    }
+    ;; if (this::operational_needs > (ONE_TON / 4)) {
+    ;;     cell msg = simple_transfer(this::const::chief_address, this::operational_needs * 90 / 100, "meow");
+    ;;     send_raw_message(msg, SEND_MODE_REGULAR);
+    ;;     this::operational_needs = 0;
+    ;; }
 
     ;; - CN: can be sent by anyone
     ;; if there is a commission balance, returns it back to the user
@@ -113,7 +112,6 @@
         return ();
     }
     if (op == op::tl::refund_confirmation) {
-
         handle_refund_confirmation(
             query_id,
             attached_value,
@@ -126,18 +124,15 @@
         save_data();
         return ();
     }
-
     if (op == op::tl::deploy_jet) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::chief_address));
         accept_message();
-        ;; 2 checks here - that we have collected enough money for jetton deploy and that contract has money for all the additional spendings
         throw_if(error::bad_request, general_state::total_tons_collected < config::const::min_ton_for_sale_success);
         int launch_success_treshold =
         general_state::total_tons_collected + this::operational_needs
-        + get_jetton_deployment_gas_cost()
-        + calculate_token_launch_min_storage_fee(1_MONTH);
-        throw_arg_if(launch_success_treshold - contract_balance,error::balance_lack, contract_balance < launch_success_treshold);
-
+        + get_jetton_deployment_total_gas_cost()
+        + calculate_token_launch_min_storage_fee(ONE_MONTH);
+        throw_arg_if(launch_success_treshold - contract_balance, error::balance_lack, contract_balance < launch_success_treshold);
         deploy_launch_jetton();
         return ();
     }

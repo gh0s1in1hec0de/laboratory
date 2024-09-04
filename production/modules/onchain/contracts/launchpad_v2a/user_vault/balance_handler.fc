@@ -6,7 +6,7 @@
 #include "uv_context.fc";
 
 int get_withdraw_message_mode() impure inline_ref {
-    raw_reserve(calculate_user_vault_min_storage_fee(1_MONTH), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+    raw_reserve(calculate_user_vault_min_storage_fee(ONE_MONTH), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
     return SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL;
 }
 
@@ -50,14 +50,14 @@ cell build_withdraw_confirmation_message(int is_refund?, int query_id, int wl_to
     if (mode == BALANCE_UPD_DEPOSIT_WL) {
         throw_if(error::unreachable, jetton_balance_update > 0);
 
-        raw_reserve(calculate_user_vault_min_storage_fee(1_MONTH), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        raw_reserve(calculate_user_vault_min_storage_fee(ONE_MONTH), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
         this::wl_ton_balance += ton_balance_update;
     }
     if (mode == BALANCE_UPD_DEPOSIT_PUB) {
         this::public_ton_balance += ton_balance_update;
         this::jetton_balance += jetton_balance_update;
 
-        raw_reserve(calculate_user_vault_min_storage_fee(1_MONTH), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        raw_reserve(calculate_user_vault_min_storage_fee(ONE_MONTH), RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL);
         ;; As we don't send any callbacks - return excesses directly
     }
     if (mode == BALANCE_UPD_WITHDRAWAL_WL) {

@@ -189,20 +189,19 @@ cell build_balance_update_message(cell user_vault_code, int query_id, int msg_va
 
 ;; Jetton deployment related tools
 
-cell pack_fut_jet_master_data(int total_supply, slice admin, slice next_admin, cell wallet_code, cell metadata) inline {
+cell pack_fut_jet_master_data(int total_supply, slice admin, cell wallet_code, cell metadata) inline {
     return begin_cell()
         .store_coins(total_supply)
         .store_slice(admin)
-        .store_slice(next_admin) ;; Emergency case
         .store_ref(wallet_code)
         .store_ref(metadata)
         .end_cell();
 }
 
-(cell, slice) calculate_fut_jet_master_data(cell master_code, int total_supply, slice admin, slice next_admin, cell wallet_code, cell metadata) inline {
+(cell, slice) calculate_fut_jet_master_data(cell master_code, int total_supply, slice admin, cell wallet_code, cell metadata) inline {
     cell jetton_master_stateinit = calculate_contract_state_init(
         master_code,
-        pack_fut_jet_master_data(total_supply, admin, next_admin, wallet_code, metadata)
+        pack_fut_jet_master_data(total_supply, admin, wallet_code, metadata)
     );
     slice jetton_master_address = calculate_contract_address(jetton_master_stateinit);
     return (jetton_master_stateinit, jetton_master_address);

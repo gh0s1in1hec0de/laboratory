@@ -8,7 +8,7 @@ export async function getActiveTokenLaunches(client?: SqlClient): Promise<Stored
     const res = await (client || globalClient)<StoredTokenLaunch[]>`
         SELECT *
         FROM token_launches
-        WHERE (timings->>'end_time')::TIMESTAMP - now() > INTERVAL '30 seconds';
+        WHERE (timings ->> 'end_time')::TIMESTAMP - now() > INTERVAL '30 seconds';
     `;
     return res.length ? res : null;
 }
@@ -43,30 +43,24 @@ export async function getSortedTokenLaunches(
     {
         page,
         limit,
-        sort,
+        sortBy,
         order,
-        search,
+        search = "",
     }: StoredTokenLaunchRequest,
     client?: SqlClient
 ): Promise<StoredTokenLaunchResponse | null> {
     const offset = (page - 1) * limit;
+    const c = client ?? globalClient;
 
-    const res = await (client || globalClient)<StoredTokenLaunch[]>`
-      SELECT *
-      FROM token_launches
-      WHERE name ILIKE ${`%${search}%`}
-      ORDER BY ${globalClient.unsafe(sort)} ${globalClient.unsafe(order)}
-      LIMIT ${limit + 1} OFFSET ${offset}
-  `;
-  
-    if (!res.length) {
-        return null;
-    }
-  
-    const hasMore = res.length > limit;
-  
-    return {
+    const res = await c<StoredTokenLaunch[]>`
+        SELECT *
+        FROM token_launches
+        WHERE name ILIKE ${`%${search}%`}
+        ORDER BY ${c.unsafe(sortBy)} ${c.unsafe(order)}
+        LIMIT ${limit + 1} OFFSET ${offset}
+    `;
+    return !res.length ? null : {
         storedTokenLaunch: res.slice(0, limit),
-        hasMore
+        hasMore: res.length > limit
     };
 }

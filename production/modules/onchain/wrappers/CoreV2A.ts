@@ -116,8 +116,9 @@ export class CoreV2A implements Contract {
         const tokenLaunch = TokenLaunchV2A.createFromState(data, code.tokenLaunch);
         const futJetMaster = JettonMaster.createFromConfig({
                 admin: tokenLaunch.address,
-                jetton_content: packedMetadata,
-                wallet_code: code.jettonWallet
+                jettonContent: packedMetadata,
+                supply: 0n,
+                walletCode: code.jettonWallet
             },
             code.jettonMaster
         );

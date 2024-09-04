@@ -41,7 +41,7 @@ export type StoredTokenLaunch = {
 export interface StoredTokenLaunchRequest {
   page: number,
   limit: number,
-  sort: TokenLaunchFields,
+  sortBy: TokenLaunchFields,
   order: SortOrder,
   search?: string,
 }

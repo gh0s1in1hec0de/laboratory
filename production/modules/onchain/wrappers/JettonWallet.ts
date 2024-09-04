@@ -1,5 +1,5 @@
-import { endParse } from "./JettonMaster";
 import { JettonOps } from "./JettonConstants";
+import { endParse } from "starton-periphery";
 import {
     Address, beginCell, Cell, Contract,
     contractAddress, ContractProvider,

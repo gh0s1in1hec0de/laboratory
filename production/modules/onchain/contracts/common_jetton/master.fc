@@ -8,12 +8,11 @@
 #include "gas.fc";
 
 ;; storage#_ total_supply:Coins admin_address:MsgAddress next_admin_address:MsgAddress jetton_wallet_code:^Cell metadata_uri:^Cell = Storage;
-(int, slice, slice, cell, cell) load_data() inline {
+(int, slice, cell, cell) load_data() inline {
     slice ds = get_data().begin_parse();
     var data = (
         ds~load_coins(), ;; total_supply
         ds~load_msg_addr(), ;; admin_address
-        ds~load_msg_addr(), ;; next_admin_address
         ds~load_ref(),  ;; jetton_wallet_code
         ds~load_ref()  ;; metadata url (contains snake slice without 0x0 prefix)
     );
@@ -21,12 +20,11 @@
     return data;
 }
 
-() save_data(int total_supply, slice admin_address, slice next_admin_address, cell jetton_wallet_code, cell metadata_uri) impure inline {
+() save_data(int total_supply, slice admin_address, cell jetton_wallet_code, cell metadata_uri) impure inline {
     set_data(
         begin_cell()
         .store_coins(total_supply)
         .store_slice(admin_address)
-        .store_slice(next_admin_address)
         .store_ref(jetton_wallet_code)
         .store_ref(metadata_uri)
         .end_cell()
@@ -64,8 +62,8 @@
         }
         in_msg_body~skip_query_id();
         int jetton_amount = in_msg_body~load_coins();
-        (int total_supply, slice admin_address, slice next_admin_address, cell jetton_wallet_code, cell metadata_uri) = load_data();
-        save_data(total_supply - jetton_amount, admin_address, next_admin_address, jetton_wallet_code, metadata_uri);
+        (int total_supply, slice admin_address, cell jetton_wallet_code, cell metadata_uri) = load_data();
+        save_data(total_supply - jetton_amount, admin_address, jetton_wallet_code, metadata_uri);
         return ();
     }
     slice sender_address = in_msg_full_slice~load_msg_addr();
@@ -74,7 +72,7 @@
 
     (int op, int query_id) = in_msg_body~load_op_and_query_id();
 
-    (int total_supply, slice admin_address, slice next_admin_address, cell jetton_wallet_code, cell metadata_uri) = load_data();
+    (int total_supply, slice admin_address, cell jetton_wallet_code, cell metadata_uri) = load_data();
 
     if (op == op::mint) {
         throw_unless(error::not_owner, equal_slices_bits(sender_address, admin_address));
@@ -98,7 +96,7 @@
         check_amount_is_enough_to_transfer(ton_amount, forward_ton_amount, fwd_fee);
 
         send_to_jetton_wallet(to_address, jetton_wallet_code, ton_amount, master_msg, TRUE);
-        save_data(total_supply + jetton_amount, admin_address, next_admin_address, jetton_wallet_code, metadata_uri);
+        save_data(total_supply + jetton_amount, admin_address, jetton_wallet_code, metadata_uri);
         return ();
     }
 
@@ -109,7 +107,7 @@
         throw_unless(error::not_valid_wallet,
             equal_slices_bits(calculate_user_jetton_wallet_address(from_address, my_address(), jetton_wallet_code), sender_address)
         );
-        save_data(total_supply - jetton_amount, admin_address, next_admin_address, jetton_wallet_code, metadata_uri);
+        save_data(total_supply - jetton_amount, admin_address, jetton_wallet_code, metadata_uri);
         slice response_address = in_msg_body~load_msg_addr();
         in_msg_body.end_parse();
 
@@ -160,16 +158,15 @@
 
     if (op == op::change_admin) {
         throw_unless(error::not_owner, equal_slices_bits(sender_address, admin_address));
-        next_admin_address = in_msg_body~load_msg_addr();
         in_msg_body.end_parse();
-        save_data(total_supply, admin_address, next_admin_address, jetton_wallet_code, metadata_uri);
+        save_data(total_supply, in_msg_body~load_msg_addr(), jetton_wallet_code, metadata_uri);
         return ();
     }
 
-    if (op == op::claim_admin) {
+    if (op == op::revoke_admin) {
+        throw_unless(error::not_owner, equal_slices_bits(sender_address, admin_address));
         in_msg_body.end_parse();
-        throw_unless(error::not_owner, equal_slices_bits(sender_address, next_admin_address));
-        save_data(total_supply, next_admin_address, address_none(), jetton_wallet_code, metadata_uri);
+        save_data(total_supply, address_none(), jetton_wallet_code, metadata_uri);
         return ();
     }
 
@@ -214,7 +211,7 @@
 
     if (op == op::change_metadata_uri) {
         throw_unless(error::not_owner, equal_slices_bits(sender_address, admin_address));
-        save_data(total_supply, admin_address, next_admin_address, jetton_wallet_code, begin_cell().store_slice(in_msg_body).end_cell());
+        save_data(total_supply, admin_address, jetton_wallet_code, begin_cell().store_slice(in_msg_body).end_cell());
         return ();
     }
 
@@ -242,16 +239,11 @@ cell build_content_cell(slice metadata_uri) inline {
 }
 
 (int, int, slice, cell, cell) get_jetton_data() method_id {
-    (int total_supply, slice admin_address, slice next_admin_address, cell jetton_wallet_code, cell metadata_uri) = load_data();
+    (int total_supply, slice admin_address, cell jetton_wallet_code, cell metadata_uri) = load_data();
     return (total_supply, TRUE, admin_address, build_content_cell(metadata_uri.begin_parse()), jetton_wallet_code);
 }
 
 slice get_wallet_address(slice owner_address) method_id {
-    (int total_supply, slice admin_address, slice next_admin_address, cell jetton_wallet_code, cell metadata_uri) = load_data();
+    (_, _, cell jetton_wallet_code, _) = load_data();
     return calculate_user_jetton_wallet_address(owner_address, my_address(), jetton_wallet_code);
-}
-
-slice get_next_admin_address() method_id {
-    (int total_supply, slice admin_address, slice next_admin_address, cell jetton_wallet_code, cell metadata_uri) = load_data();
-    return next_admin_address;
 }

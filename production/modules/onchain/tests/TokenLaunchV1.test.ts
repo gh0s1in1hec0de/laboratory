@@ -181,8 +181,9 @@ describe.skip("V1", () => {
             JettonMaster.createFromConfig(
                 {
                     admin: chief.address,
-                    wallet_code: jettonWalletCode,
-                    jetton_content: { uri: "https://juicy_bitches.org/meta.json" }
+                    walletCode: jettonWalletCode,
+                    supply: 0n,
+                    jettonContent: { uri: "https://juicy_bitches.org/meta.json" }
                 },
                 jettonMasterCode
             ));

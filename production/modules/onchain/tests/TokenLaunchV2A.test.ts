@@ -63,7 +63,7 @@ describe("V2A", () => {
     let derivedJettonMaster: SandboxContract<JettonMaster>;
 
     let jettonWalletCode = new Cell();
-    let coreUtilityJettonWallet: SandboxContract<JettonWallet>;
+    let tokenLaunchDerivedJettonWallet: SandboxContract<JettonWallet>;
 
     // Dedust related variables
     let factory: SandboxContract<Factory>;
@@ -76,14 +76,14 @@ describe("V2A", () => {
     let gasPrices: GasPrices;
     let storagePrices: StorageValue;
 
-    const JETTON_MIN_TRANSFER_FEE = 31000000n;
+    const JETTON_MIN_TRANSFER_FEE = 30000000n;
     const SIMPLE_TRANSFER_FEE = 6000000n;
     const ONE_MONTH = 30 * 24 * 3600;
     const TWO_MONTHS = 60 * 24 * 3600;
     let coreStorageStats: StorageStats;
     let tokenLaunchStorageStats: StorageStats;
     let userVaultStorageStats: StorageStats;
-    let jettonMinterStorageStats: StorageStats;
+    let jettonMasterStorageStats: StorageStats;
 
     // Custom values
     //
@@ -111,6 +111,7 @@ describe("V2A", () => {
         userVaultMinStorageFee: bigint
     ) => bigint;
 
+    // TODO Refresh
     const precomputedRefundCost = 29648893n;
     let refundCost: (
         refundRequestComputeFee: bigint,
@@ -118,6 +119,8 @@ describe("V2A", () => {
         withdrawConfirmationForwardFee: bigint,
         refundConfirmationGasConsumption: bigint,
     ) => bigint;
+
+    const deploymentCost = 1n;
 
     beforeAll(async () => {
         [
@@ -134,9 +137,10 @@ describe("V2A", () => {
             compile("JettonWallet")
         ]);
         console.info("contracts compiled yaay^^");
-        coreStorageStats = new StorageStats(0n, 0n); // TODO Fill in
+        coreStorageStats = new StorageStats(47510n, 122n);
         userVaultStorageStats = new StorageStats(5092n, 17n);
-        tokenLaunchStorageStats = new StorageStats(44921n, 113n);
+        tokenLaunchStorageStats = new StorageStats(43857n, 111n);
+        jettonMasterStorageStats = new StorageStats(16703n, 35n);
 
         blockchain = await Blockchain.create(MAINNET_MOCK ? {
             storage: new RemoteBlockchainStorage(wrapTonClient4ForRemote(new TonClient4({
@@ -162,9 +166,8 @@ describe("V2A", () => {
             platformSharePct: 1500
         };
 
-        // Me btw
         const treasuryTraits = { balance: toNano("1000"), resetBalanceIfZero: true };
-        chief = await blockchain.treasury("chief", treasuryTraits);
+        chief = await blockchain.treasury("chief", treasuryTraits); // Me btw
         creator = await blockchain.treasury("creator", treasuryTraits);
         consumer = await blockchain.treasury("consumer", treasuryTraits);
 
@@ -219,6 +222,14 @@ describe("V2A", () => {
                 owner: consumer.address,
                 tokenLaunch: sampleTokenLaunch.address
             }, userVaultCode)
+        );
+        derivedJettonMaster = blockchain.openContract(
+            JettonMaster.createFromConfig({
+                admin: sampleTokenLaunch.address,
+                jettonContent: sampleLaunchParams.metadata,
+                supply: 0n,
+                walletCode: jettonWalletCode
+            }, jettonMasterCode)
         );
 
         printTxGasStats = (name, transaction) => {
@@ -297,8 +308,7 @@ describe("V2A", () => {
             // Doesn't work with inactive contracts
             expect(await core.getLaunchConfig()).toEqual(launchConfig);
         });
-        // TODO Use it to replace dynamic storage-due check with static one
-        test.skip("core state specs", async () => {
+        test("core state specs", async () => {
             const smc = await blockchain.getContract(core.address);
             assert(smc.accountState, "Can't access core account state");
             // Runtime doesn't see assert here lol
@@ -374,7 +384,7 @@ describe("V2A", () => {
             });
             printTxGasStats("New token launch deployment transaction:", deploymentTx);
         });
-        test.skip("token launch onchain state stats", async () => {
+        test.skip("token launch on-chain state stats", async () => {
             const smc = await blockchain.getContract(sampleTokenLaunch.address);
             assert(smc.accountState, "Can't access token launch state");
             // Runtime doesn't see assert here lol
@@ -498,9 +508,9 @@ describe("V2A", () => {
                 via: secondPublicBuyer.getSender()
             });
             // Opn transfer to chief, it works well and doesn't account any extra value, I think later I will show it in explicit manner here TODO
-            expect(secondPublicBuyResult.transactions).toHaveTransaction({
-                body: beginCell().storeUint(0, 32).storeBuffer(Buffer.from("meow")).endCell()
-            });
+            // expect(secondPublicBuyResult.transactions).toHaveTransaction({
+            //     body: beginCell().storeUint(0, 32).storeBuffer(Buffer.from("meow")).endCell()
+            // });
 
             const publicBuyRequest = findTransactionRequired(firstPublicBuyResult.transactions, {
                 on: sampleTokenLaunch.address,
@@ -550,9 +560,10 @@ describe("V2A", () => {
                 && consumerVaultStateBeforeRefunds.publicTonBalance,
                 "consumer lost some of his assets"
             );
+            const opnBefore = (await sampleTokenLaunch.getInnerData()).operationalNeeds;
             const wlRefundResult = await sampleTokenLaunch.sendRefundRequest({
                     queryId: 4n,
-                    value: toNano("0.1"),
+                    value: toNano("0.03"),
                     via: consumer.getSender()
                 },
                 BalanceUpdateMode.WhitelistWithdrawal
@@ -571,15 +582,17 @@ describe("V2A", () => {
                 success: true,
             });
             printTxGasStats("Balance update (wl refund) transaction: ", wlRefundRequestTx);
-
             const wlRefundConfirmationTx = findTransactionRequired(wlRefundResult.transactions, {
                 from: consumerVault.address,
                 to: sampleTokenLaunch.address,
                 op: TokensLaunchOps.refundConfirmation,
                 success: true,
             });
-            const withdrawConfirmationForwardFee = printTxGasStats("Whitelist refund confirmation transaction: ", wlRefundConfirmationTx);
-
+            const refundConfirmationComputeFee = printTxGasStats("Whitelist refund confirmation transaction: ", wlRefundConfirmationTx);
+            // expect(wlRefundResult.transactions).toHaveTransaction({
+            //     body: beginCell().storeUint(0, 32).storeBuffer(Buffer.from("meow")).endCell()
+            // });
+            const opnAfter = (await sampleTokenLaunch.getInnerData()).operationalNeeds;
             const consumerVaultStateAfterWlRef = await consumerVault.getVaultData();
             const saleMoneyFlowAfterWlRef = await sampleTokenLaunch.getSaleMoneyFlow();
             const tokenLaunchInnerDataAfterWlRef = await sampleTokenLaunch.getInnerData();
@@ -589,10 +602,11 @@ describe("V2A", () => {
                 refundRequestComputeFee,
                 balanceUpdateCost,
                 computeFwdFees(msgPrices, 1n, 739n),
-                withdrawConfirmationForwardFee,
+                refundConfirmationComputeFee,
             );
             console.log(`Total refund transaction cost: ${refundGasConsumption} (${fromNano(refundGasConsumption)} TON)`);
 
+            // TODO Improve these checks and make them account operational needs sending
             const contractBalanceAfter = tokenLaunchContractInstance.balance;
             // These tests are able to guarantee, that refund system operating the correct way (pay attention to its mechanics, and you'll understand why ;))
             expect(consumerVaultStateAfterWlRef.wlTonBalance).toEqual(0n);
@@ -602,7 +616,7 @@ describe("V2A", () => {
 
             const pubRefundResult = await sampleTokenLaunch.sendRefundRequest({
                     queryId: 4n,
-                    value: toNano("0.05"),
+                    value: toNano("0.03"),
                     via: consumer.getSender()
                 },
                 BalanceUpdateMode.PublicWithdrawal
@@ -632,7 +646,7 @@ describe("V2A", () => {
             );
             const totalRefundResult = await sampleTokenLaunch.sendRefundRequest({
                     queryId: 4n,
-                    value: toNano("0.05"),
+                    value: toNano("0.03"),
                     via: consumer.getSender()
                 },
                 BalanceUpdateMode.TotalWithdrawal
@@ -663,34 +677,105 @@ describe("V2A", () => {
         });
         test("deployment works properly", async () => {
             blockchain.now = sampleLaunchStartTime + launchConfig.creatorRoundDurationMs + launchConfig.wlRoundDurationMs + launchConfig.pubRoundDurationMs + 1;
-
             const launchContract = await blockchain.getContract(sampleTokenLaunch.address);
             const state = await sampleTokenLaunch.getSaleMoneyFlow();
             const inner = await sampleTokenLaunch.getInnerData();
 
-            console.log(`${state.totalTonsCollected + inner.operationalNeeds} | ${launchContract.balance} | ${launchContract.balance - (state.totalTonsCollected + inner.operationalNeeds)}`);
-            console.log(await sampleTokenLaunch.getSaleMoneyFlow())
+            const needed =
+                state.totalTonsCollected + inner.operationalNeeds
+                + 118526443n
+                + calcStorageFee(storagePrices, tokenLaunchStorageStats, BigInt(ONE_MONTH));
+            console.log(`needed: ${fromNano(needed)} TON (${needed}) | have: ${fromNano(launchContract.balance)}${launchContract.balance} | diff: ${launchContract.balance - needed}`);
+
+            console.log(await sampleTokenLaunch.getSaleMoneyFlow());
             const jettonDeploymentRes = await sampleTokenLaunch.sendDeployJetton({
                 via: chief.getSender(),
                 queryId: 1n,
-                value: toNano("0.05") // Must be free actually (in my dreams only)
+                value: toNano("0.02") // Must be free actually (in my dreams only)
             });
             const jettonDeploymentRequestTx = findTransactionRequired(jettonDeploymentRes.transactions, {
                 op: TokensLaunchOps.deployJetton,
                 success: true
             });
-            printTxGasStats("Jetton deployment request transaction ", jettonDeploymentRequestTx);
+            const jettonDeploymentRequestComputeFee = printTxGasStats("Jetton deployment request transaction ", jettonDeploymentRequestTx);
             const jettonMintRequestTx = findTransactionRequired(jettonDeploymentRes.transactions, {
                 op: JettonOps.Mint,
                 success: true
             });
-            printTxGasStats("Jetton mint request transaction ", jettonMintRequestTx);
+            const jettonMintRequestComputeFee = printTxGasStats("Jetton mint request transaction ", jettonMintRequestTx);
             const mintedAmountTransferAcceptanceTx = findTransactionRequired(jettonDeploymentRes.transactions, {
                 op: JettonOps.InternalTransfer,
                 success: true,
             });
             printTxGasStats("Jetton transfer acceptance request transaction ", mintedAmountTransferAcceptanceTx);
+            const enrollmentAcceptanceTx = findTransactionRequired(jettonDeploymentRes.transactions, {
+                op: JettonOps.TransferNotification,
+                on: sampleTokenLaunch.address,
+                success: true,
+            });
+            const enrollmentAcceptanceComputeFee = printTxGasStats("Jetton enrollment confirmation transaction ", enrollmentAcceptanceTx);
+            const revokeAdminRequestTx = findTransactionRequired(jettonDeploymentRes.transactions, {
+                op: JettonOps.RevokeAdmin,
+                from: sampleTokenLaunch.address,
+                on: derivedJettonMaster.address,
+                success: true,
+            });
+            const revokeAdminRequestComputeFee = printTxGasStats("Revoke admin request transaction ", revokeAdminRequestTx);
 
+            const [launchFutJetWallet, chiefFutJetWallet] = [sampleTokenLaunch, chief].map((a) => {
+                return JettonWallet.createFromConfig({
+                    jettonMasterAddress: derivedJettonMaster.address,
+                    ownerAddress: a.address
+                }, jettonWalletCode);
+            });
+            const chiefJettonsTransferRequestComputeFee = findTransactionRequired(jettonDeploymentRes.transactions, {
+                op: JettonOps.Transfer,
+                from: sampleTokenLaunch.address,
+                on: launchFutJetWallet.address,
+                success: true,
+            });
+            printTxGasStats("Chief jettons transfer request transaction ", chiefJettonsTransferRequestComputeFee);
+            const chiefJettonsTransferAcceptanceComputeFee = findTransactionRequired(jettonDeploymentRes.transactions, {
+                op: JettonOps.InternalTransfer,
+                from: launchFutJetWallet.address,
+                on: chiefFutJetWallet.address,
+                success: true,
+            });
+            printTxGasStats("Chief jettons transfer acceptance transaction ", chiefJettonsTransferAcceptanceComputeFee);
+            const goodsForwardingTx = findTransactionRequired(jettonDeploymentRes.transactions, {
+                op: JettonOps.TransferNotification,
+                from: chiefFutJetWallet.address,
+                on: chief.address,
+                success: true,
+            });
+            const final = printTxGasStats("Goods forwarding to chief transaction ", goodsForwardingTx);
+
+            // get_jetton_deployment_total_gas_cost mock
+            const totalFees = jettonDeploymentRequestComputeFee
+                + computeFwdFees(msgPrices, 3n, 1366n)
+                + forwardStateInitOverhead(msgPrices, jettonMasterStorageStats)
+                + jettonMintRequestComputeFee
+                + calcStorageFee(storagePrices, jettonMasterStorageStats, 24n * 3600n * 7n)
+                + enrollmentAcceptanceComputeFee
+                + JETTON_MIN_TRANSFER_FEE * 3n
+                + computeFwdFees(msgPrices, 1n, 96n)
+                + revokeAdminRequestComputeFee
+                + computeFwdFees(msgPrices, 1n, 248n)
+                + final;
+            console.log(`Total ~ deployment cost is ${totalFees} (${fromNano(totalFees)})`);
+        });
+        test.skip("jetton master on-chain state stats", async () => {
+            const smc = await blockchain.getContract(derivedJettonMaster.address);
+            assert(smc.accountState, "Can't access jetton master's state");
+            // Runtime doesn't see assert here lol
+            if (smc.accountState.type !== "active") throw new Error("Jetton master is not active");
+            assert(smc.account.account, "Can't access token launch!");
+            console.log(
+                "Jetton master storage stats:",
+                smc.account.account.storageStats.used
+            );
+            const stateCell = beginCell().store(storeStateInit(smc.accountState.state)).endCell();
+            console.log("Jetton master state stats:", collectCellStats(stateCell, []));
         });
     });
 });

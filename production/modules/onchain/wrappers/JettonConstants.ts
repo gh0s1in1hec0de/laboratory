@@ -10,7 +10,7 @@ export enum JettonOps {
     TakeWalletAddress = 0xd1735400,
     Mint = 0x642b7d07,
     ChangeAdmin = 0x6501f354,
-    ClaimAdmin = 0xfb88e119,
+    RevokeAdmin = 0x471ffff3,
     Upgrade = 0x2508d66a,
     CallTo = 0x235caf52,
     TopUp = 0xd372158c,

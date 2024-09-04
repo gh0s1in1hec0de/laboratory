@@ -80,7 +80,6 @@ describe("Ton Eye", () => {
             printTxs(txsChunk);
             console.log("======");
             printTxs(txsGluedChunk);
-
             throw new Error("^^");
         }
     });

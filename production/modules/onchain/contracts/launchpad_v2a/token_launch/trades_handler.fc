@@ -77,7 +77,7 @@
     (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
 
     ;; Taking care of our synthetic price controllers
-    public_round::synthetic_ton_reserve += attached_value;
+    public_round::synthetic_ton_reserve += accessible_user_value;
     public_round::synthetic_jet_reserve -= res_jettons;
 
     general_state::fut_jet_inner_balance -= res_jettons;
@@ -96,7 +96,7 @@
         accessible_user_value,
         res_jettons
     );
-    send_raw_message(msg, SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
 ;; Forgot about creator refund lol
@@ -117,11 +117,10 @@
     check_amount_is_enough_for_refund(attached_value);
     (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
 
-
     cell msg = build_balance_update_message(
         user_vault_code,
         query_id,
-        0, ;; Should be rewritten by message sending mode
+        0,
         sender_address,
         mode,
         0,
