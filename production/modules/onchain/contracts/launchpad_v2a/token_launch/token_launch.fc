@@ -134,6 +134,10 @@
         + calculate_token_launch_min_storage_fee(ONE_MONTH);
         throw_arg_if(launch_success_treshold - contract_balance, error::balance_lack, contract_balance < launch_success_treshold);
         deploy_launch_jetton();
+        if (contract_balance > launch_success_treshold) {
+            cell excesses = excesses_msg(query_id, sender_address, contract_balance - launch_success_treshold);
+            send_raw_message(excesses, SEND_MODE_IGNORE_ERRORS);
+        }
         return ();
     }
     if (op == op::transfer_notification) {
@@ -156,7 +160,7 @@
         in_msg_body~load_coins(); ;; Skip pub_tons
         int jettons = in_msg_body~load_coins();
         slice recipient = in_msg_body~load_msg_addr();
-        handle_jetton_claim_confirmation(query_id, attached_value, sender_address, wl_tons, jettons, recipient);
+        handle_jetton_claim_confirmation(query_id, sender_address, wl_tons, jettons, recipient);
         save_data();
         return ();
     }
@@ -208,15 +212,18 @@ slice get_user_vault_address(slice user_address) method_id {
     );
 }
 
-(int, int, int, int, int, int) get_config() method_id {
+(int, int, int, int, int, int, int) get_config() method_id {
     load_data();
-    return (
+    return (;; Due to new creator's mechanics, we are able to creators round data only by calculating it on receiver's side
+        creator_round::fut_jet_balance,
+        creator_round::fut_jet_left,
+        creator_round::const::fut_jet_price_reversed,
+
         wl_round::const::fut_jet_limit,
         public_round::const::fut_jet_limit,
+
         config::const::fut_jet_dex_amount,
-        config::const::fut_jet_platform_amount,
-        creator_round::fut_jet_left,
-        creator_round::const::fut_jet_price_reversed
+        config::const::fut_jet_platform_amount
     );
 }
 

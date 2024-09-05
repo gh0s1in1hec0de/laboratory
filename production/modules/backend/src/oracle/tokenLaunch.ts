@@ -42,7 +42,7 @@ export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) 
                 if (inMsgBody.remainingBits < (32 + 64)) continue;
 
                 const { msgBodyData, op, queryId } = await loadOpAndQueryId(inMsgBody);
-                if ([TokensLaunchOps.jettonClaimConfirmation, TokensLaunchOps.refundConfirmation].includes(op)) {
+                if ([TokensLaunchOps.JettonClaimConfirmation, TokensLaunchOps.RefundConfirmation].includes(op)) {
                     const {
                         whitelistTons,
                         publicTons,

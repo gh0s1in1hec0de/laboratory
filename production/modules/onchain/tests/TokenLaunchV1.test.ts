@@ -441,19 +441,19 @@ describe.skip("V1", () => {
             const createLaunchTx = findTransactionRequired(createLaunchResult.transactions, {
                 from: creator.address,
                 to: core.address,
-                op: CoreOps.createLaunch,
+                op: CoreOps.CreateLaunch,
                 success: true
             });
             printTxGasStats("Token launch creation request to core transaction:", createLaunchTx);
             const deploymentTx = findTransactionRequired(createLaunchResult.transactions, {
                 from: core.address,
-                op: TokensLaunchOps.init,
+                op: TokensLaunchOps.Init,
                 deploy: true,
                 success: true
             });
             printTxGasStats("New token launch deployment transaction:", deploymentTx);
             const initCallbackTx = findTransactionRequired(createLaunchResult.transactions, {
-                op: CoreOps.initCallback,
+                op: CoreOps.InitCallback,
             });
             printTxGasStats("Token launch init callback transaction:", initCallbackTx);
             console.log(`Sample token launch address: ${sampleTokenLaunch.address}`);
@@ -505,7 +505,7 @@ describe.skip("V1", () => {
             const buyoutTx = findTransactionRequired(buyoutTransactionResult.transactions, {
                 from: creator.address,
                 on: sampleTokenLaunch.address,
-                op: TokensLaunchOps.creatorBuyout,
+                op: TokensLaunchOps.CreatorBuyout,
                 success: true
             });
             printTxGasStats("Creator buyout transaction:", buyoutTx);
@@ -599,7 +599,7 @@ describe.skip("V1", () => {
             });
             const balanceUpdateComputeFee = printTxGasStats("Balance update (wl buy) transaction:", balanceUpdateTx);
             const wlCallbackTx = findTransactionRequired(wlPurchase.transactions, {
-                op: TokensLaunchOps.wlCallback,
+                op: TokensLaunchOps.WlCallback,
                 from: consumerVault.address,
                 on: sampleTokenLaunch.address,
                 success: true,
@@ -709,7 +709,7 @@ describe.skip("V1", () => {
             );
             const publicBuyRequest = findTransactionRequired(firstPublicBuyResult.transactions, {
                 on: sampleTokenLaunch.address,
-                op: TokensLaunchOps.publicPurchase,
+                op: TokensLaunchOps.PublicPurchase,
                 success: true
             });
             const publicBuyRequestComputeFees = printTxGasStats("Public buy request transaction: ", publicBuyRequest);
@@ -769,7 +769,7 @@ describe.skip("V1", () => {
             const refundRequest = findTransactionRequired(wlRefundResult.transactions, {
                 from: consumer.address,
                 to: sampleTokenLaunch.address,
-                op: TokensLaunchOps.refundRequest,
+                op: TokensLaunchOps.RefundRequest,
                 success: true,
             });
             const refundRequestComputeFee = printTxGasStats("Whitelist refund request transaction: ", refundRequest);
@@ -784,7 +784,7 @@ describe.skip("V1", () => {
             const wlRefundConfirmationTx = findTransactionRequired(wlRefundResult.transactions, {
                 from: consumerVault.address,
                 to: sampleTokenLaunch.address,
-                op: TokensLaunchOps.refundConfirmation,
+                op: TokensLaunchOps.RefundConfirmation,
                 success: true,
             });
             const withdrawConfirmationForwardFee = printTxGasStats("Whitelist refund confirmation transaction: ", wlRefundConfirmationTx);
@@ -820,7 +820,7 @@ describe.skip("V1", () => {
             expect(pubRefundResult.transactions).toHaveTransaction({
                 from: consumerVault.address,
                 to: sampleTokenLaunch.address,
-                op: TokensLaunchOps.refundConfirmation,
+                op: TokensLaunchOps.RefundConfirmation,
                 success: true,
             });
             const drainedVaultData = await consumerVault.getVaultData();
@@ -849,7 +849,7 @@ describe.skip("V1", () => {
                 BalanceUpdateMode.TotalWithdrawal
             );
             expect(totalRefundResult.transactions).toHaveTransaction({
-                op: TokensLaunchOps.refundConfirmation,
+                op: TokensLaunchOps.RefundConfirmation,
                 from: consumerVault.address,
                 on: sampleTokenLaunch.address,
                 success: true

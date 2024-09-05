@@ -100,14 +100,13 @@ int get_balance_update_gas_cost() inline_ref {
 }
 
 ;; As we don't have any external calls, we accounting only code execution fees
-const CREATOR_BUYOUT_GAS_CONSUMPTION = 13552;
+const CREATOR_BUYOUT_GAS_CONSUMPTION = 13377;
 (int, int) check_amount_is_enough_for_creator_buyout(int msg_value) impure inline {
-    int fee = get_compute_fee(MY_WORKCHAIN, CREATOR_BUYOUT_GAS_CONSUMPTION);
-    return validate_value(msg_value, fee);
+    return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_BUYOUT_GAS_CONSUMPTION));
 }
 
 ;; === Whitelist Purchase ===
-const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 20558;
+const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 20894;
 (int, int) check_amount_is_enough_for_wl_purchase(int msg_value) impure inline {
     return validate_value(
         msg_value,
@@ -116,7 +115,7 @@ const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 20558;
 }
 
 ;; === Public Purchase ===
-const PUB_PURCHASE_GAS_CONSUMPTION = 21374;
+const PUB_PURCHASE_GAS_CONSUMPTION = 21402;
 (int, int) check_amount_is_enough_for_public_purchase(int msg_value) impure inline {
     return validate_value(
         msg_value,
@@ -180,23 +179,20 @@ int get_jetton_deployment_total_gas_cost() inline_ref {
 
 
 ;; === Jetton Claim ===
-;; TODO Smells like its overcomplicated
 ;; Don't need stateinit as if vault doesn't exist, then there is nothing to claim
-const RECEIVE_CLAIM_CONSUMPTION = 1;
+const RECEIVE_CLAIM_CONSUMPTION = 7294;
 const CLAIM_MSG_BITS = 96;
 const CLAIM_MSG_CELLS = 1; ;; not in a ref but im paranoid guy
-int get_claim_gas_cost() inline_ref {
+int get_claim_gas_cost() inline {
     return get_forward_fee(MY_WORKCHAIN, CLAIM_MSG_BITS, CLAIM_MSG_CELLS)
     + get_compute_fee(MY_WORKCHAIN, RECEIVE_CLAIM_CONSUMPTION)
     + calculate_user_vault_min_storage_fee(TWO_MONTHS);
 }
-const CLAIM_GAS_CONSUMPTION = 1;
-const CLAIM_CONFIRMATION_GAS_CONSUMPTION = 1;
+const CLAIM_REQUEST_GAS_CONSUMPTION = 15000;
+const CLAIM_CONFIRMATION_GAS_CONSUMPTION = 20000;
 int check_amount_is_enough_for_jetton_claim(int msg_value) impure inline {
     int required_gas =
-    ;; Our side request processing
-    get_compute_fee(MY_WORKCHAIN, CLAIM_GAS_CONSUMPTION)
-    ;; Forwarding claim message
+    get_compute_fee(MY_WORKCHAIN, CLAIM_REQUEST_GAS_CONSUMPTION)
     + get_claim_gas_cost()
     ;; User vault's response
     + get_forward_fee(MY_WORKCHAIN, WITHDRAW_CONFIRMATION_MSG_BITS, WITHDRAW_CONFIRMATION_MSG_CELLS)
@@ -214,7 +210,7 @@ const CREATE_LAUNCH_GAS_CONSUMPTION = 28996;
 const INIT_MSG_BITS = 897; ;; 32 + 64 + 3 x (3+8+256)
 const INIT_MSG_CELLS = 2; ;; body in ref + stateinit in ref (I don't know exactly if I should account it here, so be it)
 const INITIALIZATION_GAS_CONSUMPTION = 15320;
-int get_amount_for_token_launch_deploy() inline {
+int get_amount_for_token_launch_deploy() inline_ref {
     return get_compute_fee(MY_WORKCHAIN, CREATE_LAUNCH_GAS_CONSUMPTION)
     + get_forward_fee(MY_WORKCHAIN, INIT_MSG_BITS, INIT_MSG_CELLS)
     + forward_token_launch_init_state_overhead()

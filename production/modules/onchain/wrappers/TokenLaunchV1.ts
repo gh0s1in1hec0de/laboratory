@@ -43,7 +43,7 @@ export class TokenLaunchV1 implements Contract {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
-            .storeUint(TokensLaunchOps.creatorBuyout, OP_LENGTH)
+            .storeUint(TokensLaunchOps.CreatorBuyout, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
             .endCell();
         await provider.internal(via, {
@@ -55,7 +55,7 @@ export class TokenLaunchV1 implements Contract {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
-            .storeUint(TokensLaunchOps.publicPurchase, OP_LENGTH)
+            .storeUint(TokensLaunchOps.PublicPurchase, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
             .endCell();
         await provider.internal(via, {
@@ -67,11 +67,11 @@ export class TokenLaunchV1 implements Contract {
         provider: ContractProvider,
         sendMessageParams: SendMessageParams,
         mode: BalanceUpdateMode,
-        ) {
+    ) {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
-            .storeUint(TokensLaunchOps.refundRequest, OP_LENGTH)
+            .storeUint(TokensLaunchOps.RefundRequest, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
             .storeUint(mode, 4)
             .storeCoins(666n)
@@ -85,7 +85,7 @@ export class TokenLaunchV1 implements Contract {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
-            .storeUint(TokensLaunchOps.deployJetton, OP_LENGTH)
+            .storeUint(TokensLaunchOps.DeployJetton, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
             .endCell();
         await provider.internal(via, {
@@ -97,7 +97,7 @@ export class TokenLaunchV1 implements Contract {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
-            .storeUint(TokensLaunchOps.jettonClaimRequest, OP_LENGTH)
+            .storeUint(TokensLaunchOps.JettonClaimRequest, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
             .endCell();
         await provider.internal(via, {
@@ -137,12 +137,15 @@ export class TokenLaunchV1 implements Contract {
     async getConfig(provider: ContractProvider): Promise<GetConfigResponse> {
         let { stack } = await provider.get("get_config", []);
         return {
-            wlRoundFutJetLimit: stack.readBigNumber(),
-            pubRoundFutJetLimit: stack.readBigNumber(),
-            futJetDexAmount: stack.readBigNumber(),
-            platformAmount: stack.readBigNumber(),
+            creatorFutJetBalance: stack.readBigNumber(),
             creatorFutJetLeft: stack.readBigNumber(),
             creatorFutJetPrice: stack.readBigNumber(),
+
+            wlRoundFutJetLimit: stack.readBigNumber(),
+            pubRoundFutJetLimit: stack.readBigNumber(),
+
+            futJetDexAmount: stack.readBigNumber(),
+            futJetPlatformAmount: stack.readBigNumber(),
         };
     }
 
