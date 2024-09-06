@@ -1,8 +1,7 @@
-import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode, toNano } from "@ton/core";
+import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
 import {
-    BASECHAIN, BalanceUpdateMode, LaunchData, validateValue,
-    QUERY_ID_LENGTH, SaleMoneyFlow, TokensLaunchOps,
-    OP_LENGTH, Coins, Contracts, LaunchConfigV2A, GetConfigResponse
+    PERCENTAGE_DENOMINATOR, BASECHAIN, Contracts, LaunchConfigV2A, GetConfigResponse, getCreatorJettonPrice,
+    QUERY_ID_LENGTH, OP_LENGTH, MoneyFlows, TokensLaunchOps, BalanceUpdateMode, LaunchData, Coins,
 } from "starton-periphery";
 import { randomAddress } from "@ton/test-utils";
 import { LaunchParams } from "./types";
@@ -22,10 +21,6 @@ export type StateParams = {
 };
 
 export class TokenLaunchV2A implements Contract {
-    public static PERCENTAGE_DENOMINATOR = 100000n;
-    // 10k TON
-    public static MAX_WL_ROUND_TON_LIMIT = 10000n * toNano("1");
-
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
     }
 
@@ -79,7 +74,7 @@ export class TokenLaunchV2A implements Contract {
         provider: ContractProvider,
         sendMessageParams: SendMessageParams,
         mode: BalanceUpdateMode,
-        ) {
+    ) {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
@@ -134,8 +129,20 @@ export class TokenLaunchV2A implements Contract {
         return stack.readAddress();
     }
 
-    async getSaleMoneyFlow(provider: ContractProvider): Promise<SaleMoneyFlow> {
-        let { stack } = await provider.get("get_sale_money_flow", []);
+    async getSaleTimings(provider: ContractProvider): Promise<{
+        startTime: number, creatorRoundEndTime: number, wlRoundEndTime: number, publicRoundEndTime: number,
+    }> {
+        let { stack } = await provider.get("get_sale_timings", []);
+        return {
+            startTime: stack.readNumber(),
+            creatorRoundEndTime: stack.readNumber(),
+            wlRoundEndTime: stack.readNumber(),
+            publicRoundEndTime: stack.readNumber(),
+        };
+    }
+
+    async getMoneyFlows(provider: ContractProvider): Promise<MoneyFlows> {
+        let { stack } = await provider.get("get_money_flows", []);
         return {
             totalTonsCollected: stack.readBigNumber(),
             creatorFutJetBalance: stack.readBigNumber(),
@@ -172,16 +179,6 @@ export class TokenLaunchV2A implements Contract {
         };
     }
 
-    static getCreatorAmountOut(expectedFee: Coins, value: Coins, wlJetLimit: Coins, tonLimitForWlRound: Coins): Coins {
-        const { purified } = validateValue(value, expectedFee);
-        const creatorJettonPrice = this.getCreatorJettonPrice(wlJetLimit, tonLimitForWlRound);
-        return purified * creatorJettonPrice / TokenLaunchV2A.MAX_WL_ROUND_TON_LIMIT;
-    }
-
-    static getCreatorJettonPrice(wlJetLimit: Coins, tonLimitForWlRound: Coins): Coins {
-        return wlJetLimit * 2n * this.MAX_WL_ROUND_TON_LIMIT / tonLimitForWlRound;
-    }
-
     static buildState({
         creator,
         chief,
@@ -192,12 +189,12 @@ export class TokenLaunchV2A implements Contract {
         const { startTime, totalSupply, platformSharePct, metadata } = launchParams;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
 
-        const wlJetLimit = BigInt(launchConfig.jetWlLimitPct) * totalSupply / this.PERCENTAGE_DENOMINATOR;
-        const pubJetLimit = BigInt(launchConfig.jetPubLimitPct) * totalSupply / this.PERCENTAGE_DENOMINATOR;
-        const dexJetShare = BigInt(launchConfig.jetDexSharePct) * totalSupply / this.PERCENTAGE_DENOMINATOR;
-        const platformShare = BigInt(platformSharePct) * totalSupply / this.PERCENTAGE_DENOMINATOR;
+        const wlJetLimit = BigInt(launchConfig.jetWlLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
+        const pubJetLimit = BigInt(launchConfig.jetPubLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
+        const dexJetShare = BigInt(launchConfig.jetDexSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
+        const platformShare = BigInt(platformSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
         const creatorBuybackJetLimit = totalSupply - (wlJetLimit + pubJetLimit + dexJetShare + platformShare);
-        const creatorJetPrice = this.getCreatorJettonPrice(wlJetLimit, launchConfig.tonLimitForWlRound);
+        const creatorJetPrice = getCreatorJettonPrice(wlJetLimit, launchConfig.tonLimitForWlRound);
 
         const generalState = beginCell()
             .storeInt(loadAtMax ? ThirtyTwoIntMaxValue : startTime, 32)

@@ -54,7 +54,7 @@
     (int msg_flags, slice sender_address, int attached_value, int fwd_fee_from_in_msg) = extract_full_msg_data(in_msg_full);
     (int op, int query_id) = in_msg_body~load_op_and_query_id();
 
-    load_data(); ;; Now we have our contract data available in globals
+    load_data();
     if (msg_flags & 1) {
         on_bounce(op, query_id, attached_value, sender_address, in_msg_body);
         return ();
@@ -164,6 +164,17 @@
         save_data();
         return ();
     }
+    if (op == op::tl::claim_opn) {
+        throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::chief_address));
+        if (~ (this::operational_needs > 0)) {
+            return ();
+        }
+        raw_reserve(attached_value + this::operational_needs, RESERVE_ALL_BUT_AMOUNT);
+        cell transfer_msg = simple_transfer(this::const::chief_address, 0, "opn");
+        send_raw_message(transfer_msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+        save_data();
+        return ();
+    }
     if (op == op::upgrade) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::chief_address));
         (cell new_data, cell new_code) = (in_msg_body~load_ref(), in_msg_body~load_ref());
@@ -189,7 +200,7 @@ slice get_user_vault_address(slice user_address) method_id {
     return user_vault_address;
 }
 
-(int, int, int, int, int, int) get_sale_money_flow() method_id {
+(int, int, int, int, int, int) get_money_flows() method_id {
     load_data();
     return (
         general_state::total_tons_collected,
@@ -201,20 +212,10 @@ slice get_user_vault_address(slice user_address) method_id {
     );
 }
 
-;; Shouldn't exist as we must read this data from initialization
-(int, int, int, int) get_sale_timings() method_id {
-    load_data();
-    return (
-        general_state::const::start_time,
-        creator_round::const::end_time,
-        wl_round::const::end_time,
-        public_round::const::end_time
-    );
-}
-
 (int, int, int, int, int, int, int) get_config() method_id {
     load_data();
-    return (;; Due to new creator's mechanics, we are able to creators round data only by calculating it on receiver's side
+    return (
+        ;; Due to new creator's mechanics, we are able to creators round data only by calculating it on receiver's side
         creator_round::fut_jet_balance,
         creator_round::fut_jet_left,
         creator_round::const::fut_jet_price_reversed,
@@ -224,6 +225,16 @@ slice get_user_vault_address(slice user_address) method_id {
 
         config::const::fut_jet_dex_amount,
         config::const::fut_jet_platform_amount
+    );
+}
+
+(int, int, int, int) get_sale_timings() method_id {
+    load_data();
+    return (
+        general_state::const::start_time,
+        creator_round::const::end_time,
+        wl_round::const::end_time,
+        public_round::const::end_time
     );
 }
 

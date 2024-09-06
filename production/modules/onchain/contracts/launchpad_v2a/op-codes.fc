@@ -20,6 +20,7 @@ const op::tl::jetton_claim_confirmation = 0x349c1c7f;
 const op::tl::refund_request = 0x7b4587a1; ;; 2068154273
 const op::tl::refund_confirmation = 0x6f7dbcd0; ;; 1870511312
 const op::tl::deploy_jet = 0x71161970;
+const op::tl::claim_opn = 0x50c5723e;
 
 const op::uv::balance_update = 0x00399d7a;
 const op::uv::claim = 0x556a6246; ;; 1433035334
@@ -27,7 +28,7 @@ const op::uv::claim = 0x556a6246; ;; 1433035334
 const op::core::tl_init_callback = 0x5d988a60;
 const op::core::create_launch = 0x0eedbf42;
 const op::core::init = 0x18add407;
-const op::core::upgrade_config = "upgrade_config"c;
+const op::core::upgrade_config = 0x3cacf836;
 
 const error::not_enough_gas = 48;
 const error::invalid_op = 72;

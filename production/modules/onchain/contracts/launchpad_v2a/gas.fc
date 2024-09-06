@@ -21,7 +21,7 @@ const TWO_MONTHS = 60 * ONE_DAY;
 
 ;; Minimal fees
 ;; https://github.com/ton-blockchain/stablecoin-contract/blob/62f661d79012a259c0110dce611dafc31359be78/contracts/gas.fc#L14 (Actuallly 28627415, but rounded)
-const JETTON_MIN_TRANSFER_FEE = 30000000;
+const JETTON_MIN_TRANSFER_FEE = 31000000;
 ;; https://docs.ton.org/develop/smart-contracts/fees#fees-for-sending-ton
 const SIMPLE_TRANSFER_FEE = 6000000;
 
@@ -106,7 +106,7 @@ const CREATOR_BUYOUT_GAS_CONSUMPTION = 13377;
 }
 
 ;; === Whitelist Purchase ===
-const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 20894;
+const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 20860;
 (int, int) check_amount_is_enough_for_wl_purchase(int msg_value) impure inline {
     return validate_value(
         msg_value,
@@ -194,11 +194,8 @@ int check_amount_is_enough_for_jetton_claim(int msg_value) impure inline {
     int required_gas =
     get_compute_fee(MY_WORKCHAIN, CLAIM_REQUEST_GAS_CONSUMPTION)
     + get_claim_gas_cost()
-    ;; User vault's response
     + get_forward_fee(MY_WORKCHAIN, WITHDRAW_CONFIRMATION_MSG_BITS, WITHDRAW_CONFIRMATION_MSG_CELLS)
-    ;; Our side callback processing
     + get_compute_fee(MY_WORKCHAIN, CLAIM_CONFIRMATION_GAS_CONSUMPTION)
-    ;; Transfering resulted jettons to user
     + JETTON_MIN_TRANSFER_FEE;
     throw_unless(error::not_enough_gas, msg_value > required_gas);
     return msg_value - required_gas;

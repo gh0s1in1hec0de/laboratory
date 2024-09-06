@@ -70,8 +70,9 @@
     );
     send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     if (remainings > 0) {
-        cell excesses = excesses_msg(query_id, initiator, remainings);
-        send_raw_message(excesses, SEND_MODE_IGNORE_ERRORS);
+        ;; We use simple transfer here, as it also solves a problem of unique sign to oracle to refresh timings
+        cell excesses = simple_transfer(initiator, remainings, "^^!");
+        send_raw_message(excesses, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     }
 }
 
@@ -220,20 +221,14 @@
     }
 
     general_state::fut_jet_deployed_balance -= fut_jet_recipient_total_amount;
-    cell msg_body = begin_cell()
-        .store_op(op::transfer)
-        .store_query_id(query_id)
-        .store_coins(fut_jet_recipient_total_amount)
-        .store_slice(recipient)
-        .store_slice(recipient) ;; All the excesses are routed to user
-        .store_coins(1)
-        .store_maybe_ref(null())
-        .end_cell();
-    cell fut_jet_claim_msg = begin_cell()
-        .store_msg_flags_and_address_none(NON_BOUNCEABLE) ;; Can't handle its bouncing imo
-        .store_slice(fut_jet_wallet_address)
-        .store_coins(0) ;; Will be rewritten by sending mode
-        .store_only_body_ref(msg_body)
-        .end_cell();
-    send_raw_message(fut_jet_claim_msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    cell transfer_msg = build_jetton_transfer_msg(
+        query_id,
+        0,
+        fut_jet_recipient_total_amount,
+        fut_jet_wallet_address,
+        recipient,
+        get_compute_fee(MY_WORKCHAIN, 350),
+        null()
+    );
+    send_raw_message(transfer_msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }

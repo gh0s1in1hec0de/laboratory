@@ -1,17 +1,18 @@
 import {
-    collectCellStats, computedGeneric, computeFwdFees, getGasPrices, calcStorageFee,
+    collectCellStats, computedGeneric, computeFwdFees, getGasPrices, computeStorageFee,
     MsgPrices, printTxsLogs, StorageStats, computeFwdFeesVerbose, computeGasFee,
     FullFees, GasPrices, getStoragePrices, getMsgPrices, StorageValue,
 } from "./utils";
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
+import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import { TokenLaunchV1 } from "../wrappers/TokenLaunchV1";
 import { UserVaultV1 } from "../wrappers/UserVaultV1";
 import {
     UTIL_JET_SEND_MODE_SIZE, UtilJettonsEnrollmentMode, TokensLaunchOps,
     BASECHAIN, CoreOps, LaunchConfigV1, UserVaultOps, validateValue,
-    Coins, getAmountOut, jettonFromNano, BalanceUpdateMode
+    PERCENTAGE_DENOMINATOR, getCreatorAmountOut, Coins,
+    getAmountOut, jettonFromNano, BalanceUpdateMode,
 } from "starton-periphery";
-import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import { JettonMaster } from "../wrappers/JettonMaster";
 import { JettonWallet } from "../wrappers/JettonWallet";
 import { JettonOps } from "../wrappers/JettonConstants";
@@ -292,7 +293,7 @@ describe.skip("V1", () => {
             computeFwdFees(msgPrices, 1n, 348n),
             forwardStateInitOverhead(msgPrices, userVaultStorageStats),
             4000000n,
-            calcStorageFee(storagePrices, userVaultStorageStats, BigInt(TWO_MONTHS))
+            computeStorageFee(storagePrices, userVaultStorageStats, BigInt(TWO_MONTHS))
         );
         wlPurchaseCost = (
             wlPurchaseRequest: bigint,
@@ -493,9 +494,9 @@ describe.skip("V1", () => {
             const expectedFee = computeGasFee(gasPrices, 14534n); // Computed by printTxGasStats later
             const tokenLaunchConfigBefore = await sampleTokenLaunch.getConfig();
 
-            const expectedCreatorBalance = TokenLaunchV1.getCreatorAmountOut(
+            const expectedCreatorBalance = getCreatorAmountOut(
                 expectedFee, value,
-                BigInt(launchConfig.jetWlLimitPct) * sampleLaunchParams.totalSupply / TokenLaunchV1.PERCENTAGE_DENOMINATOR,
+                BigInt(launchConfig.jetWlLimitPct) * sampleLaunchParams.totalSupply / PERCENTAGE_DENOMINATOR,
                 launchConfig.tonLimitForWlRound
             );
             const buyoutTransactionResult = await sampleTokenLaunch.sendCreatorBuyout({
@@ -624,7 +625,7 @@ describe.skip("V1", () => {
                 computeFwdFees(msgPrices, 1n, 348n),
                 forwardStateInitOverhead(msgPrices, userVaultStorageStats),
                 balanceUpdateComputeFee,
-                calcStorageFee(storagePrices, userVaultStorageStats, BigInt(TWO_MONTHS))
+                computeStorageFee(storagePrices, userVaultStorageStats, BigInt(TWO_MONTHS))
             );
             const wlPurchaseTotalGasCost = wlPurchaseCost(
                 wlPurchaseReqComputeFee,

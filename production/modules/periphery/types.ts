@@ -10,7 +10,7 @@ export type Contracts = {
 }
 
 // Token Launches' unified getters
-export type SaleMoneyFlow = {
+export type MoneyFlows = {
     totalTonsCollected: Coins,
     creatorFutJetBalance: Coins,
     wlRoundTonInvestedTotal: Coins,

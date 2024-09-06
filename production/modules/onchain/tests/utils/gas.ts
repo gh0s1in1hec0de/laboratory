@@ -181,7 +181,7 @@ function shr16ceil(src: bigint) {
     return res;
 }
 
-export function calcStorageFee(prices: StorageValue, stats: StorageStats, duration: bigint) {
+export function computeStorageFee(prices: StorageValue, stats: StorageStats, duration: bigint) {
     return shr16ceil((stats.bits * prices.bit_price_ps + stats.cells * prices.cell_price_ps) * duration);
 }
 

@@ -48,6 +48,8 @@ jetton_claim_request#16b3aef0 query_id:uint64 = TokenLaunchMsg;
 // 32 + 64 + 124 x 3 + 267 = 735
 jetton_claim_confirmation#349c1c7f query_id:uint64 wl_tons:Coins pub_tons:Coins jettons:Coins recipient:MsgAddressInt = TokenLaunchMsg;
 
+claim_opn#50c5723e query_id:uint64 = TokenLaunchMsg;
+
 // Utils
 // 32 + 64 = 96
 deploy_jet#71161970 query_id:uint64 = TokenLaunchMsg;
@@ -89,7 +91,7 @@ init#18add407 query_id:uint64 = CoreMsg;
 init_callback#5d988a60 query_id:uint64 = CoreMsg;
 // 32 + 64 + 796 = 892
 // There is no direct fielt `launch_config`, it represents all the fileds `LaunchConfig` originally include, starting from `min_ton_for_sale_success`
-update_config#7fb2e4ba query_id:uint64 launch_config:LaunchConfig = CoreMsg;
+update_config#3cacf836 query_id:uint64 launch_config:^LaunchConfig = CoreMsg;
 
 /* === PERIPHERY === */
 
