@@ -35,7 +35,7 @@ export class CoreV1 implements Contract {
         await provider.internal(via, {
             value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell().storeUint(CoreOps.init, OP_LENGTH).storeUint(0, QUERY_ID_LENGTH).endCell(),
+            body: beginCell().storeUint(CoreOps.Init, OP_LENGTH).storeUint(0, QUERY_ID_LENGTH).endCell(),
         });
     }
 
@@ -45,7 +45,7 @@ export class CoreV1 implements Contract {
         const packagedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
 
         const body = beginCell()
-            .storeUint(CoreOps.createLaunch, OP_LENGTH)
+            .storeUint(CoreOps.CreateLaunch, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
             .storeCoins(totalSupply)
             .storeUint(platformSharePct, 16)
@@ -62,7 +62,7 @@ export class CoreV1 implements Contract {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
-            .storeUint(CoreOps.upgrade, OP_LENGTH)
+            .storeUint(CoreOps.Upgrade, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
             .storeRef(newData)
             .storeRef(newCode)
@@ -148,7 +148,7 @@ export class CoreV1 implements Contract {
             tokenLaunchStateInit: data,
             stateInitCell: tokenLaunchStateInit,
             bodyCell: beginCell()
-                .storeUint(TokensLaunchOps.init, 32)
+                .storeUint(TokensLaunchOps.Init, 32)
                 .storeUint(0, 64)
                 .storeAddress(tokenLaunchFutJetWalletAddress.address)
                 .storeAddress(utilJetWalletAddress.address)

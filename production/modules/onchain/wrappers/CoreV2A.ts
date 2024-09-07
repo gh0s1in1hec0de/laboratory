@@ -34,7 +34,7 @@ export class CoreV2A implements Contract {
         await provider.internal(via, {
             value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell().storeUint(CoreOps.init, OP_LENGTH).storeUint(0, QUERY_ID_LENGTH).endCell(),
+            body: beginCell().storeUint(CoreOps.Init, OP_LENGTH).storeUint(0, QUERY_ID_LENGTH).endCell(),
         });
     }
 
@@ -45,7 +45,7 @@ export class CoreV2A implements Contract {
         const maybePackedConfig = customConfig ? (customConfig instanceof Cell ? customConfig : packLaunchConfigToCellV2A(customConfig)) : null;
 
         const body = beginCell()
-            .storeUint(CoreOps.createLaunch, OP_LENGTH)
+            .storeUint(CoreOps.CreateLaunch, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
             .storeMaybeRef(maybePackedConfig)
             .storeCoins(totalSupply)
@@ -63,7 +63,7 @@ export class CoreV2A implements Contract {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
-            .storeUint(CoreOps.upgrade, OP_LENGTH)
+            .storeUint(CoreOps.Upgrade, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
             .storeRef(newData)
             .storeRef(newCode)
@@ -131,7 +131,7 @@ export class CoreV2A implements Contract {
             tokenLaunchStateInit: data,
             stateInitCell: tokenLaunchStateInit,
             bodyCell: beginCell()
-                .storeUint(TokensLaunchOps.init, 32)
+                .storeUint(TokensLaunchOps.Init, 32)
                 .storeUint(0, 64)
                 .storeAddress(tokenLaunchFutJetWalletAddress.address)
                 .storeAddress(futJetMaster.address)

@@ -10,30 +10,29 @@ export const QUERY_ID_LENGTH = 64;
 
 export enum CoreOps {
     // We'll use it for config parsing maybe
-    init = 0x18add407,
-    initCallback = 0x5d988a60,
+    Init = 0x18add407,
+    InitCallback = 0x5d988a60,
     // Tracking new launches
-    createLaunch = 0x0eedbf42,
-    upgrade = 0x055d212a,
+    CreateLaunch = 0x0eedbf42,
+    Upgrade = 0x055d212a,
 }
 
 export enum TokensLaunchOps {
-    init = 0x358b2487,
-    creatorBuyout = 0x0a535100,
-    publicPurchase = 0x32626062,
-    wlPurchase = 0x4eb1e316,
-    // wlRequest = transfer_notification
-    wlCallback = 0x390f7cfd,
-    refundRequest = 0x7b4587a1,
-    refundConfirmation = 0x6f7dbcd0,
-    jettonClaimRequest = 0x16b3aef0,
-    jettonClaimConfirmation = 0x349c1c7f,
-    deployJetton = 0x71161970,
+    Init = 0x358b2487,
+    CreatorBuyout = 0x0a535100,
+    PublicPurchase = 0x32626062,
+    WlPurchase = 0x4eb1e316,
+    WlCallback = 0x390f7cfd,
+    RefundRequest = 0x7b4587a1,
+    RefundConfirmation = 0x6f7dbcd0,
+    JettonClaimRequest = 0x16b3aef0,
+    JettonClaimConfirmation = 0x349c1c7f,
+    DeployJetton = 0x71161970,
 }
 
 export enum UserVaultOps {
     balanceUpdate = 0x00399d7a,
-    claim = 0x556a6246,
+    Claim = 0x556a6246,
 }
 
 export type WithdrawConfirmationMessage = {

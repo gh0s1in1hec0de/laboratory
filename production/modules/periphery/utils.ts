@@ -28,23 +28,6 @@ export function endParse(slice: Slice) {
     }
 }
 
-
-export function validateValue(total: Coins, fee: Coins): { purified: Coins, opn: Coins } {
-    assert(!(fee > total), "not enough gas");
-    const extra = total - fee;
-    const purified = extra * 99n / 100n;
-    assert(purified > 0, "balance lack");
-    return { purified, opn: extra - purified };
-}
-
-export function getAmountOut(amountIn: Coins, reserveIn: Coins, reserveOut: Coins): Coins {
-    const newReserveIn = reserveIn + amountIn;
-    const newReserveOut = reserveIn * reserveOut / newReserveIn;
-    const amountOut = reserveOut - newReserveOut;
-    assert(amountOut > 0, "amount out must be positive");
-    return amountOut;
-}
-
 export function jettonToNano(amount: number | bigint | string, decimals: number = 6) {
     const nineDecimalsRes = toNano(amount);
     if (decimals > 9) return nineDecimalsRes * BigInt(9 - decimals);

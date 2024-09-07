@@ -10,7 +10,7 @@ export type Contracts = {
 }
 
 // Token Launches' unified getters
-export type SaleMoneyFlow = {
+export type MoneyFlows = {
     totalTonsCollected: Coins,
     creatorFutJetBalance: Coins,
     wlRoundTonInvestedTotal: Coins,
@@ -32,10 +32,11 @@ export type LaunchData = {
 };
 // Shitty name to avoid naming collisions
 export type GetConfigResponse = {
+    creatorFutJetBalance: Coins,
+    creatorFutJetLeft: Coins,
+    creatorFutJetPrice: Coins,
     wlRoundFutJetLimit: Coins,
     pubRoundFutJetLimit: Coins,
     futJetDexAmount: Coins,
-    platformAmount: Coins,
-    creatorFutJetLeft: Coins,
-    creatorFutJetPrice: Coins,
+    futJetPlatformAmount: Coins,
 }

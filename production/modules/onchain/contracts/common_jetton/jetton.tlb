@@ -63,7 +63,6 @@ transfer_notification#7362d09c
 
 excesses#d53276db query_id:uint64 = InternalMsgBody;
 
-
 internal_transfer#178d4519
   query_id:uint64
   amount:Coins

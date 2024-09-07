@@ -33,7 +33,7 @@ export async function handleCoreUpdates(coreAddress: RawAddressString) {
                     const outMsgBody = msg.body.beginParse();
                     if (outMsgBody.remainingBits < (32 + 64)) continue;
                     const { msgBodyData, op, queryId } = await loadOpAndQueryId(outMsgBody);
-                    if (op !== TokensLaunchOps.init) continue;
+                    if (op !== TokensLaunchOps.Init) continue;
                     const newLaunchAddress = msg.info.dest;
                     if (!newLaunchAddress) continue;
                     const address: RawAddressString = (newLaunchAddress as Address).toRawString(); // Is it safe?
