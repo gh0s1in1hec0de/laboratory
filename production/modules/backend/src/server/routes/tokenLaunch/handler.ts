@@ -20,6 +20,6 @@ export async function getTokenLaunches({
         assert(res, "token launches not found");
         return res;
     } catch (e){
-        logger().http(`function retrieval error: ${e}`);
+        logger().error(`error in http request 'getTokenLaunches': ${e}`);
     }
 }

@@ -22,6 +22,7 @@ export async function storeUserTaskRelations(
     const res = await (client ?? globalClient)<StoredWhitelistRelations[]>`
         INSERT INTO users_tasks_relation (caller, task)
         VALUES (${userAddress}, ${taskId})
+        ON CONFLICT DO NOTHING
         RETURNING 1
     `;
     return res.length ? res[0] : null;

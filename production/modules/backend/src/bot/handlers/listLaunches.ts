@@ -37,9 +37,9 @@ async function handleListLaunches(
             { reply_markup: getRetryKeyboard() }
         );
         if (error instanceof Error) {
-            logger().error(error.message);
+            logger().error("error when trying to retrieve a list launches: ", error.message);
         } else {
-            logger().error("Unknown error");
+            logger().error("unknown error");
         }
     }
 }

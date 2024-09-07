@@ -19,3 +19,38 @@ CREATE TABLE whitelist_relations
     caller_address       address REFERENCES callers (address),
     PRIMARY KEY (token_launch_address, caller_address)
 );
+
+
+CREATE OR REPLACE FUNCTION increment_ticket_balance()
+    RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE users
+    SET ticket_balance = ticket_balance + 1
+    WHERE telegram_id = (SELECT "user" FROM callers WHERE address = NEW.caller);
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER user_complete_task
+    AFTER INSERT ON users_tasks_relation
+    FOR EACH ROW
+EXECUTE FUNCTION increment_ticket_balance();
+
+
+CREATE OR REPLACE FUNCTION decrement_ticket_balance()
+    RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE users
+    SET ticket_balance = ticket_balance - 1
+    WHERE telegram_id = (SELECT "user" FROM callers WHERE address = NEW.caller_address);
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER user_buy_whitelist
+    AFTER INSERT ON whitelist_relations
+    FOR EACH ROW
+EXECUTE FUNCTION decrement_ticket_balance();

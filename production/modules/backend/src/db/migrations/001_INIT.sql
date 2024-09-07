@@ -13,8 +13,8 @@ CREATE TABLE users
 (
     invited_by  telegram_id REFERENCES users (telegram_id),
     telegram_id telegram_id PRIMARY KEY,
-    nickname    TEXT
---     ticket_balance SMALLINT NOT NULL DEFAULT 0
+    nickname    TEXT,
+    ticket_balance SMALLINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE callers

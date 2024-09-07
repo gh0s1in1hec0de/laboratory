@@ -2,8 +2,8 @@ import { logger } from "../../../logger";
 
 export async function getGreeting() {
     try {
-        return "Hello from user routes!";
+        return "hello from user routes!";
     } catch (e){
-        logger().http(`function retrieval error: ${e}`);
+        logger().error(`function retrieval error: ${e}`);
     }
 }

@@ -1,3 +1,4 @@
+import {Address} from "@ton/ton";
 import type { StoredTokenLaunch, StoredTokenLaunchRequest } from "../db";
 import { SortOrder, TokenLaunchFields } from "starton-periphery";
 import { type HearsContext, InlineKeyboard } from "grammy";
@@ -40,7 +41,7 @@ const replies = {
     start: "<b>Hello, it`s Starton</b> (￣▽￣)ノ\nClick on /menu to go to hell",
     menu: "<b>What are we gonna do?</b> ＼(￣o￣)／",
     noLaunches: "I don`t have token launches (￣ヘ￣)",
-    error: "I have some error. Try later 〜(＞_＜)〜",
+    error: "I got an error. Try later 〜(＞_＜)〜",
     idRequest: "Send me <b>ID</b> of token launch (⊙_⊙)",
     invalidId: "Invalid <b>ID</b> (￣ヘ￣). Try again dumbass...",
     addressList: "Send me <b>User Address</b> and <b>Task ID</b> (￣▽￣)ノ\nExample: <code>userAdr1|taskID1, userAdr2|taskID2</code>",
@@ -125,24 +126,21 @@ export async function getAdminFilter(ctx: MyContext | HearsContext<MyContext>): 
 /**
  * UTILS
  */
-
-const addressRegex = /^[a-zA-Z0-9_-]{48}$/;
 const map: Map<string, string[]> = new Map();
 
 export function isValidString(str: string): Map<string, string[]> | null {
-    map.clear();  
+    map.clear();
     const pairs = str.split(",");
 
     for (const pair of pairs) {
         const [userAddress, taskId] = pair.split("|");
         
         if (!userAddress?.trim() || !taskId?.trim()) return null;
-        // if (!addressRegex.test(userAddress.trim())) return null;
-      
+        // || Address.isAddress(userAddress.trim())
+        
         const trimmedAddress = userAddress.trim();
         const trimmedId = taskId.trim();
-    
-      
+        
         if (map.has(trimmedAddress)) {
             map.get(trimmedAddress)?.push(trimmedId);
         } else {
