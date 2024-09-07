@@ -30,6 +30,7 @@ export type Caller = {
 }
 
 export type StoredTokenLaunch = {
+    id: number,
     address: RawAddressString,
     creator: RawAddressString,
     name: string,
@@ -41,7 +42,7 @@ export type StoredTokenLaunch = {
 export interface StoredTokenLaunchRequest {
   page: number,
   limit: number,
-  sortBy: TokenLaunchFields,
+  orderBy: TokenLaunchFields,
   order: SortOrder,
   search?: string,
 }
@@ -89,3 +90,8 @@ export const balanceUpdateModeToUserActionType: { [key in BalanceUpdateMode]: Us
     [BalanceUpdateMode.PublicWithdrawal]: UserActionType.PublicRefund,
     [BalanceUpdateMode.TotalWithdrawal]: UserActionType.TotalRefund,
 };
+
+export type StoredWhitelistRelations = {
+  tokenLaunchAddress: string,
+  callerAddress: string,
+}

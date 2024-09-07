@@ -1,12 +1,11 @@
 import { type CommandContext } from "grammy";
-import { getStartReply } from "../constants";
+import { getReplyText } from "../constants";
 import type { MyContext } from "../index";
 import { logger } from "../../logger";
 
 export async function handleStartCommand(ctx: CommandContext<MyContext>): Promise<void> {
     try {
-        const startText = getStartReply(ctx);
-        await ctx.reply(startText, {
+        await ctx.reply(getReplyText("start"), {
             parse_mode: "HTML",
         });
     } catch (error) {

@@ -44,10 +44,12 @@ export async function handleCoreUpdates(coreAddress: RawAddressString) {
                         address,
                         creator: parsedStateinit.creatorAddress.toRawString(),
                         metadata: parseMetadataCell(parsedStateinit.tools.metadata),
+                        // TODO Add name to token launch
+                        name: "",
                         // An error may occur here
                         timings: parseTokenLaunchTimings(parsedStateinit)
                     });
-                    handleTokenLaunchUpdates(address);
+                    await handleTokenLaunchUpdates(address);
                 }
             }
             currentHeight = newTxs[newTxs.length - 1].lt;

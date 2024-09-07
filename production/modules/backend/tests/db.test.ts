@@ -52,7 +52,7 @@ describe("Database", () => {
         const res = await db.getSortedTokenLaunches({
             page: 1,
             limit: 10,
-            sortBy: TokenLaunchFields.CREATED_AT,
+            orderBy: TokenLaunchFields.CREATED_AT,
             order: SortOrder.ASC,
             search: ""
         }, client);

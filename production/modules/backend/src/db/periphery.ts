@@ -4,7 +4,7 @@ import { ok as assert } from "assert";
 import { globalClient } from "./db";
 
 export async function setCoreHeight(address: RawAddressString, height: LamportTime, force?: boolean, client?: SqlClient): Promise<void> {
-    const c = client || globalClient;
+    const c = client ?? globalClient;
     const res = await c`
         INSERT INTO heights (contract_address, height)
         VALUES (${address}, ${height})
@@ -14,7 +14,7 @@ export async function setCoreHeight(address: RawAddressString, height: LamportTi
 }
 
 export async function getCoreHeight(address: RawAddressString, client?: SqlClient): Promise<LamportTime | null> {
-    const res = await (client || globalClient)<{ height: LamportTime }[]>`
+    const res = await (client ?? globalClient)<{ height: LamportTime }[]>`
         SELECT height
         from heights
         WHERE contract_address = ${address}
@@ -24,7 +24,7 @@ export async function getCoreHeight(address: RawAddressString, client?: SqlClien
 }
 
 export async function getLaunchHeight(address: RawAddressString, client?: SqlClient): Promise<LamportTime | null> {
-    const res = await (client || globalClient)<{ lt: LamportTime }[]>`
+    const res = await (client ?? globalClient)<{ lt: LamportTime }[]>`
         SELECT lt
         FROM user_actions
         WHERE token_launch = ${address}

@@ -1,15 +1,29 @@
-import { handleBotError, handleListTokensCommand, handleMenuCommand, handleStartCommand } from "./handlers";
-import { commands, getAdminFilter, getMenuKeyboard, getMenuReply, getUnknownMsgReply } from "./constants";
+import {
+    addWalletsToWhitelist,
+    handleBackToMenuCallback,
+    handleBotError,
+    handleCancelConversationCallback,
+    handleEnterConversationCallback,
+    handleListCallback,
+    handleMenuCommand,
+    handlePaginationCallback,
+    handleStartCommand
+} from "./handlers";
+import { type Conversation, type ConversationFlavor, conversations, createConversation } from "@grammyjs/conversations";
 import { hydrate, hydrateApi, type HydrateApiFlavor, type HydrateFlavor } from "@grammyjs/hydrate";
-import { SortOrder, TokenLaunchFields } from "starton-periphery";
-import { type EmojiFlavor, emojiParser } from "@grammyjs/emoji";
-import type { StoredTokenLaunchRequest } from "../db";
-import { Api, Bot, type Context } from "grammy";
+import { Api, Bot, type Context, session, type SessionFlavor } from "grammy";
+import { commands, getAdminFilter, getUnknownMsgReply } from "./constants";
 import { getConfig } from "../config";
 import { logger } from "../logger";
 
-export type MyContext = EmojiFlavor<HydrateFlavor<Context>>;
+interface SessionData {
+  page: number,
+}
+
+export type MyContext = HydrateFlavor<Context> & ConversationFlavor & SessionFlavor<SessionData>;
 type MyApi = HydrateApiFlavor<Api>;
+export type MyConversation = Conversation<MyContext>;
+
 let maybeBot: Bot<MyContext> | null;
 
 export async function createBot(): Promise<Bot<MyContext>> {
@@ -20,8 +34,14 @@ export async function createBot(): Promise<Bot<MyContext>> {
     } = getConfig();
 
     maybeBot = new Bot<MyContext, MyApi>(token);
-
-    maybeBot.use(emojiParser());
+  
+    function initial(): SessionData {
+        return { page: 1 };
+    }
+  
+    maybeBot.use(session({ initial }));
+    maybeBot.use(conversations());
+    maybeBot.use(createConversation(addWalletsToWhitelist));
     maybeBot.use(hydrate());
     maybeBot.api.config.use(hydrateApi());
 
@@ -29,48 +49,13 @@ export async function createBot(): Promise<Bot<MyContext>> {
 
     maybeBot.command("start", handleStartCommand);
     maybeBot.command("menu").filter(getAdminFilter, handleMenuCommand);
-
-    const initSortData: StoredTokenLaunchRequest = {
-        page: 1,
-        limit: 10,
-        sortBy: TokenLaunchFields.CREATED_AT,
-        order: SortOrder.ASC,
-        search: ""
-    };
-
-    let page = 1;
-
-    maybeBot.callbackQuery("list", async (ctx) => {
-        await handleListTokensCommand(ctx, {
-            ...initSortData,
-            page
-        });
-    });
-
-    maybeBot.callbackQuery("add", async (ctx) => {
-        await ctx.answerCallbackQuery();
-        await ctx.reply("In development");
-    });
-
-    maybeBot.callbackQuery(["next", "prev", "update"], async (ctx) => {
-        await ctx.answerCallbackQuery();
-        const newPage = ctx.callbackQuery.data == "next" ? page += 1
-            : ctx.callbackQuery.data == "prev" ? page -= 1
-                : page = 1;
-        await handleListTokensCommand(ctx, {
-            ...initSortData,
-            page: newPage
-        });
-    });
-
-    maybeBot.callbackQuery("back", async (ctx) => {
-        const startText = getMenuReply(ctx);
-        await ctx.callbackQuery.message!.editText(startText, {
-            parse_mode: "HTML",
-            reply_markup: getMenuKeyboard()
-        });
-        await ctx.answerCallbackQuery();
-    });
+  
+    maybeBot.callbackQuery("list_launches", handleListCallback);
+    maybeBot.callbackQuery(["next", "prev", "reset_list"], handlePaginationCallback);
+    maybeBot.callbackQuery("nothing", async (ctx)=> await ctx.answerCallbackQuery());
+    maybeBot.callbackQuery("add_wallets", handleEnterConversationCallback);
+    maybeBot.callbackQuery("back", handleBackToMenuCallback);
+    maybeBot.callbackQuery("cancel_conv", handleCancelConversationCallback);
 
     maybeBot.on("message", getUnknownMsgReply);
 
