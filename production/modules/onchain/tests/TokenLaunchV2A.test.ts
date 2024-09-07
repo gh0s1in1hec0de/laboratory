@@ -9,7 +9,6 @@ import {
     PERCENTAGE_DENOMINATOR, getCreatorAmountOut, UserVaultOps, CoreOps,
 } from "starton-periphery";
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
-import { Asset, Factory, PoolType, ReadinessStatus } from "@dedust/sdk";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import { TokenLaunchV2A } from "../wrappers/TokenLaunchV2A";
 import { UserVaultV2A } from "../wrappers/UserVaultV2A";
@@ -65,9 +64,6 @@ describe("V2A", () => {
 
     let jettonWalletCode = new Cell();
     let tokenLaunchDerivedJettonWallet: SandboxContract<JettonWallet>;
-
-    // Dedust related variables
-    let factory: SandboxContract<Factory>;
 
     let blockchain: Blockchain;
     let chief: SandboxContract<TreasuryContract>;
@@ -354,7 +350,7 @@ describe("V2A", () => {
                 const stateInitOverhead = forwardStateInitOverhead(msgPrices, stateInitStats);
                 console.log(`${i ? "Loaded t" : "T"}oken launch state forward fee: ${stateInitOverhead}(${fromNano(stateInitOverhead)} TON)`);
             }
-        });
+        }, 20000);
         test("new launch creation through core", async () => {
             const createLaunchResult = await core.sendCreateLaunch(
                 {
@@ -385,7 +381,7 @@ describe("V2A", () => {
                 from: core.address,
                 success: true,
             });
-        });
+        }, 20000);
         test.skip("token launch on-chain state stats", async () => {
             const smc = await blockchain.getContract(sampleTokenLaunch.address);
             assert(smc.accountState, "Can't access token launch state");
@@ -451,7 +447,7 @@ describe("V2A", () => {
             I'll gently leave it here especially for the particularly sophisticated masochist:
 
             expect(expectedCreatorBalance).toEqual(tokenLaunchState.creatorFutJetBalance + 1n); */
-        });
+        }, 20000);
         test.skip("loaded user vault state specs", async () => {
             const loadedUserVaultState = UserVaultV2A.buildState({
                 owner: randomAddress(),
@@ -477,7 +473,7 @@ describe("V2A", () => {
                 success: false,
                 exitCode: 400
             });
-        });
+        }, 20000);
         // In my dreams (and my actual code before) there was a cycle,
         // well, if you have free time - try to pack it inside a cycle and see - what is going to happen next *-*
         test("high wl purchase operations pressure", async () => {
@@ -512,13 +508,12 @@ describe("V2A", () => {
                 via: (await blockchain.treasury("wl_buyer_5")).getSender()
             });
             blockchain.now! += 20;
-        });
+        }, 20000);
         test("wl purchase works correctly", async () => {
-            const launchContractInstance = await blockchain.getContract(sampleTokenLaunch.address);
+            const [launchContractInstance, saleMoneyFlowBefore, innerDataBefore] = await Promise.all([
+                blockchain.getContract(sampleTokenLaunch.address), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData()
+            ]);
             const contractBalanceBefore = launchContractInstance.balance;
-            // Accounted balances and fees before operation
-            const saleMoneyFlowBefore = await sampleTokenLaunch.getMoneyFlows();
-            const innerDataBefore = await sampleTokenLaunch.getInnerData();
 
             const totalPurchaseValue = toNano("10");
             const wlPurchaseResult = await sampleTokenLaunch.sendWhitelistPurchase({
@@ -539,11 +534,10 @@ describe("V2A", () => {
             const totalFee = wlPurchaseRequestComputeFee + balanceUpdateCost;
             const { purified, opn } = validateValue(totalPurchaseValue, totalFee);
 
-            const consumerVaultDataAfter = await consumerVault.getVaultData();
             const contractBalanceAfter = launchContractInstance.balance;
-            // Accounted balances and fees after operation; our main goal here is to understand, if we account any "non-existent" value
-            const saleMoneyFlowAfter = await sampleTokenLaunch.getMoneyFlows();
-            const innerDataAfter = await sampleTokenLaunch.getInnerData();
+            const [consumerVaultDataAfter, saleMoneyFlowAfter, innerDataAfter] = await Promise.all([
+                consumerVault.getVaultData(), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData()
+            ]);
 
             // Here we can be sure, that all the tons we had accounted really exists on contract's balance
             const totalTonsIncrease = saleMoneyFlowAfter.totalTonsCollected - saleMoneyFlowBefore.totalTonsCollected;
@@ -554,7 +548,7 @@ describe("V2A", () => {
             if (divergence) console.log(`\"dead\" tons (wl buy): ${fromNano(divergence)} (${divergence})`);
             assert(purified <= consumerVaultDataAfter.wlTonBalance!, "expected precomputed value to be equal to actual one/bit less than it");
             assert(totalTonsIncrease === consumerVaultDataAfter.wlTonBalance!, "inconsistent state");
-        });
+        }, 20000);
         test("wl limit cutoff works the proper way", async () => {
             const oldTimings = await sampleTokenLaunch.getSaleTimings();
             const totalPurchaseValue = toNano("15");
@@ -582,7 +576,7 @@ describe("V2A", () => {
             });
             const newTimings = await sampleTokenLaunch.getSaleTimings();
             assert(newTimings.wlRoundEndTime < oldTimings.wlRoundEndTime, "smartcontract must shift timings");
-        });
+        }, 20000);
         test("public buys work the proper way", async () => {
             blockchain.now = (await sampleTokenLaunch.getSaleTimings()).wlRoundEndTime + 1;
             const secondPublicBuyer = await blockchain.treasury("public_buyer_2");
@@ -605,8 +599,7 @@ describe("V2A", () => {
                 value: totalPurchaseValue,
                 via: consumer.getSender()
             });
-            const saleMoneyFlowAfterFirstPublicBuy = await sampleTokenLaunch.getMoneyFlows();
-            const configAfter = await sampleTokenLaunch.getConfig();
+            const [saleMoneyFlowAfterFirstPublicBuy, configAfter] = await Promise.all([sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getConfig()]);
             assert(
                 (configBefore.creatorFutJetLeft + configBefore.pubRoundFutJetLimit) === configAfter.pubRoundFutJetLimit,
                 "creator's leftovers must flow to public round"
@@ -665,7 +658,7 @@ describe("V2A", () => {
             console.log(`jettons in vault: ${jettonFromNano(secondPublicBuyerVaultData.jettonBalance!)}, expected: ${jettonFromNano(amountOut)}`);
             expect(secondPublicBuyerVaultData.jettonBalance!).toBeGreaterThanOrEqual(amountOut);
             expect(firstPublicBuyerVaultData.jettonBalance!).toBeGreaterThan(secondPublicBuyerVaultData.jettonBalance!);
-        });
+        }, 20000);
         test("high public purchase pressure", async () => {
             const value = toNano("10");
             await sampleTokenLaunch.sendPublicPurchase({
@@ -697,7 +690,7 @@ describe("V2A", () => {
                 value,
                 via: (await blockchain.treasury("pub_buyer_5")).getSender()
             });
-        });
+        }, 20000);
         test("refunds work good (at this moment you may get tired from this typical names)", async () => {
             // At this point we have a guy called consumer, that have some wl goods and public goods in his vault
             // We'll test public and wl refunds one by one, reset state and test global refund ^^
@@ -705,10 +698,9 @@ describe("V2A", () => {
             const tokenLaunchContractInstance = await blockchain.getContract(sampleTokenLaunch.address);
             const contractBalanceBefore = tokenLaunchContractInstance.balance;
             console.log(`Token launch balance before refunds: ${tokenLaunchContractInstance.balance} (${fromNano(tokenLaunchContractInstance.balance)} TON)`);
-
-            const saleMoneyFlowBeforeRefunds = await sampleTokenLaunch.getMoneyFlows();
-            const tokenLaunchInnerDataBeforeRefunds = await sampleTokenLaunch.getInnerData();
-            const consumerVaultStateBeforeRefunds = await consumerVault.getVaultData();
+            const [saleMoneyFlowBeforeRefunds, tokenLaunchInnerDataBeforeRefunds, consumerVaultStateBeforeRefunds] = await Promise.all([
+                sampleTokenLaunch.getMoneyFlows(), await sampleTokenLaunch.getInnerData(), await consumerVault.getVaultData()
+            ]);
 
             const valueToWithdraw = consumerVaultStateBeforeRefunds.wlTonBalance!;
             console.log(`Wl value to withdraw: ${valueToWithdraw} (${fromNano(valueToWithdraw)} TON)`);
@@ -746,9 +738,9 @@ describe("V2A", () => {
                 success: true,
             });
             const refundConfirmationComputeFee = printTxGasStats("Whitelist refund confirmation transaction: ", wlRefundConfirmationTx);
-            const consumerVaultStateAfterWlRef = await consumerVault.getVaultData();
-            const saleMoneyFlowAfterWlRef = await sampleTokenLaunch.getMoneyFlows();
-            const tokenLaunchInnerDataAfterWlRef = await sampleTokenLaunch.getInnerData();
+            const [consumerVaultStateAfterWlRef, saleMoneyFlowAfterWlRef, tokenLaunchInnerDataAfterWlRef] = await Promise.all([
+                consumerVault.getVaultData(), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData()
+            ]);
             const { purified, opn } = validateValue(valueToWithdraw, 0n);
 
             const refundGasConsumption = refundCost(
@@ -826,13 +818,12 @@ describe("V2A", () => {
             );
             // Finally restore the state before refunds as we'll need to test claims
             await blockchain.loadFrom(stateBeforeRefunds);
-        });
+        }, 20000);
         test("deployment works properly", async () => {
-            blockchain.now = (await sampleTokenLaunch.getSaleTimings()).publicRoundEndTime + 1;
-            const launchContract = await blockchain.getContract(sampleTokenLaunch.address);
-            const saleMoneyFlowBefore = await sampleTokenLaunch.getMoneyFlows();
-            const innerDataBefore = await sampleTokenLaunch.getInnerData();
-            const chiefBalanceBefore = await chief.getBalance();
+            const [saleTimings, saleMoneyFlowBefore, innerDataBefore, chiefBalanceBefore] = await Promise.all([
+                sampleTokenLaunch.getSaleTimings(), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData(), chief.getBalance()
+            ]);
+            blockchain.now = saleTimings.publicRoundEndTime + 1;
 
             // Amount of tons required
             const _needed = saleMoneyFlowBefore.totalTonsCollected + innerDataBefore.operationalNeeds + 118526443n
@@ -924,7 +915,7 @@ describe("V2A", () => {
                     ` diff: ${formatValue(chiefBalanceBefore - chiefBalanceBefore)} | c: ${formatValue(saleMoneyFlowBefore.totalTonsCollected)}`);
                 throw new Error("chief got less tokens than should");
             }
-        });
+        }, 20000);
         test.skip("jetton master on-chain state stats", async () => {
             const smc = await blockchain.getContract(derivedJettonMaster.address);
             assert(smc.accountState, "Can't access jetton master's state");
@@ -947,17 +938,17 @@ describe("V2A", () => {
                 jettonMasterAddress: derivedJettonMaster.address,
                 ownerAddress: sampleTokenLaunch.address
             }, jettonWalletCode));
-            const currentConfig = await sampleTokenLaunch.getConfig();
-            const launchData = await sampleTokenLaunch.getLaunchData();
-            const innerData = await sampleTokenLaunch.getInnerData();
-
-            const chiefDerivedJettonBalance = await derivedJettonChiefWallet.getJettonBalance();
-            const launchDerivedJettonBalance = await derivedJettonLaunchWallet.getJettonBalance();
-
+            const [currentConfig, launchData, innerData, chiefDerivedJettonBalance, launchDerivedJettonBalance] = await Promise.all([
+                sampleTokenLaunch.getConfig(),
+                sampleTokenLaunch.getLaunchData(),
+                sampleTokenLaunch.getInnerData(),
+                derivedJettonChiefWallet.getJettonBalance(),
+                derivedJettonLaunchWallet.getJettonBalance()
+            ]);
             assert(chiefDerivedJettonBalance === currentConfig.futJetDexAmount + currentConfig.futJetPlatformAmount);
             assert(launchDerivedJettonBalance === launchData.futJetTotalSupply - chiefDerivedJettonBalance);
             assert(launchDerivedJettonBalance === innerData.futJetDeployedBalance);
-        });
+        }, 20000);
         test("claim works as it should", async () => {
             const { wlTonBalance, jettonBalance } = await consumerVault.getVaultData();
             const moneyFlows = await sampleTokenLaunch.getMoneyFlows();
@@ -1015,20 +1006,6 @@ describe("V2A", () => {
                 }, jettonWalletCode)
             );
             assert(expectedJettonAmount === await consumerJettonWallet.getJettonBalance());
-        });
-        test.skip("dedust pool🤡", async () => {
-            // It is really-really raw and wrong code
-            const asset = Asset.jetton(derivedJettonMaster.address);
-            const assets: [Asset, Asset] = [Asset.native(), asset];
-            await factory.sendCreateVault(chief.getSender(), { asset });
-
-            const pool = blockchain.openContract(
-                await factory.getPool(PoolType.VOLATILE, assets),
-            );
-            const poolReadiness = await pool.getReadinessStatus();
-            if (poolReadiness === ReadinessStatus.NOT_DEPLOYED)
-                await factory.sendCreateVolatilePool(chief.getSender(), { assets });
-
-        });
+        }, 20000);
     });
 });

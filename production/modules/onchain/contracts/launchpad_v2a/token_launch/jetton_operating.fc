@@ -41,7 +41,7 @@ const int MINT_QUERY_ID = 27082006;
         .store_ref(master_msg)
         .end_cell();
     cell msg = begin_cell()
-        .store_msg_flags_and_address_none(BOUNCEABLE)
+        .store_msg_flags_and_address_none(NON_BOUNCEABLE)
         .store_slice(jetton_master_address)
         .store_coins(get_jetton_deployment_request_gas_cost())
         .store_statinit_ref_and_body_ref(jetton_master_stateinit, msg_body)
@@ -56,14 +56,13 @@ const int MINT_QUERY_ID = 27082006;
     ifnot (jetton_amount == config::const::fut_jet_total_supply) {
         return ();
     }
-    if (~ equal_slices_bits(sender_address, fut_jet_wallet_address)) {
+    ifnot (equal_slices_bits(sender_address, fut_jet_wallet_address)) {
         ;; It does mean we just got random tokens on equal amount
         return ();
     }
     general_state::fut_jet_deployed_balance =
     config::const::fut_jet_total_supply
     - (config::const::fut_jet_dex_amount + config::const::fut_jet_platform_amount);
-
     ;; We send one jetton transfer with all the
     cell transfer_msg = build_jetton_transfer_msg(
         query_id,
@@ -88,5 +87,4 @@ const int MINT_QUERY_ID = 27082006;
         .end_cell();
     send_raw_message(claim_admin_msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     send_raw_message(transfer_msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
-
 }
