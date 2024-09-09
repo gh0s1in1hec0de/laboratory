@@ -14,6 +14,7 @@ export enum CoreOps {
     InitCallback = 0x5d988a60,
     // Tracking new launches
     CreateLaunch = 0x0eedbf42,
+    UpdateConfig = 0x3cacf836,
     Upgrade = 0x055d212a,
 }
 

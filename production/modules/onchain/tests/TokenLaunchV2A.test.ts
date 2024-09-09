@@ -40,6 +40,7 @@ import {
     toNano,
     Cell,
 } from "@ton/core";
+import { packLaunchConfigToCellV2A } from "../wrappers/utils";
 
 /* TODO
     1. At some reason on-chain state always more on 102 bits that our off-chain calculation
@@ -105,7 +106,7 @@ describe("V2A", () => {
         userVaultMinStorageFee: bigint
     ) => bigint;
 
-    const precomputedRefundCost = 30000000n; // 28285549 nanotons actually, but rounded
+    const _precomputedRefundCost = 30000000n; // 28285549 nanotons actually, but rounded
     let refundCost: (
         refundRequestComputeFee: bigint,
         balanceUpdateCost: bigint,
@@ -176,7 +177,6 @@ describe("V2A", () => {
             wlRoundDurationMs: ONE_HOUR_SEC,
             pubRoundDurationMs: ONE_HOUR_SEC,
         };
-        // Stuff, related to core
         core = blockchain.openContract(
             CoreV2A.createFromState(
                 {
@@ -315,7 +315,7 @@ describe("V2A", () => {
             const stateCell = beginCell().store(storeStateInit(smc.accountState.state)).endCell();
             console.log("CoreV2A state stats:", collectCellStats(stateCell, []));
         });
-        test("token creation fees measurements", async () => {
+        test("token creation fees static measurements", async () => {
             // Measure stateinit forwarding
             const code = {
                 tokenLaunch: tokenLaunchCode,
@@ -394,6 +394,58 @@ describe("V2A", () => {
             );
             const stateCell = beginCell().store(storeStateInit(smc.accountState.state)).endCell();
             console.log("Token launch state stats:", collectCellStats(stateCell, []));
+        });
+        test("core config updates correctly", async () => {
+            const stateBefore = blockchain.snapshot();
+            const newConfig = launchConfig;
+            newConfig.minTonForSaleSuccess = toNano("666");
+            const configUpdateResult = await core.sendUpdateConfig({
+                queryId: 0n,
+                value: toNano("0.2"),
+                via: chief.getSender()
+            }, packLaunchConfigToCellV2A(newConfig));
+            expect(configUpdateResult.transactions).toHaveTransaction({
+                op: CoreOps.UpdateConfig,
+                on: core.address,
+                success: true
+            });
+            const currentConfig = await core.getLaunchConfig();
+            assert(currentConfig.minTonForSaleSuccess === newConfig.minTonForSaleSuccess, "value must have been updated");
+            await blockchain.loadFrom(stateBefore);
+        });
+        test("token launch creation with custom config", async () => {
+            const stateBefore = blockchain.snapshot();
+            const customConfig = launchConfig;
+            customConfig.minTonForSaleSuccess = toNano("666.666");
+
+            const launchCreationResult = await core.sendCreateLaunch({
+                queryId: 0n,
+                value: toNano("5"),
+                via: creator.getSender()
+            }, sampleLaunchParams, customConfig);
+            expect(launchCreationResult.transactions).toHaveTransaction({
+                op: TokensLaunchOps.Init,
+                deploy: true,
+                success: true
+            });
+            const customizedTokenLaunch = blockchain.openContract(
+                TokenLaunchV2A.createFromState({
+                        creator: creator.address,
+                        chief: chief.address,
+                        launchParams: sampleLaunchParams,
+                        code: {
+                            tokenLaunch: tokenLaunchCode,
+                            userVault: userVaultCode,
+                            jettonMaster: jettonMasterCode,
+                            jettonWallet: jettonWalletCode,
+
+                        }, launchConfig
+                    },
+                    tokenLaunchCode)
+            );
+            const configInsideLaunch = await customizedTokenLaunch.getConfig();
+            assert(configInsideLaunch.minTonForSaleSuccess === customConfig.minTonForSaleSuccess);
+            await blockchain.loadFrom(stateBefore);
         });
     });
     describe("token launch operations", () => {
@@ -532,7 +584,7 @@ describe("V2A", () => {
                 success: true
             });
             const totalFee = wlPurchaseRequestComputeFee + balanceUpdateCost;
-            const { purified, opn } = validateValue(totalPurchaseValue, totalFee);
+            const { purified } = validateValue(totalPurchaseValue, totalFee);
 
             const contractBalanceAfter = launchContractInstance.balance;
             const [consumerVaultDataAfter, saleMoneyFlowAfter, innerDataAfter] = await Promise.all([
@@ -649,7 +701,7 @@ describe("V2A", () => {
             const [firstPublicBuyerVaultData, secondPublicBuyerVaultData] = await Promise.all(
                 [firstPublicBuyerVault, secondPublicBuyerVault].map((buyer) => buyer.getVaultData())
             );
-            const { purified, opn } = validateValue(totalPurchaseValue, publicBuyFee);
+            const { purified } = validateValue(totalPurchaseValue, publicBuyFee);
             const amountOut = getAmountOut(
                 purified,
                 saleMoneyFlowAfterFirstPublicBuy.syntheticTonReserve,

@@ -39,4 +39,5 @@ export type GetConfigResponse = {
     pubRoundFutJetLimit: Coins,
     futJetDexAmount: Coins,
     futJetPlatformAmount: Coins,
+    minTonForSaleSuccess: Coins
 }

@@ -165,6 +165,8 @@ export class TokenLaunchV2A implements Contract {
 
             futJetDexAmount: stack.readBigNumber(),
             futJetPlatformAmount: stack.readBigNumber(),
+
+            minTonForSaleSuccess: stack.readBigNumber(),
         };
     }
 

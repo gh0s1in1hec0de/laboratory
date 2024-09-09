@@ -73,6 +73,19 @@ export class CoreV2A implements Contract {
         });
     }
 
+    async sendUpdateConfig(provider: ContractProvider, sendMessageParams: SendMessageParams, newConfig: Cell) {
+        const { queryId, via, value } = sendMessageParams;
+
+        const body = beginCell()
+            .storeUint(CoreOps.UpdateConfig, OP_LENGTH)
+            .storeUint(queryId, QUERY_ID_LENGTH)
+            .storeRef(newConfig)
+            .endCell();
+        await provider.internal(via, {
+            value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
+        });
+    }
+
     async getLaunchConfig(provider: ContractProvider): Promise<LaunchConfigV2A> {
         let { stack } = await provider.get("get_launch_config", []);
         return {

@@ -16,9 +16,10 @@ import {
     Blockchain,
 } from "@ton/sandbox";
 
+// Due to very low chances of successful run, I have attached picture with test passings🥴
 describe("General", () => {
-    let jwallet_code = new Cell();
-    let minter_code = new Cell();
+    let jettonMasterCode = new Cell();
+    let jettonWalletCode = new Cell();
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
     let justAGuy: SandboxContract<TreasuryContract>;
@@ -30,21 +31,19 @@ describe("General", () => {
     let factory: SandboxContract<Factory>;
 
     beforeAll(async () => {
-        minter_code = await compile("JettonMinter");
-        jwallet_code = await compile("JettonWallet");
+        jettonMasterCode = await compile("JettonMinter");
+        jettonWalletCode = await compile("JettonWallet");
         blockchain = await Blockchain.create({
             storage: new RemoteBlockchainStorage(wrapTonClient4ForRemote(
-                new TonClient4({
-                    endpoint: await getHttpV4Endpoint({ network: "mainnet" }), // "https://mainnet-v4.tonhubapi.com",
-                    timeout: 20000
+                new TonClient4({ // "https://mainnet-v4.tonhubapi.com"
+                    endpoint: await getHttpV4Endpoint({ network: "mainnet" }),
+                    timeout: 40000
                 }))
             )
         });
         deployer = await blockchain.treasury("deployer", { balance: toNano("1000") });
         justAGuy = await blockchain.treasury("just_a_guy", { balance: toNano("1000") });
-        defaultContent = {
-            uri: "https://some_stablecoin.org/meta.json"
-        };
+        defaultContent = { uri: "https://some_stablecoin.org/meta.json" };
 
         blockchain.now = Math.floor(Date.now() / 1000);
 
@@ -52,17 +51,17 @@ describe("General", () => {
             JettonMinter.createFromConfig(
                 {
                     admin: deployer.address,
-                    wallet_code: jwallet_code,
+                    wallet_code: jettonWalletCode,
                     jetton_content: jettonContentToCell(defaultContent)
                 },
-                minter_code));
+                jettonMasterCode));
         userWallet = async (address: Address) => blockchain.openContract(
             JettonWallet.createFromAddress(
                 await jettonMinter.getWalletAddress(address)
             )
         );
 
-    }, 40000);
+    }, 80000);
     test("correct context", async () => {
         factory = blockchain.openContract(
             Factory.createFromAddress(MAINNET_FACTORY_ADDR)
@@ -70,7 +69,7 @@ describe("General", () => {
         const scaleAddress = Address.parse("EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE");
         const scaleVaultAddress = await factory.getVaultAddress(Asset.jetton(scaleAddress));
         console.log(`$SCALE vault address: ${Address.normalize(scaleVaultAddress)}`);
-    }, 40000);
+    }, 80000);
     test("minting jettons", async () => {
         const mintTxRes = await jettonMinter.sendMint(deployer.getSender(), deployer.address, toNano("1000"));
         expect(mintTxRes.transactions).toHaveTransaction({
@@ -79,22 +78,11 @@ describe("General", () => {
             success: true,
             deploy: true
         });
-    }, 40000);
+    }, 80000);
     test.skip("pure network transfer check", async () => {
         const transferResult = await (await userWallet(deployer.address)).sendTransfer(
-            deployer.getSender(),
-            toNano("0.5"),
-            toNano("1.22"),
-            justAGuy.address,
-            deployer.address,
-            null,
-            toNano("0.4"),
-            null
-            // VaultJetton.createDepositLiquidityPayload({
-            //     poolType: PoolType.VOLATILE,
-            //     assets,
-            //     targetBalances,
-            // }),
+            deployer.getSender(), toNano("0.5"), toNano("1.22"),
+            justAGuy.address, deployer.address, null, toNano("0.4"), null
         );
         expect(transferResult.transactions).toHaveTransaction({
             op: Op.internal_transfer,
@@ -161,18 +149,22 @@ describe("General", () => {
         const vaultReadinessAfter = await pool.getReadinessStatus();
         assert(vaultReadinessAfter === ReadinessStatus.READY, `vault for custom jetton has status \"${vaultReadinessAfter}\" instead of \"ready\"`);
         assert(poolReadinessAfter === ReadinessStatus.READY, `pool [ton, custom jetton] has status \"${poolReadinessAfter}\" instead of \"ready\"`);
+
+        const balanceBeforeSwap = await derivedJettonDeployerWallet.getJettonBalance();
         await tonVault.sendSwap(deployer.getSender(), {
             poolAddress: pool.address,
             amount: toNano("2"),
             gasAmount: toNano("0.25"),
         });
+        const balanceAfterSwap = await derivedJettonDeployerWallet.getJettonBalance();
+        assert(balanceBeforeSwap < balanceAfterSwap, `the post-swap balance (${balanceAfterSwap}) should increase compared to ${balanceBeforeSwap}`);
+        console.log(`swap result: ${balanceAfterSwap - balanceBeforeSwap} nano-jettons`)
 
-        // Add some constraints here
 
         // Withdraw-liquidity code, but in fact we can use it to send on EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c
         // const lpWallet = blockchain.openContract(await pool.getWallet(chief.address));
         // await lpWallet.sendBurn(chief.getSender(), toNano('0.5'), {
         //     amount: await lpWallet.getBalance(),
         // });
-    }, 40000);
+    }, 100000);
 });

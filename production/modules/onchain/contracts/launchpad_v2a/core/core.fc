@@ -60,11 +60,12 @@
         return ();
     }
 
-    if (op == op::core::upgrade_config) {
+    if (op == op::core::update_config) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::chief));
         ;; Loading new launch config in global variables and save it into state
         load_launch_config(in_msg_body~load_ref());
         save_data();
+        return ();
     }
 
     if (op == op::upgrade) {
