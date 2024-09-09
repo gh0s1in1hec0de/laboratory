@@ -45,7 +45,7 @@ export async function getCallerActions(
 }
 
 // In fact it is caller actions, but I decided to leave naming as it is
-export async function storeUserActions(userActions: UserAction[]) {
+export async function _storeUserActions(userActions: UserAction[]) {
     try {
         await globalClient.begin(async txClient => {
             for (const action of userActions) {

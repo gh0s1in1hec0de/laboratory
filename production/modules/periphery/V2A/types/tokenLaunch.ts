@@ -10,7 +10,7 @@ export type GeneralStateV2A = {
 };
 
 export type CreatorRoundStateV2A = {
-    futJetLimit: Coins,
+    futJetLeft: Coins,
     futJetBalance: Coins,
     creatorFutJetPrice: Coins,
     endTime: number,

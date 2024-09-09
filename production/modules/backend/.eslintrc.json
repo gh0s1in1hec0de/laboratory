@@ -22,9 +22,7 @@
     "project": "./tsconfig.json"
   },
   "plugins": [
-    "@typescript-eslint",
-    "import",
-    "starton-plugin"
+    "@typescript-eslint"
   ],
   "rules": {
     "starton-plugin/excellent-imports-by-dr": "error",

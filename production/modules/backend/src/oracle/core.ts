@@ -1,19 +1,21 @@
-import {
-    type RawAddressString,
-    TokensLaunchOps,
-    parseTokenLaunchTimings,
-    parseMetadataCell,
-    loadOpAndQueryId,
-    parseTokenLaunchV1Storage
-} from "starton-periphery";
 import { handleTokenLaunchUpdates } from "./tokenLaunch";
 import { retrieveAllUnknownTransactions } from "./api";
 import type { Address } from "@ton/ton";
 import { logger } from "../logger";
 import { delay } from "../utils";
 import * as db from "../db";
+import {
+    parseTokenLaunchV2AStorage,
+    parseTokenLaunchV1Storage,
+    parseTokenLaunchTimings,
+    type RawAddressString,
+    parseMetadataCell,
+    loadOpAndQueryId,
+    TokensLaunchOps,
+    GlobalVersions,
+} from "starton-periphery";
 
-export async function handleCoreUpdates(coreAddress: RawAddressString) {
+export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersion: GlobalVersions) {
     let currentHeight = await db.getCoreHeight(coreAddress) ?? 0n;
     let iteration = 0;
     while (true) {
@@ -38,24 +40,25 @@ export async function handleCoreUpdates(coreAddress: RawAddressString) {
                     if (!newLaunchAddress) continue;
                     const address: RawAddressString = (newLaunchAddress as Address).toRawString(); // Is it safe?
 
-                    const newLaunchStateinit = msg.init!.data!; // As we can guarantee our contract behaviour
-                    const parsedStateinit = parseTokenLaunchV1Storage(newLaunchStateinit);
+                    const newLaunchStateInit = msg.init!.data!; // As we can guarantee our contract behaviour
+                    const parsedStateInit = coreVersion === GlobalVersions.V1 ?
+                        parseTokenLaunchV1Storage(newLaunchStateInit) :
+                        parseTokenLaunchV2AStorage(newLaunchStateInit);
                     await db.storeTokenLaunch({
                         address,
-                        creator: parsedStateinit.creatorAddress.toRawString(),
-                        metadata: parseMetadataCell(parsedStateinit.tools.metadata),
-                        // TODO Add name to token launch
-                        name: "",
+                        creator: parsedStateInit.creatorAddress.toRawString(),
+                        metadata: parseMetadataCell(parsedStateInit.tools.metadata),
+                        name: "", // TODO Change identifier
                         // An error may occur here
-                        timings: parseTokenLaunchTimings(parsedStateinit)
+                        timings: parseTokenLaunchTimings(parsedStateInit)
                     });
-                    await handleTokenLaunchUpdates(address);
+                    handleTokenLaunchUpdates(address);
                 }
             }
             currentHeight = newTxs[newTxs.length - 1].lt;
             iteration += 1;
             if (iteration % 5 === 0) await db.setCoreHeight(coreAddress, currentHeight, true);
-            await delay(5000); // TODO Determine synthetic delay
+            await delay(30000); // TODO Determine synthetic delay
         } catch (e) {
             logger().error(`failed to load new launches for core(${coreAddress}) update with error: ${e}`);
         }

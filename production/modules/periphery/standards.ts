@@ -8,6 +8,11 @@ export const FALSE = 0n;
 export const OP_LENGTH = 32;
 export const QUERY_ID_LENGTH = 64;
 
+export enum GlobalVersions {
+    V1 = "V1",
+    V2A = "V2A"
+}
+
 export enum CoreOps {
     // We'll use it for config parsing maybe
     Init = 0x18add407,

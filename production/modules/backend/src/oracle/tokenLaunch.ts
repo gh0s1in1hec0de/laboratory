@@ -1,3 +1,7 @@
+import { retrieveAllUnknownTransactions } from "./api";
+import { logger } from "../logger";
+import { delay } from "../utils";
+import * as db from "../db";
 import {
     type RawAddressString,
     parseBalanceUpdate,
@@ -8,10 +12,6 @@ import {
     TokensLaunchOps,
     UserVaultOps,
 } from "starton-periphery";
-import { retrieveAllUnknownTransactions } from "./api";
-import { logger } from "../logger";
-import { delay } from "../utils";
-import * as db from "../db";
 
 export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) {
     logger().debug(`new token launch updates handler for ${launchAddress} is up`);
@@ -27,6 +27,7 @@ export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) 
             if (Date.now() < tokenLaunch.timings.endTime.getTime()) break;
 
             const newTxs = await retrieveAllUnknownTransactions(launchAddress, currentHeight);
+            const newActionsChunk: db.UserAction[] = [];
             for (const tx of newTxs) {
                 const userActions: db.UserAction[] = [];
                 const inMsg = tx.inMessage;
@@ -85,13 +86,22 @@ export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) 
                         queryId
                     } as db.UserAction);
                 }
-                // TODO Completely change the way of recording new actions
-                await db.storeUserActions(userActions);
+                newActionsChunk.push(...userActions);
+            }
+            // We are not using sql transaction here intentionally
+            for (const action of newActionsChunk) {
+                // Catching every error separately to prevent  record stoppage and transaction congestion
+                // Theoretically, it should never trigger
+                try {
+                    await db.storeUserAction(action);
+                } catch (e) {
+                    logger().error(`action[${action.actor}, ${action.timestamp}] record error: ${e}`);
+                }
             }
             currentHeight = newTxs[newTxs.length - 1].lt;
-            await delay(2000); // TODO Determine synthetic delay
+            await delay(20000); // TODO Determine synthetic delay
         } catch (e) {
-            logger().error(`failed to handle launch ${launchAddress} update with error: ${e}`);
+            logger().error(`failed to handle launch ${launchAddress} update with general error: ${e}`);
         }
     }
 }
