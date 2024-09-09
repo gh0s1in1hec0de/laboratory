@@ -25,7 +25,6 @@
     "@typescript-eslint"
   ],
   "rules": {
-    "starton-plugin/excellent-imports-by-dr": "error",
     "no-constant-condition": "off",
     "import/no-unresolved": "warn",
     "@typescript-eslint/no-unused-vars": "warn",

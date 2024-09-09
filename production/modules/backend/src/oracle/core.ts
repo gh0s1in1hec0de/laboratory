@@ -1,4 +1,3 @@
-import { handleTokenLaunchUpdates } from "./tokenLaunch";
 import { retrieveAllUnknownTransactions } from "./api";
 import type { Address } from "@ton/ton";
 import { logger } from "../logger";
@@ -31,10 +30,10 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
                 if (inMsg.info.type !== "internal") continue;
 
                 // In this section we are going to listen ONLY for new launches deployment
-                for (const [_n, msg] of tx.outMessages) {
+                for (const [, msg] of tx.outMessages) {
                     const outMsgBody = msg.body.beginParse();
                     if (outMsgBody.remainingBits < (32 + 64)) continue;
-                    const { msgBodyData, op, queryId } = await loadOpAndQueryId(outMsgBody);
+                    const { op } = await loadOpAndQueryId(outMsgBody);
                     if (op !== TokensLaunchOps.Init) continue;
                     const newLaunchAddress = msg.info.dest;
                     if (!newLaunchAddress) continue;
@@ -44,15 +43,17 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
                     const parsedStateInit = coreVersion === GlobalVersions.V1 ?
                         parseTokenLaunchV1Storage(newLaunchStateInit) :
                         parseTokenLaunchV2AStorage(newLaunchStateInit);
+                    /* TODO
+                        Fetch metadata by url inside
+                        Build name from ticker + token */
                     await db.storeTokenLaunch({
                         address,
                         creator: parsedStateInit.creatorAddress.toRawString(),
                         metadata: parseMetadataCell(parsedStateInit.tools.metadata),
-                        name: "", // TODO Change identifier
+                        name: "dummy",
                         // An error may occur here
                         timings: parseTokenLaunchTimings(parsedStateInit)
                     });
-                    handleTokenLaunchUpdates(address);
                 }
             }
             currentHeight = newTxs[newTxs.length - 1].lt;

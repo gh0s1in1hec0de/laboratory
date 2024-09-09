@@ -1,23 +1,23 @@
-import {
-    addWalletsToWhitelist,
-    handleBackToMenuCallback,
-    handleBotError,
-    handleCancelConversationCallback,
-    handleEnterConversationCallback,
-    handleListCallback,
-    handleMenuCommand,
-    handlePaginationCallback,
-    handleStartCommand
-} from "./handlers";
 import { type Conversation, type ConversationFlavor, conversations, createConversation } from "@grammyjs/conversations";
 import { hydrate, hydrateApi, type HydrateApiFlavor, type HydrateFlavor } from "@grammyjs/hydrate";
 import { Api, Bot, type Context, session, type SessionFlavor } from "grammy";
 import { commands, getAdminFilter, getUnknownMsgReply } from "./constants";
 import { getConfig } from "../config";
 import { logger } from "../logger";
+import {
+    handleCancelConversationCallback,
+    handleEnterConversationCallback,
+    handleBackToMenuCallback,
+    handlePaginationCallback,
+    addWalletsToWhitelist,
+    handleListCallback,
+    handleStartCommand,
+    handleMenuCommand,
+    handleBotError,
+} from "./handlers";
 
 interface SessionData {
-  page: number,
+    page: number,
 }
 
 export type MyContext = HydrateFlavor<Context> & ConversationFlavor & SessionFlavor<SessionData>;
@@ -34,11 +34,11 @@ export async function createBot(): Promise<Bot<MyContext>> {
     } = getConfig();
 
     maybeBot = new Bot<MyContext, MyApi>(token);
-  
+
     function initial(): SessionData {
         return { page: 1 };
     }
-  
+
     maybeBot.use(session({ initial }));
     maybeBot.use(conversations());
     maybeBot.use(createConversation(addWalletsToWhitelist));
@@ -49,10 +49,10 @@ export async function createBot(): Promise<Bot<MyContext>> {
 
     maybeBot.command("start", handleStartCommand);
     maybeBot.command("menu").filter(getAdminFilter, handleMenuCommand);
-  
+
     maybeBot.callbackQuery("list_launches", handleListCallback);
     maybeBot.callbackQuery(["next", "prev", "reset_list"], handlePaginationCallback);
-    maybeBot.callbackQuery("nothing", async (ctx)=> await ctx.answerCallbackQuery());
+    maybeBot.callbackQuery("nothing", async (ctx) => await ctx.answerCallbackQuery());
     maybeBot.callbackQuery("add_wallets", handleEnterConversationCallback);
     maybeBot.callbackQuery("back", handleBackToMenuCallback);
     maybeBot.callbackQuery("cancel_conv", handleCancelConversationCallback);

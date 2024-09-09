@@ -4,10 +4,10 @@ db:
   should_migrate: false
 
 oracle:
-  core:
-    address: ""
-    height: null
-    force_height: false
+  cores:
+    - address: ""
+      height: null
+      force_height: false
   network: "testnet"
   api_keys:
     testnet_keys:

@@ -4,11 +4,13 @@ import { ok as assert } from "assert";
 import { globalClient } from "./db";
 
 // Returns `null` to show that nothing was found the explicit way
-export async function getActiveTokenLaunches(client?: SqlClient): Promise<StoredTokenLaunch[] | null> {
-    const res = await (client ?? globalClient)<StoredTokenLaunch[]>`
+export async function getActiveTokenLaunches(createdAt?: Date, client?: SqlClient): Promise<StoredTokenLaunch[] | null> {
+    const c = client ?? globalClient;
+    const res = await c<StoredTokenLaunch[]>`
         SELECT *
         FROM token_launches
-        WHERE (timings ->> 'end_time')::TIMESTAMP - now() > INTERVAL '30 seconds';
+        WHERE (timings ->> 'end_time')::TIMESTAMP - now() > INTERVAL '30 seconds'
+            ${createdAt ? c`AND created_at > ${createdAt}` : c``};
     `;
     return res.length ? res : null;
 }
@@ -38,7 +40,7 @@ export async function storeTokenLaunch(
         metadata,
         name,
         timings
-    }: Omit<Omit<StoredTokenLaunch, "createdAt">, "id">,
+    }: Omit<StoredTokenLaunch, "createdAt" | "id">,
     client?: SqlClient
 ): Promise<void> {
     const res = await (client ?? globalClient)`

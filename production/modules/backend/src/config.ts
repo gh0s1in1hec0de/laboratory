@@ -3,8 +3,8 @@ import path from "path";
 import fs from "fs";
 
 export enum AppMode {
-  DEV = "dev",
-  PROD = "prod"
+    DEV = "dev",
+    PROD = "prod"
 }
 
 type Config = {
@@ -13,11 +13,11 @@ type Config = {
         should_migrate: boolean,
     },
     oracle: {
-        core: {
+        cores: {
             address: string,
             height: bigint | null,
             force_height: boolean,
-        },
+        }[],
         network: string,
         api_keys: {
             testnet_keys: string[],
@@ -32,14 +32,14 @@ type Config = {
         },
     },
     bot: {
-      token: string,
-      admins: number[],
+        token: string,
+        admins: number[],
     },
     logger: {
-      bot_token: string,
-      chat_id: number,
-      dev_thread_id: number,
-      prod_thread_id: number,
+        bot_token: string,
+        chat_id: number,
+        dev_thread_id: number,
+        prod_thread_id: number,
     },
 }
 

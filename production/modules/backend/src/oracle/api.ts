@@ -9,9 +9,11 @@ import { logger } from "../logger";
 class BalancedTonClient {
     private readonly keys: string[];
     private currentKeyIndex: number;
+    private activeLaunchesNumber: number;
 
     constructor(network: Network) {
         this.currentKeyIndex = 0;
+        this.activeLaunchesNumber = 0;
         this.keys = network == Network.Testnet ? testnetKeys() : mainnetKeys();
     }
 
@@ -25,9 +27,21 @@ class BalancedTonClient {
             apiKey
         });
     }
+
+    incrementActiveLaunchesAmount() {
+        this.activeLaunchesNumber += 1;
+    }
+    decrementActiveLaunchesAmount() {
+        this.activeLaunchesNumber -= 1;
+    }
+    delay() {
+        // Are you ready for dumb code?
+        if (this.activeLaunchesNumber < 10) return 10000;
+        else return 20000;
+    }
 }
 
-const balancedTonClient = new BalancedTonClient(currentNetwork() as Network);
+export const balancedTonClient = new BalancedTonClient(currentNetwork() as Network);
 const tonClient4 = new TonClient4({ endpoint: await getHttpV4Endpoint({ network: currentNetwork() as Network }) });
 
 // Works with TonClient4 under the hood, includes last account's `lamport_time`

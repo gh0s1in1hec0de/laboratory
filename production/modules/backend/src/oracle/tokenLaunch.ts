@@ -1,4 +1,5 @@
-import { retrieveAllUnknownTransactions } from "./api";
+import { balancedTonClient, retrieveAllUnknownTransactions } from "./api";
+import { ok as assert } from "node:assert";
 import { logger } from "../logger";
 import { delay } from "../utils";
 import * as db from "../db";
@@ -13,18 +14,43 @@ import {
     UserVaultOps,
 } from "starton-periphery";
 
-export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) {
+export async function spawnNewLaunchesScanners(scanFrom?: Date) {
+    let timeUpdate = scanFrom;
+    while (true) {
+        const newLaunches = await db.getActiveTokenLaunches(timeUpdate);
+        if (!newLaunches) {
+            await delay(30000);
+            continue;
+        }
+        for (const launch of newLaunches) {
+            balancedTonClient.incrementActiveLaunchesAmount();
+            handleTokenLaunchUpdates(launch);
+        }
+        timeUpdate = newLaunches.reduce((latest, launch) => {
+            return launch.createdAt > latest ? launch.createdAt : latest;
+        }, newLaunches[0].createdAt);
+        await delay(15000);
+    }
+}
+
+async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, launchAddress?: RawAddressString,) {
+    assert(launchAddress && tokenLaunch, "unreachable");
     logger().debug(`new token launch updates handler for ${launchAddress} is up`);
-    const tokenLaunch = await db.getTokenLaunch(launchAddress);
-    // TODO Proper error handling
-    if (!tokenLaunch) return;
+    const launch = tokenLaunch ?? await db.getTokenLaunch(launchAddress);
+    if (!launch) {
+        logger().error(`launch ${launchAddress} not found in database`);
+        return;
+    }
     let currentHeight = await db.getLaunchHeight(launchAddress) ?? 0n;
 
     while (true) {
         try {
             // This is a constraint to stop monitoring contract calls and update data based on that
             // I don't know certainly, what is end time - end of launch or end of claims opportunity(todo)
-            if (Date.now() < tokenLaunch.timings.endTime.getTime()) break;
+            if (Date.now() < launch.timings.endTime.getTime()) {
+                balancedTonClient.decrementActiveLaunchesAmount();
+                break;
+            }
 
             const newTxs = await retrieveAllUnknownTransactions(launchAddress, currentHeight);
             const newActionsChunk: db.UserAction[] = [];
@@ -99,7 +125,7 @@ export async function handleTokenLaunchUpdates(launchAddress: RawAddressString) 
                 }
             }
             currentHeight = newTxs[newTxs.length - 1].lt;
-            await delay(20000); // TODO Determine synthetic delay
+            await delay(20000);
         } catch (e) {
             logger().error(`failed to handle launch ${launchAddress} update with general error: ${e}`);
         }

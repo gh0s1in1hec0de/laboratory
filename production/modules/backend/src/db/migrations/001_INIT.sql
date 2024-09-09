@@ -11,9 +11,9 @@ CREATE TABLE heights
 
 CREATE TABLE users
 (
-    invited_by  telegram_id REFERENCES users (telegram_id),
-    telegram_id telegram_id PRIMARY KEY,
-    nickname    TEXT,
+    invited_by     telegram_id REFERENCES users (telegram_id),
+    telegram_id    telegram_id PRIMARY KEY,
+    nickname       TEXT,
     ticket_balance SMALLINT NOT NULL DEFAULT 0
 );
 
@@ -25,14 +25,15 @@ CREATE TABLE callers
 
 CREATE TABLE token_launches
 (
-    address    address PRIMARY KEY,
-    id         SERIAL UNIQUE,
+    id         SERIAL NOT NULL,
+    address    address     NOT NULL PRIMARY KEY,
     creator    address     NOT NULL REFERENCES callers (address),
-    name       TEXT UNIQUE NOT NULL,
-    -- Now it is JSONB, but, after we'll determine format of metadata, we should rewrite this as explicit fields | or not
+    identifier TEXT UNIQUE NOT NULL,
+    -- Original json, not one with url field only
     metadata   JSONB       NOT NULL,
     timings    JSONB       NOT NULL,
-    created_at TIMESTAMP   NOT NULL DEFAULT now()
+    -- Time of transaction, where actual launch was created
+    created_at TIMESTAMP   NOT NULL
 );
 
 CREATE TYPE user_action_type AS ENUM ('whitelist_buy', 'public_buy', 'whitelist_refund', 'public_refund', 'total_refund', 'claim');
