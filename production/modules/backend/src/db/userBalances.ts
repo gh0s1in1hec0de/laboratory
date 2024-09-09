@@ -3,7 +3,7 @@ import type { RawAddressString } from "starton-periphery";
 import { globalClient } from "./db";
 
 export async function getCallerBalance(address: RawAddressString, launch: RawAddressString, client?: SqlClient): Promise<StoredUserBalance | null> {
-    const res = await (client || globalClient)<StoredUserBalance[]>`
+    const res = await (client ?? globalClient)<StoredUserBalance[]>`
         SELECT *
         FROM user_balances
         WHERE caller = ${address}
@@ -13,7 +13,7 @@ export async function getCallerBalance(address: RawAddressString, launch: RawAdd
 }
 
 export async function getAllCallerBalances(address: RawAddressString, client?: SqlClient): Promise<StoredUserBalance[] | null> {
-    const res = await (client || globalClient)<StoredUserBalance[]>`
+    const res = await (client ?? globalClient)<StoredUserBalance[]>`
         SELECT *
         FROM user_balances
         WHERE caller = ${address};

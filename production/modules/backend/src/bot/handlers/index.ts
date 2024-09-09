@@ -1,4 +1,5 @@
 export * from "./errors";
 export * from "./start";
-export * from "./list";
+export * from "./listLaunches";
 export * from "./menu";
+export * from "./addWallets";

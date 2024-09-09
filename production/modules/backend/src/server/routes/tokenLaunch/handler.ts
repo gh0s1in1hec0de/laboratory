@@ -3,7 +3,7 @@ import { logger } from "../../../logger";
 import { ok as assert } from "assert";
 
 export async function getTokenLaunches({
-    sortBy,
+    orderBy,
     page,
     order,
     search = "",
@@ -13,13 +13,13 @@ export async function getTokenLaunches({
         const res = await getSortedTokenLaunches({
             page,
             limit,
-            sortBy: sort,
+            orderBy,
             order,
             search: search.replace(/\+/g, " ")
         });
         assert(res, "token launches not found");
         return res;
     } catch (e){
-        logger().http(`function retrieval error: ${e}`);
+        logger().error(`error in http request 'getTokenLaunches': ${e}`);
     }
 }

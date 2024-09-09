@@ -10,7 +10,7 @@ export const globalClient = await createPostgresClient();
 export async function createPostgresClient(): Promise<SqlClient> {
     if (!cachedGlobalClient) {
         cachedGlobalClient = postgres({
-            host: "localhost", // TODO you know what
+            host: process.env.POSTGRES_HOST,
             port: 5432,
             database: process.env.POSTGRES_DB,
             username: process.env.POSTGRES_USER,

@@ -17,7 +17,7 @@ export async function storeUserAction(
     }: UserAction,
     client?: SqlClient
 ): Promise<void> {
-    const res = await (client || globalClient)`
+    const res = await (client ?? globalClient)`
         INSERT INTO user_actions
         (actor, token_launch, action_type, whitelist_tons, public_tons, jettons, timestamp, query_id)
         VALUES (${actor}, ${tokenLaunch}, ${actionType}, ${whitelistTons}, ${publicTons}, ${jettons}, ${timestamp},
@@ -35,7 +35,7 @@ export async function getCallerActions(
     after?: Date,
     client?: SqlClient
 ): Promise<UserAction[] | null> {
-    const c = client || globalClient;
+    const c = client ?? globalClient;
     const res = await c<UserAction[]>`
         SELECT *
         FROM user_actions

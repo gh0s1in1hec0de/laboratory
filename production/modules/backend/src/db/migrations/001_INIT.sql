@@ -13,7 +13,8 @@ CREATE TABLE users
 (
     invited_by  telegram_id REFERENCES users (telegram_id),
     telegram_id telegram_id PRIMARY KEY,
-    nickname    TEXT
+    nickname    TEXT,
+    ticket_balance SMALLINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE callers
@@ -25,6 +26,7 @@ CREATE TABLE callers
 CREATE TABLE token_launches
 (
     address    address PRIMARY KEY,
+    id         SERIAL UNIQUE,
     creator    address     NOT NULL REFERENCES callers (address),
     name       TEXT UNIQUE NOT NULL,
     -- Now it is JSONB, but, after we'll determine format of metadata, we should rewrite this as explicit fields | or not
@@ -32,14 +34,6 @@ CREATE TABLE token_launches
     timings    JSONB       NOT NULL,
     created_at TIMESTAMP   NOT NULL DEFAULT now()
 );
-
--- This table can easily solve the problem of whitelists for each token-sale
--- CREATE TABLE whitelist_relations
--- (
---     token_launch_address address REFERENCES token_launches (address),
---     caller_address       address REFERENCES callers (address),
---     PRIMARY KEY (token_launch_address, caller_address)
--- );
 
 CREATE TYPE user_action_type AS ENUM ('whitelist_buy', 'public_buy', 'whitelist_refund', 'public_refund', 'total_refund', 'claim');
 CREATE TABLE user_actions

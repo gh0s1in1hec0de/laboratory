@@ -24,7 +24,7 @@ async function main() {
     // We parse current launches we have to manage with our promise-workers
     // const storedActiveLaunches = await db.getActiveTokenLaunches();
     const server = getServer();
-    const bot = await getBot();
+    await getBot();
     
     // if (Address.parse(address)) handleCoreUpdates(address);
 }
