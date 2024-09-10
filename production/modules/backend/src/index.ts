@@ -23,10 +23,10 @@ async function main() {
     getServer();
     await getBot();
 
-    // Separated logic for core and launches indexing for better flexibility
+    // Separated logic for  core and launches indexing for better flexibility
     for (const { address, height, force_height } of config.oracle.cores) {
         const formatted = Address.parse(address).toRawString();
-        if (height) await db.setCoreHeight(formatted, height, force_height);
+        if (height) await db.setHeightForAddress(formatted, height, force_height);
         handleCoreUpdates(formatted, GlobalVersions.V2A);
     }
     spawnNewLaunchesScanners();

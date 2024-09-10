@@ -23,17 +23,24 @@ CREATE TABLE callers
     address address PRIMARY KEY
 );
 
+CREATE TYPE launch_version AS ENUM ('V1', 'V2A');
 CREATE TABLE token_launches
 (
-    id         SERIAL NOT NULL,
-    address    address     NOT NULL PRIMARY KEY,
-    creator    address     NOT NULL REFERENCES callers (address),
-    identifier TEXT UNIQUE NOT NULL,
+    id                      SERIAL         NOT NULL,
+    identifier              TEXT UNIQUE    NOT NULL,
+
+    address                 address        NOT NULL PRIMARY KEY,
+    creator                 address        NOT NULL REFERENCES callers (address),
+    version                 launch_version NOT NULL,
     -- Original json, not one with url field only
-    metadata   JSONB       NOT NULL,
-    timings    JSONB       NOT NULL,
+    metadata                JSONB          NOT NULL,
+    timings                 JSONB          NOT NULL,
     -- Time of transaction, where actual launch was created
-    created_at TIMESTAMP   NOT NULL
+    created_at              TIMESTAMP      NOT NULL,
+    -- Both null by default
+    is_successful           BOOLEAN,
+    deployed_jetton_address address,
+    deployed_pool_address   address
 );
 
 CREATE TYPE user_action_type AS ENUM ('whitelist_buy', 'public_buy', 'whitelist_refund', 'public_refund', 'total_refund', 'claim');

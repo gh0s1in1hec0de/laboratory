@@ -5,7 +5,7 @@ CREATE TABLE tasks
     description TEXT NOT NULL
 );
 
-CREATE TABLE users_tasks_relation
+CREATE TABLE users_tasks_relations
 (
     caller address REFERENCES callers (address),
     task   SERIAL REFERENCES tasks (task_id),

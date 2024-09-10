@@ -1,26 +1,61 @@
-import { Address, TonClient, TonClient4, type Transaction, type TupleItem } from "@ton/ton";
+import { currentNetwork, getConfig, mainnetKeys, testnetKeys } from "../config";
+import { Address, TonClient, TonClient4, type Transaction } from "@ton/ton";
 import type { LamportTime, RawAddressString } from "starton-periphery";
-import { currentNetwork, mainnetKeys, testnetKeys } from "../config";
 import { delay, maybeBruteforceOverload, Network } from "../utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import { logger } from "../logger";
 
-// RR bitch (RoundRobin, not Rolls-Royce)
-class BalancedTonClient {
+class RateLimiter {
+    private tokens: number;
+    private lastRefill: number;
+    private readonly maxTokens: number;
+    private readonly refillRate: number;
+
+    constructor(limitPerSecond: number) {
+        this.lastRefill = Date.now();
+
+        this.tokens = limitPerSecond;
+        this.maxTokens = limitPerSecond;
+        this.refillRate = limitPerSecond;
+    }
+
+    async waitForToken(): Promise<void> {
+        this.refillTokens();
+        if (!this.tokens) {
+            await delay(1 / this.refillRate);
+            return this.waitForToken();
+        }
+        this.tokens--;
+    }
+
+    private refillTokens(): void {
+        const now = Date.now();
+        const timePassed = now - this.lastRefill;
+        const refill = timePassed * (this.refillRate / 1000);
+        this.tokens = Math.min(this.maxTokens, this.tokens + refill);
+        this.lastRefill = now;
+    }
+}
+
+export class BalancedTonClient {
     private readonly keys: string[];
     private currentKeyIndex: number;
     private activeLaunchesNumber: number;
+    private rateLimiter: RateLimiter;
 
     constructor(network: Network) {
         this.currentKeyIndex = 0;
         this.activeLaunchesNumber = 0;
         this.keys = network == Network.Testnet ? testnetKeys() : mainnetKeys();
+        this.rateLimiter = new RateLimiter(getConfig().oracle.api.limit_per_second);
     }
 
-    get() {
+    async get(): Promise<TonClient> {
+        await this.rateLimiter.waitForToken();
         if (this.currentKeyIndex < this.keys.length - 1) this.currentKeyIndex += 1;
         else this.currentKeyIndex = 0;
         const apiKey = this.keys[this.currentKeyIndex];
+
         logger().debug(` - tonclient apikey for operation: ${apiKey}`);
         return new TonClient({
             endpoint: `https://${currentNetwork() === "testnet" ? "testnet." : ""}toncenter.com/api/v2/jsonRPC`,
@@ -28,13 +63,21 @@ class BalancedTonClient {
         });
     }
 
+    async execute<T>(requestFn: (client: TonClient) => Promise<T>): Promise<T> {
+        const client = await this.get();
+        return requestFn(client);
+    }
+
     incrementActiveLaunchesAmount() {
         this.activeLaunchesNumber += 1;
     }
+
     decrementActiveLaunchesAmount() {
         this.activeLaunchesNumber -= 1;
     }
-    delay() {
+
+    delayValue() {
+        // Rewrite
         // Are you ready for dumb code?
         if (this.activeLaunchesNumber < 10) return 10000;
         else return 20000;
@@ -42,6 +85,7 @@ class BalancedTonClient {
 }
 
 export const balancedTonClient = new BalancedTonClient(currentNetwork() as Network);
+// Try "https://mainnet-v4.tonhubapi.com"
 const tonClient4 = new TonClient4({ endpoint: await getHttpV4Endpoint({ network: currentNetwork() as Network }) });
 
 // Works with TonClient4 under the hood, includes last account's `lamport_time`
@@ -60,21 +104,16 @@ export async function getTransactionsForAccount(address: RawAddressString, to_lt
     hash: string,
 }, archival = true, limit = 100) {
     return await maybeBruteforceOverload<Transaction[]>(
-        balancedTonClient.get().getTransactions(Address.parse(address), {
-            limit,
-            lt: from?.lt?.toString(),
-            hash: from?.hash,
-            to_lt: to_lt?.toString(),
-            archival
-        })
+        balancedTonClient.execute(c =>
+            c.getTransactions(Address.parse(address), {
+                limit,
+                lt: from?.lt?.toString(),
+                hash: from?.hash,
+                to_lt: to_lt?.toString(),
+                archival
+            })
+        )
     );
-}
-
-// [ { type: 'slice', cell: beginCell().storeAddress(myAddress).endCell() } ]
-//
-// .stack.readAddress();
-export async function callGetMethod(callee: Address, method: string, stack?: TupleItem[]) {
-    return balancedTonClient.get().runMethod(callee, method, stack);
 }
 
 // `stopAt` is lamport time of last known tx; returns an array of new transactions oldest -> the newest
@@ -98,14 +137,13 @@ export async function retrieveAllUnknownTransactions(
     while (true) {
         if (iterationIndex > 1) {
             logger().warn(`exceeded update limit(${limit} per request) for address ${address} at ${new Date(Date.now()).toString()}`);
-            await delay(750);
+            await delay(0.75);
         }
 
         const transactions = await getTransactionsForAccount(address, stopAt, startFrom, parsingOptions?.archival, parsingOptions?.limit);
 
         if (transactions.length === 0) break;
         newTransactions.push(...transactions);
-        // TODO Safety check test
         if (transactions.length < limit) break;
 
         // Update our new starting point to last parsed tx

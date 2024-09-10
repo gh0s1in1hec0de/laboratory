@@ -1,7 +1,20 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
 import {
-    OP_LENGTH, PERCENTAGE_DENOMINATOR, Coins, Contracts, LaunchConfigV1, GetConfigResponse, MoneyFlows,
-    QUERY_ID_LENGTH, BASECHAIN, BalanceUpdateMode, LaunchData, getCreatorJettonPrice, TokensLaunchOps,
+    OP_LENGTH,
+    PERCENTAGE_DENOMINATOR,
+    Coins,
+    Contracts,
+    LaunchConfigV1,
+    GetConfigResponse,
+    MoneyFlows,
+    QUERY_ID_LENGTH,
+    BASECHAIN,
+    BalanceUpdateMode,
+    LaunchData,
+    getCreatorJettonPrice,
+    TokensLaunchOps,
+    parseMoneyFlows,
+    parseGetConfigResponse,
 } from "starton-periphery";
 import { randomAddress } from "@ton/test-utils";
 import { LaunchParams } from "./types";
@@ -120,29 +133,12 @@ export class TokenLaunchV1 implements Contract {
 
     async getSaleMoneyFlow(provider: ContractProvider): Promise<MoneyFlows> {
         let { stack } = await provider.get("get_sale_money_flow", []);
-        return {
-            totalTonsCollected: stack.readBigNumber(),
-            creatorFutJetBalance: stack.readBigNumber(),
-            wlRoundTonInvestedTotal: stack.readBigNumber(),
-            publicRoundFutJetSold: stack.readBigNumber(),
-            syntheticJetReserve: stack.readBigNumber(),
-            syntheticTonReserve: stack.readBigNumber(),
-        };
+        return parseMoneyFlows(stack);
     }
 
     async getConfig(provider: ContractProvider): Promise<GetConfigResponse> {
         let { stack } = await provider.get("get_config", []);
-        return {
-            creatorFutJetBalance: stack.readBigNumber(),
-            creatorFutJetLeft: stack.readBigNumber(),
-            creatorFutJetPrice: stack.readBigNumber(),
-
-            wlRoundFutJetLimit: stack.readBigNumber(),
-            pubRoundFutJetLimit: stack.readBigNumber(),
-
-            futJetDexAmount: stack.readBigNumber(),
-            futJetPlatformAmount: stack.readBigNumber(),
-        };
+        return parseGetConfigResponse(stack);
     }
 
     async getInnerData(provider: ContractProvider): Promise<{

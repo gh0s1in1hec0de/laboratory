@@ -19,7 +19,7 @@ export async function spawnNewLaunchesScanners(scanFrom?: Date) {
     while (true) {
         const newLaunches = await db.getActiveTokenLaunches(timeUpdate);
         if (!newLaunches) {
-            await delay(30000);
+            await delay(30);
             continue;
         }
         for (const launch of newLaunches) {
@@ -29,7 +29,7 @@ export async function spawnNewLaunchesScanners(scanFrom?: Date) {
         timeUpdate = newLaunches.reduce((latest, launch) => {
             return launch.createdAt > latest ? launch.createdAt : latest;
         }, newLaunches[0].createdAt);
-        await delay(15000);
+        await delay(15);
     }
 }
 
@@ -91,7 +91,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                 }
 
                 // Here we'll handle only DEPOSITING operations
-                for (const [_n, msg] of outMsgs) {
+                for (const [, msg] of outMsgs) {
                     const outMsgBody = msg?.body.beginParse();
                     const { msgBodyData, op, queryId } = await loadOpAndQueryId(outMsgBody);
                     // Then we'll look for following operation: balanceUpdate
@@ -125,7 +125,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                 }
             }
             currentHeight = newTxs[newTxs.length - 1].lt;
-            await delay(20000);
+            await delay(balancedTonClient.delayValue());
         } catch (e) {
             logger().error(`failed to handle launch ${launchAddress} update with general error: ${e}`);
         }

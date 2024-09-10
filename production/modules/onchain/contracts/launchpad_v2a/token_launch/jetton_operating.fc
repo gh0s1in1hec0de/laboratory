@@ -7,10 +7,8 @@
 #include "tl_context.fc";
 #include "tl_storage.fc";
 
-const int MINT_QUERY_ID = 27082006;
-
 ;; Deployment schema actually looks like
-() deploy_launch_jetton() impure inline {
+() deploy_launch_jetton(int query_id) impure inline {
     (_, _, cell metadata, cell fut_jet_master_code, cell wallet_code, _) = unpack_tools(this::tools);
     (cell jetton_master_stateinit, slice jetton_master_address) = calculate_fut_jet_master_data(
         fut_jet_master_code,
@@ -23,7 +21,7 @@ const int MINT_QUERY_ID = 27082006;
     ;; 32 + 64 + 124 + 267 x 2 + 124 + 1 = 879
     cell master_msg = begin_cell()
         .store_op(op::internal_transfer)
-        .store_query_id(MINT_QUERY_ID)
+        .store_query_id(query_id)
         .store_coins(config::const::fut_jet_total_supply)
         .store_slice(my_address()) ;; from
         .store_slice(this::const::chief_address) ;; response_address
@@ -33,7 +31,7 @@ const int MINT_QUERY_ID = 27082006;
     ;; 32 + 64 + 267 + 124
     cell msg_body = begin_cell()
         .store_op(op::mint)
-        .store_query_id(MINT_QUERY_ID)
+        .store_query_id(query_id)
         .store_slice(my_address())
         .store_coins(
             (JETTON_MIN_TRANSFER_FEE * 2) + get_compute_fee(MY_WORKCHAIN, JETTONS_ENROLLMENT_ACCEPTANCE_GAS_CONSUMPTION)

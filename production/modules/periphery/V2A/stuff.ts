@@ -1,12 +1,15 @@
-import {
-    CreatorRoundStateV2A,
-    GeneralStateV2A,
-    LaunchConfigV2A, PublicRoundStateV2A,
-    SaleConfigV2A, SaleStateV2A,
-    TokenLaunchStorageV2A, ToolsV2A,
-    WhitelistRoundStateV2A
-} from "./types";
 import { beginCell, Cell } from "@ton/core";
+import {
+    WhitelistRoundStateV2A,
+    TokenLaunchStorageV2A,
+    CreatorRoundStateV2A,
+    PublicRoundStateV2A,
+    GeneralStateV2A,
+    LaunchConfigV2A,
+    SaleConfigV2A,
+    SaleStateV2A,
+    ToolsV2A,
+} from "./types";
 
 export function packLaunchConfigToCellV2A(c: LaunchConfigV2A): Cell {
     return beginCell()

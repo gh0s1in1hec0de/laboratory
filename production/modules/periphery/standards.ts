@@ -2,6 +2,8 @@ export type RawAddressString = string;
 export type LamportTime = bigint;
 export type Coins = bigint;
 
+export const DEFAULT_SUB_WALLET = 698983191;
+
 export const BASECHAIN = 0;
 export const TRUE = -1n;
 export const FALSE = 0n;

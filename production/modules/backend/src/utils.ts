@@ -1,5 +1,3 @@
-// The raw address string format is chosen to standardize the stored addresses.
-// It will help to avoid errors based on addresses' formats.
 import { logger } from "./logger";
 
 export enum Network {
@@ -20,7 +18,7 @@ export async function maybeBruteforceOverload<T>(
         try {
             return await operation;
         } catch (e) {
-            logger().error(`operation sucked (attempt #${attempt}) with error: ${e}`);
+            logger().error(`operation sucked (attempt #${attempt}) with error: `, e);
         }
         await new Promise(resolve => setTimeout(resolve, waitTime));
         delay = Math.min(delay * 2, maxDelay);
@@ -28,8 +26,8 @@ export async function maybeBruteforceOverload<T>(
     }
     throw new Error(`operation TOTALLY SUCKED (${attempt} attempts)`);
 }
-export function delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+export function delay(sec: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, sec * 1000));
 }
 
 export function greeting() {

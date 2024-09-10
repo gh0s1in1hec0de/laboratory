@@ -1,16 +1,7 @@
 import {
-    Address,
-    beginCell,
-    Cell,
-    Contract,
-    contractAddress,
-    ContractProvider, fromNano,
-    Sender,
-    SendMode,
-    Transaction
-} from '@ton/core';
-import { randomAddress } from '@ton/test-utils';
-import { TonClient } from '@ton/ton';
+    Address, beginCell, Cell, Contract, contractAddress,
+    ContractProvider, Sender, SendMode,
+} from "@ton/core";
 
 export type AddressSaverConfig = {
     manager: Address,
@@ -39,7 +30,6 @@ export class AddressSaver implements Contract {
         await provider.internal(via, {
             value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            // TODO figure out body purpose, when deploying
             body: beginCell().endCell()
         });
     }

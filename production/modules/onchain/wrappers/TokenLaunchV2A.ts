@@ -1,10 +1,23 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
-import {
-    PERCENTAGE_DENOMINATOR, BASECHAIN, Contracts, LaunchConfigV2A, GetConfigResponse, getCreatorJettonPrice,
-    QUERY_ID_LENGTH, OP_LENGTH, MoneyFlows, TokensLaunchOps, BalanceUpdateMode, LaunchData, Coins,
-} from "starton-periphery";
 import { randomAddress } from "@ton/test-utils";
 import { LaunchParams } from "./types";
+import {
+    PERCENTAGE_DENOMINATOR,
+    BASECHAIN,
+    Contracts,
+    LaunchConfigV2A,
+    GetConfigResponse,
+    getCreatorJettonPrice,
+    QUERY_ID_LENGTH,
+    OP_LENGTH,
+    MoneyFlows,
+    TokensLaunchOps,
+    BalanceUpdateMode,
+    LaunchData,
+    Coins,
+    parseMoneyFlows,
+    parseGetConfigResponse,
+} from "starton-periphery";
 import {
     ThirtyTwoIntMaxValue,
     tokenMetadataToCell,
@@ -143,31 +156,12 @@ export class TokenLaunchV2A implements Contract {
 
     async getMoneyFlows(provider: ContractProvider): Promise<MoneyFlows> {
         let { stack } = await provider.get("get_money_flows", []);
-        return {
-            totalTonsCollected: stack.readBigNumber(),
-            creatorFutJetBalance: stack.readBigNumber(),
-            wlRoundTonInvestedTotal: stack.readBigNumber(),
-            publicRoundFutJetSold: stack.readBigNumber(),
-            syntheticJetReserve: stack.readBigNumber(),
-            syntheticTonReserve: stack.readBigNumber(),
-        };
+        return parseMoneyFlows(stack);
     }
 
     async getConfig(provider: ContractProvider): Promise<GetConfigResponse> {
         let { stack } = await provider.get("get_config", []);
-        return {
-            creatorFutJetBalance: stack.readBigNumber(),
-            creatorFutJetLeft: stack.readBigNumber(),
-            creatorFutJetPrice: stack.readBigNumber(),
-
-            wlRoundFutJetLimit: stack.readBigNumber(),
-            pubRoundFutJetLimit: stack.readBigNumber(),
-
-            futJetDexAmount: stack.readBigNumber(),
-            futJetPlatformAmount: stack.readBigNumber(),
-
-            minTonForSaleSuccess: stack.readBigNumber(),
-        };
+        return parseGetConfigResponse(stack);
     }
 
     async getInnerData(provider: ContractProvider): Promise<{

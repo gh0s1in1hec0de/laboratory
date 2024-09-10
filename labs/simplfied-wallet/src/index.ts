@@ -58,7 +58,6 @@ async function main() {
         .storeBuffer(signature) // store signature
         .storeBuilder(toSign) // store our message
         .endCell();
-
     // Building an external message, but all the information is necessary only for validators
     let externalMessage = beginCell()
         .storeUint(0b10, 2) // 0b10 -> 10 in binary

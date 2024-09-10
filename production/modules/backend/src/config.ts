@@ -13,15 +13,22 @@ type Config = {
         should_migrate: boolean,
     },
     oracle: {
+        chief: {
+            address: string,
+            mnemonic: string,
+        },
         cores: {
             address: string,
             height: bigint | null,
             force_height: boolean,
         }[],
         network: string,
-        api_keys: {
-            testnet_keys: string[],
-            mainnet_keys: string[],
+        api: {
+            limit_per_second: number,
+            keys: {
+                testnet: string[],
+                mainnet: string[],
+            },
         },
     },
     server: {
@@ -58,9 +65,13 @@ export function currentNetwork(): string {
 }
 
 export function testnetKeys(): string[] {
-    return getConfig().oracle.api_keys.testnet_keys;
+    return getConfig().oracle.api.keys.testnet;
 }
 
 export function mainnetKeys(): string[] {
-    return getConfig().oracle.api_keys.mainnet_keys;
+    return getConfig().oracle.api.keys.mainnet;
+}
+
+export function chief() {
+    return getConfig().oracle.chief;
 }

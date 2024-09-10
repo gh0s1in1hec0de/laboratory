@@ -133,7 +133,7 @@
         + get_jetton_deployment_total_gas_cost()
         + calculate_token_launch_min_storage_fee(ONE_MONTH);
         throw_arg_if(launch_success_treshold - contract_balance, error::balance_lack, contract_balance < launch_success_treshold);
-        deploy_launch_jetton();
+        deploy_launch_jetton(query_id);
         if (contract_balance > launch_success_treshold) {
             cell excesses = excesses_msg(query_id, sender_address, contract_balance - launch_success_treshold);
             send_raw_message(excesses, SEND_MODE_IGNORE_ERRORS);

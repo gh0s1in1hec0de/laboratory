@@ -15,13 +15,13 @@ import {
 } from "starton-periphery";
 
 export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersion: GlobalVersions) {
-    let currentHeight = await db.getCoreHeight(coreAddress) ?? 0n;
+    let currentHeight = await db.getHeight(coreAddress) ?? 0n;
     let iteration = 0;
     while (true) {
         try {
             const newTxs = await retrieveAllUnknownTransactions(coreAddress, currentHeight);
             if (!newTxs.length) {
-                await delay(5000);
+                await delay(5);
                 continue;
             }
             for (const tx of newTxs) {
@@ -47,10 +47,11 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
                         Fetch metadata by url inside
                         Build name from ticker + token */
                     await db.storeTokenLaunch({
+                        identifier: "dummy",
                         address,
                         creator: parsedStateInit.creatorAddress.toRawString(),
+                        version: coreVersion,
                         metadata: parseMetadataCell(parsedStateInit.tools.metadata),
-                        name: "dummy",
                         // An error may occur here
                         timings: parseTokenLaunchTimings(parsedStateInit)
                     });
@@ -58,8 +59,8 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
             }
             currentHeight = newTxs[newTxs.length - 1].lt;
             iteration += 1;
-            if (iteration % 5 === 0) await db.setCoreHeight(coreAddress, currentHeight, true);
-            await delay(30000); // TODO Determine synthetic delay
+            if (iteration % 5 === 0) await db.setHeightForAddress(coreAddress, currentHeight, true);
+            await delay(15);
         } catch (e) {
             logger().error(`failed to load new launches for core(${coreAddress}) update with error: ${e}`);
         }

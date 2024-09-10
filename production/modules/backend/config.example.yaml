@@ -4,16 +4,21 @@ db:
   should_migrate: false
 
 oracle:
+  chief:
+    address: "",
+    mnemonic: ""
   cores:
     - address: ""
       height: null
       force_height: false
   network: "testnet"
-  api_keys:
-    testnet_keys:
-      - "k"
-    mainnet_keys:
-      - "k"
+  api:
+    limit_per_second: 10
+    keys:
+      testnet:
+        - "key"
+      mainnet:
+        - "key"
 
 server:
   port: 3000

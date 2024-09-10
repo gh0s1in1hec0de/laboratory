@@ -1,4 +1,4 @@
-import {Address} from "@ton/ton";
+import { Address } from "@ton/ton";
 import type { StoredTokenLaunch, StoredTokenLaunchRequest } from "../db";
 import { SortOrder, TokenLaunchFields } from "starton-periphery";
 import { type HearsContext, InlineKeyboard } from "grammy";
@@ -56,14 +56,14 @@ export function getReplyText(key: keyof typeof replies): string {
 
 export function getLaunchesReply(storedTokenLaunch: StoredTokenLaunch[]): string {
     return storedTokenLaunch.map((tokenLaunch) => {
-        const { name, id, createdAt } = tokenLaunch;
+        const { identifier, id, createdAt } = tokenLaunch;
         const formattedDate = new Intl.DateTimeFormat("ru-RU", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric"
         }).format(new Date(createdAt));
     
-        return `${id}. ${name} - ${formattedDate}`;
+        return `${id}. ${identifier} - ${formattedDate}`;
     }).join("\n");
 }
 

@@ -20,7 +20,7 @@ export async function storeUserTaskRelations(
     client?: SqlClient
 ): Promise<StoredWhitelistRelations | null> {
     const res = await (client ?? globalClient)<StoredWhitelistRelations[]>`
-        INSERT INTO users_tasks_relation (caller, task)
+        INSERT INTO users_tasks_relations (caller, task)
         VALUES (${userAddress}, ${taskId})
         ON CONFLICT DO NOTHING
         RETURNING 1

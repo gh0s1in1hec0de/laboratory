@@ -3,7 +3,7 @@ import type { SqlClient } from "./types";
 import { ok as assert } from "assert";
 import { globalClient } from "./db";
 
-export async function setCoreHeight(address: RawAddressString, height: LamportTime, force?: boolean, client?: SqlClient): Promise<void> {
+export async function setHeightForAddress(address: RawAddressString, height: LamportTime, force?: boolean, client?: SqlClient): Promise<void> {
     const c = client ?? globalClient;
     const res = await c`
         INSERT INTO heights (contract_address, height)
@@ -13,7 +13,7 @@ export async function setCoreHeight(address: RawAddressString, height: LamportTi
     assert(res.length === 1, `exactly 1 column must be created/updated, got: ${res}`);
 }
 
-export async function getCoreHeight(address: RawAddressString, client?: SqlClient): Promise<LamportTime | null> {
+export async function getHeight(address: RawAddressString, client?: SqlClient): Promise<LamportTime | null> {
     const res = await (client ?? globalClient)<{ height: LamportTime }[]>`
         SELECT height
         from heights
