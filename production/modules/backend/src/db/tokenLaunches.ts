@@ -37,7 +37,7 @@ export async function storeTokenLaunch(
     { identifier, address, creator, version, metadata, timings }:
         Omit<
             StoredTokenLaunch,
-            "createdAt" | "id" | "isSuccessful" | "deployedJettonAddress" | "deployedPoolAddress"
+            "createdAt" | "id" | "isSuccessful" | "postDeployEnrollmentStats" | "deployedPoolAddress"
         >,
     client?: SqlClient
 ): Promise<void> {
@@ -66,7 +66,7 @@ export async function getSortedTokenLaunches(
     const res = await c<StoredTokenLaunch[]>`
         SELECT *
         FROM token_launches
-        WHERE name ILIKE ${`%${search}%`}
+        WHERE identifier ILIKE ${`%${search}%`}
         ORDER BY ${c.unsafe(orderBy)} ${c.unsafe(order)}
         LIMIT ${limit + 1} OFFSET ${offset}
     `;

@@ -30,6 +30,12 @@ export type Caller = {
     address: RawAddressString,
 }
 
+export type PostDeployEnrollmentStats = {
+    deployedJettonAddress: RawAddressString,
+    totalTonsCollected: Coins,
+    enrolledJettons: Coins,
+}
+
 export type StoredTokenLaunch = {
     id: number,
     identifier: string,
@@ -43,7 +49,7 @@ export type StoredTokenLaunch = {
     createdAt: Date,
 
     isSuccessful: boolean | null,
-    deployedJettonAddress: RawAddressString | null,
+    postDeployEnrollmentStats: PostDeployEnrollmentStats | null,
     deployedPoolAddress: RawAddressString | null,
 };
 

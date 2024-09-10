@@ -62,7 +62,6 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
 
                 const txCreatedAt = new Date(tx.now * 1000);
                 const lt: LamportTime = tx.lt;
-                const outMsgs = tx.outMessages;
                 const inMsgSender = inMsg.info.src;
                 const inMsgBody = inMsg.body.beginParse();
                 // We don't care about simple transfers
@@ -91,7 +90,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                 }
 
                 // Here we'll handle only DEPOSITING operations
-                for (const [, msg] of outMsgs) {
+                for (const [, msg] of tx.outMessages) {
                     const outMsgBody = msg?.body.beginParse();
                     const { msgBodyData, op, queryId } = await loadOpAndQueryId(outMsgBody);
                     // Then we'll look for following operation: balanceUpdate
@@ -116,7 +115,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
             }
             // We are not using sql transaction here intentionally
             for (const action of newActionsChunk) {
-                // Catching every error separately to prevent  record stoppage and transaction congestion
+                // Catching every error separately to prevent record stoppage and transaction congestion
                 // Theoretically, it should never trigger
                 try {
                     await db.storeUserAction(action);

@@ -36,6 +36,7 @@ export enum TokensLaunchOps {
     JettonClaimRequest = 0x16b3aef0,
     JettonClaimConfirmation = 0x349c1c7f,
     DeployJetton = 0x71161970,
+    ClaimOpn = 0x50c5723e
 }
 
 export enum UserVaultOps {
@@ -60,6 +61,7 @@ export enum BalanceUpdateMode {
 }
 
 export const UTIL_JET_SEND_MODE_SIZE = 4;
+
 export enum UtilJettonsEnrollmentMode {
     UtilJettonRewardEnrollment = 1,
     UtilJettonWlPass = 2

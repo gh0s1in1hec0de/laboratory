@@ -1,6 +1,6 @@
-import { buildInternalMessage, sendToWallet } from "./walletInteractions.ts";
 import { balancedTonClient, retrieveAllUnknownTransactions } from "./api.ts";
-import { beginCell, toNano } from "@ton/core";
+import { buildInternalMessage, sendToWallet } from "./walletInteractions.ts";
+import { beginCell, fromNano, toNano } from "@ton/core";
 import { logger } from "../logger.ts";
 import { chief } from "../config.ts";
 import { delay } from "../utils.ts";
@@ -10,7 +10,6 @@ import {
     parseMoneyFlows, QUERY_ID_LENGTH,
     loadOpAndQueryId, OP_LENGTH,
     parseGetConfigResponse,
-    type RawAddressString,
     TokensLaunchOps,
 } from "starton-periphery";
 
@@ -18,7 +17,9 @@ import {
     What do we need to do here? Two main parts - triggering jetton deployment process from successful launches
      and retrieving transactions with incoming jettons to create pool with it. Also, collecting fee in the end of launch.
 */
+
 export async function validateEndedPendingLaunches() {
+    const chiefWallet = { address: Address.parse(chief().address), mnemonic: chief().mnemonic.split(" ") };
     while (true) {
         const middleLaunches = await db.getTokenLaunchesByCategory(db.EndedLaunchesCategories.Pending);
         if (!middleLaunches) {
@@ -35,7 +36,15 @@ export async function validateEndedPendingLaunches() {
             const { minTonForSaleSuccess } = parseGetConfigResponse(getConfigCallResponse.stack);
             if (totalTonsCollected < minTonForSaleSuccess) {
                 await db.markLaunchAsFailed(address);
-                // TODO Send collect fee, what about successful launches - we'll collect fee after deployment for safety
+                const claimOpnMessage = buildInternalMessage(
+                    launchAddressParsed,
+                    toNano("0.1"),
+                    beginCell()
+                        .storeUint(TokensLaunchOps.ClaimOpn, OP_LENGTH)
+                        .storeUint(Date.now(), QUERY_ID_LENGTH)
+                        .endCell()
+                );
+                await sendToWallet(chiefWallet, claimOpnMessage);
                 continue;
             }
             const deployMessage = buildInternalMessage(
@@ -46,21 +55,21 @@ export async function validateEndedPendingLaunches() {
                     .storeUint(Date.now(), QUERY_ID_LENGTH)
                     .endCell()
             );
-            await sendToWallet(
-                { address: Address.parse(chief().address), mnemonic: chief().mnemonic.split(" ") },
-                balancedTonClient,
-                deployMessage
-            );
+            await sendToWallet(chiefWallet, deployMessage);
         }
     }
 }
 
-export async function handleChiefUpdates(chiefAddress: RawAddressString) {
-    let currentHeight = await db.getHeight(chiefAddress) ?? 0n;
+export async function createPoolsForNewJettons() {
+
+}
+
+export async function handleChiefUpdates() {
+    let currentHeight = await db.getHeight(chief().address) ?? 0n;
     let iteration = 0;
     while (true) {
         try {
-            const newTxs = await retrieveAllUnknownTransactions(chiefAddress, currentHeight);
+            const newTxs = await retrieveAllUnknownTransactions(chief().address, currentHeight);
             if (!newTxs.length) {
                 await delay(5);
                 continue;
@@ -69,6 +78,44 @@ export async function handleChiefUpdates(chiefAddress: RawAddressString) {
                 const inMsg = tx.inMessage;
                 if (!inMsg) continue;
                 if (inMsg.info.type !== "internal") continue;
+
+                const sender = inMsg.info.src;
+                const value = inMsg.info.value.coins;
+                const inMsgBody = inMsg.body.beginParse();
+                // We don't care about simple transfers
+                if (inMsgBody.remainingBits < (32 + 64)) continue;
+                const { msgBodyData, op } = await loadOpAndQueryId(inMsgBody);
+
+                if (op === 0x7362d09c) {
+                    const jettonAmount = msgBodyData.loadCoins();
+                    const jettonSender = msgBodyData.loadAddressAny();
+                    const forwardPayload = msgBodyData.loadBit() ? msgBodyData.loadRef().beginParse() : msgBodyData;
+
+                    // IMPORTANT: we have to verify the source of this message because it can be faked
+                    const runStack = (await balancedTonClient.execute(c => c.runMethod(sender, "get_wallet_data"))).stack;
+                    runStack.skip(2); // TODO Test in sandbox
+                    const jettonMaster = runStack.readAddress();
+                    const jettonWallet = (
+                        await balancedTonClient.execute(
+                            c => c.runMethod(jettonMaster, "get_wallet_address", [
+                                {
+                                    type: "slice",
+                                    cell: beginCell().storeAddress(Address.parse(chief().address)).endCell()
+                                }
+                            ])
+                        )).stack.readAddress();
+                    if (!jettonWallet.equals(sender)) {
+                        // if sender is not our real JettonWallet: this message was faked
+                        logger().warn(`this bitch ${sender} tried to fake transfer $$$$`);
+                        continue;
+                    }
+
+
+                    if (forwardPayload.remainingBits < 32) {
+                        // if forward payload doesn't have opcode: it's a simple Jetton transfer
+                        console.log(`Jetton transfer from ${jettonSender} with value ${fromNano(jettonAmount)} Jetton`);
+                    }
+                }
 
 
                 for (const [, msg] of tx.outMessages) {
@@ -80,10 +127,10 @@ export async function handleChiefUpdates(chiefAddress: RawAddressString) {
             }
             currentHeight = newTxs[newTxs.length - 1].lt;
             iteration += 1;
-            if (iteration % 5 === 0) await db.setHeightForAddress(chiefAddress, currentHeight, true);
-            await delay(15);
+            if (iteration % 5 === 0) await db.setHeightForAddress(chief().address, currentHeight, true);
+            await delay(60);
         } catch (e) {
-            logger().error(`failed to load new launches for chief(${chiefAddress}) update with error: ${e}`);
+            logger().error(`failed to load chief(${chief().address}) updates with error: `, e);
         }
     }
 }
