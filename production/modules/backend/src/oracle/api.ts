@@ -50,7 +50,7 @@ export class BalancedTonClient {
         this.rateLimiter = new RateLimiter(getConfig().oracle.api.limit_per_second);
     }
 
-    async get(): Promise<TonClient> {
+    async client(): Promise<TonClient> {
         await this.rateLimiter.waitForToken();
         if (this.currentKeyIndex < this.keys.length - 1) this.currentKeyIndex += 1;
         else this.currentKeyIndex = 0;
@@ -63,9 +63,8 @@ export class BalancedTonClient {
         });
     }
 
-    async execute<T>(requestFn: (client: TonClient) => Promise<T>): Promise<T> {
-        const client = await this.get();
-        return requestFn(client);
+    async execute<T>(closure: (client: TonClient) => Promise<T> | T): Promise<T> {
+        return closure(await this.client());
     }
 
     incrementActiveLaunchesAmount() {

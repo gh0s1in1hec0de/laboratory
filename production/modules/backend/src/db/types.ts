@@ -31,7 +31,7 @@ export type Caller = {
 }
 
 export type PostDeployEnrollmentStats = {
-    deployedJettonAddress: RawAddressString,
+    deployedJetton: { masterAddress: RawAddressString, ourWalletAddress: RawAddressString },
     totalTonsCollected: Coins,
     oursAmount: Coins,
     dexAmount: Coins,

@@ -118,7 +118,8 @@ export async function markLaunchAsFailed(address: RawAddressString, client?: Sql
 export async function updatePostDeployEnrollmentStats(tokenLaunchAddress: RawAddressString, stats: PostDeployEnrollmentStats, client?: SqlClient): Promise<void> {
     const res = await (client ?? globalClient)`
         UPDATE token_launches
-        SET post_deploy_enrollment_stats = ${JSON.stringify(stats)}
+        SET post_deploy_enrollment_stats = ${JSON.stringify(stats)},
+            is_successful                = TRUE
         WHERE address = ${tokenLaunchAddress}
         RETURNING 1;
     `;

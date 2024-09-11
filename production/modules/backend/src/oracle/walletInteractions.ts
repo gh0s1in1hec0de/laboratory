@@ -4,6 +4,7 @@ import { balancedTonClient } from "./api.ts";
 import { beginCell, Cell } from "@ton/core";
 import { Address } from "@ton/ton";
 
+// TODO Maybe simplify with wallet contract
 export async function sendToWallet(wallet: {
     address: Address,
     mnemonic: string[],
