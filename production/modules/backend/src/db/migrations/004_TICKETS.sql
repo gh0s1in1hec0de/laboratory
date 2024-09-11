@@ -12,7 +12,6 @@ CREATE TABLE users_tasks_relations
     PRIMARY KEY (caller, task)
 );
 
--- This table can easily solve the problem of whitelists for each token-sale
 CREATE TABLE whitelist_relations
 (
     token_launch_address address REFERENCES token_launches (address),
@@ -22,7 +21,8 @@ CREATE TABLE whitelist_relations
 
 
 CREATE OR REPLACE FUNCTION increment_ticket_balance()
-    RETURNS TRIGGER AS $$
+    RETURNS TRIGGER AS
+$$
 BEGIN
     UPDATE users
     SET ticket_balance = ticket_balance + 1
@@ -32,14 +32,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER user_complete_task
-    AFTER INSERT ON users_tasks_relation
+CREATE TRIGGER user_task_completion
+    AFTER INSERT
+    ON users_tasks_relations
     FOR EACH ROW
 EXECUTE FUNCTION increment_ticket_balance();
 
 
 CREATE OR REPLACE FUNCTION decrement_ticket_balance()
-    RETURNS TRIGGER AS $$
+    RETURNS TRIGGER AS
+$$
 BEGIN
     UPDATE users
     SET ticket_balance = ticket_balance - 1
@@ -50,7 +52,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE TRIGGER user_buy_whitelist
-    AFTER INSERT ON whitelist_relations
+CREATE TRIGGER user_whitelist_purchase
+    AFTER INSERT
+    ON whitelist_relations
     FOR EACH ROW
 EXECUTE FUNCTION decrement_ticket_balance();

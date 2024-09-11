@@ -33,7 +33,14 @@ export type Caller = {
 export type PostDeployEnrollmentStats = {
     deployedJettonAddress: RawAddressString,
     totalTonsCollected: Coins,
-    enrolledJettons: Coins,
+    oursAmount: Coins,
+    dexAmount: Coins,
+}
+
+export type DexData = {
+    jettonVaultAddress: RawAddressString,
+    poolAddress: RawAddressString,
+    addedLiquidity: boolean,
 }
 
 export type StoredTokenLaunch = {
@@ -50,20 +57,20 @@ export type StoredTokenLaunch = {
 
     isSuccessful: boolean | null,
     postDeployEnrollmentStats: PostDeployEnrollmentStats | null,
-    deployedPoolAddress: RawAddressString | null,
+    dexData: DexData | null,
 };
 
 export interface StoredTokenLaunchRequest {
-  page: number,
-  limit: number,
-  orderBy: TokenLaunchFields,
-  order: SortOrder,
-  search?: string,
+    page: number,
+    limit: number,
+    orderBy: TokenLaunchFields,
+    order: SortOrder,
+    search?: string,
 }
 
 export interface StoredTokenLaunchResponse {
-  storedTokenLaunch: StoredTokenLaunch[],
-  hasMore: boolean,
+    storedTokenLaunch: StoredTokenLaunch[],
+    hasMore: boolean,
 }
 
 export enum UserActionType {
@@ -106,6 +113,6 @@ export const balanceUpdateModeToUserActionType: { [key in BalanceUpdateMode]: Us
 };
 
 export type StoredWhitelistRelations = {
-  tokenLaunchAddress: string,
-  callerAddress: string,
+    tokenLaunchAddress: string,
+    callerAddress: string,
 }

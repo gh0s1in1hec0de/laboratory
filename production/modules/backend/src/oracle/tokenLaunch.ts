@@ -127,6 +127,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
             await delay(balancedTonClient.delayValue());
         } catch (e) {
             logger().error(`failed to handle launch ${launchAddress} update with general error: ${e}`);
+            await delay(balancedTonClient.delayValue() / 2);
         }
     }
 }

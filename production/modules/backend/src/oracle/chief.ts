@@ -1,6 +1,6 @@
 import { balancedTonClient, retrieveAllUnknownTransactions } from "./api.ts";
 import { buildInternalMessage, sendToWallet } from "./walletInteractions.ts";
-import { beginCell, fromNano, toNano } from "@ton/core";
+import { beginCell, toNano } from "@ton/core";
 import { logger } from "../logger.ts";
 import { chief } from "../config.ts";
 import { delay } from "../utils.ts";
@@ -11,6 +11,7 @@ import {
     loadOpAndQueryId, OP_LENGTH,
     parseGetConfigResponse,
     TokensLaunchOps,
+    jettonFromNano,
 } from "starton-periphery";
 
 /*
@@ -21,12 +22,12 @@ import {
 export async function validateEndedPendingLaunches() {
     const chiefWallet = { address: Address.parse(chief().address), mnemonic: chief().mnemonic.split(" ") };
     while (true) {
-        const middleLaunches = await db.getTokenLaunchesByCategory(db.EndedLaunchesCategories.Pending);
-        if (!middleLaunches) {
+        const pendingLaunches = await db.getTokenLaunchesByCategories([db.EndedLaunchesCategories.Pending]);
+        if (!pendingLaunches) {
             await delay(100);
             continue;
         }
-        for (const { address } of middleLaunches) {
+        for (const { address } of pendingLaunches) {
             const launchAddressParsed = Address.parse(address);
             const [moneyFlowsResponse, getConfigCallResponse] = await Promise.all([
                 balancedTonClient.execute(c => c.runMethod(launchAddressParsed, "get_money_flows", [])),
@@ -57,11 +58,18 @@ export async function validateEndedPendingLaunches() {
             );
             await sendToWallet(chiefWallet, deployMessage);
         }
+        await delay(60);
     }
 }
 
-export async function createPoolsForNewJettons() {
+// TODO implement Resend mechanism for db.EndedLaunchesCategories.WaitingForJetton guys
 
+export async function createPoolsForNewJettons() {
+    const chiefWallet = { address: Address.parse(chief().address), mnemonic: chief().mnemonic.split(" ") };
+    while (true) {
+        const waitingForPoolLaunches = await db.getTokenLaunchesByCategories([db.EndedLaunchesCategories.WaitingForPool]);
+
+    }
 }
 
 export async function handleChiefUpdates() {
@@ -88,7 +96,7 @@ export async function handleChiefUpdates() {
 
                 if (op === 0x7362d09c) {
                     const jettonAmount = msgBodyData.loadCoins();
-                    const jettonSender = msgBodyData.loadAddressAny();
+                    const originalSender = msgBodyData.loadAddressAny();
                     const forwardPayload = msgBodyData.loadBit() ? msgBodyData.loadRef().beginParse() : msgBodyData;
 
                     // IMPORTANT: we have to verify the source of this message because it can be faked
@@ -110,19 +118,33 @@ export async function handleChiefUpdates() {
                         continue;
                     }
 
-
-                    if (forwardPayload.remainingBits < 32) {
-                        // if forward payload doesn't have opcode: it's a simple Jetton transfer
-                        console.log(`Jetton transfer from ${jettonSender} with value ${fromNano(jettonAmount)} Jetton`);
+                    if (forwardPayload.remainingBits < 248) {
+                        logger().info(`side jetton transfer from ${originalSender} with value ${jettonFromNano(jettonAmount)}`);
+                    } else {
+                        try {
+                            const dexAmount = forwardPayload.loadCoins();
+                            const oursAmount = forwardPayload.loadCoins();
+                            await db.updatePostDeployEnrollmentStats(
+                                (originalSender as Address).toRawString(),
+                                {
+                                    deployedJettonAddress: jettonMaster.toRawString(),
+                                    totalTonsCollected: value,
+                                    oursAmount,
+                                    dexAmount
+                                }
+                            );
+                        } catch (e) {
+                            logger().error("error when parsing forward payload: ", e);
+                        }
                     }
                 }
-
 
                 for (const [, msg] of tx.outMessages) {
                     const outMsgBody = msg.body.beginParse();
                     if (outMsgBody.remainingBits < (32 + 64)) continue;
-                    const { op } = await loadOpAndQueryId(outMsgBody);
-
+                    // const { op } = await loadOpAndQueryId(outMsgBody);
+                    // Here may be dedust stuff verification...
+                    // ...or not!
                 }
             }
             currentHeight = newTxs[newTxs.length - 1].lt;
@@ -131,6 +153,7 @@ export async function handleChiefUpdates() {
             await delay(60);
         } catch (e) {
             logger().error(`failed to load chief(${chief().address}) updates with error: `, e);
+            await delay(30);
         }
     }
 }

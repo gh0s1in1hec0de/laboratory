@@ -122,6 +122,7 @@ describe("General", () => {
         const derivedJettonVault = await factory.getJettonVault(derivedJettonRoot.address);
         console.log(`derived user vault address: ${derivedJettonVault.address}`);
 
+        // const vaultStatus = await blockchain.openContract(derivedJettonVault).getReadinessStatus();
         const transferResult = await derivedJettonDeployerWallet.sendTransfer(
             deployer.getSender(),
             toNano("0.5"),

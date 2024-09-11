@@ -4,6 +4,10 @@ import postgres from "postgres";
 import * as path from "path";
 import * as fs from "fs";
 
+/*
+  TODO Verify if it is needed to do JSON.stringify() in queries?
+*/
+
 let cachedGlobalClient: SqlClient | null = null;
 export const globalClient = await createPostgresClient();
 

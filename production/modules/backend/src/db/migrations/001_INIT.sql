@@ -40,7 +40,7 @@ CREATE TABLE token_launches
     -- Both null by default
     is_successful                BOOLEAN,
     post_deploy_enrollment_stats JSONB,
-    deployed_pool_address        address
+    dex_data                     JSONB
 );
 
 CREATE TYPE user_action_type AS ENUM ('whitelist_buy', 'public_buy', 'whitelist_refund', 'public_refund', 'total_refund', 'claim');

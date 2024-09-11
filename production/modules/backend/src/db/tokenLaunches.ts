@@ -1,4 +1,10 @@
-import type { SqlClient, StoredTokenLaunch, StoredTokenLaunchRequest, StoredTokenLaunchResponse } from "./types";
+import type {
+    PostDeployEnrollmentStats,
+    SqlClient,
+    StoredTokenLaunch,
+    StoredTokenLaunchRequest,
+    StoredTokenLaunchResponse
+} from "./types";
 import type { RawAddressString } from "starton-periphery";
 import { ok as assert } from "assert";
 import { globalClient } from "./db";
@@ -85,15 +91,17 @@ export enum EndedLaunchesCategories {
 }
 
 // Returns token launches, that have been already ended, needs to be categorized as "successful and waits for deployment"/"unsuccessful"
-export async function getTokenLaunchesByCategory(category: EndedLaunchesCategories, client?: SqlClient): Promise<StoredTokenLaunch[] | null> {
+export async function getTokenLaunchesByCategories(categories: EndedLaunchesCategories[], client?: SqlClient): Promise<StoredTokenLaunch[] | null> {
     const c = client ?? globalClient;
     const res = await c<StoredTokenLaunch[]>`
         SELECT *
         FROM token_launches
         WHERE now() > (timings ->> 'publicRoundEndTime')::TIMESTAMP
-          AND is_successful ${category === EndedLaunchesCategories.Pending ? c`IS NULL` : c`IS TRUE`}
-          AND deployed_jetton_address IS NULL;
-    `;
+        AND post_deploy_enrollment_stats IS NULL 
+            ${categories.includes(EndedLaunchesCategories.Pending) ? c`AND is_successful IS NULL` : c`AND is_successful IS TRUE`}
+            ${categories.includes(EndedLaunchesCategories.WaitingForJetton) ? c`AND post_deploy_enrollment_stats IS NULL` : c`AND post_deploy_enrollment_stats IS NOT NULL`}
+            ${categories.includes(EndedLaunchesCategories.WaitingForPool) ? c`dex_data IS NULL` : c``}
+        `;
     return res.length ? res : null;
 }
 
@@ -102,6 +110,16 @@ export async function markLaunchAsFailed(address: RawAddressString, client?: Sql
         UPDATE token_launches
         SET is_successful = FALSE
         WHERE address = ${address}
+        RETURNING 1;
+    `;
+    assert(res.count === 1, "value was not updated");
+}
+
+export async function updatePostDeployEnrollmentStats(tokenLaunchAddress: RawAddressString, stats: PostDeployEnrollmentStats, client?: SqlClient): Promise<void> {
+    const res = await (client ?? globalClient)`
+        UPDATE token_launches
+        SET post_deploy_enrollment_stats = ${JSON.stringify(stats)}
+        WHERE address = ${tokenLaunchAddress}
         RETURNING 1;
     `;
     assert(res.count === 1, "value was not updated");

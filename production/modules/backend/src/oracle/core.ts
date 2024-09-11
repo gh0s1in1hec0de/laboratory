@@ -60,9 +60,10 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
             currentHeight = newTxs[newTxs.length - 1].lt;
             iteration += 1;
             if (iteration % 5 === 0) await db.setHeightForAddress(coreAddress, currentHeight, true);
-            await delay(15);
+            await delay(60);
         } catch (e) {
             logger().error(`failed to load new launches for core(${coreAddress}) update with error: ${e}`);
+            await delay(30);
         }
     }
 }
