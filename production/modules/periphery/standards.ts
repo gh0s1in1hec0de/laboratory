@@ -1,7 +1,11 @@
+import { Address } from "@ton/core";
+
 export type RawAddressString = string;
 export type LamportTime = bigint;
 export type Coins = bigint;
 
+export const TESTNET_FACTORY_ADDR = Address.parse("EQAROb_l-1yGMKjPGUmc0tNjYOsXTKTsucXmhh2Fm9y98z7Y");
+export const BURN_ADDR = Address.parse("EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c");
 export const DEFAULT_SUB_WALLET = 698983191;
 
 export const BASECHAIN = 0;

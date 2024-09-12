@@ -1,4 +1,5 @@
 import type {
+    DexData,
     PostDeployEnrollmentStats,
     SqlClient,
     StoredTokenLaunch,
@@ -43,7 +44,7 @@ export async function storeTokenLaunch(
     { identifier, address, creator, version, metadata, timings }:
         Omit<
             StoredTokenLaunch,
-            "createdAt" | "id" | "isSuccessful" | "postDeployEnrollmentStats" | "deployedPoolAddress"
+            "createdAt" | "id" | "isSuccessful" | "postDeployEnrollmentStats" | "dexData"
         >,
     client?: SqlClient
 ): Promise<void> {
@@ -120,6 +121,16 @@ export async function updatePostDeployEnrollmentStats(tokenLaunchAddress: RawAdd
         UPDATE token_launches
         SET post_deploy_enrollment_stats = ${JSON.stringify(stats)},
             is_successful                = TRUE
+        WHERE address = ${tokenLaunchAddress}
+        RETURNING 1;
+    `;
+    assert(res.count === 1, "value was not updated");
+}
+
+export async function updateDexData(tokenLaunchAddress: RawAddressString, dexData: DexData, client?: SqlClient): Promise<void> {
+    const res = await (client ?? globalClient)`
+        UPDATE token_launches
+        SET dex_data = ${JSON.stringify(dexData)}
         WHERE address = ${tokenLaunchAddress}
         RETURNING 1;
     `;

@@ -1,4 +1,4 @@
-import { handleCoreUpdates, spawnNewLaunchesScanners } from "./oracle";
+import { handleCoreUpdates, spawnNewLaunchesScanners, chiefScanning } from "./oracle";
 import { GlobalVersions } from "starton-periphery";
 import { getConfig } from "./config";
 import { getServer } from "./server";
@@ -30,6 +30,7 @@ async function main() {
         handleCoreUpdates(formatted, GlobalVersions.V2A);
     }
     spawnNewLaunchesScanners();
+    chiefScanning();
 }
 
 main().then();

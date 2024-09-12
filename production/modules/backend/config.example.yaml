@@ -28,10 +28,14 @@ server:
 
 bot:
   token: ""
-  admins: [1111, 2222]
+  admins: [ 1111, 2222 ]
 
 logger:
   bot_token: ""
   chat_id: -0
   dev_thread_id: 0
   prod_thread_id: 0
+
+sale:
+  dex_share_pct: 52
+  creator_share_pct: 46

@@ -6,7 +6,7 @@ export enum Network {
 }
 
 export async function maybeBruteforceOverload<T>(
-    operation: Promise<T>,
+    operation: Promise<T> | T,
     retries = 4,
     maxDelay = 3350
 ): Promise<T> {

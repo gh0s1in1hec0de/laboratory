@@ -48,6 +48,10 @@ type Config = {
         dev_thread_id: number,
         prod_thread_id: number,
     },
+    sale: {
+        dex_share_pct: number,
+        creator_share_pct: number,
+    },
 }
 
 let config: Config | null = null;

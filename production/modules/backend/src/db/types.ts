@@ -38,9 +38,10 @@ export type PostDeployEnrollmentStats = {
 }
 
 export type DexData = {
-    jettonVaultAddress: RawAddressString,
-    poolAddress: RawAddressString,
+    jettonVaultAddress?: RawAddressString,
+    poolAddress?: RawAddressString,
     addedLiquidity: boolean,
+    payedToCreator: boolean,
 }
 
 export type StoredTokenLaunch = {

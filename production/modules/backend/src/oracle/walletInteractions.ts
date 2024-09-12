@@ -1,8 +1,9 @@
-import { type Coins, DEFAULT_SUB_WALLET } from "starton-periphery";
-import { mnemonicToWalletKey, sign } from "@ton/crypto";
+import { BASECHAIN, type Coins, DEFAULT_SUB_WALLET } from "starton-periphery";
+import { type KeyPair, mnemonicToWalletKey, sign } from "@ton/crypto";
 import { balancedTonClient } from "./api.ts";
-import { beginCell, Cell } from "@ton/core";
-import { Address } from "@ton/ton";
+import { beginCell, Cell, type OpenedContract } from "@ton/core";
+import { Address, WalletContractV4 } from "@ton/ton";
+import { chief } from "../config.ts";
 
 // TODO Maybe simplify with wallet contract
 export async function sendToWallet(wallet: {
@@ -59,4 +60,20 @@ export function buildInternalMessage(destination: Address, amount: Coins, body: 
         .storeBit(1) // We store body as a reference
         .storeRef(body)
         .endCell();
+}
+
+export async function getChiefWalletContract(): Promise<{
+    chiefKeyPair: KeyPair,
+    chiefWalletContract: OpenedContract<WalletContractV4>,
+}> {
+    const chiefKeyPair = await mnemonicToWalletKey(chief().mnemonic.split(" "));
+    const chiefWalletContract = await balancedTonClient.execute(
+        c => c.open(
+            WalletContractV4.create({
+                workchain: BASECHAIN,
+                publicKey: chiefKeyPair.publicKey,
+            })
+        )
+    );
+    return { chiefKeyPair, chiefWalletContract };
 }
