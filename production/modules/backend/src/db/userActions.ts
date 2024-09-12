@@ -22,6 +22,7 @@ export async function storeUserAction(
         (actor, token_launch, action_type, whitelist_tons, public_tons, jettons, timestamp, query_id)
         VALUES (${actor}, ${tokenLaunch}, ${actionType}, ${whitelistTons}, ${publicTons}, ${jettons}, ${timestamp},
                 ${queryId})
+        ON CONFLICT DO NOTHING
         RETURNING 1;
     `;
     assert(res.length === 1, `exactly 1 column must be created, got: ${res}`);

@@ -1,9 +1,12 @@
 import { balancedTonClient, retrieveAllUnknownTransactions } from "./api";
 import { ok as assert } from "node:assert";
+import { Address } from "@ton/ton";
 import { logger } from "../logger";
 import { delay } from "../utils";
 import * as db from "../db";
 import {
+    MAX_WL_ROUND_TON_LIMIT,
+    parseGetConfigResponse,
     type RawAddressString,
     parseBalanceUpdate,
     parseRefundOrClaim,
@@ -11,7 +14,9 @@ import {
     type LamportTime,
     loadOpAndQueryId,
     TokensLaunchOps,
+    parseMoneyFlows,
     UserVaultOps,
+    type Coins,
 } from "starton-periphery";
 
 export async function spawnNewLaunchesScanners(scanFrom?: Date) {
@@ -88,6 +93,24 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                         queryId
                     } as db.UserAction);
                 }
+                if (op === TokensLaunchOps.CreatorBuyout) {
+                    const moneyFlowsResponse = await balancedTonClient.execute(
+                        c => c.runMethod(Address.parse(launchAddress), "get_config", []), true
+                    );
+                    const {
+                        creatorFutJetBalance,
+                        creatorFutJetPriceReversed
+                    } = parseGetConfigResponse(moneyFlowsResponse.stack);
+                    const investedValue = creatorFutJetBalance * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
+
+                    const attachedValue: Coins = inMsg.info.value.coins ?? 0n;
+                    const cornerCase = investedValue > attachedValue;
+                    if (cornerCase) logger().error(`error in creator invested value calculations (${investedValue} > ${attachedValue}) for token launch ${launch.address}`);
+                    await db.updateLaunchBalance(
+                        launch.address,
+                        { creatorTonsCollected: cornerCase ? attachedValue * 98n / 100n : investedValue }
+                    );
+                }
 
                 // Here we'll handle only DEPOSITING operations
                 for (const [, msg] of tx.outMessages) {
@@ -124,6 +147,12 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                 }
             }
             currentHeight = newTxs[newTxs.length - 1].lt;
+            const moneyFlowsResponse = await balancedTonClient.execute(c => c.runMethod(Address.parse(launchAddress), "get_money_flows", []), true);
+            const { totalTonsCollected, wlRoundTonInvestedTotal } = parseMoneyFlows(moneyFlowsResponse.stack);
+            await db.updateLaunchBalance(launch.address, {
+                totalTonsCollected,
+                wlTonsCollected: wlRoundTonInvestedTotal
+            });
             await delay(balancedTonClient.delayValue());
         } catch (e) {
             logger().error(`failed to handle launch ${launchAddress} update with general error: ${e}`);

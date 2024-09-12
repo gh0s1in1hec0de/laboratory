@@ -90,7 +90,8 @@ EXECUTE FUNCTION update_user_balance();
 
 -- One user can't have more than 15 addresses
 CREATE OR REPLACE FUNCTION check_max_callers()
-    RETURNS TRIGGER AS $$
+    RETURNS TRIGGER AS
+$$
 BEGIN
     IF (SELECT COUNT(*) FROM callers WHERE "user" = NEW."user") >= 15 THEN
         RAISE EXCEPTION 'a user cannot have more than 5 callers';
@@ -100,7 +101,51 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trigger_check_max_callers
-    BEFORE INSERT ON callers
+    BEFORE INSERT
+    ON callers
     FOR EACH ROW
 EXECUTE FUNCTION check_max_callers();
+
+
+-- Automated balances creation
+CREATE OR REPLACE FUNCTION create_launch_balance()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    INSERT INTO launch_balances (token_launch)
+    VALUES (NEW.address);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_create_launch_balance
+    AFTER INSERT
+    ON token_launches
+    FOR EACH ROW
+EXECUTE FUNCTION create_launch_balance();
+
+-- We update only public tons via calculations as we are free to update other categories with direct getters' calls
+CREATE OR REPLACE FUNCTION update_launch_balance_public()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    IF NEW.action_type = 'public_buy' THEN
+        UPDATE launch_balances
+        SET pub_tons_collected = pub_tons_collected + NEW.public_tons
+        WHERE token_launch = NEW.token_launch;
+    ELSIF NEW.action_type = 'public_refund' THEN
+        UPDATE launch_balances
+        SET pub_tons_collected = GREATEST(pub_tons_collected - NEW.public_tons, 0)
+        WHERE token_launch = NEW.token_launch;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_launch_balance_public
+    AFTER INSERT
+    ON user_actions
+    FOR EACH ROW
+    WHEN (NEW.action_type IN ('public_buy', 'public_refund'))
+EXECUTE FUNCTION update_launch_balance_public();
 

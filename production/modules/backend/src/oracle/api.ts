@@ -63,8 +63,9 @@ export class BalancedTonClient {
         });
     }
 
-    async execute<T>(closure: (client: TonClient) => Promise<T> | T): Promise<T> {
-        return closure(await this.client());
+    // Verify its correctness
+    async execute<T>(closure: (client: TonClient) => Promise<T> | T, resend: boolean = false): Promise<T> {
+        return resend ? closure(await this.client()) : maybeBruteforceOverload<T>(closure(await this.client()));
     }
 
     incrementActiveLaunchesAmount() {
@@ -102,16 +103,14 @@ export async function getTransactionsForAccount(address: RawAddressString, to_lt
     lt: LamportTime,
     hash: string,
 }, archival = true, limit = 100) {
-    return await maybeBruteforceOverload<Transaction[]>(
-        balancedTonClient.execute(c =>
-            c.getTransactions(Address.parse(address), {
-                limit,
-                lt: from?.lt?.toString(),
-                hash: from?.hash,
-                to_lt: to_lt?.toString(),
-                archival
-            })
-        )
+    return balancedTonClient.execute(c =>
+        c.getTransactions(Address.parse(address), {
+            limit,
+            lt: from?.lt?.toString(),
+            hash: from?.hash,
+            to_lt: to_lt?.toString(),
+            archival
+        }), true
     );
 }
 

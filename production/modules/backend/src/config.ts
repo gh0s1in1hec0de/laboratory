@@ -1,3 +1,4 @@
+import type { GlobalVersions } from "starton-periphery";
 import YAML from "yaml";
 import path from "path";
 import fs from "fs";
@@ -21,6 +22,7 @@ type Config = {
             address: string,
             height: bigint | null,
             force_height: boolean,
+            version: GlobalVersions,
         }[],
         network: string,
         api: {
@@ -47,6 +49,10 @@ type Config = {
         chat_id: number,
         dev_thread_id: number,
         prod_thread_id: number,
+    },
+    sale: {
+        dex_share_pct: number,
+        creator_share_pct: number,
     },
 }
 

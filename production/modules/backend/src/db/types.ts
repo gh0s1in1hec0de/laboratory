@@ -13,6 +13,7 @@ import {
 
 type SqlTypes = { bigint: bigint };
 export type SqlClient = Sql<SqlTypes>;
+// DB entities
 
 export type StoredHeight = {
     contractAddress: RawAddressString,
@@ -38,9 +39,10 @@ export type PostDeployEnrollmentStats = {
 }
 
 export type DexData = {
-    jettonVaultAddress: RawAddressString,
-    poolAddress: RawAddressString,
+    jettonVaultAddress?: RawAddressString,
+    poolAddress?: RawAddressString,
     addedLiquidity: boolean,
+    payedToCreator: boolean,
 }
 
 export type StoredTokenLaunch = {
@@ -60,17 +62,12 @@ export type StoredTokenLaunch = {
     dexData: DexData | null,
 };
 
-export interface StoredTokenLaunchRequest {
-    page: number,
-    limit: number,
-    orderBy: TokenLaunchFields,
-    order: SortOrder,
-    search?: string,
-}
-
-export interface StoredTokenLaunchResponse {
-    storedTokenLaunch: StoredTokenLaunch[],
-    hasMore: boolean,
+export type LaunchBalances = {
+    tokenLaunch: RawAddressString,
+    creatorTonsCollected: Coins,
+    wlTonsCollected: Coins,
+    pubTonsCollected: Coins,
+    totalTonsCollected: Coins,
 }
 
 export enum UserActionType {
@@ -104,6 +101,7 @@ export type StoredUserBalance = {
     jettons: Coins,
 };
 
+// Helpers and periphery
 export const balanceUpdateModeToUserActionType: { [key in BalanceUpdateMode]: UserActionType } = {
     [BalanceUpdateMode.WhitelistDeposit]: UserActionType.WhiteListBuy,
     [BalanceUpdateMode.PublicDeposit]: UserActionType.PublicBuy,
@@ -115,4 +113,18 @@ export const balanceUpdateModeToUserActionType: { [key in BalanceUpdateMode]: Us
 export type StoredWhitelistRelations = {
     tokenLaunchAddress: string,
     callerAddress: string,
+}
+
+
+export interface StoredTokenLaunchRequest {
+    page: number,
+    limit: number,
+    orderBy: TokenLaunchFields,
+    order: SortOrder,
+    search?: string,
+}
+
+export interface StoredTokenLaunchResponse {
+    storedTokenLaunch: StoredTokenLaunch[],
+    hasMore: boolean,
 }

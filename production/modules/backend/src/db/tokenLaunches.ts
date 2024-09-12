@@ -1,13 +1,14 @@
-import type {
-    PostDeployEnrollmentStats,
-    SqlClient,
-    StoredTokenLaunch,
-    StoredTokenLaunchRequest,
-    StoredTokenLaunchResponse
-} from "./types";
-import type { RawAddressString } from "starton-periphery";
+import type { Coins, RawAddressString } from "starton-periphery";
 import { ok as assert } from "assert";
 import { globalClient } from "./db";
+import type {
+    StoredTokenLaunchResponse,
+    PostDeployEnrollmentStats,
+    StoredTokenLaunchRequest,
+    StoredTokenLaunch,
+    SqlClient,
+    DexData,
+} from "./types";
 
 export async function getTokenLaunch(address: RawAddressString, client?: SqlClient): Promise<StoredTokenLaunch | null> {
     const res = await (client ?? globalClient)<StoredTokenLaunch[]>`
@@ -43,7 +44,7 @@ export async function storeTokenLaunch(
     { identifier, address, creator, version, metadata, timings }:
         Omit<
             StoredTokenLaunch,
-            "createdAt" | "id" | "isSuccessful" | "postDeployEnrollmentStats" | "deployedPoolAddress"
+            "createdAt" | "id" | "isSuccessful" | "postDeployEnrollmentStats" | "dexData"
         >,
     client?: SqlClient
 ): Promise<void> {
@@ -97,11 +98,9 @@ export async function getTokenLaunchesByCategories(categories: EndedLaunchesCate
         SELECT *
         FROM token_launches
         WHERE now() > (timings ->> 'publicRoundEndTime')::TIMESTAMP
-        AND post_deploy_enrollment_stats IS NULL 
-            ${categories.includes(EndedLaunchesCategories.Pending) ? c`AND is_successful IS NULL` : c`AND is_successful IS TRUE`}
-            ${categories.includes(EndedLaunchesCategories.WaitingForJetton) ? c`AND post_deploy_enrollment_stats IS NULL` : c`AND post_deploy_enrollment_stats IS NOT NULL`}
-            ${categories.includes(EndedLaunchesCategories.WaitingForPool) ? c`dex_data IS NULL` : c``}
-        `;
+          AND post_deploy_enrollment_stats IS NULL
+            ${categories.includes(EndedLaunchesCategories.Pending) ? c`AND is_successful IS NULL` : c`AND is_successful IS TRUE`} ${categories.includes(EndedLaunchesCategories.WaitingForJetton) ? c`AND post_deploy_enrollment_stats IS NULL` : c`AND post_deploy_enrollment_stats IS NOT NULL`} ${categories.includes(EndedLaunchesCategories.WaitingForPool) ? c`AND (dex_data IS NULL OR (dex_data->>'addedLiquidity')::BOOLEAN = FALSE` : c``}
+    `;
     return res.length ? res : null;
 }
 
@@ -120,6 +119,36 @@ export async function updatePostDeployEnrollmentStats(tokenLaunchAddress: RawAdd
         UPDATE token_launches
         SET post_deploy_enrollment_stats = ${JSON.stringify(stats)},
             is_successful                = TRUE
+        WHERE address = ${tokenLaunchAddress}
+        RETURNING 1;
+    `;
+    assert(res.count === 1, "value was not updated");
+}
+
+export async function updateDexData(tokenLaunchAddress: RawAddressString, dexData: DexData, client?: SqlClient): Promise<void> {
+    const res = await (client ?? globalClient)`
+        UPDATE token_launches
+        SET dex_data = ${JSON.stringify(dexData)}
+        WHERE address = ${tokenLaunchAddress}
+        RETURNING 1;
+    `;
+    assert(res.count === 1, "value was not updated");
+}
+
+export async function updateLaunchBalance(tokenLaunchAddress: RawAddressString, params: {
+    creatorTonsCollected?: Coins,
+    wlTonsCollected?: Coins,
+    totalTonsCollected?: Coins,
+}, client?: SqlClient): Promise<void> {
+    const { creatorTonsCollected, wlTonsCollected, totalTonsCollected } = params;
+    assert(Object.values(params).some(value => value !== undefined), "bullshit");
+
+    const c = client ?? globalClient;
+    const res = await c`
+        UPDATE launch_balances
+        SET ${creatorTonsCollected ? c`creator_tons_collected = ${creatorTonsCollected}` : c``}
+                ${wlTonsCollected ? c`wl_tons_collected = ${wlTonsCollected}` : c``}
+                    ${totalTonsCollected ? c`total_tons_collected = ${totalTonsCollected}` : c``}
         WHERE address = ${tokenLaunchAddress}
         RETURNING 1;
     `;
