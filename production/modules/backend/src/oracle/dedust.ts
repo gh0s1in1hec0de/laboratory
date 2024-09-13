@@ -6,6 +6,7 @@ import { delay, Network } from "../utils.ts";
 import { logger } from "../logger.ts";
 import { Address } from "@ton/ton";
 import { toNano } from "@ton/core";
+import * as db from "../db";
 import {
     MAINNET_FACTORY_ADDR,
     ReadinessStatus,
@@ -15,15 +16,18 @@ import {
     Factory,
     Asset,
 } from "@dedust/sdk";
+import { updateDexData } from "../db";
 
 export async function createPoolForJetton(
     jetton: { ourWalletAddress: RawAddressString, masterAddress: RawAddressString },
     targetBalances: [Coins, Coins],
+    launchAddress: RawAddressString
 ): Promise<void> {
     try {
         const queryId = Date.now();
         logger().info(`pool deployment process started for jetton ${jetton.masterAddress} (query id ${queryId}); god bless it...`);
 
+        const dexData = (await db.getTokenLaunch(launchAddress))?.dexData;
         const { chiefKeyPair, chiefWalletContract } = await getChiefWalletContract();
         const sender = chiefWalletContract.sender(chiefKeyPair.secretKey);
         const asset = Asset.jetton(Address.parse(jetton.masterAddress));
@@ -38,15 +42,16 @@ export async function createPoolForJetton(
 
         let vaultIsReady = false;
         let vaultStatus: ReadinessStatus;
-        const jettonVault = await balancedTonClient.execute(() => factory.getJettonVault(Address.parse(jetton.masterAddress)));
-        const derivedJettonVaultContract = await balancedTonClient.execute(c => c.open(jettonVault));
+        const jettonVault = await balancedTonClient.execute(() => factory.getJettonVault(Address.parse(jetton.masterAddress)), true);
+        const jettonVaultContract = await balancedTonClient.execute(c => c.open(jettonVault));
 
         while (!vaultIsReady) {
-            vaultStatus = await balancedTonClient.execute(() => derivedJettonVaultContract.getReadinessStatus());
+            vaultStatus = await balancedTonClient.execute(() => jettonVaultContract.getReadinessStatus(), true);
             switch (vaultStatus) {
                 case ReadinessStatus.NOT_DEPLOYED: {
                     await balancedTonClient.execute(
-                        () => factory.sendCreateVault(sender, { queryId, asset })
+                        () => factory.sendCreateVault(sender, { queryId, asset }),
+                        true
                     );
                     await delay(30);
                     break;
@@ -64,15 +69,16 @@ export async function createPoolForJetton(
 
         let poolIsReady = false;
         let poolReadiness: ReadinessStatus;
-        const pool = await balancedTonClient.execute(() => factory.getPool(PoolType.VOLATILE, assets));
+        const pool = await balancedTonClient.execute(() => factory.getPool(PoolType.VOLATILE, assets), true);
         const poolContract = await balancedTonClient.execute(c => c.open(pool));
 
         while (!poolIsReady) {
-            poolReadiness = await balancedTonClient.execute(() => poolContract.getReadinessStatus());
+            poolReadiness = await balancedTonClient.execute(() => poolContract.getReadinessStatus(), true);
             switch (poolReadiness) {
                 case ReadinessStatus.NOT_DEPLOYED: {
                     await balancedTonClient.execute(
-                        () => factory.sendCreateVolatilePool(sender, { assets })
+                        () => factory.sendCreateVolatilePool(sender, { assets }),
+                        true
                     );
                     await delay(30);
                     break;
@@ -88,7 +94,7 @@ export async function createPoolForJetton(
             }
         }
 
-        const tonVault = await balancedTonClient.execute(() => factory.getNativeVault());
+        const tonVault = await balancedTonClient.execute(() => factory.getNativeVault(), true);
         const tonVaultContract = await balancedTonClient.execute(c => c.open(tonVault));
         await balancedTonClient.execute(() =>
             tonVaultContract.sendDepositLiquidity(sender, {
@@ -125,26 +131,42 @@ export async function createPoolForJetton(
             iterationNumber += 1;
             await delay(15 + iterationNumber * 3.5);
 
-            const [reserve1, reserve2] = await balancedTonClient.execute(() => poolContract.getReserves());
+            const [reserve1, reserve2] = await balancedTonClient.execute(() => poolContract.getReserves(), true);
             if (reserve1 > 0n && reserve2 > 0n) {
                 logger().info(`liquidity deposit [${reserve1}, ${reserve2}] confirmed for ${jetton.masterAddress} (pool: ${poolContract.address})`);
+
+                let newDexData: db.DexData;
+                if (dexData) {
+                    newDexData = dexData;
+                    newDexData.addedLiquidity = true;
+                    if (!newDexData.jettonVaultAddress) newDexData.jettonVaultAddress = jettonVaultContract.address.toRawString();
+                    if (!newDexData.poolAddress) newDexData.poolAddress = poolContract.address.toRawString();
+                } else { // Theoretically, it is unreachable code
+                    newDexData = {
+                        jettonVaultAddress: jettonVaultContract.address.toRawString(),
+                        poolAddress: poolContract.address.toRawString(),
+                        payedToCreator: false,
+                        addedLiquidity: true,
+                    };
+                }
+                await updateDexData(launchAddress, newDexData);
                 liquidityWasProvided = true;
             }
             if (iterationNumber > 10) logger().warn(`problems with liquidity deposit for for ${jetton.masterAddress} (pool: ${poolContract.address})`);
             else logger().info(`awaiting liquidity deposit for ${jetton.masterAddress} (pool: ${poolContract.address})`);
         }
 
-        const lpWallet = await balancedTonClient.execute(() => poolContract.getWallet(chiefWalletContract.address));
+        const lpWallet = await balancedTonClient.execute(() => poolContract.getWallet(chiefWalletContract.address), true);
         const lpWalletContract = await balancedTonClient.execute(c => c.open(lpWallet));
-        const lpBalance = await balancedTonClient.execute(() => lpWalletContract.getBalance());
-        await balancedTonClient.execute(() => {
+        const lpBalance = await balancedTonClient.execute(() => lpWalletContract.getBalance(), true);
+        await balancedTonClient.execute(() =>
             lpWalletContract.sendTransfer(sender, toNano("0.5"), {
                 queryId,
                 destination: BURN_ADDR,
                 amount: lpBalance,
                 responseAddress: chiefWalletContract.address
-            });
-        });
+            }), true
+        );
     } catch (e) {
         logger().error(`failed to create pool for jetton ${jetton.masterAddress}, au revoir! `, e);
     }

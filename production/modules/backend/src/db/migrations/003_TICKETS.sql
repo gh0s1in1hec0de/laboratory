@@ -19,7 +19,6 @@ CREATE TABLE whitelist_relations
     PRIMARY KEY (token_launch_address, caller_address)
 );
 
-
 CREATE OR REPLACE FUNCTION increment_ticket_balance()
     RETURNS TRIGGER AS
 $$

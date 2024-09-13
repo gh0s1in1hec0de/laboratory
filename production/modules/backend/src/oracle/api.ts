@@ -64,8 +64,8 @@ export class BalancedTonClient {
     }
 
     // Verify its correctness
-    async execute<T>(closure: (client: TonClient) => Promise<T> | T): Promise<T> {
-        return maybeBruteforceOverload<T>(closure(await this.client()));
+    async execute<T>(closure: (client: TonClient) => Promise<T> | T, resend: boolean = false): Promise<T> {
+        return resend ? closure(await this.client()) : maybeBruteforceOverload<T>(closure(await this.client()));
     }
 
     incrementActiveLaunchesAmount() {
@@ -110,7 +110,7 @@ export async function getTransactionsForAccount(address: RawAddressString, to_lt
             hash: from?.hash,
             to_lt: to_lt?.toString(),
             archival
-        })
+        }), true
     );
 }
 

@@ -62,7 +62,7 @@ export function parseGetConfigResponse(stack: TupleReader): GetConfigResponse {
     return {
         creatorFutJetBalance: stack.readBigNumber(),
         creatorFutJetLeft: stack.readBigNumber(),
-        creatorFutJetPrice: stack.readBigNumber(),
+        creatorFutJetPriceReversed: stack.readBigNumber(),
 
         wlRoundFutJetLimit: stack.readBigNumber(),
         pubRoundFutJetLimit: stack.readBigNumber(),

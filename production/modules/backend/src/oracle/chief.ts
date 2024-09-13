@@ -23,11 +23,16 @@ import {
 
 export async function chiefScanning() {
     while (true) {
-        await validateEndedPendingLaunches();
-        await delay(5);
-        await createPoolsForNewJettons();
-        await delay(60);
-        await handleChiefUpdates();
+        try {
+            await validateEndedPendingLaunches();
+            await delay(5);
+            await createPoolsForNewJettons();
+            await delay(60);
+            await handleChiefUpdates();
+        } catch (e) {
+            logger().error("interplanetary error on chief's side: ", e);
+            await delay(60);
+        }
     }
 }
 
@@ -41,8 +46,8 @@ async function validateEndedPendingLaunches() {
         const { address } = launch;
         const launchAddressParsed = Address.parse(address);
         const [moneyFlowsResponse, getConfigCallResponse,] = await Promise.all([
-            balancedTonClient.execute(c => c.runMethod(launchAddressParsed, "get_money_flows", [])),
-            balancedTonClient.execute(c => c.runMethod(launchAddressParsed, "get_config", [])),
+            balancedTonClient.execute(c => c.runMethod(launchAddressParsed, "get_money_flows", []), true),
+            balancedTonClient.execute(c => c.runMethod(launchAddressParsed, "get_config", []), true),
             delay(2)
         ]);
         const { totalTonsCollected } = parseMoneyFlows(moneyFlowsResponse.stack);
@@ -84,41 +89,53 @@ async function createPoolsForNewJettons() {
 
     const poolCreationProcesses: Promise<void>[] = [];
     for (const launch of waitingForPoolLaunches) {
-        const { deployedJetton, totalTonsCollected, dexAmount } = launch.postDeployEnrollmentStats!;
+        try {
+            const { deployedJetton, totalTonsCollected, dexAmount } = launch.postDeployEnrollmentStats!;
 
-        if (!launch.dexData?.payedToCreator) {
-            const { chiefKeyPair, chiefWalletContract } = await getChiefWalletContract();
-            const seqno = await chiefWalletContract.getSeqno();
-            await chiefWalletContract.sendTransfer({
-                seqno, secretKey: chiefKeyPair.secretKey,
-                messages: [internal({
-                    to: Address.parse(launch.creator),
-                    value: totalTonsCollected * BigInt(getConfig().sale.creator_share_pct / 100),
-                    bounce: true,
-                    body: beginCell()
-                        .storeUint(0, 32)
-                        .storeStringRefTail("Ladies and gentlemen, we have now arrived at our destination. Thank you again for flying Starton, and we hope to see you on board again soon.")
-                        .endCell()
-                })]
-            });
-            await db.updateDexData(launch.address, { addedLiquidity: false, payedToCreator: true });
+            if (!launch.dexData?.payedToCreator) {
+                const { chiefKeyPair, chiefWalletContract } = await getChiefWalletContract();
+                const seqno = await chiefWalletContract.getSeqno();
+                await chiefWalletContract.sendTransfer({
+                    seqno, secretKey: chiefKeyPair.secretKey,
+                    messages: [internal({
+                        to: Address.parse(launch.creator),
+                        value: totalTonsCollected * BigInt(getConfig().sale.creator_share_pct / 100),
+                        bounce: true,
+                        body: beginCell()
+                            .storeUint(0, 32)
+                            .storeStringRefTail("Ladies and gentlemen, we have now arrived at our destination. Thank you again for flying Starton, and we hope to see you on board again soon.")
+                            .endCell()
+                    })]
+                });
+                let newDexData: db.DexData;
+                if (launch.dexData) {
+                    newDexData = launch.dexData;
+                    newDexData.payedToCreator = true;
+                } else {
+                    newDexData = { addedLiquidity: false, payedToCreator: true };
+                }
+                await db.updateDexData(launch.address, newDexData);
+            }
+            poolCreationProcesses.push(
+                createPoolForJetton(
+                    {
+                        ourWalletAddress: deployedJetton.ourWalletAddress,
+                        masterAddress: deployedJetton.masterAddress,
+                    },
+                    [totalTonsCollected * BigInt(getConfig().sale.dex_share_pct / 100), dexAmount],
+                    launch.address
+                )
+            );
+        } catch (e) {
+            logger().warn(`failed to initiate pool creation process for launch ${launch.address} with error: `, e);
         }
-        poolCreationProcesses.push(
-            createPoolForJetton(
-                {
-                    ourWalletAddress: deployedJetton.ourWalletAddress,
-                    masterAddress: deployedJetton.masterAddress,
-                },
-                [totalTonsCollected * BigInt(getConfig().sale.dex_share_pct / 100), dexAmount]
-            )
-        );
     }
     await Promise.allSettled(poolCreationProcesses);
 }
 
 async function handleChiefUpdates() {
-    let currentHeight = await db.getHeight(chief().address) ?? 0n;
     try {
+        let currentHeight = await db.getHeight(chief().address) ?? 0n;
         const newTxs = await retrieveAllUnknownTransactions(chief().address, currentHeight);
         if (!newTxs.length) return;
         for (const tx of newTxs) {
@@ -149,7 +166,7 @@ async function handleChiefUpdates() {
                                 type: "slice",
                                 cell: beginCell().storeAddress(Address.parse(chief().address)).endCell()
                             }
-                        ])
+                        ]), true
                     )).stack.readAddress();
                 if (!jettonWallet.equals(sender)) {
                     // if sender is not our real JettonWallet: this message was faked

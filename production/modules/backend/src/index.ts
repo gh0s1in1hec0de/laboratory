@@ -1,5 +1,4 @@
 import { handleCoreUpdates, spawnNewLaunchesScanners, chiefScanning } from "./oracle";
-import { GlobalVersions } from "starton-periphery";
 import { getConfig } from "./config";
 import { getServer } from "./server";
 import { Address } from "@ton/ton";
@@ -24,10 +23,10 @@ async function main() {
     await getBot();
 
     // Separated logic for  core and launches indexing for better flexibility
-    for (const { address, height, force_height } of config.oracle.cores) {
+    for (const { address, height, force_height, version } of config.oracle.cores) {
         const formatted = Address.parse(address).toRawString();
         if (height) await db.setHeightForAddress(formatted, height, force_height);
-        handleCoreUpdates(formatted, GlobalVersions.V2A);
+        handleCoreUpdates(formatted, version);
     }
     spawnNewLaunchesScanners();
     chiefScanning();

@@ -1,28 +1,3 @@
-CREATE DOMAIN telegram_id AS VARCHAR(512);
-CREATE DOMAIN address AS VARCHAR(512);
-CREATE DOMAIN coins AS BIGINT CHECK ( VALUE >= 0 );
-
--- In fact will be used only as core height storage, but may be extended later
-CREATE TABLE heights
-(
-    contract_address address PRIMARY KEY,
-    height           BIGINT NOT NULL DEFAULT 0
-);
-
-CREATE TABLE users
-(
-    invited_by     telegram_id REFERENCES users (telegram_id),
-    telegram_id    telegram_id PRIMARY KEY,
-    nickname       TEXT,
-    ticket_balance SMALLINT NOT NULL DEFAULT 0
-);
-
-CREATE TABLE callers
-(
-    "user"  telegram_id REFERENCES users (telegram_id),
-    address address PRIMARY KEY
-);
-
 CREATE TYPE launch_version AS ENUM ('V1', 'V2A');
 CREATE TABLE token_launches
 (
@@ -87,4 +62,13 @@ CREATE TABLE user_balances
     public_tons    coins   NOT NULL DEFAULT 0,
     jettons        coins   NOT NULL DEFAULT 0,
     CONSTRAINT user_token_launch_unique UNIQUE (caller, token_launch)
+);
+
+CREATE TABLE launch_balances
+(
+    token_launch           address PRIMARY KEY REFERENCES token_launches (address),
+    creator_tons_collected coins NOT NULL DEFAULT 0,
+    wl_tons_collected      coins NOT NULL DEFAULT 0,
+    pub_tons_collected     coins NOT NULL DEFAULT 0,
+    total_tons_collected   coins NOT NULL DEFAULT 0
 );

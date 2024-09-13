@@ -11,6 +11,7 @@ oracle:
     - address: ""
       height: null
       force_height: false
+      version: "V2A" # "V1"
   network: "testnet"
   api:
     limit_per_second: 10

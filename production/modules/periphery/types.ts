@@ -34,7 +34,7 @@ export type LaunchData = {
 export type GetConfigResponse = {
     creatorFutJetBalance: Coins,
     creatorFutJetLeft: Coins,
-    creatorFutJetPrice: Coins,
+    creatorFutJetPriceReversed: Coins,
     wlRoundFutJetLimit: Coins,
     pubRoundFutJetLimit: Coins,
     futJetDexAmount: Coins,

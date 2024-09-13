@@ -15,7 +15,7 @@
     int creator_buyback_jet_limit = total_supply - (wl_jet_limit + pub_jet_limit + dex_jet_share + platform_share);
 
     {- Creator price dilemma
-       Here we store not price of one token, but price of one ton in terms of tokens
+       Here we store not price of one token, but price of one ton unit in terms of tokens
        To minimize inacurracy and chance of associated risks, we'll mult it by max value of ton_limit_for_wl_round
        We don't even need constraint for wl_jet_limit, as we won't get 0 even in case of wl_jet_limit = 1 ;)
 
