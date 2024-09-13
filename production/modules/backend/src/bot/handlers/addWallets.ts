@@ -1,10 +1,11 @@
-import { getCancelConversationKeyboard, getMenuKeyboard, getReplyText, isValidString } from "../constants";
+import { getCancelConversationKeyboard, getMenuKeyboard, getReplyText } from "../constants";
+import { isReadyUsersTasksToDb } from "./common";
 import type { MyContext, MyConversation } from "..";
 import type { CallbackQueryContext } from "grammy";
 import { logger } from "../../logger";
 import * as db from "../../db";
 
-export async function addWalletsToWhitelist(conversation: MyConversation, ctx: MyContext): Promise<void> {
+export async function addWalletsToRelations(conversation: MyConversation, ctx: MyContext): Promise<void> {
     /**
      * LEGACY
      */
@@ -31,16 +32,16 @@ export async function addWalletsToWhitelist(conversation: MyConversation, ctx: M
     //     );
     // } while (!res);
   
-    await ctx.reply(getReplyText("addressList"),
+    await ctx.reply(getReplyText("addressListRequest"),
         { parse_mode: "HTML", reply_markup: getCancelConversationKeyboard() }
     );
-  
+
     let progress = false;
     do {
         const { msg: { text } } = await conversation.waitFor("message:text");
-        const res = isValidString(text);
+        const res = isReadyUsersTasksToDb(text);
         if (!res) {
-            await ctx.reply(getReplyText("invalidAddresses"), {
+            await ctx.reply(getReplyText("invalidAddUsersTasksRelations"), {
                 parse_mode: "HTML",
                 reply_markup: getCancelConversationKeyboard()
             });
@@ -70,27 +71,4 @@ export async function addWalletsToWhitelist(conversation: MyConversation, ctx: M
   
     await ctx.reply(getReplyText("addWalletsSuccess"));
     return;
-}
-
-export async function handleEnterConversationCallback(ctx: CallbackQueryContext<MyContext>) {
-    await ctx.answerCallbackQuery();
-    await ctx.conversation.enter("addWalletsToWhitelist");
-}
-
-export async function handleBackToMenuCallback(ctx: CallbackQueryContext<MyContext>) {
-    await ctx.answerCallbackQuery();
-    await ctx.callbackQuery.message!.editText(getReplyText("menu"), {
-        parse_mode: "HTML",
-        reply_markup: getMenuKeyboard()
-    });
-    await ctx.answerCallbackQuery();
-}
-
-export async function handleCancelConversationCallback(ctx: CallbackQueryContext<MyContext>) {
-    await ctx.conversation.exit("addWalletsToWhitelist");
-    await ctx.answerCallbackQuery("Left conversation");
-    await ctx.reply(getReplyText("menu"), {
-        parse_mode: "HTML",
-        reply_markup: getMenuKeyboard()
-    });
 }

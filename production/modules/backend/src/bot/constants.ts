@@ -26,6 +26,11 @@ export const initSortData: StoredTokenLaunchRequest = {
     search: ""
 };
 
+export enum Conversations {
+    addWallets = "addWalletsToRelations",
+    createTask = "createTask",
+}
+
 // ٩(ఠ益ఠ)۶
 // 〜(＞_＜)〜
 // ╮(￣_￣)╭
@@ -44,10 +49,13 @@ const replies = {
     error: "I got an error. Try later 〜(＞_＜)〜",
     idRequest: "Send me <b>ID</b> of token launch (⊙_⊙)",
     invalidId: "Invalid <b>ID</b> (￣ヘ￣). Try again dumbass...",
-    addressList: "Send me <b>User Address</b> and <b>Task ID</b> (￣▽￣)ノ\nExample: <code>userAdr1|taskID1, userAdr2|taskID2</code>",
-    invalidAddresses: "Invalid <b>data</b> (￣ヘ￣). Try again dumbass...",
+    addressListRequest: "Send me <b>User Address</b> and <b>Task ID</b> (￣▽￣)ノ\nExample: <code>userAdr1|taskID1, userAdr2|taskID2</code>",
+    invalidAddUsersTasksRelations: "Invalid <b>data</b> (￣ヘ￣). Try again dumbass...",
     unknown: "I don't understand the language of people ╮(￣_￣)╭",
-    addWalletsSuccess: "Nice! Wallets successfully added! ＼(￣▽￣)／"
+    addWalletsSuccess: "Nice! Wallets successfully added! ＼(￣▽￣)／",
+    createTaskRequest: "What shall we call the task? ╮(￣_￣)╭",
+    invalidAddTasks: "Invalid <b>data</b> (￣ヘ￣). Try again dumbass...",
+    addTasksSuccess: "Nice! Tasks successfully added! ＼(￣▽￣)／",
 };
 
 export function getReplyText(key: keyof typeof replies): string {
@@ -77,8 +85,9 @@ export async function getUnknownMsgReply(ctx: MyContext) {
  */
 export function getMenuKeyboard(): InlineKeyboard {
     return new InlineKeyboard()
-        .text("list of token launches", "list_launches").row()
-        .text("wallets to whitelist", "add_wallets");
+        .text("list of token launches", "list_launches")
+        .text("wallets complete task", "add_wallets").row()
+        .text("add tasks", "add_task");
 }
 
 export function getListLaunchesKeyboard(hasMore: boolean, page: number): InlineKeyboard {
@@ -120,33 +129,4 @@ export async function getAdminFilter(ctx: MyContext | HearsContext<MyContext>): 
     }
 
     return true;
-}
-
-
-/**
- * UTILS
- */
-const map: Map<string, string[]> = new Map();
-
-export function isValidString(str: string): Map<string, string[]> | null {
-    map.clear();
-    const pairs = str.split(",");
-
-    for (const pair of pairs) {
-        const [userAddress, taskId] = pair.split("|");
-        
-        if (!userAddress?.trim() || !taskId?.trim()) return null;
-        // || Address.isAddress(userAddress.trim())
-        
-        const trimmedAddress = userAddress.trim();
-        const trimmedId = taskId.trim();
-        
-        if (map.has(trimmedAddress)) {
-            map.get(trimmedAddress)?.push(trimmedId);
-        } else {
-            map.set(trimmedAddress, [trimmedId]);
-        }
-    }
-  
-    return map;
 }

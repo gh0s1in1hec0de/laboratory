@@ -13,9 +13,9 @@ describe("Database", () => {
 
     beforeAll(async () => {
         client = postgres({
-            host: "localhost",
+            host: process.env.POSTGRES_HOST,
             port: 5432,
-            database: process.env.POSTGRES_TEST_DB,
+            database: process.env.POSTGRES_DB,
             username: process.env.POSTGRES_USER,
             password: process.env.POSTGRES_PASSWORD,
             types: { bigint: postgres.BigInt },
@@ -28,23 +28,22 @@ describe("Database", () => {
         await client.end();
     });
   
-    beforeEach(async () => {
-        await client`
-        TRUNCATE 
-            heights,
-            users,
-            callers,
-            token_launches,
-            user_actions,
-            user_balances,
-            user_balance_errors,
-            sale_whitelists,
-            tasks,
-            users_tasks_relation,
-            whitelist_relations
-        RESTART IDENTITY CASCADE;
-    `;
-    });
+    // beforeEach(async () => {
+    //     await client`
+    //     TRUNCATE
+    //         callers,
+    //         heights,
+    //         tasks,
+    //         token_launches,
+    //         user_actions,
+    //         user_balance_errors,
+    //         user_balances,
+    //         users,
+    //         users_tasks_relations,
+    //         whitelist_relations
+    //     RESTART IDENTITY CASCADE;
+    // `;
+    // });
   
     test.skip("migration being applied correctly", async () => {
         const directoryPath = path.join(__dirname, "../src/db/migrations");
@@ -86,25 +85,33 @@ describe("Database", () => {
         END;
         $$;`
         );
-    
+
         await client.unsafe(`
         DO
         $$
         BEGIN
             FOR i IN 1..20 LOOP
-                INSERT INTO token_launches (address, creator, name, metadata, timings)
+                INSERT INTO token_launches (
+                    identifier, address, creator, version, metadata, timings, created_at, is_successful, post_deploy_enrollment_stats, dex_data
+                )
                 VALUES (
+                    'TokenLaunch_' || i,
                     '0x' || lpad(to_hex(i), 48, '0'),
                     '${randUserAddress}',
-                    'TokenLaunch_' || i,
+                    'V1',  -- версия лаунча
                     ('{"description": "Test metadata for launch ' || i || '"}')::jsonb,
-                    '{"start_time": "2024-09-01T00:00:00", "end_time": "2024-09-30T23:59:59"}'::jsonb
+                    '{"start_time": "2024-09-01T00:00:00", "end_time": "2024-09-30T23:59:59"}'::jsonb,
+                    NOW(),
+                    NULL,  
+                    NULL,  
+                    NULL   
                 );
             END LOOP;
         END;
-        $$;`
-        );
-    
+        $$;
+        `);
+
+
         const users = await client`SELECT *
                                FROM users;`;
         expect(users.length).toBe(1);
