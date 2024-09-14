@@ -34,12 +34,9 @@
     "yaml": "^2.5.0"
   },
   "scripts": {
-    "backend": "bun run src/index.ts",
-    "backend:dev": "bun run --hot src/index.ts",
+    "start": "bun run src/index.ts",
+    "start:dev": "bun run --hot src/index.ts",
     "lint": "bun run eslint .",
-    "lint:fix": "bun run eslint . --fix",
-    "build": "bun build src/**/*.ts --target bun --outdir ./build",
-    "build:prod": "bun build src/**/*.ts --target bun --outdir ./build --minify",
-    "start": "bun run ./build/src/index.js"
+    "lint:fix": "bun run eslint . --fix"
   }
 }

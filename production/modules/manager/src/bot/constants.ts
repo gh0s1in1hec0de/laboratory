@@ -25,6 +25,11 @@ export const initSortData: StoredTokenLaunchRequest = {
     search: ""
 };
 
+export enum Conversations {
+    addWallets = "addWalletsToRelations",
+    createTask = "createTask",
+}
+
 // ٩(ఠ益ఠ)۶
 // 〜(＞_＜)〜
 // ╮(￣_￣)╭

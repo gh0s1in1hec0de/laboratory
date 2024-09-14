@@ -4,7 +4,6 @@ import { getServer } from "./server";
 import { Address } from "@ton/ton";
 import { greeting } from "./utils";
 import { logger } from "./logger";
-import { getBot } from "./bot";
 import dotenv from "dotenv";
 import * as db from "./db";
 
@@ -16,7 +15,6 @@ logger().debug(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_U
 
 async function main() {
     getServer();
-    await getBot();
 
     // Separated logic for  core and launches indexing for better flexibility
     for (const { address, height, force_height, version } of config.oracle.cores) {

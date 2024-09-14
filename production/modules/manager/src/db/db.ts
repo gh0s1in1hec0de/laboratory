@@ -11,11 +11,11 @@ export const globalClient = await createPostgresClient();
 export async function createPostgresClient(): Promise<SqlClient> {
     if (!cachedGlobalClient) {
         cachedGlobalClient = postgres({
-            host: process.env.POSTGRES_HOST,
+            host: "localhost",
             port: 5432,
-            database: process.env.POSTGRES_DB,
-            username: process.env.POSTGRES_USER,
-            password: process.env.POSTGRES_PASSWORD,
+            database: "launchpad",
+            username: "dev",
+            password: "dev_pass",
             types: { bigint: postgres.BigInt },
             transform: postgres.camel,
             max: 10

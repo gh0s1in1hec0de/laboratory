@@ -1,0 +1,18 @@
+FROM oven/bun:latest
+RUN apt-get update && apt-get install -y postgresql-client
+
+# Create the main directory and set working directory
+WORKDIR /app
+
+# Copy the periphery package at the same level as the oracle directory
+COPY . /app
+COPY .env /app/modules/manager
+
+# Install dependencies using bun (including periphery from the correct relative path)
+RUN bun install
+
+# Expose the necessary port (adjust as needed)
+EXPOSE 3001
+
+# Command to start your service with bun
+CMD bun run manager

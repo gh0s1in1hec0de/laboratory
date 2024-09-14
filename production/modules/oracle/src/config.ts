@@ -37,10 +37,6 @@ type Config = {
             version: string,
         },
     },
-    bot: {
-        token: string,
-        admins: number[],
-    },
     logger: {
         bot_token: string,
         chat_id: number,
