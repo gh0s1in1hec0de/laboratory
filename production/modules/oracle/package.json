@@ -1,0 +1,45 @@
+{
+  "name": "backend",
+  "module": "src/index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@ton/test-utils": "^0.4.2",
+    "@types/bun": "latest",
+    "@typescript-eslint/eslint-plugin": "^7.16.0",
+    "@typescript-eslint/parser": "^7.16.0",
+    "eslint": "^8",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "starton-periphery": "file:../periphery",
+    "@orbs-network/ton-access": "^2.3.3",
+    "winston-daily-rotate-file": "^5.0.0",
+    "winston-telegram": "^2.7.0",
+    "@grammyjs/conversations": "^1.2.0",
+    "@grammyjs/hydrate": "^1.4.1",
+    "@elysiajs/swagger": "^1.1.1",
+    "@ton/core": "^0.56.3",
+    "@ton/crypto": "^3.3.0",
+    "@ton/ton": "^14.0.0",
+    "@dedust/sdk": "^0.8.7",
+    "dotenv": "^16.4.5",
+    "elysia": "^1.1.6",
+    "grammy": "^1.29.0",
+    "postgres": "^3.4.4",
+    "winston": "^3.14.2",
+    "yaml": "^2.5.0"
+  },
+  "scripts": {
+    "backend": "bun run src/index.ts",
+    "backend:dev": "bun run --hot src/index.ts",
+    "lint": "bun run eslint .",
+    "lint:fix": "bun run eslint . --fix",
+    "build": "bun build src/**/*.ts --target bun --outdir ./build",
+    "build:prod": "bun build src/**/*.ts --target bun --outdir ./build --minify",
+    "start": "bun run ./build/src/index.js"
+  }
+}

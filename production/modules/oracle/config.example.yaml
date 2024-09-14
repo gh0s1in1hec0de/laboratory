@@ -1,7 +1,5 @@
 # if not - console.debug will not be shown
 mode: "dev"
-db:
-  should_migrate: false
 
 oracle:
   chief:

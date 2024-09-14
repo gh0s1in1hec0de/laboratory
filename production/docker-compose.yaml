@@ -2,24 +2,40 @@ services:
   db:
     image: postgres:latest
     env_file:
-      - modules/backend/.env.docker
+      - .env.docker
     volumes:
-      - ./modules/backend/postgres-data:/var/lib/postgresql/data
+      - ./postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
 
-  app:
+  oracle:
     # We don't need such a verbose build description rn, but later it may be useful
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./oracle/Dockerfile
     working_dir: /app
     volumes:
-      - .:/app
+      - ./oracle:/app
     env_file:
-      - modules/backend/.env.docker
-    command: sh -c "until pg_isready -h db -p 5432; do echo 'waiting for database...'; sleep 1; done; bun install && bun run modules/backend/src/index.ts"
+      - .env.docker
+    command: sh -c "until pg_isready -h db -p 5432; do echo 'waiting for database...'; sleep 1; done; bun install && bun run modules/oracle/src/index.ts"
     depends_on:
       - db
     ports:
       - "3000:3000"
+
+  manager:
+    # We don't need such a verbose build description rn, but later it may be useful
+    build:
+      context: .
+      dockerfile: ./manager/Dockerfile
+    working_dir: /app
+    volumes:
+      - ./manager:/app
+    env_file:
+      - .env.docker
+    command: sh -c "until pg_isready -h db -p 5432; do echo 'waiting for database...'; sleep 1; done; bun install && bun run modules/manager/src/index.ts"
+    depends_on:
+      - db
+    ports:
+      - "3001:3000"

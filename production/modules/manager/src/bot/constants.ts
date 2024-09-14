@@ -1,4 +1,3 @@
-import { Address } from "@ton/ton";
 import type { StoredTokenLaunch, StoredTokenLaunchRequest } from "../db";
 import { SortOrder, TokenLaunchFields } from "starton-periphery";
 import { type HearsContext, InlineKeyboard } from "grammy";
@@ -31,18 +30,17 @@ export const initSortData: StoredTokenLaunchRequest = {
 // ╮(￣_￣)╭
 // ＼(￣o￣)／
 // (￣ヘ￣)
-// (⊙_⊙)
 // (￣▽￣)ノ
 
 /**
  * REPLY
  */
 const replies = {
-    start: "<b>Hello, I'm Starton!</b> (￣▽￣)ノ\nClick /menu to get started",
+    start: "<b>Hello, I'm starton task manager !</b> (￣▽￣)ノ\nClick /menu to get started",
     menu: "<b>What would you like to do?</b> ＼(￣o￣)／",
     noLaunches: "Sorry, there are no token launches available at the moment (￣ヘ￣)",
     error: "Oops! An error occurred. Please try again later 〜(＞_＜)〜",
-    idRequest: "Please send me the <b>ID</b> of the token launch (⊙_⊙)",
+    idRequest: "Please send me the <b>ID</b> of the token launch: ",
     invalidId: "Oops! That's an invalid <b>ID</b> (￣ヘ￣). Please try again...",
     addressList: "Please send me the <b>User Address</b> and <b>Task ID</b> (￣▽￣)ノ\nExample: <code>userAddr1|taskID1, userAddr2|taskID2</code>",
     invalidAddresses: "Oops! That's invalid <b>data</b> (￣ヘ￣). Please try again...",
@@ -69,7 +67,6 @@ export function getLaunchesReply(storedTokenLaunch: StoredTokenLaunch[]): string
 export async function getUnknownMsgReply(ctx: MyContext) {
     await ctx.reply(getReplyText("unknown"));
 }
-
 
 /**
  * KEYBOARDS
@@ -101,7 +98,6 @@ export function getCancelConversationKeyboard(): InlineKeyboard {
         .text("cancel", "cancel_conv").row();
 }
 
-
 /**
  * FILTERS
  */
@@ -120,7 +116,6 @@ export async function getAdminFilter(ctx: MyContext | HearsContext<MyContext>): 
 
     return true;
 }
-
 
 /**
  * UTILS

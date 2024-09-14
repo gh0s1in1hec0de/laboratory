@@ -1,9 +1,6 @@
 import type { SqlClient } from "./types";
 import { logger } from "../logger";
 import postgres from "postgres";
-import * as path from "path";
-import * as fs from "fs";
-
 /*
   TODO Verify if it is needed to do JSON.stringify() in queries?
 */
@@ -29,26 +26,4 @@ export async function createPostgresClient(): Promise<SqlClient> {
         });
     }
     return cachedGlobalClient;
-}
-
-export async function applyMigrations(customPath?: string, client?: SqlClient) {
-    const directoryPath = customPath ?? path.join(__dirname, "migrations");
-    const files = fs.readdirSync(directoryPath).sort();
-  
-    try {
-        // Open a transaction
-        await (globalClient ?? client).begin(async sql => {
-            for (const file of files) {
-                try {
-                    const migration = fs.readFileSync(path.join(directoryPath, file), "utf-8");
-                    // Here we call text we got from migration .sql file as a query
-                    await sql.unsafe(migration);
-                } catch (_e) {
-                    logger().info(`seems like migration ${file} had already been applied`);
-                }
-            }
-        });
-    } catch (e) {
-        logger().error(`fail to apply migrations: ${e}`);
-    }
 }

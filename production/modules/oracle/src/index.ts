@@ -13,10 +13,6 @@ greeting();
 const config = getConfig();
 
 logger().debug(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_USER} | ${process.env.POSTGRES_PASSWORD}`);
-if (config.db.should_migrate) {
-    logger().info("applying migrations to clean database...");
-    await db.applyMigrations();
-}
 
 async function main() {
     getServer();

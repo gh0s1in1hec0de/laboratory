@@ -1,0 +1,15 @@
+# if not - console.debug will not be shown
+mode: "dev"
+
+server:
+  port: 3001
+
+bot:
+  token: ""
+  admins: [ 1111, 2222 ]
+
+logger:
+  bot_token: ""
+  chat_id: -0
+  dev_thread_id: 0
+  prod_thread_id: 0
