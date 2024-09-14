@@ -1,5 +1,9 @@
 {
+<<<<<<<< HEAD:production/modules/oracle/package.json
   "name": "oracle",
+========
+  "name": "manager",
+>>>>>>>> origin/microservices:production/modules/backend/package.json
   "module": "src/index.ts",
   "type": "module",
   "devDependencies": {
