@@ -1,4 +1,4 @@
-import { getSortedTokenLaunches, type StoredTokenLaunchRequest, type StoredTokenLaunchResponse } from "../../../db";
+import * as db from "../../../db";
 import { logger } from "../../../logger";
 import { ok as assert } from "assert";
 
@@ -8,9 +8,9 @@ export async function getTokenLaunches({
     order,
     search = "",
     limit
-}: StoredTokenLaunchRequest): Promise<StoredTokenLaunchResponse | undefined> {
+}: db.StoredTokenLaunchRequest): Promise<db.StoredTokenLaunchResponse | undefined> {
     try {
-        const res = await getSortedTokenLaunches({
+        const res = await db.getSortedTokenLaunches({
             page,
             limit,
             orderBy,
