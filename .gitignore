@@ -3,10 +3,14 @@ node_modules/
 postgres-data
 logs
 
-production/backend/.env
-production/backend/config.yaml
-
 **/yarn.lock
 **/.yarnrc.yml
 **/.yarn
 **/.lockb
+
+# Ignore all config.yaml files
+**/config.yaml
+
+.env
+.env.*
+!.env.example
