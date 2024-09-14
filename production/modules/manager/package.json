@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "manager",
   "module": "src/index.ts",
   "type": "module",
   "devDependencies": {

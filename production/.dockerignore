@@ -7,7 +7,7 @@ postgres-data
 **/docker-compose.yaml
 
 .git
-.gitignore
+modules/manager/.gitignore
 
 *.log
 *.tmp

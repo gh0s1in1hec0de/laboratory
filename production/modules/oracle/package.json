@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "oracle",
   "module": "src/index.ts",
   "type": "module",
   "devDependencies": {
