@@ -6,13 +6,9 @@ WORKDIR /app
 
 # Copy the periphery package at the same level as the oracle directory
 COPY . /app
-COPY .env /app/modules/manager
+RUN rm -f .env && mv .env.docker .env
 
-# Install dependencies using bun (including periphery from the correct relative path)
 RUN bun install
+EXPOSE 3000
 
-# Expose the necessary port (adjust as needed)
-EXPOSE 3001
-
-# Command to start your service with bun
-CMD bun run manager
+CMD bun run oracle

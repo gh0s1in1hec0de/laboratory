@@ -10,9 +10,7 @@ services:
 
   oracle:
     # We don't need such a verbose build description rn, but later it may be useful
-    build:
-      context: .
-      dockerfile: ./oracle/Dockerfile
+    build: .
     working_dir: /app
     volumes:
       - ./oracle:/app
@@ -26,9 +24,7 @@ services:
 
   manager:
     # We don't need such a verbose build description rn, but later it may be useful
-    build:
-      context: .
-      dockerfile: ./manager/Dockerfile
+    build: .
     working_dir: /app
     volumes:
       - ./manager:/app

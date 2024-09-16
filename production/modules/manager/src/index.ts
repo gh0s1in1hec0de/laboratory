@@ -6,7 +6,6 @@ dotenv.config();
 
 logger().debug(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_USER} | ${process.env.POSTGRES_PASSWORD}`);
 
-
 async function main() {
     await getBot();
 }
