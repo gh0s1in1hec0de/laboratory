@@ -44,8 +44,11 @@ docker run -d \
         --name manager-service \
         --network starlink \
         -v $(pwd)/modules/logs[manager]:/app/modules/logs[manager] \
+        -v $(pwd)/modules/manager/config.yaml:/app/modules/manager/config.yaml \
         manager:latest
 ```
+We also create volumes for logging and dynamic config parsing here.
+
 ### Step 5: Verify Network Connectivity Between Containers
 #### 1. Inspect the Network:
 
@@ -70,4 +73,24 @@ docker network connect --alias db starlink database
 Now, inside the `manager-service`, We can use the alias db to connect:
 ```bash
 psql -h db -U example_user -d example_db
+```
+
+### Bonus 
+To save time here is unified command for all the services - just set the name:
+```bash
+service="manager" docker run -d \
+  --name ${service}-service \
+  --network starlink \
+  -v $(pwd)/modules/logs[${service}]:/app/modules/logs[${service}] \
+  -v $(pwd)/modules/${service}/config.yaml:/app/modules/${service}/config.yaml \
+  ${service}:latest
+```
+P.S. fishell version looks like this:
+```bash
+service="manager" docker run -d \
+        --name {$service}-service \
+        --network starlink \
+        -v $(pwd)/modules/logs[{$service}]:/app/modules/logs[{$service}] \
+        -v $(pwd)/modules/{$service}/config.yaml:/app/modules/{$service}/config.yaml \
+        {$service}:latest
 ```
