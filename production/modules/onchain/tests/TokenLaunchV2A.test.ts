@@ -42,9 +42,8 @@ import {
 } from "@ton/core";
 import { packLaunchConfigToCellV2A } from "../wrappers/utils";
 
-/* TODO
+/* To find out:
     1. At some reason on-chain state always more on 102 bits that our off-chain calculation
-    2. For all types of buys it is necessary to add contract balance validation to make sure we are not accounting non-existent TONs on contract's balance
 */
 
 const MAINNET_MOCK = !!process.env.MAINNET_MOCK;

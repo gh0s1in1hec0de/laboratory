@@ -21,7 +21,6 @@ export function tokenMetadataToCell(content: TokenMetadata): Cell {
         .endCell();
 }
 
-
 export function endParse(slice: Slice) {
     if (slice.remainingBits > 0 || slice.remainingRefs > 0) {
         throw new Error("remaining bits in data");
@@ -38,6 +37,12 @@ export function jettonToNano(amount: number | bigint | string, decimals: number 
 export function jettonFromNano(amount: number | bigint | string, decimals: number = 6) {
     assert(decimals <= 9, "not supported yet");
     return fromNano(decimals < 9 ? BigInt(amount) * BigInt(9 - decimals) : amount);
+}
+
+// Just for clarity
+export function toPct(percents: number) {
+    assert(percents >= 0 && percents <= 100, "you dumbass");
+    return percents * 1000;
 }
 
 export function getQueryId() {
