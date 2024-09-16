@@ -3,7 +3,6 @@ postgres-data
 modules/onchain
 
 # We don't need em inside container
-**/Dockerfile
 **/**.Dockerfile
 **/docker-compose.yaml
 **/bun.lockb

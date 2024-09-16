@@ -11,7 +11,6 @@ postgres-data
 
 # Ignore all config.yaml files
 **/config.yaml
-
 .env
 .env.*
 !.env.example
