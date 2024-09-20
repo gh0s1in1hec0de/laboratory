@@ -13,7 +13,7 @@ export async function run(provider: NetworkProvider) {
 
     const chief = Address.parse("fill in");
 
-    // The app's code is its configuration - shout out to suckless folks
+    // The app's code is its configuration - shout out to suckless.org folks
     try {
         const ONE_HOUR_SEC = 3600;
         const launchConfig: LaunchConfigV2A = {
@@ -44,7 +44,7 @@ export async function run(provider: NetworkProvider) {
                 coreCode
             )
         );
-
+        ui.write(`Expected core address: ${core.address}`);
         await core.sendDeploy({ via: provider.sender(), value: toNano("amount to attach") });
         ui.write("Transaction sent");
     } catch (e: any) {

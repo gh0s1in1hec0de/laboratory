@@ -16,12 +16,11 @@ import {
 
 export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersion: GlobalVersions) {
     let currentHeight = await db.getHeight(coreAddress) ?? 0n;
-    let iteration = 0;
     while (true) {
         try {
             const newTxs = await retrieveAllUnknownTransactions(coreAddress, currentHeight);
             if (!newTxs.length) {
-                await delay(5);
+                await delay(30);
                 continue;
             }
             for (const tx of newTxs) {
@@ -58,8 +57,7 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
                 }
             }
             currentHeight = newTxs[newTxs.length - 1].lt;
-            iteration += 1;
-            if (iteration % 5 === 0) await db.setHeightForAddress(coreAddress, currentHeight, true);
+            await db.setHeightForAddress(coreAddress, currentHeight, true);
             await delay(60);
         } catch (e) {
             logger().error(`failed to load new launches for core(${coreAddress}) update with error: ${e}`);

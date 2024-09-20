@@ -1,3 +1,4 @@
+export * from "./highloadWallet";
 export * from "./calculations";
 export * from "./standards";
 export * from "./parsers";

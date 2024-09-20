@@ -1,3 +1,4 @@
+import axios, { type AxiosAdapter, type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { currentNetwork, getConfig, mainnetKeys, testnetKeys } from "../config";
 import { Address, TonClient, TonClient4, type Transaction } from "@ton/ton";
 import type { LamportTime, RawAddressString } from "starton-periphery";
@@ -37,6 +38,42 @@ class RateLimiter {
     }
 }
 
+const customAxiosAdapter: AxiosAdapter = async (config: AxiosRequestConfig): Promise<AxiosResponse<any>> => {
+    const maxRetries = 4;
+    const initialDelay = 1000;
+    const maxDelay = 3500;
+
+    let attempt = 1;
+    let delay = initialDelay;
+    let lastError = null;
+    const maybeUrl = [config.baseURL, config.url].filter(Boolean).join("");
+
+    while (attempt <= maxRetries) {
+        const randomDelay = Math.floor(Math.random() * 1000); // Random jitter to avoid thundering herd issues
+        const waitTime = Math.min(delay + randomDelay, maxDelay); // Calculate the wait time with jitter
+
+        try {
+            // Using axios directly to make the request
+            const response = await axios(config);
+            return response; // If successful, return the response
+        } catch (e) {
+            lastError = e;
+
+            logger().warn(`Request attempt #${attempt}${maybeUrl.length > 0 ? ` for ${maybeUrl}` : ""} failed with error:`, e);
+
+            if (attempt === maxRetries)
+                throw new Error(`Request${maybeUrl.length > 0 ? ` for ${maybeUrl}` : ""} failed after ${attempt} attempts: ${e}`);
+        }
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+
+        // Exponential backoff for next retry
+        delay = Math.min(delay * 2, maxDelay);
+        attempt++;
+    }
+    // Shouldn't be reached in fact
+    throw lastError;
+};
+
 export class BalancedTonClient {
     private readonly keys: string[];
     private currentKeyIndex: number;
@@ -46,7 +83,7 @@ export class BalancedTonClient {
     constructor(network: Network) {
         this.currentKeyIndex = 0;
         this.activeLaunchesNumber = 0;
-        this.keys = network == Network.Testnet ? testnetKeys() : mainnetKeys();
+        this.keys = network === Network.Testnet ? testnetKeys() : mainnetKeys();
         this.rateLimiter = new RateLimiter(getConfig().oracle.api.limit_per_second);
     }
 
@@ -58,14 +95,15 @@ export class BalancedTonClient {
 
         logger().debug(` - tonclient apikey for operation: ${apiKey}`);
         return new TonClient({
-            endpoint: `https://${currentNetwork() === "testnet" ? "testnet." : ""}toncenter.com/api/v2/jsonRPC`,
+            endpoint: `https://${currentNetwork() === Network.Testnet ? "testnet." : ""}toncenter.com/api/v2/jsonRPC`,
+            httpAdapter: customAxiosAdapter,
             apiKey
         });
     }
 
-    // Verify its correctness
-    async execute<T>(closure: (client: TonClient) => Promise<T> | T, resend: boolean = false): Promise<T> {
-        return resend ? closure(await this.client()) : maybeBruteforceOverload<T>(closure(await this.client()));
+    // Verify its correctness; TODO Remove resend after confirmation that `customAxiosAdapter` works as expected
+    async execute<T>(closure: (client: TonClient) => Promise<T> | T, _resend: boolean = false): Promise<T> {
+        return closure(await this.client());
     }
 
     incrementActiveLaunchesAmount() {

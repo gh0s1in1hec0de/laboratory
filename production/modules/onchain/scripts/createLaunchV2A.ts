@@ -1,7 +1,7 @@
-import { compile, NetworkProvider } from "@ton/blueprint";
-import { Address, toNano } from "@ton/core";
+import { NetworkProvider } from "@ton/blueprint";
 import { LaunchParams } from "../wrappers/types";
 import { CoreV2A } from "../wrappers/CoreV2A";
+import { Address, toNano } from "@ton/core";
 
 // TODO to add custom config support later
 export async function run(provider: NetworkProvider) {

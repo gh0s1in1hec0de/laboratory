@@ -1,4 +1,4 @@
-import { buildInternalMessage, getChiefWalletContract, sendToWallet } from "./walletInteractions.ts";
+import { buildInternalMessage, getChiefWalletContract, sendToWallet } from "./highload/walletInteractions.ts";
 import { balancedTonClient, retrieveAllUnknownTransactions } from "./api.ts";
 import { createPoolForJetton } from "./dedust.ts";
 import { chief, getConfig } from "../config.ts";

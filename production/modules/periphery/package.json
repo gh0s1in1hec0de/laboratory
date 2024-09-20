@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ton/core": "^0.56.3",
-    "@ton/ton": "^14.0.0"
+    "@ton/ton": "^14.0.0",
+    "ton-crypto": "^3.2.0"
   }
 }
