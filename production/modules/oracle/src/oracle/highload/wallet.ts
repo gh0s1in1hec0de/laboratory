@@ -2,8 +2,8 @@ import { CachedHighloadQueryIdManager } from "./CachedHighloadQueryIdManager";
 import { type KeyPair, mnemonicToWalletKey } from "@ton/crypto";
 import { Address, type OpenedContract } from "@ton/ton";
 import { HighloadWalletV3 } from "starton-periphery";
-import { balancedTonClient } from "../api.ts";
-import { chief } from "../../config.ts";
+import { balancedTonClient } from "../api";
+import { chief } from "../../config";
 
 
 let keyPair: KeyPair | null = null;
@@ -22,5 +22,5 @@ export async function chiefWalletData(): Promise<{
         );
     }
     if (!queryIdManager) queryIdManager = await CachedHighloadQueryIdManager.fromAddress(chief().address);
-    return { wallet, queryIdManager };
+    return { keyPair, wallet, queryIdManager };
 }
