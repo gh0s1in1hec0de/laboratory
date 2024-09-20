@@ -1,4 +1,4 @@
-import { type CompositeHighloadQueryId, HighloadQueryIdManager, type RawAddressString } from "starton-periphery";
+import { HighloadQueryIdManager, type RawAddressString } from "starton-periphery";
 import * as db from "../../db";
 
 export class CachedHighloadQueryIdManager extends HighloadQueryIdManager {
@@ -9,12 +9,12 @@ export class CachedHighloadQueryIdManager extends HighloadQueryIdManager {
         this.cacheAddress = cacheAddress;
     }
 
-    async getNextCached(): Promise<CompositeHighloadQueryId> {
-        const next = super.getNext();
-        const equalSeqno = HighloadQueryIdManager.calculateQueryId(next.shift, next.bitnumber);
+    async getNextCached(): Promise<bigint> {
+        const { shift, bitnumber } = super.getNext();
+        const equalSeqno = HighloadQueryIdManager.calculateQueryId(shift, bitnumber);
         const parametrized = `${this.cacheAddress}:query_id`;
         await db.setHeightForAddress(parametrized, equalSeqno);
-        return next;
+        return CachedHighloadQueryIdManager.calculateQueryId(shift, bitnumber);
     }
 
     static async fromAddress(address: RawAddressString): Promise<CachedHighloadQueryIdManager> {

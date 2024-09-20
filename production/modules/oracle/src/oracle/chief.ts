@@ -1,25 +1,21 @@
-import { buildInternalMessage, getChiefWalletContract, sendToWallet } from "./highload/walletInteractions.ts";
+import { Address, internal as internal_relaxed, type OutActionSendMsg, SendMode } from "@ton/ton";
 import { balancedTonClient, retrieveAllUnknownTransactions } from "./api.ts";
-import { createPoolForJetton } from "./dedust.ts";
 import { chief, getConfig } from "../config.ts";
+import { createPoolForJetton } from "./dedust";
 import { beginCell, toNano } from "@ton/core";
-import { Address, internal } from "@ton/ton";
+import { chiefWalletData } from "./highload";
 import { logger } from "../logger.ts";
 import { delay } from "../utils.ts";
 import * as db from "../db";
 import {
-    parseMoneyFlows, QUERY_ID_LENGTH,
-    loadOpAndQueryId, OP_LENGTH,
+    DEFAULT_TIMEOUT, QUERY_ID_LENGTH,
+    SUBWALLET_ID, OP_LENGTH,
     parseGetConfigResponse,
+    loadOpAndQueryId,
+    parseMoneyFlows,
     TokensLaunchOps,
     jettonFromNano,
 } from "starton-periphery";
-
-/*
-    In a number of moments in the code below it would be possible to operate in parallel,
-    but this was moderately replaced by synchronous code due to the greater stability of certain processes
-    and the unnecessity of extraordinary speed of their execution
-*/
 
 export async function chiefScanning() {
     while (true) {
@@ -31,17 +27,20 @@ export async function chiefScanning() {
             await handleChiefUpdates();
         } catch (e) {
             logger().error("interplanetary error on chief's side: ", e);
-            await delay(60);
+            await delay(30);
         }
     }
 }
 
 async function validateEndedPendingLaunches() {
-    const chiefWallet = { address: Address.parse(chief().address), mnemonic: chief().mnemonic.split(" ") };
     const pendingLaunches = await db.getTokenLaunchesByCategories([db.EndedLaunchesCategories.Pending]);
     const waitingForJettonLaunches = await db.getTokenLaunchesByCategories([db.EndedLaunchesCategories.WaitingForJetton]) ?? [];
     if (!(pendingLaunches && waitingForJettonLaunches.length)) return;
 
+    const queryId = Date.now() / 1000;
+    const { keyPair, wallet, queryIdManager } = await chiefWalletData();
+
+    const actions: OutActionSendMsg[] = [];
     for (const launch of pendingLaunches) {
         const { address } = launch;
         const launchAddressParsed = Address.parse(address);
@@ -56,79 +55,116 @@ async function validateEndedPendingLaunches() {
             waitingForJettonLaunches.push(launch);
             continue;
         }
+        actions.push({
+            type: "sendMsg",
+            mode: SendMode.PAY_GAS_SEPARATELY,
+            outMsg: internal_relaxed({
+                to: launchAddressParsed,
+                value: toNano("0.1"),
+                body: beginCell()
+                    .storeUint(TokensLaunchOps.ClaimOpn, OP_LENGTH)
+                    .storeUint(queryId, QUERY_ID_LENGTH)
+                    .endCell()
+            }),
+        });
         await db.markLaunchAsFailed(address);
-        const claimOpnMessage = buildInternalMessage(
-            launchAddressParsed,
-            toNano("0.1"),
-            beginCell()
-                .storeUint(TokensLaunchOps.ClaimOpn, OP_LENGTH)
-                .storeUint(Date.now(), QUERY_ID_LENGTH)
-                .endCell()
-        );
-        await sendToWallet(chiefWallet, claimOpnMessage);
-        await delay(0.5);
     }
     for (const { address } of waitingForJettonLaunches) {
-        const deployMessage = buildInternalMessage(
-            Address.parse(address),
-            toNano("1"),
-            beginCell()
-                .storeUint(TokensLaunchOps.DeployJetton, OP_LENGTH)
-                .storeUint(Date.now(), QUERY_ID_LENGTH)
-                .endCell()
-        );
-        await sendToWallet(chiefWallet, deployMessage);
-        await delay(0.5);
+        actions.push({
+            type: "sendMsg",
+            mode: SendMode.PAY_GAS_SEPARATELY,
+            outMsg: internal_relaxed({
+                to: Address.parse(address),
+                value: toNano("1"),
+                body: beginCell()
+                    .storeUint(TokensLaunchOps.DeployJetton, OP_LENGTH)
+                    .storeUint(queryId, QUERY_ID_LENGTH)
+                    .endCell()
+            }),
+        });
     }
 
+    const highloadQueryId = await queryIdManager.getNextCached();
+    await balancedTonClient.execute(() =>
+        wallet.sendBatch(keyPair.secretKey,
+            actions,
+            SUBWALLET_ID,
+            highloadQueryId,
+            DEFAULT_TIMEOUT,
+        )
+    );
 }
 
 async function createPoolsForNewJettons() {
     const waitingForPoolLaunches = await db.getTokenLaunchesByCategories([db.EndedLaunchesCategories.WaitingForPool]);
     if (!waitingForPoolLaunches) return;
+    const queryId = Date.now() / 1000;
+    const { keyPair, wallet, queryIdManager } = await chiefWalletData();
 
+
+    const actions: OutActionSendMsg[] = [];
     const poolCreationProcesses: Promise<void>[] = [];
-    for (const launch of waitingForPoolLaunches) {
-        try {
-            const { deployedJetton, totalTonsCollected, dexAmount } = launch.postDeployEnrollmentStats!;
-
-            if (!launch.dexData?.payedToCreator) {
-                const { chiefKeyPair, chiefWalletContract } = await getChiefWalletContract();
-                const seqno = await chiefWalletContract.getSeqno();
-                await chiefWalletContract.sendTransfer({
-                    seqno, secretKey: chiefKeyPair.secretKey,
-                    messages: [internal({
-                        to: Address.parse(launch.creator),
-                        value: totalTonsCollected * BigInt(getConfig().sale.creator_share_pct / 100),
-                        bounce: true,
-                        body: beginCell()
-                            .storeUint(0, 32)
-                            .storeStringRefTail("Ladies and gentlemen, we have now arrived at our destination. Thank you again for flying Starton, and we hope to see you on board again soon.")
-                            .endCell()
-                    })]
-                });
-                let newDexData: db.DexData;
-                if (launch.dexData) {
-                    newDexData = launch.dexData;
-                    newDexData.payedToCreator = true;
-                } else {
-                    newDexData = { addedLiquidity: false, payedToCreator: true };
-                }
-                await db.updateDexData(launch.address, newDexData);
+    for (const { address, creator, dexData, postDeployEnrollmentStats } of waitingForPoolLaunches) {
+        const { deployedJetton, totalTonsCollected, dexAmount } = postDeployEnrollmentStats!;
+        actions.push({
+            type: "sendMsg",
+            mode: SendMode.PAY_GAS_SEPARATELY,
+            outMsg: internal_relaxed({
+                to: Address.parse(address),
+                value: toNano("0.1"),
+                body: beginCell()
+                    .storeUint(TokensLaunchOps.ClaimOpn, OP_LENGTH)
+                    .storeUint(queryId, QUERY_ID_LENGTH)
+                    .endCell()
+            }),
+        });
+        poolCreationProcesses.push(
+            createPoolForJetton(
+                {
+                    ourWalletAddress: deployedJetton.ourWalletAddress,
+                    masterAddress: deployedJetton.masterAddress,
+                },
+                [totalTonsCollected * BigInt(getConfig().sale.dex_share_pct / 100), dexAmount],
+                address
+            )
+        );
+        if (dexData?.payedToCreator) continue;
+        actions.push({
+            type: "sendMsg",
+            mode: SendMode.PAY_GAS_SEPARATELY,
+            outMsg: internal_relaxed({
+                to: Address.parse(creator),
+                value: totalTonsCollected * BigInt(getConfig().sale.creator_share_pct / 100),
+                body: beginCell()
+                    .storeUint(0, 32)
+                    .storeStringRefTail("Ladies and gentlemen, we have now arrived at our destination. Thank you again for flying Starton, and we hope to see you on board again soon.")
+                    .endCell()
+            }),
+        });
+    }
+    try {
+        const highloadQueryId = await queryIdManager.getNextCached();
+        await balancedTonClient.execute(() =>
+            wallet.sendBatch(keyPair.secretKey,
+                actions,
+                SUBWALLET_ID,
+                highloadQueryId,
+                DEFAULT_TIMEOUT,
+            )
+        );
+        for (const { address, dexData } of waitingForPoolLaunches) {
+            if (dexData?.payedToCreator) continue;
+            let newDexData: db.DexData;
+            if (dexData) {
+                newDexData = dexData;
+                newDexData.payedToCreator = true;
+            } else {
+                newDexData = { addedLiquidity: false, payedToCreator: true };
             }
-            poolCreationProcesses.push(
-                createPoolForJetton(
-                    {
-                        ourWalletAddress: deployedJetton.ourWalletAddress,
-                        masterAddress: deployedJetton.masterAddress,
-                    },
-                    [totalTonsCollected * BigInt(getConfig().sale.dex_share_pct / 100), dexAmount],
-                    launch.address
-                )
-            );
-        } catch (e) {
-            logger().warn(`failed to initiate pool creation process for launch ${launch.address} with error: `, e);
+            await db.updateDexData(address, newDexData);
         }
+    } catch (e) {
+        logger().error("failed to send actions to wallet with error", e);
     }
     await Promise.allSettled(poolCreationProcesses);
 }

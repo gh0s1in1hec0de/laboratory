@@ -1,12 +1,17 @@
-import { TESTNET_FACTORY_ADDR, type RawAddressString, type Coins, BURN_ADDR } from "starton-periphery";
-import { DEFAULT_TIMEOUT, SUBWALLET_ID } from "starton-periphery/highloadWallet/const.ts";
-import { CachedHighloadQueryIdManager, chiefWalletData } from "../highload";
-import { currentNetwork } from "../../config.ts";
-import { balancedTonClient } from "../api.ts";
+import {
+    TESTNET_FACTORY_ADDR,
+    type RawAddressString,
+    type Coins,
+    BURN_ADDR,
+    DEFAULT_TIMEOUT,
+    SUBWALLET_ID
+} from "starton-periphery";
+import { chiefWalletData } from "../highload";
+import { currentNetwork } from "../../config";
 import { Address, SendMode } from "@ton/ton";
-import { delay, Network } from "../../utils.ts";
-import { ok as assert } from "node:assert";
-import { logger } from "../../logger.ts";
+import { delay, Network } from "../../utils";
+import { balancedTonClient } from "../api";
+import { logger } from "../../logger";
 import { toNano } from "@ton/core";
 import * as db from "../../db";
 import {
@@ -24,7 +29,7 @@ import {
     Asset,
 } from "@dedust/sdk";
 
-// TODO Add cycle this process the appropriate way
+// Highest pressure point on the api - 3 requests queue
 export async function createPoolForJetton(
     jetton: { ourWalletAddress: RawAddressString, masterAddress: RawAddressString },
     targetBalances: [Coins, Coins],
@@ -36,13 +41,9 @@ export async function createPoolForJetton(
 
         const dexData = (await db.getTokenLaunch(launchAddress))?.dexData;
         const { keyPair, wallet, queryIdManager } = await chiefWalletData();
-        const [deployVaultQID, createPoolQID, depositTonsQID, depositJettonsQID, lpBurnQID] = await Promise.all(
-            [...Array(5).keys()].map(async () => {
-                const { shift, bitnumber } = await queryIdManager.getNextCached();
-                return CachedHighloadQueryIdManager.calculateQueryId(shift, bitnumber);
-            })
+        const [deployVaultQID, createPoolQID, depositLiquidityQID, lpBurnQID] = await Promise.all(
+            [...Array(5).keys()].map(async () => await queryIdManager.getNextCached())
         );
-        assert(deployVaultQID && createPoolQID && depositTonsQID && depositJettonsQID, "shitty QIDs");
 
         const asset = Asset.jetton(Address.parse(jetton.masterAddress));
         const assets: [Asset, Asset] = [Asset.native(), asset];
@@ -54,6 +55,7 @@ export async function createPoolForJetton(
             )
         );
 
+        // ~ 3 requests consecutively, then delays
         let vaultStatus: ReadinessStatus;
         const jettonVault = await balancedTonClient.execute(() => factory.getJettonVault(Address.parse(jetton.masterAddress)), true);
         const jettonVaultContract = await balancedTonClient.execute(c => c.open(jettonVault));
@@ -79,6 +81,7 @@ export async function createPoolForJetton(
             await delay(delayTime);
         }
 
+        // ~ 3 requests consecutively, then delays
         let poolReadiness: ReadinessStatus;
         const pool = await balancedTonClient.execute(() => factory.getPool(PoolType.VOLATILE, assets), true);
         const poolContract = await balancedTonClient.execute(c => c.open(pool));
@@ -103,7 +106,11 @@ export async function createPoolForJetton(
             await delay(delayTime);
         }
 
+        // Only one request for those 2 messages as they can be processed simultaneously
         const tonVault = await balancedTonClient.execute(() => factory.getNativeVault(), true);
+        const ourJettonWallet = await balancedTonClient.execute(
+            c => c.open(JettonWallet.createFromAddress(Address.parse(jetton.ourWalletAddress)))
+        );
         const tonDepositMessage = NativeVaultMessageBuilder.liquidityDepositMessage(
             tonVault.address, {
                 queryId, assets,
@@ -112,41 +119,34 @@ export async function createPoolForJetton(
                 amount: targetBalances[0],
             }
         );
+        const jettonDepositMessage = JettonWalletMessageBuilder.transferMessage(
+            ourJettonWallet.address, toNano("0.5"), {
+                to: jettonVault.address,
+                jettonAmount: targetBalances[1],
+                queryId,
+                responseAddress: wallet.address,
+                forwardTonAmount: toNano("0.4"),
+                forwardPayload: VaultJetton.createDepositLiquidityPayload({
+                    poolType: PoolType.VOLATILE,
+                    assets,
+                    targetBalances,
+                })
+            });
         await balancedTonClient.execute(() =>
-            wallet.sendExternalMessage(keyPair.secretKey, {
-                createdAt: Date.now() / 1000,
-                queryId: depositTonsQID,
-                message: tonDepositMessage,
-                mode: SendMode.PAY_GAS_SEPARATELY,
-                subwalletId: SUBWALLET_ID,
-                timeout: DEFAULT_TIMEOUT
-            })
-        );
-
-        const ourJettonWallet = await balancedTonClient.execute(
-            c => c.open(JettonWallet.createFromAddress(Address.parse(jetton.ourWalletAddress)))
-        );
-        const jettonDepositMessage = JettonWalletMessageBuilder.transferMessage(ourJettonWallet.address, toNano("0.5"), {
-            to: jettonVault.address,
-            jettonAmount: targetBalances[1],
-            queryId,
-            responseAddress: wallet.address,
-            forwardTonAmount: toNano("0.4"),
-            forwardPayload: VaultJetton.createDepositLiquidityPayload({
-                poolType: PoolType.VOLATILE,
-                assets,
-                targetBalances,
-            })
-        });
-        await balancedTonClient.execute(() =>
-            wallet.sendExternalMessage(keyPair.secretKey, {
-                createdAt: Date.now() / 1000,
-                queryId: depositJettonsQID,
-                message: jettonDepositMessage,
-                mode: SendMode.PAY_GAS_SEPARATELY,
-                subwalletId: SUBWALLET_ID,
-                timeout: DEFAULT_TIMEOUT
-            })
+            wallet.sendBatch(keyPair.secretKey,
+                [{
+                    type: "sendMsg",
+                    mode: SendMode.PAY_GAS_SEPARATELY,
+                    outMsg: tonDepositMessage,
+                }, {
+                    type: "sendMsg",
+                    mode: SendMode.PAY_GAS_SEPARATELY,
+                    outMsg: jettonDepositMessage,
+                }],
+                SUBWALLET_ID,
+                depositLiquidityQID,
+                DEFAULT_TIMEOUT,
+            )
         );
 
         let iterationNumber = 0;
@@ -180,10 +180,12 @@ export async function createPoolForJetton(
             else logger().info(`awaiting liquidity deposit for ${jetton.masterAddress} (pool: ${poolContract.address})`);
         }
 
+        // ~ 3 requests consecutively, then delays
         const lpWallet = await balancedTonClient.execute(() => poolContract.getWallet(wallet.address), true);
         const lpWalletContract = await balancedTonClient.execute(c => c.open(lpWallet));
         const lpBalance = await balancedTonClient.execute(() => lpWalletContract.getBalance(), true);
 
+        if (!lpBalance) return;
         const lpJettonsBurnMessage = JettonWalletMessageBuilder.transferMessage(ourJettonWallet.address, toNano("0.5"), {
             to: BURN_ADDR,
             jettonAmount: lpBalance,
