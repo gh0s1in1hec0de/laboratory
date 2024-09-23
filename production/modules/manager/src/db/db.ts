@@ -1,9 +1,6 @@
 import type { SqlClient } from "./types";
 import { logger } from "../logger";
 import postgres from "postgres";
-/*
-  TODO Verify if it is needed to do JSON.stringify() in queries?
-*/
 
 let cachedGlobalClient: SqlClient | null = null;
 export const globalClient = await createPostgresClient();
@@ -11,11 +8,11 @@ export const globalClient = await createPostgresClient();
 export async function createPostgresClient(): Promise<SqlClient> {
     if (!cachedGlobalClient) {
         cachedGlobalClient = postgres({
-            host: "localhost",
+            host: process.env.POSTGRES_HOST,
             port: 5432,
-            database: "launchpad",
-            username: "dev",
-            password: "dev_pass",
+            database: process.env.POSTGRES_DB,
+            username: process.env.POSTGRES_USER,
+            password: process.env.POSTGRES_PASSWORD,
             types: { bigint: postgres.BigInt },
             transform: postgres.camel,
             max: 10

@@ -30,6 +30,7 @@ export async function spawnNewLaunchesScanners(scanFrom?: Date) {
         for (const launch of newLaunches) {
             balancedTonClient.incrementActiveLaunchesAmount();
             handleTokenLaunchUpdates(launch);
+            await delay(1 + Math.random()); // As we don't want all the api requests in the same moment
         }
         timeUpdate = newLaunches.reduce((latest, launch) => {
             return launch.createdAt > latest ? launch.createdAt : latest;
@@ -143,7 +144,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                 try {
                     await db.storeUserAction(action);
                 } catch (e) {
-                    logger().error(`action[${action.actor}, ${action.timestamp}] record error: ${e}`);
+                    logger().error(`action[${action.actor}; ${action.timestamp}] record error: ${e}`);
                 }
             }
             currentHeight = newTxs[newTxs.length - 1].lt;

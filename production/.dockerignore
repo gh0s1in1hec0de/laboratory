@@ -1,13 +1,14 @@
 node_modules
-# Should be managed as volume
 postgres-data
+modules/onchain
 
 # We don't need em inside container
-**/Dockerfile
+**/**.Dockerfile
 **/docker-compose.yaml
+**/bun.lockb
 
 .git
-modules/manager/.gitignore
+**/.gitignore
 
 *.log
 *.tmp

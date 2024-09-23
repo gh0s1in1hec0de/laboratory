@@ -1,4 +1,5 @@
 import type { GlobalVersions } from "starton-periphery";
+import type { Network } from "./utils.ts";
 import YAML from "yaml";
 import path from "path";
 import fs from "fs";
@@ -21,7 +22,7 @@ type Config = {
             force_height: boolean,
             version: GlobalVersions,
         }[],
-        network: string,
+        network: Network,
         api: {
             limit_per_second: number,
             keys: {
@@ -59,7 +60,7 @@ export function getConfig(): Config {
     return config;
 }
 
-export function currentNetwork(): string {
+export function currentNetwork(): Network {
     return getConfig().oracle.network;
 }
 

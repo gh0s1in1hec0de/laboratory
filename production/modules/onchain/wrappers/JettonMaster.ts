@@ -22,7 +22,7 @@ export type JettonMasterConfig = {
     jettonContent: Cell | TokenMetadata
 };
 
-export function jettonMinterConfigCellToConfig(config: Cell): JettonMasterConfig {
+export function jettonMasterConfigCellToConfig(config: Cell): JettonMasterConfig {
     const sc = config.beginParse();
     const parsed: JettonMasterConfig = {
         supply: sc.loadCoins(),
@@ -34,11 +34,11 @@ export function jettonMinterConfigCellToConfig(config: Cell): JettonMasterConfig
     return parsed;
 }
 
-export function parseJettonMinterData(data: Cell): JettonMasterConfig {
-    return jettonMinterConfigCellToConfig(data);
+export function parseJettonMasterData(data: Cell): JettonMasterConfig {
+    return jettonMasterConfigCellToConfig(data);
 }
 
-export function jettonMinterConfigToCell(config: JettonMasterConfig): Cell {
+export function jettonMasterConfigToCell(config: JettonMasterConfig): Cell {
     const content = config.jettonContent instanceof Cell ? config.jettonContent : tokenMetadataToCell(config.jettonContent);
     return beginCell()
         .storeCoins(0)
@@ -57,7 +57,7 @@ export class JettonMaster implements Contract {
     }
 
     static createFromConfig(config: JettonMasterConfig, code: Cell, workchain = 0) {
-        const data = jettonMinterConfigToCell(config);
+        const data = jettonMasterConfigToCell(config);
         const init = { code, data };
         return new JettonMaster(contractAddress(workchain, init), init);
     }

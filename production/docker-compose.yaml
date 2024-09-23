@@ -1,3 +1,4 @@
+version: '3.8'
 services:
   db:
     image: postgres:latest
@@ -9,33 +10,37 @@ services:
       - "5432:5432"
 
   oracle:
-    # We don't need such a verbose build description rn, but later it may be useful
     build:
       context: .
-      dockerfile: ./oracle/Dockerfile
+      dockerfile: oracle.Dockerfile
     working_dir: /app
     volumes:
-      - ./oracle:/app
+      - ./modules/oracle:/app/modules/oracle
+      - ./modules/logs[oracle]:/app/modules/logs[oracle]
     env_file:
       - .env.docker
-    command: sh -c "until pg_isready -h db -p 5432; do echo 'waiting for database...'; sleep 1; done; bun install && bun run modules/oracle/src/index.ts"
+    command: >
+      sh -c "until pg_isready -h db -p 5432; do echo 'waiting for database...'; sleep 1; done; 
+      bun run migrate.ts && bun run oracle"
     depends_on:
       - db
     ports:
       - "3000:3000"
 
   manager:
-    # We don't need such a verbose build description rn, but later it may be useful
     build:
       context: .
-      dockerfile: ./manager/Dockerfile
+      dockerfile: manager.Dockerfile
     working_dir: /app
     volumes:
-      - ./manager:/app
+      - ./modules/manager:/app/modules/manager
+      - ./modules/logs[manager]:/app/modules/logs[manager]
     env_file:
       - .env.docker
-    command: sh -c "until pg_isready -h db -p 5432; do echo 'waiting for database...'; sleep 1; done; bun install && bun run modules/manager/src/index.ts"
+    command: >
+      sh -c "until pg_isready -h db -p 5432; do echo 'waiting for database...'; sleep 1; done; 
+      bun run manager"
     depends_on:
       - db
     ports:
-      - "3001:3000"
+      - "3001:3001"

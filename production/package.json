@@ -12,6 +12,7 @@
   },
   "scripts": {
     "migrate": "bun migrate.ts",
-    "manager": "bun run ./modules/manager/src/index.ts"
+    "manager": "bun run ./modules/manager/src/index.ts",
+    "oracle": "bun run ./modules/oracle/src/index.ts"
   }
 }

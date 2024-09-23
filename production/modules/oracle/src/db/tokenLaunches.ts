@@ -99,7 +99,9 @@ export async function getTokenLaunchesByCategories(categories: EndedLaunchesCate
         FROM token_launches
         WHERE now() > (timings ->> 'publicRoundEndTime')::TIMESTAMP
           AND post_deploy_enrollment_stats IS NULL
-            ${categories.includes(EndedLaunchesCategories.Pending) ? c`AND is_successful IS NULL` : c`AND is_successful IS TRUE`} ${categories.includes(EndedLaunchesCategories.WaitingForJetton) ? c`AND post_deploy_enrollment_stats IS NULL` : c`AND post_deploy_enrollment_stats IS NOT NULL`} ${categories.includes(EndedLaunchesCategories.WaitingForPool) ? c`AND (dex_data IS NULL OR (dex_data->>'addedLiquidity')::BOOLEAN = FALSE` : c``}
+            ${categories.includes(EndedLaunchesCategories.Pending) ? c`AND is_successful IS NULL` : c`AND is_successful IS TRUE`} 
+            ${categories.includes(EndedLaunchesCategories.WaitingForJetton) ? c`AND post_deploy_enrollment_stats IS NULL` : c`AND post_deploy_enrollment_stats IS NOT NULL`} 
+            ${categories.includes(EndedLaunchesCategories.WaitingForPool) ? c`AND (dex_data IS NULL OR (dex_data->>'addedLiquidity')::BOOLEAN = FALSE` : c``}
     `;
     return res.length ? res : null;
 }
