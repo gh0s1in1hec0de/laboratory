@@ -1,0 +1,44 @@
+@mixin semiBold32 {
+  font-size: 32px;
+  font-weight: 600;
+}
+
+@mixin semiBold18 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+@mixin bold18 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+@mixin regular16 {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+@mixin medium16 {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+@mixin medium14 {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+@mixin regular14 {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+@mixin regular12 {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+@mixin medium10 {
+  font-size: 10px;
+  font-weight: 500;
+}

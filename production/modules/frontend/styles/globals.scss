@@ -1,0 +1,32 @@
+@charset "UTF-8";
+
+:root {
+  --orange-dark: #7b330b;
+  --orange-regular: #F45A38;
+
+  --green-regular: #3BDFAE;
+  
+  --red-dark: #791c1c;
+  --red-regular: #E9283F;
+
+  --black-dark: #0C0D0F;
+  --black-regular: #191a1c;
+  --black-light: #FFFFFF08;
+  
+  --skeleton-color: #ffffff14;
+
+  --white-regular: #FFFFFF;
+
+  --border: #FFFFFF08;
+
+  --gray-dark: #FFFFFF2E;
+  --gray-regular: #5F6163;
+  --gray-light: #9B9DA0;
+
+  --navbar-height: 60px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}

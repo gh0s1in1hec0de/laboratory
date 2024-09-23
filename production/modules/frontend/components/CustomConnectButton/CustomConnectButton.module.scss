@@ -1,0 +1,30 @@
+.connectButton {
+	width: 100% !important;
+
+	// connect wallet
+	& > div > tc-root > button {	
+		width: 100%;
+		background-color: var(--orange-regular);
+		padding: 0px 14px 0px 14px;
+		border-radius: 10px;
+		justify-content: center;
+	}
+	
+	// connected wallet
+	& > div > tc-root > div {
+		width: 100%;
+		
+		& > button {
+			width: 100%;
+			background-color: var(--orange-regular);
+			padding: 0px 14px 0px 14px;
+			border-radius: 10px;
+			justify-content: center;
+			align-items: center;
+
+			& > svg > path {
+				fill: var(--black-dark);
+			}
+		}
+	}
+}

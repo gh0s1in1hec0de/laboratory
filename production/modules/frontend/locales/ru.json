@@ -1,0 +1,30 @@
+{
+	"Navbar": {
+		"first": "квесты",
+		"second": "токен",
+		"third": "топ",
+		"fourth": "награды",
+		"fifth": "профиль",
+		"soon": "скоро"
+	},
+	"Quests": {
+		"header": {
+			"subtitle": "этап",
+			"tooltip": "Что это",
+			"connectWallet": "Подключить кошелек",
+			"tickets": "билетов",
+			"balance": "Ваш баланс"
+		},
+		"content": {
+			"title": "Квесты",
+			"tabs": {
+				"first": {
+					"label": "Новые"
+				},
+				"second": {
+					"label": "Последний этап"
+				}
+			}
+		}
+	}
+}

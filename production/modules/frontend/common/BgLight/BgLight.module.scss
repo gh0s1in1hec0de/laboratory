@@ -1,0 +1,13 @@
+.background {
+  width: 50%;
+  height: 150px;
+  position: absolute;
+  inset: 0;
+  border-radius: 1000px;
+  background-color: color-mix(in srgb, var(--white-regular) 15%, transparent);
+  filter: blur(60px);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+}

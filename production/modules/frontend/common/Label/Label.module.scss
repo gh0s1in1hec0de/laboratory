@@ -1,0 +1,73 @@
+@import "@/styles/mixins";
+
+.label {
+  font-family: unset;
+  transition: color 0.3s ease;
+
+  &.offUserSelect {
+    user-select: none;
+  }
+}
+
+
+// COLORS
+.orange {
+  color: var(--orange-regular);
+
+  &.disabled {
+    color: var(--orange-dark);
+  }
+}
+
+.white {
+  color: var(--white-regular);
+
+  &.disabled {
+    color: var(--gray-light);
+  }
+}
+
+.gray {
+  color: var(--gray-light);
+
+  &.disabled {
+    color: var(--gray-regular);
+  }
+}
+
+// SIZES
+.semiBold32 {
+  @include semiBold32;
+}
+
+.semiBold18 {
+  @include semiBold18;
+}
+
+.semiBold18 {
+  @include semiBold18;
+}
+
+.medium16 {
+  @include medium16;
+}
+
+.bold18 {
+  @include bold18;
+}
+
+.regular16 {
+  @include regular16;
+}
+
+.regular14 {
+  @include regular14;
+}
+
+.medium14 {
+  @include medium14;
+}
+
+.medium10 {
+  @include medium10;
+}

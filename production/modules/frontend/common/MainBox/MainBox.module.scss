@@ -1,0 +1,18 @@
+.mainBox {
+	&.rounded {
+		border-radius: 14px;
+	}
+
+	&.fullWidth {
+		width: 100%;
+	}	
+
+	&.gray {
+		background-color: var(--gray-dark);
+	}
+
+	&.transparent {
+		border: 1px solid var(--gray-dark);
+		background-color: transparent;
+	}	
+}

@@ -4,7 +4,8 @@
   "workspaces": [
     "modules/periphery",
     "modules/manager",
-    "modules/oracle"
+    "modules/oracle",
+    "modules/frontend"
   ],
   "dependencies": {
     "postgres": "^3.4.4"

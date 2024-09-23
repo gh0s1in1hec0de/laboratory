@@ -1,0 +1,30 @@
+{
+	"Navbar": {
+		"first": "quests",
+		"second": "token",
+		"third": "top",
+		"fourth": "rewards",
+		"fifth": "profile",
+		"soon": "soon"
+	},
+	"Quests": {
+		"header": {
+			"subtitle": "stage",
+			"tooltip": "What is it",
+			"connectWallet": "Connect wallet",
+			"tickets": "tickets",
+			"balance": "Your balance"
+		},
+		"content": {
+			"title": "Quests",
+			"tabs": {
+				"first": {
+					"label": "New"
+				},
+				"second": {
+					"label": "Last stage"
+				}
+			}
+		}
+	}
+}

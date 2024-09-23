@@ -1,0 +1,40 @@
+.button {
+	border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  outline: none; 
+  transition: background-color 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.orange {
+  background-color: var(--orange-regular);
+
+  &.hover {
+    background-color: var(--orange-dark);
+  }
+}
+
+.red {
+  background-color: var(--red-regular);
+
+  &.hover {
+    background-color: var(--red-dark);
+  }
+}
+
+.gray {
+  background-color: var(--gray-dark);
+
+  &.hover {
+    background-color: var(--skeleton-color);
+  }
+}
+
+.transparent {
+  background-color: transparent;
+}
