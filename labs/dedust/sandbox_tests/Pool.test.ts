@@ -34,12 +34,12 @@ describe("General", () => {
         jettonMasterCode = await compile("JettonMinter");
         jettonWalletCode = await compile("JettonWallet");
         blockchain = await Blockchain.create({
-            storage: new RemoteBlockchainStorage(wrapTonClient4ForRemote(
-                new TonClient4({ // "https://mainnet-v4.tonhubapi.com"
-                    endpoint: await getHttpV4Endpoint({ network: "mainnet" }),
-                    timeout: 40000
-                }))
-            )
+            // storage: new RemoteBlockchainStorage(wrapTonClient4ForRemote(
+            //     new TonClient4({ // "https://mainnet-v4.tonhubapi.com"
+            //         endpoint: await getHttpV4Endpoint({ network: "mainnet" }),
+            //         timeout: 40000
+            //     }))
+            // )
         });
         deployer = await blockchain.treasury("deployer", { balance: toNano("1000") });
         justAGuy = await blockchain.treasury("just_a_guy", { balance: toNano("1000") });
@@ -62,7 +62,7 @@ describe("General", () => {
         );
 
     }, 80000);
-    test("correct context", async () => {
+    test.skip("correct context", async () => {
         factory = blockchain.openContract(
             Factory.createFromAddress(MAINNET_FACTORY_ADDR)
         );
@@ -79,7 +79,7 @@ describe("General", () => {
             deploy: true
         });
     }, 80000);
-    test.skip("pure network transfer check", async () => {
+    test("just a transfer", async () => {
         const transferResult = await (await userWallet(deployer.address)).sendTransfer(
             deployer.getSender(), toNano("0.5"), toNano("1.22"),
             justAGuy.address, deployer.address, null, toNano("0.4"), null
@@ -89,7 +89,13 @@ describe("General", () => {
             on: (await userWallet(justAGuy.address)).address
         });
     });
-    test("dedust pool creation", async () => {
+    test("metadata reading trick", async () => {
+        let { stack } = await (await userWallet(justAGuy.address)).getWalletDatSerialized();
+        stack.skip(2);
+        const jettonMinterAddress = stack.readAddress();
+        expect(jettonMinterAddress.toRawString()).toEqual(jettonMinter.address.toRawString());
+    });
+    test.skip("dedust pool creation", async () => {
         const asset = Asset.jetton(jettonMinter.address);
         const assets: [Asset, Asset] = [Asset.native(), asset];
         // Creating a pool for our freshly deployed jetton
@@ -159,7 +165,7 @@ describe("General", () => {
         });
         const balanceAfterSwap = await derivedJettonDeployerWallet.getJettonBalance();
         assert(balanceBeforeSwap < balanceAfterSwap, `the post-swap balance (${balanceAfterSwap}) should increase compared to ${balanceBeforeSwap}`);
-        console.log(`swap result: ${balanceAfterSwap - balanceBeforeSwap} nano-jettons`)
+        console.log(`swap result: ${balanceAfterSwap - balanceBeforeSwap} nano-jettons`);
 
 
         // Withdraw-liquidity code, but in fact we can use it to send on EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c

@@ -1,6 +1,5 @@
 import type { UserActionType, SqlClient, UserAction } from "./types";
 import type { RawAddressString } from "starton-periphery";
-import { ok as assert } from "assert";
 import { globalClient } from "./db";
 import { logger } from "../logger";
 
@@ -25,7 +24,7 @@ export async function storeUserAction(
         ON CONFLICT DO NOTHING
         RETURNING 1;
     `;
-    assert(res.length === 1, `exactly 1 column must be created, got: ${res}`);
+    if (res.length === 0) logger().error(`looks like action for {actor}[${timestamp}] already exists`);
 }
 
 // Returns `null` to show that nothing was found the explicit way

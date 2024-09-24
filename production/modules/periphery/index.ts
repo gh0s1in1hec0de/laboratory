@@ -1,4 +1,4 @@
-export * from "./highloadWallet";
+export * from "./HighloadWalletV3";
 export * from "./calculations";
 export * from "./standards";
 export * from "./parsers";

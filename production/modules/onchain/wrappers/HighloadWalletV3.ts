@@ -3,12 +3,9 @@ import {
     OutActionSendMsg, MessageRelaxed, storeOutList, OutAction, beginCell,
     Address, Contract, Sender, SendMode, toNano, Cell,
 } from "@ton/core";
-import { BASECHAIN } from "../standards";
 import { sign } from "ton-crypto";
 import { OP } from "./const";
-
-import { hex as CodeHex } from "./build/HighloadWalletV3.compiled.json";
-export const HighloadWalletV3Code: Cell = Cell.fromBoc(Buffer.from(CodeHex, "hex"))[0]
+import { BASECHAIN } from "starton-periphery";
 
 export type HighloadWalletV3Config = {
     publicKey: Buffer,

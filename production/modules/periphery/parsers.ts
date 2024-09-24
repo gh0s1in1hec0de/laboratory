@@ -10,6 +10,7 @@ import {
 } from "./standards";
 
 // === Message parsers ===
+
 export async function loadOpAndQueryId(messageBody: Slice): Promise<{
     msgBodyData: Slice,
     op: number,

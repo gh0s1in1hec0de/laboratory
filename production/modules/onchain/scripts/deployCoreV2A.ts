@@ -11,23 +11,23 @@ export async function run(provider: NetworkProvider) {
     const jettonMasterCode = await compile("JettonMaster");
     const jettonWalletCode = await compile("JettonWallet");
 
-    const chief = Address.parse("fill in");
+    const chief = Address.parse("0QBK4zTJLd16yMJmJVrtheEZFXQUPtocrA1OGTApws0GwJub");
 
     // The app's code is its configuration - shout out to suckless.org folks
     try {
-        const ONE_HOUR_SEC = 3600;
+        const FIVE_MIN = 300;
         const launchConfig: LaunchConfigV2A = {
-            minTonForSaleSuccess: toNano("10"),
-            tonLimitForWlRound: toNano("10"),
-            penny: toNano("1"),
+            minTonForSaleSuccess: toNano("5"),
+            tonLimitForWlRound: toNano("5"),
+            penny: toNano("0.5"),
 
             jetWlLimitPct: toPct(30),
             jetPubLimitPct: toPct(30),
             jetDexSharePct: toPct(25),
 
-            creatorRoundDurationMs: ONE_HOUR_SEC,
-            wlRoundDurationMs: ONE_HOUR_SEC,
-            pubRoundDurationMs: ONE_HOUR_SEC,
+            creatorRoundDurationMs: FIVE_MIN,
+            wlRoundDurationMs: FIVE_MIN,
+            pubRoundDurationMs: FIVE_MIN,
         };
         const core = provider.open(
             CoreV2A.createFromState(
@@ -45,7 +45,7 @@ export async function run(provider: NetworkProvider) {
             )
         );
         ui.write(`Expected core address: ${core.address}`);
-        await core.sendDeploy({ via: provider.sender(), value: toNano("amount to attach") });
+        await core.sendDeploy({ via: provider.sender(), value: toNano("2") });
         ui.write("Transaction sent");
     } catch (e: any) {
         ui.write(e.message);

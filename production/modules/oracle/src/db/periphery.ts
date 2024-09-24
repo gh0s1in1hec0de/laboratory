@@ -1,16 +1,14 @@
 import type { LamportTime, RawAddressString } from "starton-periphery";
 import type { SqlClient } from "./types";
-import { ok as assert } from "assert";
 import { globalClient } from "./db";
 
 export async function setHeightForAddress(address: RawAddressString, height: LamportTime, force?: boolean, client?: SqlClient): Promise<void> {
     const c = client ?? globalClient;
-    const res = await c`
+    await c`
         INSERT INTO heights (contract_address, height)
         VALUES (${address}, ${height})
             ${force ? c`ON CONFLICT (contract_address) DO UPDATE SET height = EXCLUDED.height;` : c`ON CONFLICT (contract_address) DO NOTHING`}
     `;
-    assert(res.length === 1, `exactly 1 column must be created/updated, got: ${res}`);
 }
 
 export async function getHeight(address: RawAddressString, client?: SqlClient): Promise<LamportTime | null> {
@@ -20,7 +18,6 @@ export async function getHeight(address: RawAddressString, client?: SqlClient): 
         WHERE contract_address = ${address}
     `;
     return res.length ? res[0].height : null;
-
 }
 
 export async function getLaunchHeight(address: RawAddressString, client?: SqlClient): Promise<LamportTime | null> {

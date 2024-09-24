@@ -192,8 +192,8 @@ async function handleChiefUpdates() {
                 const forwardPayload = msgBodyData.loadBit() ? msgBodyData.loadRef().beginParse() : msgBodyData;
 
                 // IMPORTANT: we have to verify the source of this message because it can be faked
-                const runStack = (await balancedTonClient.execute(c => c.runMethod(sender, "get_wallet_data"))).stack;
-                runStack.skip(2); // TODO Test in sandbox
+                const runStack = (await balancedTonClient.execute(c => c.runMethod(sender, "get_wallet_data"), true)).stack;
+                runStack.skip(2);
                 const jettonMaster = runStack.readAddress();
                 const jettonWallet = (
                     await balancedTonClient.execute(
@@ -230,7 +230,7 @@ async function handleChiefUpdates() {
                         }
                     );
                 } catch (e) {
-                    logger().error("error when parsing forward payload: ", e);
+                    logger().error(`error when parsing forward payload for tx with lt ${tx.lt}: `, e);
                 }
             }
         }

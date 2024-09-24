@@ -1,6 +1,6 @@
 import { balancedTonClient, retrieveAllUnknownTransactions } from "./api";
 import { ok as assert } from "node:assert";
-import { Address } from "@ton/ton";
+import { Address, fromNano } from "@ton/ton";
 import { logger } from "../logger";
 import { delay } from "../utils";
 import * as db from "../db";
@@ -22,43 +22,43 @@ import {
 export async function spawnNewLaunchesScanners(scanFrom?: Date) {
     let timeUpdate = scanFrom;
     while (true) {
-        const newLaunches = await db.getActiveTokenLaunches(timeUpdate);
-        if (!newLaunches) {
-            await delay(30);
-            continue;
+        try {
+            const newLaunches = await db.getActiveTokenLaunches(timeUpdate);
+
+            if (!newLaunches) {
+                logger().debug(`[*] ${spawnNewLaunchesScanners.name} - no active launches found`); // THIS CODE IS A FUCKING JOKE BTW
+                await delay(30);
+                continue;
+            }
+            for (const launch of newLaunches) {
+                balancedTonClient.incrementActiveLaunchesAmount();
+                handleTokenLaunchUpdates(launch);
+                await delay(0.9); // As we don't want all the api requests in the same moment
+            }
+            timeUpdate = newLaunches.reduce((latest, launch) => {
+                return launch.createdAt > latest ? launch.createdAt : latest;
+            }, newLaunches[0].createdAt);
+            await delay(15);
+        } catch (e) {
+            logger().error("failed to spawn new launch scanner with error ", e);
         }
-        for (const launch of newLaunches) {
-            balancedTonClient.incrementActiveLaunchesAmount();
-            handleTokenLaunchUpdates(launch);
-            await delay(1 + Math.random()); // As we don't want all the api requests in the same moment
-        }
-        timeUpdate = newLaunches.reduce((latest, launch) => {
-            return launch.createdAt > latest ? launch.createdAt : latest;
-        }, newLaunches[0].createdAt);
-        await delay(15);
     }
 }
 
+
 async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, launchAddress?: RawAddressString,) {
-    assert(launchAddress && tokenLaunch, "unreachable");
-    logger().debug(`new token launch updates handler for ${launchAddress} is up`);
-    const launch = tokenLaunch ?? await db.getTokenLaunch(launchAddress);
+    assert(launchAddress || tokenLaunch, "must provide launch data or an address");
+    const launch = tokenLaunch ?? await db.getTokenLaunch(launchAddress!);
     if (!launch) {
         logger().error(`launch ${launchAddress} not found in database`);
         return;
     }
-    let currentHeight = await db.getLaunchHeight(launchAddress) ?? 0n;
+    logger().debug(`new token launch updates handler for ${launch.address} is up`);
+    let currentHeight = await db.getLaunchHeight(launch.address) ?? 0n;
 
     while (true) {
         try {
-            // This is a constraint to stop monitoring contract calls and update data based on that
-            // I don't know certainly, what is end time - end of launch or end of claims opportunity(todo)
-            if (Date.now() < launch.timings.endTime.getTime()) {
-                balancedTonClient.decrementActiveLaunchesAmount();
-                break;
-            }
-
-            const newTxs = await retrieveAllUnknownTransactions(launchAddress, currentHeight);
+            const newTxs = await retrieveAllUnknownTransactions(launch.address, currentHeight);
             const newActionsChunk: db.UserAction[] = [];
             for (const tx of newTxs) {
                 const userActions: db.UserAction[] = [];
@@ -82,9 +82,10 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                         recipient,
                         mode
                     } = parseRefundOrClaim(msgBodyData);
+                    logger().debug(`launch ${launch.address}: new operation ${op} - [${fromNano(whitelistTons)}; ${fromNano(publicTons)}; ${futureJettons}]`);
                     userActions.push({
                         actor: recipient,
-                        tokenLaunch: launchAddress,
+                        tokenLaunch: launch.address,
                         actionType: mode ? db.balanceUpdateModeToUserActionType[mode] : db.UserActionType.Claim,
                         whitelistTons,
                         publicTons,
@@ -96,13 +97,14 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                 }
                 if (op === TokensLaunchOps.CreatorBuyout) {
                     const moneyFlowsResponse = await balancedTonClient.execute(
-                        c => c.runMethod(Address.parse(launchAddress), "get_config", []), true
+                        c => c.runMethod(Address.parse(launch.address), "get_config", []), true
                     );
                     const {
                         creatorFutJetBalance,
                         creatorFutJetPriceReversed
                     } = parseGetConfigResponse(moneyFlowsResponse.stack);
                     const investedValue = creatorFutJetBalance * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
+                    logger().debug(`launch ${launch.address}: creator's buyout on ${fromNano(investedValue)} TONs is found`);
 
                     const attachedValue: Coins = inMsg.info.value.coins ?? 0n;
                     const cornerCase = investedValue > attachedValue;
@@ -121,11 +123,13 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                     if (op !== UserVaultOps.balanceUpdate) continue;
                     const { mode, tons, futureJettons } = parseBalanceUpdate(msgBodyData);
                     if (![BalanceUpdateMode.PublicDeposit, BalanceUpdateMode.WhitelistDeposit].includes(mode)) continue;
+                    logger().debug(`launch ${launch.address}: new operation ${op} - [${fromNano(tons)}; ${futureJettons}]`);
+
                     const [whitelistTons, publicTons] =
                         mode === BalanceUpdateMode.WhitelistDeposit ? [tons, 0n] : [0n, tons];
                     userActions.push({
                         actor: inMsgSender.toRawString(),
-                        tokenLaunch: launchAddress,
+                        tokenLaunch: launch.address,
                         actionType: db.balanceUpdateModeToUserActionType[mode],
                         whitelistTons,
                         publicTons,
@@ -148,15 +152,20 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                 }
             }
             currentHeight = newTxs[newTxs.length - 1].lt;
-            const moneyFlowsResponse = await balancedTonClient.execute(c => c.runMethod(Address.parse(launchAddress), "get_money_flows", []), true);
+            const moneyFlowsResponse = await balancedTonClient.execute(c => c.runMethod(Address.parse(launch.address), "get_money_flows", []), true);
             const { totalTonsCollected, wlRoundTonInvestedTotal } = parseMoneyFlows(moneyFlowsResponse.stack);
             await db.updateLaunchBalance(launch.address, {
                 totalTonsCollected,
                 wlTonsCollected: wlRoundTonInvestedTotal
             });
-            await delay(balancedTonClient.delayValue());
+
+            if ((Date.now() - (new Date(launch.timings.endTime)).getTime()) > 86_400_000) {
+                balancedTonClient.decrementActiveLaunchesAmount();
+                break;
+            } // 10 interval mins if we passed the end time
+            await delay(Date.now() < (new Date(launch.timings.endTime)).getTime() ? balancedTonClient.delayValue() : 600);
         } catch (e) {
-            logger().error(`failed to handle launch ${launchAddress} update with general error: ${e}`);
+            logger().error(`failed to handle launch ${launch.address} update with general error: `, e);
             await delay(balancedTonClient.delayValue() / 2);
         }
     }

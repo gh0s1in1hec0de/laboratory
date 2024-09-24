@@ -1,10 +1,6 @@
 import {
-    TESTNET_FACTORY_ADDR,
-    type RawAddressString,
-    type Coins,
-    BURN_ADDR,
-    DEFAULT_TIMEOUT,
-    SUBWALLET_ID
+    TESTNET_FACTORY_ADDR, BURN_ADDR, DEFAULT_TIMEOUT,
+    SUBWALLET_ID, type RawAddressString, type Coins,
 } from "starton-periphery";
 import { chiefWalletData } from "../highload";
 import { currentNetwork } from "../../config";
@@ -75,8 +71,9 @@ export async function createPoolForJetton(
                         timeout: DEFAULT_TIMEOUT
                     })
                 );
-                delayTime = 30;
+                delayTime = 60;
             }
+            // Ask Anastasia about vault statuses
             if (vaultStatus === ReadinessStatus.READY) break;
             await delay(delayTime);
         }
@@ -88,22 +85,20 @@ export async function createPoolForJetton(
 
         while (true) {
             poolReadiness = await balancedTonClient.execute(() => poolContract.getReadinessStatus(), true);
-            let delayTime = 15;
-            if (poolReadiness === ReadinessStatus.NOT_DEPLOYED) {
-                const message = FactoryMessageBuilder.createVolatilePoolMessage({ assets, queryId });
-                await balancedTonClient.execute(() =>
-                    wallet.sendExternalMessage(keyPair.secretKey, {
-                        createdAt: Date.now() / 1000,
-                        queryId: createPoolQID,
-                        message,
-                        mode: SendMode.PAY_GAS_SEPARATELY,
-                        subwalletId: SUBWALLET_ID,
-                        timeout: DEFAULT_TIMEOUT
-                    })
-                );
-                delayTime = 30;
-            } else break;
-            await delay(delayTime);
+
+            if (poolReadiness !== ReadinessStatus.NOT_DEPLOYED) break;
+            const message = FactoryMessageBuilder.createVolatilePoolMessage({ assets, queryId });
+            await balancedTonClient.execute(() =>
+                wallet.sendExternalMessage(keyPair.secretKey, {
+                    createdAt: Date.now() / 1000,
+                    queryId: createPoolQID,
+                    message,
+                    mode: SendMode.PAY_GAS_SEPARATELY,
+                    subwalletId: SUBWALLET_ID,
+                    timeout: DEFAULT_TIMEOUT
+                })
+            );
+            await delay(60);
         }
 
         // Only one request for those 2 messages as they can be processed simultaneously

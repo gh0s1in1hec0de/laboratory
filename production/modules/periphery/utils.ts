@@ -5,13 +5,13 @@ import { TokenMetadata } from "./standards";
 import { TokenLaunchStorageV1 } from "./V1";
 import { ok as assert } from "node:assert";
 
-export function parseTokenLaunchTimings(tokenLaunchStorage: TokenLaunchStorageV1 | TokenLaunchStorageV2A, pollingDuration: number = 14 * 86400): TokenLaunchTimings {
+export function parseTokenLaunchTimings(tokenLaunchStorage: TokenLaunchStorageV1 | TokenLaunchStorageV2A, pollingDuration: number = 2 * 86400): TokenLaunchTimings {
     return {
         startTime: new Date(tokenLaunchStorage.saleState.general.startTime * 1000),
         creatorRoundEndTime: new Date(tokenLaunchStorage.saleState.creatorRound.endTime * 1000),
         wlRoundEndTime: new Date(tokenLaunchStorage.saleState.wlRound.endTime * 1000),
         publicRoundEndTime: new Date(tokenLaunchStorage.saleState.pubRound.endTime * 1000),
-        endTime: new Date(pollingDuration * 1000),
+        endTime: new Date((tokenLaunchStorage.saleState.pubRound.endTime + pollingDuration) * 1000),
     };
 }
 

@@ -1,5 +1,6 @@
 import { Address, Cell } from "@ton/core";
 import { Coins } from "../../standards";
+import { Maybe } from "@ton/ton/dist/utils/maybe";
 
 // Storage
 export type GeneralStateV2A = {
@@ -39,8 +40,8 @@ export type SaleStateV2A = {
 };
 
 export type ToolsV2A = {
-    futJetMasterAddress: Address,
-    futJetWalletAddress: Address,
+    futJetMasterAddress: Maybe<Address>,
+    futJetWalletAddress: Maybe<Address>,
     metadata: Cell,
     futJetMasterCode: Cell,
     walletCode: Cell,

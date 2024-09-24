@@ -71,13 +71,15 @@ function configureLogger(): Logger {
                     customFormat
                 )
             }),
-            new WinstonTelegram({
-                token: bot_token,
-                chatId: chat_id,
-                level,
-                messageThreadId: isDev ? dev_thread_id : prod_thread_id,
-                disableNotification: true,
-            }),
+            // Looks like we'll need to disable telegram logging because of following error
+            //  Possible EventEmitter memory leak detected. 11 error listeners added to [Telegram]. Use emitter.setMaxListeners() to increase limit
+            // new WinstonTelegram({
+            //     token: bot_token,
+            //     chatId: chat_id,
+            //     level: "error",
+            //     messageThreadId: isDev ? dev_thread_id : prod_thread_id,
+            //     disableNotification: true,
+            // }),
             new DailyRotateFile({
                 filename: path.resolve(__dirname, `../../logs[oracle]/logs[${isDev ? "dev" : "prod"}]-%DATE%.log`),
                 datePattern: "YYYY-MM-DD",
@@ -93,6 +95,7 @@ let maybeLogger: Logger | null = null;
 
 export function logger(): Logger {
     if (!maybeLogger) {
+        console.log("configuring logger...");
         maybeLogger = configureLogger();
     }
     return maybeLogger;

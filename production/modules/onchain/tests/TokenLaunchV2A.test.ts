@@ -455,14 +455,9 @@ describe("V2A", () => {
 
             const value = toNano("10");
             const gasPrices = getGasPrices(blockchain.config, BASECHAIN);
-            const expectedFee = computeGasFee(gasPrices, 13377n); // Computed by printTxGasStats later
+            const expectedFee = computeGasFee(gasPrices, 13493n); // Computed by printTxGasStats later
             const tokenLaunchConfigBefore = await sampleTokenLaunch.getConfig();
 
-            const expectedCreatorBalance = getCreatorAmountOut(
-                expectedFee, value,
-                BigInt(launchConfig.jetWlLimitPct) * sampleLaunchParams.totalSupply / PERCENTAGE_DENOMINATOR,
-                launchConfig.tonLimitForWlRound
-            );
             const buyoutTransactionResult = await sampleTokenLaunch.sendCreatorBuyout({
                 via: creator.getSender(), value, queryId: 0n
             });
@@ -488,7 +483,13 @@ describe("V2A", () => {
                 console.log(`actual contract balance increased less than expected on ${fromNano(balanceDiff)} (${balanceDiff}): `);
                 console.log(`actual difference: ${actualBalanceDifference} | expected difference: ${precomputedBalanceDifference}`);
             }
-            assert(expectedCreatorBalance === tokenLaunchState.creatorFutJetBalance);
+
+            const expectedCreatorBalance = getCreatorAmountOut( value,
+                BigInt(launchConfig.jetWlLimitPct) * sampleLaunchParams.totalSupply / PERCENTAGE_DENOMINATOR,
+                launchConfig.tonLimitForWlRound,
+                expectedFee
+            );
+            assert(expectedCreatorBalance === tokenLaunchState.creatorFutJetBalance, `${expectedCreatorBalance} vs ${tokenLaunchState.creatorFutJetBalance}`);
             assert(tokenLaunchConfigBefore.creatorFutJetLeft === tokenLaunchState.creatorFutJetBalance + tokenLaunchConfigAfter.creatorFutJetLeft);
 
             /* You may think, that I forgot about `expect`s here, and it would be better to use it for checks
@@ -584,6 +585,7 @@ describe("V2A", () => {
             });
             const totalFee = wlPurchaseRequestComputeFee + balanceUpdateCost;
             const { purified } = validateValue(totalPurchaseValue, totalFee);
+            console.log(`Precomputed wl buy total fee is equal to ${totalFee} (${fromNano(totalFee)} TON)`);
 
             const contractBalanceAfter = launchContractInstance.balance;
             const [consumerVaultDataAfter, saleMoneyFlowAfter, innerDataAfter] = await Promise.all([

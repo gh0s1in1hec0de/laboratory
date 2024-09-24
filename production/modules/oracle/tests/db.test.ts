@@ -12,6 +12,7 @@ describe("Database", () => {
     let client: db.SqlClient;
 
     beforeAll(async () => {
+        console.log(process.env.POSTGRES_HOST);
         client = postgres({
             host: process.env.POSTGRES_HOST,
             port: 5432,
@@ -45,102 +46,102 @@ describe("Database", () => {
     // `;
     // });
   
-    test.skip("migration being applied correctly", async () => {
-        const directoryPath = path.join(__dirname, "../src/db/migrations");
-        const files = fs.readdirSync(directoryPath).sort();
-        await client.begin(async sql => {
-            for (const file of files) {
-                try {
-                    const migration = fs.readFileSync(path.join(directoryPath, file), "utf-8");
-                    // Here we call text we got from migration .sql file as a query
-                    await sql.unsafe(migration);
-                } catch (_e) {
-                    console.warn(`seems like migration ${file} had already been applied`);
-                }
-            }
-        });
-    });
-  
-    test("Add mock data to the database", async () => {
-        await client`
-        INSERT INTO users (telegram_id, nickname)
-        VALUES (123456789, 'Pavel Durov')`;
-    
-        const randUserAddress = randomAddress().toString();
-        await client`
-        INSERT INTO callers ("user", address)
-        VALUES (123456789, ${randUserAddress})`;
-    
-        await client.unsafe(`
-        DO
-        $$
-        BEGIN
-            FOR i in 1..5 LOOP
-                INSERT INTO tasks (name, description)
-                VALUES (
-                    'task' || lpad(to_hex(i), 1, '0'),
-                    'some description'
-                );
-            END LOOP;
-        END;
-        $$;`
-        );
-
-        await client.unsafe(`
-        DO
-        $$
-        BEGIN
-            FOR i IN 1..20 LOOP
-                INSERT INTO token_launches (
-                    identifier, address, creator, version, metadata, timings, created_at, is_successful, post_deploy_enrollment_stats, dex_data
-                )
-                VALUES (
-                    'TokenLaunch_' || i,
-                    '0x' || lpad(to_hex(i), 48, '0'),
-                    '${randUserAddress}',
-                    'V1',  -- версия лаунча
-                    ('{"description": "Test metadata for launch ' || i || '"}')::jsonb,
-                    '{"start_time": "2024-09-01T00:00:00", "end_time": "2024-09-30T23:59:59"}'::jsonb,
-                    NOW(),
-                    NULL,  
-                    NULL,  
-                    NULL   
-                );
-            END LOOP;
-        END;
-        $$;
-        `);
-
-
-        const users = await client`SELECT *
-                               FROM users;`;
-        expect(users.length).toBe(1);
-    
-        const callers = await client`SELECT *
-                                 FROM callers;`;
-        expect(callers.length).toBe(1);
-    
-        const tasks = await client`SELECT *
-                               FROM tasks;`;
-        expect(tasks.length).toBe(5);
-    
-        const tokenLaunches = await client`SELECT *
-                                       FROM token_launches;`;
-        expect(tokenLaunches.length).toBe(20);
-    });
-  
-    // test("any req", async () => {
-    //     const res = await db.getSortedTokenLaunches({
-    //         page: 1,
-    //         limit: 10,
-    //         orderBy: TokenLaunchFields.CREATED_AT,
-    //         order: SortOrder.ASC,
-    //         search: ""
-    //     }, client);
-    //     console.log(res?.storedTokenLaunch?.length);
+    // test.skip("migration being applied correctly", async () => {
+    //     const directoryPath = path.join(__dirname, "../src/db/migrations");
+    //     const files = fs.readdirSync(directoryPath).sort();
+    //     await client.begin(async sql => {
+    //         for (const file of files) {
+    //             try {
+    //                 const migration = fs.readFileSync(path.join(directoryPath, file), "utf-8");
+    //                 // Here we call text we got from migration .sql file as a query
+    //                 await sql.unsafe(migration);
+    //             } catch (_e) {
+    //                 console.warn(`seems like migration ${file} had already been applied`);
+    //             }
+    //         }
+    //     });
     // });
-
-    test("just some temporary shit I need to check fast", async () => {
-
-    });
+    //
+    // test("Add mock data to the database", async () => {
+    //     await client`
+    //     INSERT INTO users (telegram_id, nickname)
+    //     VALUES (123456789, 'Pavel Durov')`;
+    //
+    //     const randUserAddress = randomAddress().toString();
+    //     await client`
+    //     INSERT INTO callers ("user", address)
+    //     VALUES (123456789, ${randUserAddress})`;
+    //
+    //     await client.unsafe(`
+    //     DO
+    //     $$
+    //     BEGIN
+    //         FOR i in 1..5 LOOP
+    //             INSERT INTO tasks (name, description)
+    //             VALUES (
+    //                 'task' || lpad(to_hex(i), 1, '0'),
+    //                 'some description'
+    //             );
+    //         END LOOP;
+    //     END;
+    //     $$;`
+    //     );
+    //
+    //     await client.unsafe(`
+    //     DO
+    //     $$
+    //     BEGIN
+    //         FOR i IN 1..20 LOOP
+    //             INSERT INTO token_launches (
+    //                 identifier, address, creator, version, metadata, timings, created_at, is_successful, post_deploy_enrollment_stats, dex_data
+    //             )
+    //             VALUES (
+    //                 'TokenLaunch_' || i,
+    //                 '0x' || lpad(to_hex(i), 48, '0'),
+    //                 '${randUserAddress}',
+    //                 'V1',  -- версия лаунча
+    //                 ('{"description": "Test metadata for launch ' || i || '"}')::jsonb,
+    //                 '{"start_time": "2024-09-01T00:00:00", "end_time": "2024-09-30T23:59:59"}'::jsonb,
+    //                 NOW(),
+    //                 NULL,
+    //                 NULL,
+    //                 NULL
+    //             );
+    //         END LOOP;
+    //     END;
+    //     $$;
+    //     `);
+    //
+    //
+    //     const users = await client`SELECT *
+    //                            FROM users;`;
+    //     expect(users.length).toBe(1);
+    //
+    //     const callers = await client`SELECT *
+    //                              FROM callers;`;
+    //     expect(callers.length).toBe(1);
+    //
+    //     const tasks = await client`SELECT *
+    //                            FROM tasks;`;
+    //     expect(tasks.length).toBe(5);
+    //
+    //     const tokenLaunches = await client`SELECT *
+    //                                    FROM token_launches;`;
+    //     expect(tokenLaunches.length).toBe(20);
+    // });
+    //
+    // // test("any req", async () => {
+    // //     const res = await db.getSortedTokenLaunches({
+    // //         page: 1,
+    // //         limit: 10,
+    // //         orderBy: TokenLaunchFields.CREATED_AT,
+    // //         order: SortOrder.ASC,
+    // //         search: ""
+    // //     }, client);
+    // //     console.log(res?.storedTokenLaunch?.length);
+    // // });
+    //
+    // test("just some temporary shit I need to check fast", async () => {
+    //
+    // });
 });

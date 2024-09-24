@@ -8,10 +8,10 @@ export enum Network {
 export async function maybeBruteforceOverload<T>(
     operation: Promise<T> | T,
     retries = 4,
-    maxDelay = 3350
+    maxDelay = 12000
 ): Promise<T> {
     let attempt = 1;
-    let delay = 750;
+    let delay = 5000;
     while (attempt < retries) {
         const randomDelay = Math.floor(Math.random() * 1000);
         const waitTime = Math.min(delay + randomDelay, maxDelay);

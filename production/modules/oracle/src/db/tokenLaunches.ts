@@ -1,4 +1,4 @@
-import type { Coins, RawAddressString } from "starton-periphery";
+import type { Coins, RawAddressString, TokenLaunchTimings } from "starton-periphery";
 import { ok as assert } from "assert";
 import { globalClient } from "./db";
 import type {
@@ -9,6 +9,8 @@ import type {
     SqlClient,
     DexData,
 } from "./types";
+import { logger } from "../logger.ts";
+import postgres from "postgres";
 
 export async function getTokenLaunch(address: RawAddressString, client?: SqlClient): Promise<StoredTokenLaunch | null> {
     const res = await (client ?? globalClient)<StoredTokenLaunch[]>`
@@ -41,20 +43,20 @@ export async function getTokenLaunchById(id: number, client?: SqlClient): Promis
 }
 
 export async function storeTokenLaunch(
-    { identifier, address, creator, version, metadata, timings }:
+    { identifier, address, creator, version, metadata, timings, createdAt }:
         Omit<
             StoredTokenLaunch,
-            "createdAt" | "id" | "isSuccessful" | "postDeployEnrollmentStats" | "dexData"
+            "id" | "isSuccessful" | "postDeployEnrollmentStats" | "dexData"
         >,
     client?: SqlClient
 ): Promise<void> {
+    // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
-        INSERT INTO token_launches (identifier, address, creator, version, metadata, timings)
-        VALUES (${identifier}, ${address}, ${creator}, ${version}, ${JSON.stringify(metadata)},
-                ${JSON.stringify(timings)})
+        INSERT INTO token_launches (identifier, address, creator, version, metadata, timings, created_at)
+        VALUES (${identifier}, ${address}, ${creator}, ${version}, ${metadata}, ${timings}, ${createdAt})
         RETURNING 1;
     `;
-    assert(res.length === 1, `exactly 1 column must be created, got: ${res}`);
+    if (res.length !== 1) logger().warn(`exactly 1 column must be created, got: ${res}`);
 }
 
 export async function getSortedTokenLaunches(
@@ -99,9 +101,7 @@ export async function getTokenLaunchesByCategories(categories: EndedLaunchesCate
         FROM token_launches
         WHERE now() > (timings ->> 'publicRoundEndTime')::TIMESTAMP
           AND post_deploy_enrollment_stats IS NULL
-            ${categories.includes(EndedLaunchesCategories.Pending) ? c`AND is_successful IS NULL` : c`AND is_successful IS TRUE`} 
-            ${categories.includes(EndedLaunchesCategories.WaitingForJetton) ? c`AND post_deploy_enrollment_stats IS NULL` : c`AND post_deploy_enrollment_stats IS NOT NULL`} 
-            ${categories.includes(EndedLaunchesCategories.WaitingForPool) ? c`AND (dex_data IS NULL OR (dex_data->>'addedLiquidity')::BOOLEAN = FALSE` : c``}
+            ${categories.includes(EndedLaunchesCategories.Pending) ? c`AND is_successful IS NULL` : c`AND is_successful IS TRUE`} ${categories.includes(EndedLaunchesCategories.WaitingForJetton) ? c`AND post_deploy_enrollment_stats IS NULL` : c`AND post_deploy_enrollment_stats IS NOT NULL`} ${categories.includes(EndedLaunchesCategories.WaitingForPool) ? c`AND (dex_data IS NULL OR (dex_data->>'addedLiquidity')::BOOLEAN = FALSE` : c``}
     `;
     return res.length ? res : null;
 }
@@ -143,16 +143,26 @@ export async function updateLaunchBalance(tokenLaunchAddress: RawAddressString, 
     totalTonsCollected?: Coins,
 }, client?: SqlClient): Promise<void> {
     const { creatorTonsCollected, wlTonsCollected, totalTonsCollected } = params;
-    assert(Object.values(params).some(value => value !== undefined), "bullshit");
-
     const c = client ?? globalClient;
-    const res = await c`
-        UPDATE launch_balances
-        SET ${creatorTonsCollected ? c`creator_tons_collected = ${creatorTonsCollected}` : c``}
-                ${wlTonsCollected ? c`wl_tons_collected = ${wlTonsCollected}` : c``}
-                    ${totalTonsCollected ? c`total_tons_collected = ${totalTonsCollected}` : c``}
-        WHERE address = ${tokenLaunchAddress}
-        RETURNING 1;
-    `;
-    assert(res.count === 1, "value was not updated");
+    assert(Object.values(params).some(value => value !== undefined), "At least one parameter must be provided");
+    logger().debug(`Updating launch balance with [${creatorTonsCollected}; ${wlTonsCollected}; ${totalTonsCollected}]`);
+
+    const updateWith = (e: postgres.PendingQuery<postgres.Row[]>) =>
+        c`UPDATE launch_balances
+          SET ${e}
+          WHERE token_launch = ${tokenLaunchAddress}
+          RETURNING 1;`;
+    // Execute separate updates for each parameter if they are provided
+    if (creatorTonsCollected !== undefined) {
+        const res = await updateWith(c`creator_tons_collected = ${creatorTonsCollected}`);
+        if (res.length === 0) logger().error(`creator_tons_collected for launch address ${tokenLaunchAddress} wasn't updated`);
+    }
+    if (wlTonsCollected !== undefined) {
+        const res = await updateWith(c`wl_tons_collected = ${wlTonsCollected}`);
+        if (res.length === 0) logger().error(`wl_tons_collected for launch address ${tokenLaunchAddress} wasn't updated`);
+    }
+    if (totalTonsCollected !== undefined) {
+        const res = await updateWith(c`total_tons_collected = ${totalTonsCollected}`);
+        if (res.length === 0) logger().error(`total_tons_collected for launch address ${tokenLaunchAddress} wasn't updated`);
+    }
 }

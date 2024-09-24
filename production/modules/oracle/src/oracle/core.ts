@@ -33,10 +33,12 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
                     const outMsgBody = msg.body.beginParse();
                     if (outMsgBody.remainingBits < (32 + 64)) continue;
                     const { op } = await loadOpAndQueryId(outMsgBody);
-                    if (op !== TokensLaunchOps.Init) continue;
+                    if (op !== TokensLaunchOps.Init || msg.info.type !== "internal") continue;
                     const newLaunchAddress = msg.info.dest;
                     if (!newLaunchAddress) continue;
+
                     const address: RawAddressString = (newLaunchAddress as Address).toRawString(); // Is it safe?
+                    logger().debug(`found new launch with address: ${address}`);
 
                     const newLaunchStateInit = msg.init!.data!; // As we can guarantee our contract behaviour
                     const parsedStateInit = coreVersion === GlobalVersions.V1 ?
@@ -46,13 +48,14 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
                         Fetch metadata by url inside
                         Build name from ticker + token */
                     await db.storeTokenLaunch({
-                        identifier: "dummy",
+                        identifier: `dummy${Date.now()}`,
                         address,
                         creator: parsedStateInit.creatorAddress.toRawString(),
                         version: coreVersion,
                         metadata: parseMetadataCell(parsedStateInit.tools.metadata),
                         // An error may occur here
-                        timings: parseTokenLaunchTimings(parsedStateInit)
+                        timings: parseTokenLaunchTimings(parsedStateInit),
+                        createdAt: new Date(msg.info.createdAt * 1000)
                     });
                 }
             }

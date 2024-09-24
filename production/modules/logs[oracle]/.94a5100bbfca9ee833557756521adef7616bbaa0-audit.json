@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 10
+    },
+    "auditLog": "/home/qt/Projects/crypto/TON/laboratory/production/modules/logs[oracle]/.94a5100bbfca9ee833557756521adef7616bbaa0-audit.json",
+    "files": [
+        {
+            "date": 1727182187837,
+            "name": "/home/qt/Projects/crypto/TON/laboratory/production/modules/logs[oracle]/logs[dev]-2024-09-24.log",
+            "hash": "992452097f61e289371708bd3c338f423fe34e964dca7d8bedc99ce3851e230d"
+        }
+    ],
+    "hashType": "sha256"
+}

@@ -27,8 +27,8 @@ Now that the network is created, run the PostgreSQL container and connect it to 
 Run the following command in directory, where We want to locate postgres volume directory:
 ```bash
 docker run -d \
---name database \
---network app-network \
+--name st-database \
+--network starlink \
 -e POSTGRES_DB=example_db \
 -e POSTGRES_USER=example_user \
 -e POSTGRES_PASSWORD=example_password \
