@@ -1,6 +1,8 @@
-import type { Coins, RawAddressString, TokenLaunchTimings } from "starton-periphery";
+import type { Coins, RawAddressString, UnixTimeSeconds } from "starton-periphery";
 import { ok as assert } from "assert";
+import { logger } from "../logger.ts";
 import { globalClient } from "./db";
+import postgres from "postgres";
 import type {
     StoredTokenLaunchResponse,
     PostDeployEnrollmentStats,
@@ -9,9 +11,9 @@ import type {
     SqlClient,
     DexData,
 } from "./types";
-import { logger } from "../logger.ts";
-import postgres from "postgres";
 
+// Warning! In runtime, when `StoredTokenLaunch` is returned - `TokenLaunchTimings`' fields are strings.
+// So - be careful, when using it - its better convert it via `new Date()`.
 export async function getTokenLaunch(address: RawAddressString, client?: SqlClient): Promise<StoredTokenLaunch | null> {
     const res = await (client ?? globalClient)<StoredTokenLaunch[]>`
         SELECT *
@@ -22,16 +24,17 @@ export async function getTokenLaunch(address: RawAddressString, client?: SqlClie
 }
 
 // Returns `null` to show that nothing was found the explicit way
-export async function getActiveTokenLaunches(createdAt?: Date, client?: SqlClient): Promise<StoredTokenLaunch[] | null> {
+export async function getActiveTokenLaunches(createdAt?: UnixTimeSeconds, client?: SqlClient): Promise<StoredTokenLaunch[] | null> {
     const c = client ?? globalClient;
     const res = await c<StoredTokenLaunch[]>`
         SELECT *
         FROM token_launches
-        WHERE (timings ->> 'endTime')::TIMESTAMP - now() > INTERVAL '30 seconds'
-            ${createdAt ? c`AND created_at > ${createdAt}` : c``};
+        WHERE (timings ->> 'endTime')::BIGINT - EXTRACT(EPOCH FROM now()) > 30
+          AND created_at > ${createdAt ? createdAt : 0};
     `;
     return res.length ? res : null;
 }
+
 
 export async function getTokenLaunchById(id: number, client?: SqlClient): Promise<StoredTokenLaunch | null> {
     const res = await (client ?? globalClient)<StoredTokenLaunch[]>`
@@ -99,9 +102,11 @@ export async function getTokenLaunchesByCategories(categories: EndedLaunchesCate
     const res = await c<StoredTokenLaunch[]>`
         SELECT *
         FROM token_launches
-        WHERE now() > (timings ->> 'publicRoundEndTime')::TIMESTAMP
+        WHERE EXTRACT(EPOCH FROM now()) > (timings ->> 'publicRoundEndTime')::BIGINT
           AND post_deploy_enrollment_stats IS NULL
-            ${categories.includes(EndedLaunchesCategories.Pending) ? c`AND is_successful IS NULL` : c`AND is_successful IS TRUE`} ${categories.includes(EndedLaunchesCategories.WaitingForJetton) ? c`AND post_deploy_enrollment_stats IS NULL` : c`AND post_deploy_enrollment_stats IS NOT NULL`} ${categories.includes(EndedLaunchesCategories.WaitingForPool) ? c`AND (dex_data IS NULL OR (dex_data->>'addedLiquidity')::BOOLEAN = FALSE` : c``}
+            ${categories.includes(EndedLaunchesCategories.Pending) ? c`AND is_successful IS NULL` : c`AND is_successful IS TRUE`}
+            ${categories.includes(EndedLaunchesCategories.WaitingForJetton) ? c`AND post_deploy_enrollment_stats IS NULL` : c`AND post_deploy_enrollment_stats IS NOT NULL`}
+            ${categories.includes(EndedLaunchesCategories.WaitingForPool) ? c`AND (dex_data IS NULL OR (dex_data->>'addedLiquidity')::BOOLEAN = FALSE` : c``}
     `;
     return res.length ? res : null;
 }
@@ -113,28 +118,30 @@ export async function markLaunchAsFailed(address: RawAddressString, client?: Sql
         WHERE address = ${address}
         RETURNING 1;
     `;
-    assert(res.count === 1, "value was not updated");
+    if (res.length !== 1) logger().error(`looks like launch ${address} wasn't marked as failed`);
 }
 
 export async function updatePostDeployEnrollmentStats(tokenLaunchAddress: RawAddressString, stats: PostDeployEnrollmentStats, client?: SqlClient): Promise<void> {
+    // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
         UPDATE token_launches
-        SET post_deploy_enrollment_stats = ${JSON.stringify(stats)},
+        SET post_deploy_enrollment_stats = ${stats},
             is_successful                = TRUE
         WHERE address = ${tokenLaunchAddress}
         RETURNING 1;
     `;
-    assert(res.count === 1, "value was not updated");
+    if (res.length !== 1) logger().error(`looks like enrollment stats for ${tokenLaunchAddress} wasn't updated`);
 }
 
 export async function updateDexData(tokenLaunchAddress: RawAddressString, dexData: DexData, client?: SqlClient): Promise<void> {
+    // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
         UPDATE token_launches
-        SET dex_data = ${JSON.stringify(dexData)}
+        SET dex_data = ${dexData}
         WHERE address = ${tokenLaunchAddress}
         RETURNING 1;
     `;
-    assert(res.count === 1, "value was not updated");
+    if (res.length !== 1) logger().error(`looks like dexdata for ${tokenLaunchAddress} wasn't updated`);
 }
 
 export async function updateLaunchBalance(tokenLaunchAddress: RawAddressString, params: {
@@ -155,14 +162,14 @@ export async function updateLaunchBalance(tokenLaunchAddress: RawAddressString, 
     // Execute separate updates for each parameter if they are provided
     if (creatorTonsCollected !== undefined) {
         const res = await updateWith(c`creator_tons_collected = ${creatorTonsCollected}`);
-        if (res.length === 0) logger().error(`creator_tons_collected for launch address ${tokenLaunchAddress} wasn't updated`);
+        if (res.length !== 1) logger().error(`creator_tons_collected for launch address ${tokenLaunchAddress} wasn't updated`);
     }
     if (wlTonsCollected !== undefined) {
         const res = await updateWith(c`wl_tons_collected = ${wlTonsCollected}`);
-        if (res.length === 0) logger().error(`wl_tons_collected for launch address ${tokenLaunchAddress} wasn't updated`);
+        if (res.length !== 1) logger().error(`wl_tons_collected for launch address ${tokenLaunchAddress} wasn't updated`);
     }
     if (totalTonsCollected !== undefined) {
         const res = await updateWith(c`total_tons_collected = ${totalTonsCollected}`);
-        if (res.length === 0) logger().error(`total_tons_collected for launch address ${tokenLaunchAddress} wasn't updated`);
+        if (res.length !== 1) logger().error(`total_tons_collected for launch address ${tokenLaunchAddress} wasn't updated`);
     }
 }

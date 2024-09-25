@@ -1,4 +1,4 @@
-import { Address, Dictionary, Slice } from "@ton/core";
+import { Address, Dictionary, type Slice } from "@ton/core";
 import { Maybe } from "@ton/ton/dist/utils/maybe";
 import { Contracts } from "../../types";
 

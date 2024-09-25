@@ -1,5 +1,6 @@
 import { Address, Cell } from "@ton/core";
 import { Coins } from "./standards";
+import { UnixTimeSeconds } from "./utils";
 
 // Unified standards and parts for Cores and Token Launches
 export type Contracts = {
@@ -19,11 +20,11 @@ export type MoneyFlows = {
     syntheticTonReserve: Coins,
 }
 export type TokenLaunchTimings = {
-    startTime: Date,
-    creatorRoundEndTime: Date,
-    wlRoundEndTime: Date,
-    publicRoundEndTime: Date,
-    endTime: Date,
+    startTime: UnixTimeSeconds,
+    creatorRoundEndTime: UnixTimeSeconds,
+    wlRoundEndTime: UnixTimeSeconds,
+    publicRoundEndTime: UnixTimeSeconds,
+    endTime: UnixTimeSeconds,
 };
 export type LaunchData = {
     futJetTotalSupply: Coins,

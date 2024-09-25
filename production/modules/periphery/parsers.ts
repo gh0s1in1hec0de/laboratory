@@ -1,5 +1,5 @@
 import { GetConfigResponse, MoneyFlows } from "./types";
-import { Cell, Slice, TupleReader } from "@ton/core";
+import { Cell, type Slice, TupleReader } from "@ton/core";
 import {
     WithdrawConfirmationMessage,
     BalanceUpdateMessage,

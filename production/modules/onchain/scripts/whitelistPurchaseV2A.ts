@@ -7,10 +7,14 @@ export async function run(provider: NetworkProvider) {
     const ui = provider.ui();
 
     try {
-        const tokenLaunch = provider.open(TokenLaunchV2A.createFromAddress(Address.parse("launch address")));
+        const tokenLaunch = provider.open(
+            TokenLaunchV2A.createFromAddress(
+                Address.parse("kQAL-bolzo-2m0ioeZnodK1lPgLmyH6-SQgnyugWOWD6evI8")
+            )
+        );
 
         await tokenLaunch.sendWhitelistPurchase({
-            via: provider.sender(), value: toNano("value"), queryId: BigInt(getQueryId())
+            via: provider.sender(), value: toNano("1.5"), queryId: BigInt(getQueryId())
         });
 
         ui.write("Transaction sent");

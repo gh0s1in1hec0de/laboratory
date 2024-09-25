@@ -1,21 +1,23 @@
-import { beginCell, Cell, fromNano, Slice, toNano } from "@ton/core";
+import { beginCell, fromNano, type Slice, toNano } from "@ton/core";
 import { TokenLaunchStorageV2A } from "./V2A";
 import { TokenLaunchTimings } from "./types";
 import { TokenMetadata } from "./standards";
 import { TokenLaunchStorageV1 } from "./V1";
 import { ok as assert } from "node:assert";
 
+export type UnixTimeSeconds = number;
+
 export function parseTokenLaunchTimings(tokenLaunchStorage: TokenLaunchStorageV1 | TokenLaunchStorageV2A, pollingDuration: number = 2 * 86400): TokenLaunchTimings {
     return {
-        startTime: new Date(tokenLaunchStorage.saleState.general.startTime * 1000),
-        creatorRoundEndTime: new Date(tokenLaunchStorage.saleState.creatorRound.endTime * 1000),
-        wlRoundEndTime: new Date(tokenLaunchStorage.saleState.wlRound.endTime * 1000),
-        publicRoundEndTime: new Date(tokenLaunchStorage.saleState.pubRound.endTime * 1000),
-        endTime: new Date((tokenLaunchStorage.saleState.pubRound.endTime + pollingDuration) * 1000),
+        startTime: tokenLaunchStorage.saleState.general.startTime,
+        creatorRoundEndTime: tokenLaunchStorage.saleState.creatorRound.endTime,
+        wlRoundEndTime: tokenLaunchStorage.saleState.wlRound.endTime,
+        publicRoundEndTime: tokenLaunchStorage.saleState.pubRound.endTime,
+        endTime: tokenLaunchStorage.saleState.pubRound.endTime + pollingDuration,
     };
 }
 
-export function tokenMetadataToCell(content: TokenMetadata): Cell {
+export function tokenMetadataToCell(content: TokenMetadata) {
     return beginCell()
         .storeStringRefTail(content.uri) // Snake logic under the hood
         .endCell();

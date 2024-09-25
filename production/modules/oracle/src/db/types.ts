@@ -2,6 +2,7 @@ import type { Sql } from "postgres";
 import {
     type TokenLaunchTimings,
     type RawAddressString,
+    type UnixTimeSeconds,
     type GlobalVersions,
     type TokenMetadata,
     BalanceUpdateMode,
@@ -55,7 +56,7 @@ export type StoredTokenLaunch = {
 
     metadata: TokenMetadata,
     timings: TokenLaunchTimings,
-    createdAt: Date,
+    createdAt: UnixTimeSeconds,
 
     isSuccessful: boolean | null,
     postDeployEnrollmentStats: PostDeployEnrollmentStats | null,
@@ -89,7 +90,7 @@ export type UserAction = {
     publicTons: Coins,
     jettons: Coins,
     lt: LamportTime,
-    timestamp: Date,
+    timestamp: UnixTimeSeconds,
     queryId: bigint,
 };
 

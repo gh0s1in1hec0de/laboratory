@@ -14,6 +14,6 @@ export async function run(provider: NetworkProvider) {
         platformSharePct: 1500
     };
     const core = provider.open(CoreV2A.createFromAddress(Address.parse("kQCQ7dZ4IAFbTnZcK6tealusJCOv05m6kBZM_ggaLJah50mO")));
-    await core.sendCreateLaunch({ via: provider.sender(), value: toNano("3"), queryId: 0n }, params);
+    await core.sendCreateLaunch({ via: provider.sender(), value: toNano("1"), queryId: 0n }, params);
     ui.write("Transaction sent");
 }

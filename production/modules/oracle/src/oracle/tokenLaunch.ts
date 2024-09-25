@@ -1,6 +1,6 @@
 import { balancedTonClient, retrieveAllUnknownTransactions } from "./api";
-import { ok as assert } from "node:assert";
 import { Address, fromNano } from "@ton/ton";
+import { ok as assert } from "node:assert";
 import { logger } from "../logger";
 import { delay } from "../utils";
 import * as db from "../db";
@@ -19,16 +19,19 @@ import {
     type Coins,
 } from "starton-periphery";
 
-export async function spawnNewLaunchesScanners(scanFrom?: Date) {
+export async function spawnNewLaunchesScanners(scanFrom?: number) {
     let timeUpdate = scanFrom;
     while (true) {
         try {
             const newLaunches = await db.getActiveTokenLaunches(timeUpdate);
-
             if (!newLaunches) {
-                logger().debug(`[*] ${spawnNewLaunchesScanners.name} - no active launches found`); // THIS CODE IS A FUCKING JOKE BTW
+                logger().info(`[*] ${spawnNewLaunchesScanners.name} - no active launches found`); // THIS CODE IS A FUCKING JOKE BTW
                 await delay(30);
                 continue;
+            }
+            logger().info(`[*] ${spawnNewLaunchesScanners.name} - found ${newLaunches.length} new launches: `);
+            for (const { address } of newLaunches) {
+                logger().info(` -  ${address}`);
             }
             for (const launch of newLaunches) {
                 balancedTonClient.incrementActiveLaunchesAmount();
@@ -38,7 +41,8 @@ export async function spawnNewLaunchesScanners(scanFrom?: Date) {
             timeUpdate = newLaunches.reduce((latest, launch) => {
                 return launch.createdAt > latest ? launch.createdAt : latest;
             }, newLaunches[0].createdAt);
-            await delay(15);
+            logger().debug(`[*] ${spawnNewLaunchesScanners.name}: scan from time was set to ${timeUpdate}`);
+            await delay(1);
         } catch (e) {
             logger().error("failed to spawn new launch scanner with error ", e);
         }
@@ -53,12 +57,18 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
         logger().error(`launch ${launchAddress} not found in database`);
         return;
     }
-    logger().debug(`new token launch updates handler for ${launch.address} is up`);
+    logger().info(`new token launch updates handler for ${launch.address} is up`);
     let currentHeight = await db.getLaunchHeight(launch.address) ?? 0n;
+    const endTime = (new Date(launch.timings.endTime)).getTime();
 
     while (true) {
         try {
             const newTxs = await retrieveAllUnknownTransactions(launch.address, currentHeight);
+            if (!newTxs.length) {
+                logger().debug(`no updates found for launch ${launch.address}`);
+                await delay(endTime - Date.now() > 86_400_000 ? balancedTonClient.delayValue() : 300);
+                continue;
+            }
             const newActionsChunk: db.UserAction[] = [];
             for (const tx of newTxs) {
                 const userActions: db.UserAction[] = [];
@@ -66,7 +76,6 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                 if (!inMsg) continue;
                 if (inMsg.info.type !== "internal") continue;
 
-                const txCreatedAt = new Date(tx.now * 1000);
                 const lt: LamportTime = tx.lt;
                 const inMsgSender = inMsg.info.src;
                 const inMsgBody = inMsg.body.beginParse();
@@ -91,7 +100,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                         publicTons,
                         jettons: futureJettons,
                         lt,
-                        timestamp: txCreatedAt,
+                        timestamp: tx.now,
                         queryId
                     } as db.UserAction);
                 }
@@ -104,7 +113,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                         creatorFutJetPriceReversed
                     } = parseGetConfigResponse(moneyFlowsResponse.stack);
                     const investedValue = creatorFutJetBalance * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
-                    logger().debug(`launch ${launch.address}: creator's buyout on ${fromNano(investedValue)} TONs is found`);
+                    logger().info(`launch ${launch.address}: creator's buyout on ${fromNano(investedValue)} TONs is found`);
 
                     const attachedValue: Coins = inMsg.info.value.coins ?? 0n;
                     const cornerCase = investedValue > attachedValue;
@@ -123,7 +132,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                     if (op !== UserVaultOps.balanceUpdate) continue;
                     const { mode, tons, futureJettons } = parseBalanceUpdate(msgBodyData);
                     if (![BalanceUpdateMode.PublicDeposit, BalanceUpdateMode.WhitelistDeposit].includes(mode)) continue;
-                    logger().debug(`launch ${launch.address}: new operation ${op} - [${fromNano(tons)}; ${futureJettons}]`);
+                    logger().debug(`launch ${launch.address}: new operation ${op.toString(16).toUpperCase()} - [${fromNano(tons)}; ${futureJettons}]`);
 
                     const [whitelistTons, publicTons] =
                         mode === BalanceUpdateMode.WhitelistDeposit ? [tons, 0n] : [0n, tons];
@@ -135,7 +144,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                         publicTons,
                         jettons: futureJettons,
                         lt,
-                        timestamp: txCreatedAt,
+                        timestamp: tx.now,
                         queryId
                     } as db.UserAction);
                 }
@@ -159,11 +168,11 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                 wlTonsCollected: wlRoundTonInvestedTotal
             });
 
-            if ((Date.now() - (new Date(launch.timings.endTime)).getTime()) > 86_400_000) {
+            if (Date.now() > endTime) {
                 balancedTonClient.decrementActiveLaunchesAmount();
                 break;
             } // 10 interval mins if we passed the end time
-            await delay(Date.now() < (new Date(launch.timings.endTime)).getTime() ? balancedTonClient.delayValue() : 600);
+            await delay(endTime - Date.now() > 86_400_000 ? balancedTonClient.delayValue() : 600);
         } catch (e) {
             logger().error(`failed to handle launch ${launch.address} update with general error: `, e);
             await delay(balancedTonClient.delayValue() / 2);

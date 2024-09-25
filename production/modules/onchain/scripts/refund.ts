@@ -10,7 +10,7 @@ export async function run(provider: NetworkProvider) {
         const tokenLaunch = provider.open(TokenLaunchV2A.createFromAddress(Address.parse("launch address")));
 
         await tokenLaunch.sendRefundRequest({
-            via: provider.sender(), value: toNano("value"), queryId: 0n
+            via: provider.sender(), value: toNano("0.1"), queryId: 0n
         }, BalanceUpdateMode.TotalWithdrawal);
 
         ui.write("Transaction sent");

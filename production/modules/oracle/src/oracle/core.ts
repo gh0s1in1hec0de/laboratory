@@ -55,7 +55,7 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
                         metadata: parseMetadataCell(parsedStateInit.tools.metadata),
                         // An error may occur here
                         timings: parseTokenLaunchTimings(parsedStateInit),
-                        createdAt: new Date(msg.info.createdAt * 1000)
+                        createdAt: msg.info.createdAt
                     });
                 }
             }

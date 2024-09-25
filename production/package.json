@@ -3,9 +3,10 @@
   "private": true,
   "workspaces": [
     "modules/periphery",
-    "modules/manager",
     "modules/oracle",
-    "modules/frontend"
+    "modules/manager",
+    "modules/frontend",
+    "modules/onchain"
   ],
   "dependencies": {
     "postgres": "^3.4.4"

@@ -1,5 +1,5 @@
 import type { UserActionType, SqlClient, UserAction } from "./types";
-import type { RawAddressString } from "starton-periphery";
+import type { RawAddressString, UnixTimeSeconds } from "starton-periphery";
 import { globalClient } from "./db";
 import { logger } from "../logger";
 
@@ -11,6 +11,7 @@ export async function storeUserAction(
         whitelistTons,
         publicTons,
         jettons,
+        lt,
         timestamp,
         queryId
     }: UserAction,
@@ -18,13 +19,14 @@ export async function storeUserAction(
 ): Promise<void> {
     const res = await (client ?? globalClient)`
         INSERT INTO user_actions
-        (actor, token_launch, action_type, whitelist_tons, public_tons, jettons, timestamp, query_id)
-        VALUES (${actor}, ${tokenLaunch}, ${actionType}, ${whitelistTons}, ${publicTons}, ${jettons}, ${timestamp},
+        (actor, token_launch, action_type, whitelist_tons, public_tons, jettons, lt, timestamp, query_id)
+        VALUES (${actor}, ${tokenLaunch}, ${actionType}, ${whitelistTons}, ${publicTons}, ${jettons}, ${lt},
+                ${timestamp},
                 ${queryId})
         ON CONFLICT DO NOTHING
         RETURNING 1;
     `;
-    if (res.length === 0) logger().error(`looks like action for {actor}[${timestamp}] already exists`);
+    if (res.length === 0) logger().error(`looks like action for {actor}[${new Date(timestamp)}] already exists`);
 }
 
 // Returns `null` to show that nothing was found the explicit way
@@ -32,29 +34,17 @@ export async function getCallerActions(
     actor: RawAddressString,
     type?: UserActionType,
     tokenLaunch?: RawAddressString,
-    after?: Date,
+    after?: UnixTimeSeconds,
     client?: SqlClient
 ): Promise<UserAction[] | null> {
     const c = client ?? globalClient;
     const res = await c<UserAction[]>`
         SELECT *
         FROM user_actions
-        WHERE actor = ${actor} ${type ? c`AND type = ${type}` : c``} ${tokenLaunch ? c`AND token_launch = ${tokenLaunch}` : c``} ${after ? c`AND timestamp > ${after}` : c``};
+        WHERE actor = ${actor}
+            ${type ? c`AND type = ${type}` : c``}
+            ${tokenLaunch ? c`AND token_launch = ${tokenLaunch}` : c``}
+            ${after ? c`AND timestamp > ${after}` : c``};
     `;
     return res.length ? res : null;
-}
-
-// In fact it is caller actions, but I decided to leave naming as it is
-export async function _storeUserActions(userActions: UserAction[]) {
-    try {
-        await globalClient.begin(async txClient => {
-            for (const action of userActions) {
-                await storeUserAction(action, txClient);
-            }
-        });
-    } catch (e) {
-        const actor = userActions[0].actor;
-        const timestamp = userActions[0].timestamp;
-        logger().error(`failed to record user actions fo ${actor}[${timestamp}] in tx with error: ${e}`);
-    }
 }

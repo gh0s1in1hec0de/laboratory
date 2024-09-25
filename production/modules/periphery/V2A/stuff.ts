@@ -11,7 +11,7 @@ import {
     ToolsV2A,
 } from "./types";
 
-export function packLaunchConfigToCellV2A(c: LaunchConfigV2A): Cell {
+export function packLaunchConfigToCellV2A(c: LaunchConfigV2A) {
     return beginCell()
         .storeCoins(c.minTonForSaleSuccess)
         .storeCoins(c.tonLimitForWlRound)
