@@ -13,7 +13,11 @@ export async function run(provider: NetworkProvider) {
         metadata: { uri: "https://another_shitcoin.meow" },
         platformSharePct: 1500
     };
-    const core = provider.open(CoreV2A.createFromAddress(Address.parse("kQAZdl6ExXAVRbM3YOwOUZYWQLL8NmH_JWGhORN7w43ncLZP")));
+    const core = provider.open(
+        CoreV2A.createFromAddress(
+            Address.parse("kQAZdl6ExXAVRbM3YOwOUZYWQLL8NmH_JWGhORN7w43ncLZP")
+        )
+    );
     await core.sendCreateLaunch({ via: provider.sender(), value: toNano("1"), queryId: 0n }, params);
     ui.write("Transaction sent");
 }

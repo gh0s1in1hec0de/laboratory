@@ -33,66 +33,82 @@ export async function chiefScanning() {
 }
 
 async function validateEndedPendingLaunches() {
-    const pendingLaunches = await db.getTokenLaunchesByCategories([db.EndedLaunchesCategories.Pending]);
-    const waitingForJettonLaunches = await db.getTokenLaunchesByCategories([db.EndedLaunchesCategories.WaitingForJetton]) ?? [];
-    if (!(pendingLaunches && waitingForJettonLaunches.length)) return;
+    try {
+        const pendingLaunches = await db.getTokenLaunchesByCategories([db.EndedLaunchesCategories.Pending]);
+        const waitingForJettonLaunches = await db.getTokenLaunchesByCategories([db.EndedLaunchesCategories.WaitingForJetton]) ?? [];
+        if (!(pendingLaunches && waitingForJettonLaunches.length)) return;
 
-    const queryId = Date.now() / 1000;
-    const { keyPair, wallet, queryIdManager } = await chiefWalletData();
+        const queryId = Date.now() / 1000;
+        const { keyPair, wallet, queryIdManager } = await chiefWalletData();
 
-    const actions: OutActionSendMsg[] = [];
-    for (const launch of pendingLaunches) {
-        const { address } = launch;
-        const launchAddressParsed = Address.parse(address);
-        const [moneyFlowsResponse, getConfigCallResponse,] = await Promise.all([
-            balancedTonClient.execute(c => c.runMethod(launchAddressParsed, "get_money_flows", []), true),
-            balancedTonClient.execute(c => c.runMethod(launchAddressParsed, "get_config", []), true),
-            delay(2)
-        ]);
-        const { totalTonsCollected } = parseMoneyFlows(moneyFlowsResponse.stack);
-        const { minTonForSaleSuccess } = parseGetConfigResponse(getConfigCallResponse.stack);
-        if (totalTonsCollected >= minTonForSaleSuccess) {
-            waitingForJettonLaunches.push(launch);
-            continue;
+        const actions: OutActionSendMsg[] = [];
+        const failedLaunches: db.StoredTokenLaunch[] = [];
+        for (const launch of pendingLaunches) {
+            const { address } = launch;
+            const launchAddressParsed = Address.parse(address);
+            const [moneyFlowsResponse, getConfigCallResponse,] = await Promise.all([
+                balancedTonClient.execute(c => c.runMethod(launchAddressParsed, "get_money_flows", []), true),
+                balancedTonClient.execute(c => c.runMethod(launchAddressParsed, "get_config", []), true),
+                delay(2)
+            ]);
+            const { totalTonsCollected } = parseMoneyFlows(moneyFlowsResponse.stack);
+            const { minTonForSaleSuccess } = parseGetConfigResponse(getConfigCallResponse.stack);
+            if (totalTonsCollected >= minTonForSaleSuccess) {
+                waitingForJettonLaunches.push(launch);
+                continue;
+            }
+            actions.push({
+                type: "sendMsg",
+                mode: SendMode.PAY_GAS_SEPARATELY,
+                outMsg: internal_relaxed({
+                    to: launchAddressParsed,
+                    value: toNano("0.1"),
+                    body: beginCell()
+                        .storeUint(TokensLaunchOps.ClaimOpn, OP_LENGTH)
+                        .storeUint(queryId, QUERY_ID_LENGTH)
+                        .endCell()
+                }),
+            });
+            logger().debug(`launch ${address} considered as failed`);
+            failedLaunches.push(launch);
         }
-        actions.push({
-            type: "sendMsg",
-            mode: SendMode.PAY_GAS_SEPARATELY,
-            outMsg: internal_relaxed({
-                to: launchAddressParsed,
-                value: toNano("0.1"),
-                body: beginCell()
-                    .storeUint(TokensLaunchOps.ClaimOpn, OP_LENGTH)
-                    .storeUint(queryId, QUERY_ID_LENGTH)
-                    .endCell()
-            }),
-        });
-        await db.markLaunchAsFailed(address);
+        if (waitingForJettonLaunches.length) {
+            logger().info("[*] found new successful launches: ");
+            for (const { address } of waitingForJettonLaunches) {
+                logger().info(` - ${address}`);
+                actions.push({
+                    type: "sendMsg",
+                    mode: SendMode.PAY_GAS_SEPARATELY,
+                    outMsg: internal_relaxed({
+                        to: Address.parse(address),
+                        value: toNano("1"),
+                        body: beginCell()
+                            .storeUint(TokensLaunchOps.DeployJetton, OP_LENGTH)
+                            .storeUint(queryId, QUERY_ID_LENGTH)
+                            .endCell()
+                    }),
+                });
+            }
+        }
+        if (actions.length) {
+            const highloadQueryId = await queryIdManager.getNextCached();
+            await balancedTonClient.execute(() =>
+                wallet.sendBatch(keyPair.secretKey,
+                    actions,
+                    SUBWALLET_ID,
+                    highloadQueryId,
+                    DEFAULT_TIMEOUT,
+                )
+            );
+        }
+        if (failedLaunches.length) {
+            for (const { address } of failedLaunches) {
+                await db.markLaunchAsFailed(address);
+            }
+        }
+    } catch (e) {
+        logger().error("failed to validate ended/pending launches with error ", e);
     }
-    for (const { address } of waitingForJettonLaunches) {
-        actions.push({
-            type: "sendMsg",
-            mode: SendMode.PAY_GAS_SEPARATELY,
-            outMsg: internal_relaxed({
-                to: Address.parse(address),
-                value: toNano("1"),
-                body: beginCell()
-                    .storeUint(TokensLaunchOps.DeployJetton, OP_LENGTH)
-                    .storeUint(queryId, QUERY_ID_LENGTH)
-                    .endCell()
-            }),
-        });
-    }
-
-    const highloadQueryId = await queryIdManager.getNextCached();
-    await balancedTonClient.execute(() =>
-        wallet.sendBatch(keyPair.secretKey,
-            actions,
-            SUBWALLET_ID,
-            highloadQueryId,
-            DEFAULT_TIMEOUT,
-        )
-    );
 }
 
 async function createPoolsForNewJettons() {
@@ -173,7 +189,10 @@ async function handleChiefUpdates() {
     try {
         let currentHeight = await db.getHeight(chief().address) ?? 0n;
         const newTxs = await retrieveAllUnknownTransactions(chief().address, currentHeight);
-        if (!newTxs.length) return;
+        if (!newTxs) {
+            logger().info("no updates for chief");
+            return;
+        }
         for (const tx of newTxs) {
             const inMsg = tx.inMessage;
             if (!inMsg) continue;

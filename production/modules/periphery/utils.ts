@@ -38,7 +38,7 @@ export function jettonToNano(amount: number | bigint | string, decimals: number 
 
 export function jettonFromNano(amount: number | bigint | string, decimals: number = 6) {
     assert(decimals <= 9, "not supported yet");
-    return fromNano(decimals < 9 ? BigInt(amount) * BigInt(9 - decimals) : amount);
+    return fromNano(decimals < 9 ? BigInt(amount) ** BigInt(9 - decimals) : amount);
 }
 
 // Just for clarity

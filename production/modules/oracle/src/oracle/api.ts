@@ -32,7 +32,7 @@ class RateLimiter {
         const now = Date.now();
         const timePassed = now - this.lastRefill;
         const refill = timePassed * (this.refillRate / 1000);
-        this.tokens = Math.min(this.maxTokens, this.tokens + refill);
+        this.tokens = Math.min(this.maxTokens, Math.floor(this.tokens + refill));
         this.lastRefill = now;
     }
 }
@@ -77,24 +77,12 @@ export class BalancedTonClient {
     }
 
     delayValue() {
-        // Rewrite
-        // Are you ready for dumb code?
-        if (this.activeLaunchesNumber < 10) return 12;
-        else return 24;
+        // Are you ready for dumb code? TODO Rewrite this shame
+        return this.activeLaunchesNumber < 10 ? 15 : 30;
     }
 }
 
 export const balancedTonClient = new BalancedTonClient(currentNetwork() as Network);
-// Try "https://mainnet-v4.tonhubapi.com"
-const tonClient4 = new TonClient4({ endpoint: await getHttpV4Endpoint({ network: currentNetwork() as Network }) });
-
-// Works with TonClient4 under the hood, includes last account's `lamport_time`
-export async function getAccount(address: RawAddressString, seqno?: number) {
-    const seqno_ = seqno ? seqno : (await tonClient4.getLastBlock()).last.seqno;
-    logger().debug(`Seqno has been ${seqno ? "provided manually" : "taken from api"}: ${seqno_}`);
-    // Do we really need it here?
-    return maybeBruteforceOverload<any>(tonClient4.getAccount(seqno_, Address.parse(address)));
-}
 
 // Limited to 100 transactions per request by TonCenter;
 //
@@ -124,7 +112,7 @@ export async function retrieveAllUnknownTransactions(
         archival: boolean,
         limit: number,
     }
-): Promise<Transaction[]> {
+): Promise<Transaction[] | null> {
     logger().debug(`[*] ${retrieveAllUnknownTransactions.name}`); // THIS CODE IS A FUCKING JOKE BTW
     logger().debug(` - start txs parsing for account ${address} from ${stopAt}`);
     const newTransactions: Transaction[] = [];
@@ -134,8 +122,8 @@ export async function retrieveAllUnknownTransactions(
     let iterationIndex = 1;
     while (true) {
         if (iterationIndex > 1) {
-            logger().warn(`exceeded update limit(${limit} per request) for address ${address} at ${new Date(Date.now()).toString()}`);
-            await delay(0.75);
+            logger().warn(` - exceeded update limit(${limit} per request) for address ${address}`);
+            await delay(1);
         }
 
         const transactions = await getTransactionsForAccount(address, stopAt, startFrom, parsingOptions?.archival, parsingOptions?.limit);
@@ -150,9 +138,9 @@ export async function retrieveAllUnknownTransactions(
         iterationIndex += 1;
     }
     // No updates happened case
-    if (newTransactions.length == 0) {
+    if (!newTransactions.length) {
         logger().debug(` - no updates for ${address}`);
-        return [];
+        return null;
     }
     // From oldest to newest
     newTransactions.sort((a, b) => {
@@ -160,7 +148,7 @@ export async function retrieveAllUnknownTransactions(
         if (a.lt > b.lt) return 1;
         return 0;
     });
-    logger().debug(`found ${newTransactions.length} new transactions for ${address}`);
+    logger().info(`found ${newTransactions.length} new transactions for ${address}`);
     return newTransactions;
 }
 

@@ -15,8 +15,9 @@ import {
     loadOpAndQueryId,
     TokensLaunchOps,
     parseMoneyFlows,
+    jettonFromNano,
     UserVaultOps,
-    type Coins, jettonFromNano,
+    type Coins,
 } from "starton-periphery";
 
 export async function spawnNewLaunchesScanners(scanFrom?: number) {
@@ -63,9 +64,9 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
     while (true) {
         try {
             const newTxs = await retrieveAllUnknownTransactions(launch.address, currentHeight);
-            if (!newTxs.length) {
+            if (!newTxs) {
                 const delayTime = endTimeMs - Date.now() > 86_400_000 ? balancedTonClient.delayValue() : 300;
-                logger().debug(`no updates found for launch ${launch.address}, waiting for ${delayTime} seconds`);
+                logger().debug(`no updates found for launch ${launch.address}, sleeping for ${delayTime} seconds`);
                 await delay(delayTime);
                 continue;
             }
@@ -74,7 +75,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                 const userActions: db.UserAction[] = [];
                 const inMsg = tx.inMessage;
                 if (!inMsg) continue;
-                if (inMsg.info.type !== "internal") continue;
+                if (inMsg.info.type !== "internal" || inMsg.info.bounced) continue;
 
                 const lt: LamportTime = tx.lt;
                 const inMsgSender = inMsg.info.src;
@@ -126,7 +127,8 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
 
                 // Here we'll handle only DEPOSITING operations
                 for (const [, msg] of tx.outMessages) {
-                    const outMsgBody = msg?.body.beginParse();
+                    if (msg.info.type === "internal" && msg.info.bounced) continue;
+                    const outMsgBody = msg.body.beginParse();
                     const { msgBodyData, op, queryId } = await loadOpAndQueryId(outMsgBody);
                     // Then we'll look for following operation: balanceUpdate
                     if (op !== UserVaultOps.balanceUpdate) continue;

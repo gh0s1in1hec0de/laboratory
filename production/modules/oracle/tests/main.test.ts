@@ -1,16 +1,28 @@
-import { getAccount, getTransactionsForAccount, retrieveAllUnknownTransactions } from "../src/oracle";
+import { getTransactionsForAccount, retrieveAllUnknownTransactions } from "../src/oracle";
+import { Address, TonClient4, type Transaction } from "@ton/ton";
+import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import type { RawAddressString } from "starton-periphery";
+import { maybeBruteforceOverload } from "../src/utils.ts";
 import { test, describe, beforeAll } from "bun:test";
-import { Address, type Transaction } from "@ton/ton";
 import dotenv from "dotenv";
 
 dotenv.config();
 
+// Works with TonClient4 under the hood, includes last account's `lamport_time`
+async function getAccount(c: TonClient4, address: RawAddressString, seqno?: number) {
+    const seqno_ = seqno ? seqno : (await c.getLastBlock()).last.seqno;
+    console.debug(`Seqno has been ${seqno ? "provided manually" : "taken from api"}: ${seqno_}`);
+    // Do we really need it here?
+    return maybeBruteforceOverload<any>(c.getAccount(seqno_, Address.parse(address)));
+}
+
 describe("Ton Eye", () => {
+    let tonClient4Instance: TonClient4;
     let addressVaultTestnetAddress: RawAddressString;
     let printTxs: (txs: Transaction[]) => void;
 
     beforeAll(async () => {
+        tonClient4Instance = new TonClient4({ endpoint: await getHttpV4Endpoint({ network: "testnet" }) });
         addressVaultTestnetAddress = Address.parse("EQBx3ogufv7zZlqNqvGsnhGOfsIprcyKnMEe04KSREQAEG3z").toRawString();
         printTxs = (txs) => {
             let counter = 0;
@@ -28,7 +40,7 @@ describe("Ton Eye", () => {
     });
     test("ton api wrapper testbed", async () => {
         // Took deployed simple `address vault` from labs
-        const accountEntity = await getAccount(addressVaultTestnetAddress);
+        const accountEntity = await getAccount(tonClient4Instance, addressVaultTestnetAddress);
 
         console.log("[*] account entity: ");
         console.log(accountEntity);
@@ -72,14 +84,15 @@ describe("Ton Eye", () => {
             stopAt,
             { archival, limit: 4 }
         );
+        if (!txsChunk) return;
 
-        if (txsChunk.toString() === txsGluedChunk.toString()) {
+        if (txsChunk.toString() === txsGluedChunk!.toString()) {
             console.log("nice job, tx arrays are equal");
         } else {
             console.log("arrays are different: ");
             printTxs(txsChunk);
             console.log("======");
-            printTxs(txsGluedChunk);
+            printTxs(txsGluedChunk!);
             throw new Error("^^");
         }
     });

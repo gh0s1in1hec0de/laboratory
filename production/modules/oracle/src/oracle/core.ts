@@ -19,8 +19,10 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
     while (true) {
         try {
             const newTxs = await retrieveAllUnknownTransactions(coreAddress, currentHeight);
-            if (!newTxs.length) {
-                await delay(30);
+            if (!newTxs) {
+                const delayTime = 30;
+                logger().info(`no updates for code ${coreAddress}, sleeping for ${delayTime} seconds...`);
+                await delay(delayTime);
                 continue;
             }
             for (const tx of newTxs) {
