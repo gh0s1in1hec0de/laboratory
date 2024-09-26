@@ -23,7 +23,7 @@ export async function chiefScanning() {
             await validateEndedPendingLaunches();
             await delay(5);
             await createPoolsForNewJettons();
-            await delay(60);
+            await delay(5);
             await handleChiefUpdates();
         } catch (e) {
             logger().error("interplanetary error on chief's side: ", e);
