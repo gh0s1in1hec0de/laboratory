@@ -1,0 +1,497 @@
+2024-09-26 10:50:44.813 [debug]:  db config: launchpad | dev | dev_pass
+2024-09-26 10:50:44.825 [info]:  elysia server is running at localhost:3000
+2024-09-26 10:50:44.825 [info]:  swagger docs are available at http://localhost:3000/api/swagger
+2024-09-26 10:50:44.853 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:50:44.854 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:50:44.855 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 0
+2024-09-26 10:50:44.856 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:50:45.423 [debug]:  found 1 new transactions for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:51:14.862 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:51:44.866 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:51:45.429 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:51:45.430 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26294895000001
+2024-09-26 10:51:45.430 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:51:45.715 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:52:14.875 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:52:15.718 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:52:15.719 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26294895000001
+2024-09-26 10:52:15.720 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:52:15.921 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:52:44.879 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:52:45.925 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:52:45.925 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26294895000001
+2024-09-26 10:52:45.925 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:52:46.129 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:53:14.885 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:53:16.132 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:53:16.133 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26294895000001
+2024-09-26 10:53:16.133 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:53:16.428 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:53:44.890 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:53:46.431 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:53:46.432 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26294895000001
+2024-09-26 10:53:46.439 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:53:46.782 [debug]:  found 1 new transactions for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:53:46.792 [info]:  found new launch with address: 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 created at Thu Sep 26 2024 10:53:31 GMT+0400 (Gulf Standard Time)
+2024-09-26 10:54:14.904 [info]:  [*] spawnNewLaunchesScanners - found 1 new launches: 
+2024-09-26 10:54:14.905 [info]:   -  0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 10:54:14.906 [info]:  new token launch updates handler for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 is up
+2024-09-26 10:54:14.908 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:54:14.908 [debug]:   - start txs parsing for account 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 from 0
+2024-09-26 10:54:14.908 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:54:15.188 [debug]:  found 1 new transactions for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 10:54:15.188 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:54:15.295 [debug]:  Updating launch balance with [undefined; 0; 0]
+2024-09-26 10:54:15.910 [debug]:  [*] spawnNewLaunchesScanners: scan from time was set to 1727333611
+2024-09-26 10:54:16.914 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:54:46.803 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:54:46.803 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 10:54:46.803 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:54:46.919 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:54:47.061 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:55:16.924 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:55:17.064 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:55:17.064 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 10:55:17.064 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:55:17.473 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:55:46.930 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:55:47.476 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:55:47.476 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 10:55:47.476 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:55:47.784 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:56:16.935 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:56:17.787 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:56:17.787 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 10:56:17.787 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:56:18.196 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:56:46.940 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:56:48.200 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:56:48.201 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 10:56:48.201 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:56:48.327 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:57:16.946 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:57:18.331 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:57:18.331 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 10:57:18.331 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:57:18.715 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:57:46.952 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:57:48.719 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:57:48.719 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 10:57:48.719 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:57:49.130 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:58:16.958 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:58:19.134 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:58:19.134 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 10:58:19.134 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:58:19.437 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:58:46.964 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:58:49.440 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:58:49.441 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 10:58:49.441 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:58:49.852 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:59:16.969 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:59:19.855 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:59:19.856 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 10:59:19.856 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:59:20.162 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 10:59:46.975 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 10:59:50.164 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 10:59:50.165 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 10:59:50.165 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 10:59:50.575 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:00:16.980 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:00:20.578 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:00:20.578 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:00:20.578 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:00:20.885 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:00:46.985 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:00:50.894 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:00:50.895 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:00:50.895 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:00:51.298 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:01:16.991 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:01:21.302 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:01:21.302 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:01:21.302 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:01:21.609 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:01:46.997 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:01:51.612 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:01:51.612 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:01:51.613 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:01:51.919 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:02:17.003 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:02:21.923 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:02:21.923 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:02:21.924 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:02:22.332 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:02:47.009 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:02:52.336 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:02:52.336 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:02:52.336 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:02:52.643 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:03:17.015 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:03:22.647 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:03:22.647 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:03:22.648 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:03:23.059 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:03:47.021 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:03:53.063 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:03:53.063 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:03:53.063 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:03:53.370 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:04:17.027 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:04:23.373 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:04:23.373 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:04:23.373 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:04:23.678 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:04:47.033 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:04:53.682 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:04:53.682 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:04:53.682 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:04:54.093 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:05:17.039 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:05:24.097 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:05:24.097 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:05:24.097 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:05:24.404 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:05:47.045 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:05:54.406 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:05:54.407 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:05:54.407 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:05:54.701 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:06:17.050 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:06:24.704 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:06:24.704 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:06:24.705 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:06:25.024 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:06:47.056 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:06:55.028 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:06:55.028 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:06:55.028 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:06:55.335 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:07:17.061 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:07:25.338 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:07:25.338 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:07:25.339 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:07:25.467 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:07:47.067 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:07:55.470 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:07:55.471 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:07:55.471 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:07:55.594 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:08:17.072 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:08:25.597 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:08:25.597 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:08:25.597 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:08:25.962 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:08:47.078 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:08:55.965 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:08:55.965 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:08:55.966 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:08:56.270 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:09:17.085 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:09:26.272 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:09:26.273 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:09:26.273 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:09:26.588 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:09:47.090 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:09:56.591 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:09:56.591 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:09:56.591 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:09:56.841 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:10:17.096 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:10:26.844 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:10:26.845 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:10:26.845 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:10:27.099 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:10:42.697 [debug]:  db config: launchpad | dev | dev_pass
+2024-09-26 11:10:42.712 [info]:  elysia server is running at localhost:3000
+2024-09-26 11:10:42.713 [info]:  swagger docs are available at http://localhost:3000/api/swagger
+2024-09-26 11:10:42.762 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:10:42.764 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:10:42.767 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:10:42.788 [info]:  [*] spawnNewLaunchesScanners - found 1 new launches: 
+2024-09-26 11:10:42.789 [info]:   -  0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 11:10:42.790 [info]:  new token launch updates handler for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 is up
+2024-09-26 11:10:42.793 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:10:42.793 [debug]:   - start txs parsing for account 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 from 0
+2024-09-26 11:10:42.793 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:10:43.799 [debug]:  [*] spawnNewLaunchesScanners: scan from time was set to 1727333611
+2024-09-26 11:10:43.969 [error]:  operation sucked (attempt #1) with error:  Received error: ""
+2024-09-26 11:10:44.548 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:10:44.803 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:10:49.788 [error]:  operation sucked (attempt #2) with error:  Received error: ""
+2024-09-26 11:11:00.051 [error]:  operation sucked (attempt #3) with error:  Received error: ""
+2024-09-26 11:11:12.055 [error]:  failed to handle launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 update with general error:  operation TOTALLY SUCKED (4 attempts)
+2024-09-26 11:11:14.551 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:11:14.552 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:11:14.559 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:11:14.809 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:11:14.849 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:11:44.815 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:11:44.852 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:11:44.853 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:11:44.853 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:11:45.539 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:12:14.821 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:12:15.543 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:12:15.543 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:12:15.544 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:12:16.157 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:12:44.826 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:12:46.160 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:12:46.161 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:12:46.161 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:12:46.668 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:13:14.832 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:13:16.672 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:13:16.672 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:13:16.672 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:13:17.291 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:13:29.869 [debug]:  db config: launchpad | dev | dev_pass
+2024-09-26 11:13:29.881 [info]:  elysia server is running at localhost:3000
+2024-09-26 11:13:29.881 [info]:  swagger docs are available at http://localhost:3000/api/swagger
+2024-09-26 11:13:29.909 [info]:  [*] spawnNewLaunchesScanners - found 1 new launches: 
+2024-09-26 11:13:29.910 [info]:   -  0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 11:13:29.911 [info]:  new token launch updates handler for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 is up
+2024-09-26 11:13:29.912 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:13:29.913 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:13:29.913 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:13:29.929 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:13:29.929 [debug]:   - start txs parsing for account 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 from 0
+2024-09-26 11:13:29.930 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:13:30.154 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:13:30.422 [debug]:  found 11 new transactions for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 11:13:30.423 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:13:30.685 [info]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: creator's buyout on 0.885656772 TONs is found
+2024-09-26 11:13:30.686 [debug]:  Updating launch balance with [885656772; undefined; undefined]
+2024-09-26 11:13:30.697 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 399D7A - [1.468452002; 0]
+2024-09-26 11:13:30.697 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 1870511312 - [1.468452002; 0; 0]
+2024-09-26 11:13:30.698 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 399D7A - [0.97323737; 22172977244181]
+2024-09-26 11:13:30.698 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 399D7A - [0.97323737; 18560267967537]
+2024-09-26 11:13:30.698 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 399D7A - [0.97323737; 15763991049069]
+2024-09-26 11:13:30.699 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 1870511312 - [0; 2.91971211; 56497236260787]
+2024-09-26 11:13:30.702 [error]:  action[0:57b14c1667a2bd7d7b3fce9a7450034fe7c3ced5da3607dd55bdeeea28283d19; 1727333984] record error: PostgresError: insert or update on table "user_actions" violates foreign key constraint "user_actions_actor_fkey"
+2024-09-26 11:13:30.706 [error]:  action[0:57b14c1667a2bd7d7b3fce9a7450034fe7c3ced5da3607dd55bdeeea28283d19; 1727334085] record error: PostgresError: insert or update on table "user_actions" violates foreign key constraint "user_actions_actor_fkey"
+2024-09-26 11:13:30.707 [error]:  action[0:57b14c1667a2bd7d7b3fce9a7450034fe7c3ced5da3607dd55bdeeea28283d19; 1727334275] record error: PostgresError: insert or update on table "user_actions" violates foreign key constraint "user_actions_actor_fkey"
+2024-09-26 11:13:30.708 [error]:  action[0:57b14c1667a2bd7d7b3fce9a7450034fe7c3ced5da3607dd55bdeeea28283d19; 1727334286] record error: PostgresError: insert or update on table "user_actions" violates foreign key constraint "user_actions_actor_fkey"
+2024-09-26 11:13:30.709 [error]:  action[0:57b14c1667a2bd7d7b3fce9a7450034fe7c3ced5da3607dd55bdeeea28283d19; 1727334305] record error: PostgresError: insert or update on table "user_actions" violates foreign key constraint "user_actions_actor_fkey"
+2024-09-26 11:13:30.710 [error]:  action[0:57b14c1667a2bd7d7b3fce9a7450034fe7c3ced5da3607dd55bdeeea28283d19; 1727334382] record error: PostgresError: insert or update on table "user_actions" violates foreign key constraint "user_actions_actor_fkey"
+2024-09-26 11:13:30.710 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:13:30.909 [debug]:  Updating launch balance with [undefined; 0; 885656772]
+2024-09-26 11:13:30.912 [debug]:  [*] spawnNewLaunchesScanners: scan from time was set to 1727333611
+2024-09-26 11:13:30.921 [debug]:  operations for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 was recorded successfully - waiting for 12000 seconds
+2024-09-26 11:13:31.916 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:14:23.860 [debug]:  db config: launchpad | dev | dev_pass
+2024-09-26 11:14:23.871 [info]:  elysia server is running at localhost:3000
+2024-09-26 11:14:23.872 [info]:  swagger docs are available at http://localhost:3000/api/swagger
+2024-09-26 11:14:23.899 [info]:  [*] spawnNewLaunchesScanners - found 1 new launches: 
+2024-09-26 11:14:23.899 [info]:   -  0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 11:14:23.901 [info]:  new token launch updates handler for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 is up
+2024-09-26 11:14:23.902 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:14:23.902 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:14:23.903 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:14:23.917 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:14:23.917 [debug]:   - start txs parsing for account 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 from 0
+2024-09-26 11:14:23.917 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:14:24.314 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:14:24.904 [debug]:  [*] spawnNewLaunchesScanners: scan from time was set to 1727333611
+2024-09-26 11:14:24.919 [error]:  operation sucked (attempt #1) with error:  Received error: ""
+2024-09-26 11:14:25.909 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:14:29.579 [debug]:  db config: launchpad | dev | dev_pass
+2024-09-26 11:14:29.590 [info]:  elysia server is running at localhost:3000
+2024-09-26 11:14:29.590 [info]:  swagger docs are available at http://localhost:3000/api/swagger
+2024-09-26 11:14:29.620 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:14:29.621 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:14:29.622 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:14:29.633 [info]:  [*] spawnNewLaunchesScanners - found 1 new launches: 
+2024-09-26 11:14:29.634 [info]:   -  0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 11:14:29.636 [info]:  new token launch updates handler for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 is up
+2024-09-26 11:14:29.640 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:14:29.641 [debug]:   - start txs parsing for account 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 from 0
+2024-09-26 11:14:29.641 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:14:29.936 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:14:30.056 [debug]:  found 11 new transactions for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 11:14:30.057 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:14:30.303 [info]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: creator's buyout on 0.885656772 TONs is found
+2024-09-26 11:14:30.303 [debug]:  Updating launch balance with [885656772; undefined; undefined]
+2024-09-26 11:14:30.315 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 399D7A - [1.468452002; 0]
+2024-09-26 11:14:30.316 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 1870511312 - [1.468452002; 0; 0]
+2024-09-26 11:14:30.317 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 399D7A - [0.97323737; 22172977244181]
+2024-09-26 11:14:30.317 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 399D7A - [0.97323737; 18560267967537]
+2024-09-26 11:14:30.317 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 399D7A - [0.97323737; 15763991049069]
+2024-09-26 11:14:30.317 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 1870511312 - [0; 2.91971211; 56497236260787]
+2024-09-26 11:14:30.335 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:14:30.640 [debug]:  [*] spawnNewLaunchesScanners: scan from time was set to 1727333611
+2024-09-26 11:14:30.711 [debug]:  Updating launch balance with [undefined; 0; 885656772]
+2024-09-26 11:14:30.723 [debug]:  operations for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 was recorded successfully - waiting for 12000 seconds
+2024-09-26 11:14:31.645 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:22:36.814 [debug]:  db config: launchpad | dev | dev_pass
+2024-09-26 11:22:36.826 [info]:  elysia server is running at localhost:3000
+2024-09-26 11:22:36.826 [info]:  swagger docs are available at http://localhost:3000/api/swagger
+2024-09-26 11:22:36.856 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:22:36.856 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 26295124000001
+2024-09-26 11:22:36.857 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:22:36.872 [info]:  [*] spawnNewLaunchesScanners - found 1 new launches: 
+2024-09-26 11:22:36.873 [info]:   -  0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 11:22:36.874 [info]:  new token launch updates handler for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 is up
+2024-09-26 11:22:36.876 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:22:36.876 [debug]:   - start txs parsing for account 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 from 26295439000001
+2024-09-26 11:22:36.876 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:22:37.217 [debug]:   - no updates for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 11:22:37.217 [debug]:  no updates found for launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6, waiting for 12 seconds
+2024-09-26 11:22:37.310 [debug]:   - no updates for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:22:37.878 [debug]:  [*] spawnNewLaunchesScanners: scan from time was set to 1727333611
+2024-09-26 11:22:38.882 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:32:07.566 [debug]:  db config: launchpad | dev | dev_pass
+2024-09-26 11:32:07.577 [info]:  elysia server is running at localhost:3000
+2024-09-26 11:32:07.578 [info]:  swagger docs are available at http://localhost:3000/api/swagger
+2024-09-26 11:32:07.605 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:32:07.606 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:32:07.606 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 0
+2024-09-26 11:32:07.607 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:32:08.121 [debug]:  found 2 new transactions for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:32:08.123 [info]:  found new launch with address: 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 created at Thu Sep 26 2024 10:53:31 GMT+0400 (Gulf Standard Time)
+2024-09-26 11:32:37.618 [info]:  [*] spawnNewLaunchesScanners - found 1 new launches: 
+2024-09-26 11:32:37.619 [info]:   -  0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 11:32:37.620 [info]:  new token launch updates handler for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 is up
+2024-09-26 11:32:37.622 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:32:37.623 [debug]:   - start txs parsing for account 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 from 0
+2024-09-26 11:32:37.623 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:32:37.933 [debug]:  found 11 new transactions for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 11:32:37.934 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:32:38.054 [info]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: creator's buyout on 0.885656772 TONs is found
+2024-09-26 11:32:38.055 [debug]:  Updating launch balance with [885656772; undefined; undefined]
+2024-09-26 11:32:38.065 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [1.468452002; 0]
+2024-09-26 11:32:38.066 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 1870511312:null - [1.468452002; 0; 0]
+2024-09-26 11:32:38.066 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [0.97323737; 22172977244181]
+2024-09-26 11:32:38.066 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [0.97323737; 18560267967537]
+2024-09-26 11:32:38.066 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [0.97323737; 15763991049069]
+2024-09-26 11:32:38.067 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 1870511312:null - [0; 2.91971211; 169491.708782361]
+2024-09-26 11:32:38.076 [error]:  action[0:57b14c1667a2bd7d7b3fce9a7450034fe7c3ced5da3607dd55bdeeea28283d19; 1727334085] record error: Error: UNDEFINED_VALUE: Undefined values are not allowed
+2024-09-26 11:32:38.083 [error]:  action[0:57b14c1667a2bd7d7b3fce9a7450034fe7c3ced5da3607dd55bdeeea28283d19; 1727334382] record error: Error: UNDEFINED_VALUE: Undefined values are not allowed
+2024-09-26 11:32:38.083 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:32:38.197 [debug]:  Updating launch balance with [undefined; 0; 885656772]
+2024-09-26 11:32:38.210 [debug]:  operations for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 was recorded successfully - waiting for 12 seconds
+2024-09-26 11:32:38.625 [debug]:  [*] spawnNewLaunchesScanners: scan from time was set to 1727333611
+2024-09-26 11:32:39.629 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:39:30.433 [debug]:  db config: launchpad | dev | dev_pass
+2024-09-26 11:39:30.443 [info]:  elysia server is running at localhost:3000
+2024-09-26 11:39:30.443 [info]:  swagger docs are available at http://localhost:3000/api/swagger
+2024-09-26 11:39:30.471 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:39:30.472 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 0
+2024-09-26 11:39:30.472 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:39:30.483 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:39:31.006 [debug]:  found 2 new transactions for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:39:31.007 [info]:  found new launch with address: 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 created at Thu Sep 26 2024 10:53:31 GMT+0400 (Gulf Standard Time)
+2024-09-26 11:40:00.500 [info]:  [*] spawnNewLaunchesScanners - found 1 new launches: 
+2024-09-26 11:40:00.500 [info]:   -  0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 11:40:00.502 [info]:  new token launch updates handler for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 is up
+2024-09-26 11:40:00.511 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:40:00.511 [debug]:   - start txs parsing for account 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 from 0
+2024-09-26 11:40:00.512 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:40:00.973 [debug]:  found 11 new transactions for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 11:40:00.974 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:40:01.258 [info]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: creator's buyout on 0.885656772 TONs is found
+2024-09-26 11:40:01.259 [debug]:  Updating launch balance with [885656772; undefined; undefined]
+2024-09-26 11:40:01.269 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [1.468452002; 0]
+2024-09-26 11:40:01.269 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 1870511312:5 - [1.468452002; 0; 0]
+2024-09-26 11:40:01.270 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [0.97323737; 22172977244181]
+2024-09-26 11:40:01.270 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [0.97323737; 18560267967537]
+2024-09-26 11:40:01.270 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [0.97323737; 15763991049069]
+2024-09-26 11:40:01.270 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 1870511312:5 - [0; 2.91971211; 169491.708782361]
+2024-09-26 11:40:01.287 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:40:01.488 [debug]:  Updating launch balance with [undefined; 0; 885656772]
+2024-09-26 11:40:01.499 [debug]:  operations for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 was recorded successfully - waiting for 12 seconds
+2024-09-26 11:40:01.502 [debug]:  [*] spawnNewLaunchesScanners: scan from time was set to 1727333611
+2024-09-26 11:40:02.507 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:55:55.705 [debug]:  db config: launchpad | dev | dev_pass
+2024-09-26 11:55:55.716 [info]:  elysia server is running at localhost:3000
+2024-09-26 11:55:55.717 [info]:  swagger docs are available at http://localhost:3000/api/swagger
+2024-09-26 11:55:55.746 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 11:55:55.747 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:55:55.749 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 0
+2024-09-26 11:55:55.750 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:55:56.207 [debug]:  found 2 new transactions for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 11:55:56.208 [info]:  found new launch with address: 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 created at Thu Sep 26 2024 10:53:31 GMT+0400 (Gulf Standard Time)
+2024-09-26 11:56:25.760 [info]:  [*] spawnNewLaunchesScanners - found 1 new launches: 
+2024-09-26 11:56:25.760 [info]:   -  0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 11:56:25.762 [info]:  new token launch updates handler for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 is up
+2024-09-26 11:56:25.764 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 11:56:25.764 [debug]:   - start txs parsing for account 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 from 0
+2024-09-26 11:56:25.765 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:56:26.040 [debug]:  found 11 new transactions for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 11:56:26.040 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:56:26.286 [info]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: creator's buyout on 0.885656772 TONs is found
+2024-09-26 11:56:26.286 [debug]:  Updating launch balance with [885656772; undefined; undefined]
+2024-09-26 11:56:26.297 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [1.468452002; 0]
+2024-09-26 11:56:26.297 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 1870511312:5 - [1.468452002; 0; 0]
+2024-09-26 11:56:26.298 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [0.97323737; 66518.931732543]
+2024-09-26 11:56:26.298 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [0.97323737; 55680.803902611]
+2024-09-26 11:56:26.298 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [0.97323737; 47291.973147207]
+2024-09-26 11:56:26.299 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 1870511312:5 - [0; 2.91971211; 169491.708782361]
+2024-09-26 11:56:26.315 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 11:56:26.592 [debug]:  Updating launch balance with [undefined; 0; 885656772]
+2024-09-26 11:56:26.603 [debug]:  operations for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 was recorded successfully - waiting for 12 seconds
+2024-09-26 11:56:26.766 [debug]:  [*] spawnNewLaunchesScanners: scan from time was set to 1727333611
+2024-09-26 11:56:27.770 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 12:01:22.232 [debug]:  db config: launchpad | dev | dev_pass
+2024-09-26 12:01:22.245 [info]:  elysia server is running at localhost:3000
+2024-09-26 12:01:22.245 [info]:  swagger docs are available at http://localhost:3000/api/swagger
+2024-09-26 12:01:22.277 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 12:01:22.278 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 0
+2024-09-26 12:01:22.278 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 12:01:22.291 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 12:01:23.488 [debug]:  found 2 new transactions for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 12:01:23.489 [info]:  found new launch with address: 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 created at Thu Sep 26 2024 10:53:31 GMT+0400 (Gulf Standard Time)
+2024-09-26 12:01:52.298 [info]:  [*] spawnNewLaunchesScanners - found 1 new launches: 
+2024-09-26 12:01:52.299 [info]:   -  0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 12:01:52.300 [info]:  new token launch updates handler for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 is up
+2024-09-26 12:01:52.302 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 12:01:52.302 [debug]:   - start txs parsing for account 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 from 0
+2024-09-26 12:01:52.303 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 12:01:53.164 [debug]:  found 11 new transactions for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 12:01:53.164 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 12:01:53.305 [debug]:  [*] spawnNewLaunchesScanners: scan from time was set to 1727333611
+2024-09-26 12:01:53.762 [info]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: creator's buyout on 0.885656772 TONs is found
+2024-09-26 12:01:53.762 [debug]:  Updating launch balance with [885656772; undefined; undefined]
+2024-09-26 12:01:53.772 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [1.468452002; 0]
+2024-09-26 12:01:53.773 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 1870511312:5 - [1.468452002; 0; 0]
+2024-09-26 12:01:53.773 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [0.97323737; 66518.931732543]
+2024-09-26 12:01:53.774 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [0.97323737; 55680.803902611]
+2024-09-26 12:01:53.774 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [0.97323737; 47291.973147207]
+2024-09-26 12:01:53.774 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 1870511312:5 - [0; 2.91971211; 169491.708782361]
+2024-09-26 12:01:53.790 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 12:01:54.156 [debug]:  Updating launch balance with [undefined; 0; 885656772]
+2024-09-26 12:01:54.168 [debug]:  operations for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 was recorded successfully - waiting for 12 seconds
+2024-09-26 12:01:54.309 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 12:04:59.749 [debug]:  db config: launchpad | dev | dev_pass
+2024-09-26 12:04:59.761 [info]:  elysia server is running at localhost:3000
+2024-09-26 12:04:59.762 [info]:  swagger docs are available at http://localhost:3000/api/swagger
+2024-09-26 12:04:59.791 [info]:  [*] spawnNewLaunchesScanners - no active launches found
+2024-09-26 12:04:59.791 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 12:04:59.792 [debug]:   - start txs parsing for account 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770 from 0
+2024-09-26 12:04:59.793 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 12:05:01.060 [debug]:  found 2 new transactions for 0:19765e84c5701545b33760ec0e51961640b2fc3661ff2561a139137bc38de770
+2024-09-26 12:05:01.061 [info]:  found new launch with address: 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 created at Thu Sep 26 2024 10:53:31 GMT+0400 (Gulf Standard Time)
+2024-09-26 12:05:29.797 [info]:  [*] spawnNewLaunchesScanners - found 1 new launches: 
+2024-09-26 12:05:29.797 [info]:   -  0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 12:05:29.800 [info]:  new token launch updates handler for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 is up
+2024-09-26 12:05:29.802 [debug]:  [*] retrieveAllUnknownTransactions
+2024-09-26 12:05:29.802 [debug]:   - start txs parsing for account 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 from 0
+2024-09-26 12:05:29.802 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 12:05:30.763 [debug]:  found 11 new transactions for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6
+2024-09-26 12:05:30.763 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 12:05:30.802 [debug]:  [*] spawnNewLaunchesScanners: scan from time was set to 1727333611
+2024-09-26 12:05:31.159 [info]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: creator's buyout on 0.885656772 TONs is found
+2024-09-26 12:05:31.160 [debug]:  Updating launch balance with [885656772; undefined; undefined]
+2024-09-26 12:05:31.171 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [1.468452002; 0]
+2024-09-26 12:05:31.172 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 1870511312:5 - [1.468452002; 0; 0]
+2024-09-26 12:05:31.172 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [0.97323737; 66518.931732543]
+2024-09-26 12:05:31.172 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [0.97323737; 55680.803902611]
+2024-09-26 12:05:31.172 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 3775866 - [0.97323737; 47291.973147207]
+2024-09-26 12:05:31.173 [debug]:  launch 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6: new operation 1870511312:5 - [0; 2.91971211; 169491.708782361]
+2024-09-26 12:05:31.189 [debug]:   - tonclient apikey for operation: 588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82
+2024-09-26 12:05:31.544 [debug]:  Updating launch balance with [undefined; 0; 885656772]
+2024-09-26 12:05:31.558 [debug]:  operations for 0:46c7897cde780642a2a88f33084aad5f526e3b8692e8f611d5293ab89c6e35b6 was recorded successfully - waiting for 12 seconds
+2024-09-26 12:05:31.810 [info]:  [*] spawnNewLaunchesScanners - no active launches found

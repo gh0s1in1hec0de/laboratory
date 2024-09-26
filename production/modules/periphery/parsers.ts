@@ -1,12 +1,12 @@
 import { GetConfigResponse, MoneyFlows } from "./types";
 import { Cell, type Slice, TupleReader } from "@ton/core";
 import {
-    WithdrawConfirmationMessage,
     BalanceUpdateMessage,
-    BalanceUpdateMode,
+    OP_LENGTH,
     QUERY_ID_LENGTH,
     TokenMetadata,
-    OP_LENGTH,
+    TokensLaunchOps,
+    WithdrawConfirmationMessage,
 } from "./standards";
 
 // === Message parsers ===
@@ -31,12 +31,12 @@ export function parseBalanceUpdate(purifiedMessageBody: Slice): BalanceUpdateMes
 }
 
 // Op and query id had already been loaded
-export function parseRefundOrClaim(purifiedMessageBody: Slice): WithdrawConfirmationMessage {
+export function parseRefundOrClaim(op: TokensLaunchOps, purifiedMessageBody: Slice): WithdrawConfirmationMessage {
     const whitelistTons = purifiedMessageBody.loadCoins();
     const publicTons = purifiedMessageBody.loadCoins();
     const futureJettons = purifiedMessageBody.loadCoins();
     const recipient = purifiedMessageBody.loadAddress().toRawString();
-    const mode = purifiedMessageBody.loadMaybeUint(4) as BalanceUpdateMode | undefined;
+    const mode = op === TokensLaunchOps.ClaimOpn ? undefined : purifiedMessageBody.loadUint(4);
     return { whitelistTons, publicTons, futureJettons, recipient, mode };
 }
 

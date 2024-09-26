@@ -17,12 +17,12 @@ export async function run(provider: NetworkProvider) {
     try {
         const FIVE_MIN = 300;
         const launchConfig: LaunchConfigV2A = {
-            minTonForSaleSuccess: toNano("5"),
-            tonLimitForWlRound: toNano("5"),
+            minTonForSaleSuccess: toNano("4"),
+            tonLimitForWlRound: toNano("4"),
             penny: toNano("0.5"),
 
-            jetWlLimitPct: toPct(30),
-            jetPubLimitPct: toPct(30),
+            jetWlLimitPct: toPct(25),
+            jetPubLimitPct: toPct(25),
             jetDexSharePct: toPct(25),
 
             creatorRoundDurationMs: FIVE_MIN,

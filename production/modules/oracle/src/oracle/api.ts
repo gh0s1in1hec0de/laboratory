@@ -79,8 +79,8 @@ export class BalancedTonClient {
     delayValue() {
         // Rewrite
         // Are you ready for dumb code?
-        if (this.activeLaunchesNumber < 10) return 12000;
-        else return 24000;
+        if (this.activeLaunchesNumber < 10) return 12;
+        else return 24;
     }
 }
 

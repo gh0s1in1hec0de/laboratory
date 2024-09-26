@@ -8,11 +8,11 @@ export async function run(provider: NetworkProvider) {
     try {
         const tokenLaunch = provider.open(
             TokenLaunchV2A.createFromAddress(
-                Address.parse("kQAL-bolzo-2m0ioeZnodK1lPgLmyH6-SQgnyugWOWD6evI8")
+                Address.parse("kQBGx4l83ngGQqKojzMISq1fUm47hpLo9hHVKTq4nG41tnYC")
             )
         );
 
-        await tokenLaunch.sendCreatorBuyout({ via: provider.sender(), value: toNano("0.2"), queryId: 0n });
+        await tokenLaunch.sendCreatorBuyout({ via: provider.sender(), value: toNano("0.9"), queryId: 0n });
 
         ui.write("Transaction sent");
     } catch (e: any) {

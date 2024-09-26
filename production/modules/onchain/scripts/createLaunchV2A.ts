@@ -9,11 +9,11 @@ export async function run(provider: NetworkProvider) {
 
     const params: LaunchParams = {
         startTime: Math.round(Date.now() / 1000) + 60,
-        totalSupply: toNano("2000000"),
-        metadata: { uri: "http://another_shitcoin.meow" },
+        totalSupply: toNano("1000000"),
+        metadata: { uri: "https://another_shitcoin.meow" },
         platformSharePct: 1500
     };
-    const core = provider.open(CoreV2A.createFromAddress(Address.parse("kQCQ7dZ4IAFbTnZcK6tealusJCOv05m6kBZM_ggaLJah50mO")));
+    const core = provider.open(CoreV2A.createFromAddress(Address.parse("kQAZdl6ExXAVRbM3YOwOUZYWQLL8NmH_JWGhORN7w43ncLZP")));
     await core.sendCreateLaunch({ via: provider.sender(), value: toNano("1"), queryId: 0n }, params);
     ui.write("Transaction sent");
 }

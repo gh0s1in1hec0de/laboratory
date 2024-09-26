@@ -16,7 +16,7 @@ import {
     TokensLaunchOps,
     parseMoneyFlows,
     UserVaultOps,
-    type Coins,
+    type Coins, jettonFromNano,
 } from "starton-periphery";
 
 export async function spawnNewLaunchesScanners(scanFrom?: number) {
@@ -36,7 +36,7 @@ export async function spawnNewLaunchesScanners(scanFrom?: number) {
             for (const launch of newLaunches) {
                 balancedTonClient.incrementActiveLaunchesAmount();
                 handleTokenLaunchUpdates(launch);
-                await delay(0.9); // As we don't want all the api requests in the same moment
+                await delay(1); // As we don't want all the api requests in the same moment
             }
             timeUpdate = newLaunches.reduce((latest, launch) => {
                 return launch.createdAt > latest ? launch.createdAt : latest;
@@ -49,7 +49,6 @@ export async function spawnNewLaunchesScanners(scanFrom?: number) {
     }
 }
 
-
 async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, launchAddress?: RawAddressString,) {
     assert(launchAddress || tokenLaunch, "must provide launch data or an address");
     const launch = tokenLaunch ?? await db.getTokenLaunch(launchAddress!);
@@ -59,14 +58,15 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
     }
     logger().info(`new token launch updates handler for ${launch.address} is up`);
     let currentHeight = await db.getLaunchHeight(launch.address) ?? 0n;
-    const endTime = (new Date(launch.timings.endTime)).getTime();
+    const endTimeMs = launch.timings.endTime * 1000;
 
     while (true) {
         try {
             const newTxs = await retrieveAllUnknownTransactions(launch.address, currentHeight);
             if (!newTxs.length) {
-                logger().debug(`no updates found for launch ${launch.address}`);
-                await delay(endTime - Date.now() > 86_400_000 ? balancedTonClient.delayValue() : 300);
+                const delayTime = endTimeMs - Date.now() > 86_400_000 ? balancedTonClient.delayValue() : 300;
+                logger().debug(`no updates found for launch ${launch.address}, waiting for ${delayTime} seconds`);
+                await delay(delayTime);
                 continue;
             }
             const newActionsChunk: db.UserAction[] = [];
@@ -90,12 +90,12 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                         futureJettons,
                         recipient,
                         mode
-                    } = parseRefundOrClaim(msgBodyData);
-                    logger().debug(`launch ${launch.address}: new operation ${op} - [${fromNano(whitelistTons)}; ${fromNano(publicTons)}; ${futureJettons}]`);
+                    } = parseRefundOrClaim(op, msgBodyData);
+                    logger().debug(`launch ${launch.address}: new operation ${op}:${mode} - [${fromNano(whitelistTons)}; ${fromNano(publicTons)}; ${jettonFromNano(futureJettons)}]`);
                     userActions.push({
                         actor: recipient,
                         tokenLaunch: launch.address,
-                        actionType: mode ? db.balanceUpdateModeToUserActionType[mode] : db.UserActionType.Claim,
+                        actionType: mode !== undefined ? db.balanceUpdateModeToUserActionType[mode] : db.UserActionType.Claim,
                         whitelistTons,
                         publicTons,
                         jettons: futureJettons,
@@ -132,7 +132,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                     if (op !== UserVaultOps.balanceUpdate) continue;
                     const { mode, tons, futureJettons } = parseBalanceUpdate(msgBodyData);
                     if (![BalanceUpdateMode.PublicDeposit, BalanceUpdateMode.WhitelistDeposit].includes(mode)) continue;
-                    logger().debug(`launch ${launch.address}: new operation ${op.toString(16).toUpperCase()} - [${fromNano(tons)}; ${futureJettons}]`);
+                    logger().debug(`launch ${launch.address}: new operation ${op} - [${fromNano(tons)}; ${jettonFromNano(futureJettons)}]`);
 
                     const [whitelistTons, publicTons] =
                         mode === BalanceUpdateMode.WhitelistDeposit ? [tons, 0n] : [0n, tons];
@@ -168,11 +168,14 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                 wlTonsCollected: wlRoundTonInvestedTotal
             });
 
-            if (Date.now() > endTime) {
+            if (Date.now() > endTimeMs) {
                 balancedTonClient.decrementActiveLaunchesAmount();
+                logger().info(`new token launch updates handler for ${launch.address} is self-terminated`);
                 break;
-            } // 10 interval mins if we passed the end time
-            await delay(endTime - Date.now() > 86_400_000 ? balancedTonClient.delayValue() : 600);
+            } // 10 interval mins if we passed the end time\
+            const delayTime = endTimeMs - Date.now() > 86_400_000 ? balancedTonClient.delayValue() : 600;
+            logger().debug(`operations for ${launch.address} was recorded successfully - waiting for ${delayTime} seconds`);
+            await delay(delayTime);
         } catch (e) {
             logger().error(`failed to handle launch ${launch.address} update with general error: `, e);
             await delay(balancedTonClient.delayValue() / 2);

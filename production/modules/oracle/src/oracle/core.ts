@@ -38,7 +38,7 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
                     if (!newLaunchAddress) continue;
 
                     const address: RawAddressString = (newLaunchAddress as Address).toRawString(); // Is it safe?
-                    logger().debug(`found new launch with address: ${address}`);
+                    logger().info(`found new launch with address: ${address} created at ${new Date(msg.info.createdAt * 1000)}`);
 
                     const newLaunchStateInit = msg.init!.data!; // As we can guarantee our contract behaviour
                     const parsedStateInit = coreVersion === GlobalVersions.V1 ?
