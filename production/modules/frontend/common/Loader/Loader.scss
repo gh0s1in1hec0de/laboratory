@@ -1,18 +1,18 @@
 .overlay{
-  position: absolute;
+  position: fixed;
   width: 100%;
   height: 100%;
   top: 0;
   left: 0;
-  z-index: 100;
-  background-color: red;
+  z-index: var(--z-index-loader);
+  background-color: var(--black-dark);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .lds-ring {
-  color: var(--blue-regular);
+  color: var(--orange-regular);
 }
 
 .lds-ring,

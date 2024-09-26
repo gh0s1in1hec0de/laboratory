@@ -33,7 +33,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <body className={manrope.className} style={{ background: "var(--black-dark)", color: "white" }}>
+      <body className={manrope.className}>
         <NextIntlClientProvider messages={messages}>
           <AppRouterCacheProvider options={{ key: "css", enableCssLayer: true }}>
             {children}

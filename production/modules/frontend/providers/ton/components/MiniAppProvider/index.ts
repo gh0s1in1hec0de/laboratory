@@ -1,0 +1,1 @@
+export { MiniAppProvider } from "./MiniAppProvider";

@@ -17,4 +17,5 @@ export interface CustomButtonProps {
 	background?: `${ButtonBackground}`;
 	padding?: string | number;
 	addHover?: boolean;
+	borderRadius?: number;
 }

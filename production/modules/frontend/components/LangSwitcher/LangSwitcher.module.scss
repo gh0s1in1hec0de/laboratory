@@ -1,0 +1,13 @@
+.wrapper {
+  margin-left: auto;
+  background-color: var(--black-regular);
+  border-radius: 16px;
+  padding: 2px;
+  display: flex;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

@@ -1,1 +1,0 @@
-export { LanguageSwitcherWithTon } from "./LanguageSwitcherWithTon";

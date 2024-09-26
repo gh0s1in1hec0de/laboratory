@@ -12,6 +12,7 @@
 			"subtitle": "stage",
 			"tooltip": "What is it",
 			"connectWallet": "Connect wallet",
+			"disconnectWallet": "Disconnect from",
 			"tickets": "tickets",
 			"balance": "Your balance"
 		},

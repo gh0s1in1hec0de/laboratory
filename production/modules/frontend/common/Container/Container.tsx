@@ -1,7 +1,7 @@
 import Grid from "@mui/material/Grid2";
 import { ContainerProps } from "./types";
 
-export function Container({ children, as = "section", size }: ContainerProps) {
+export function Container({ children, as = "section" }: ContainerProps) {
   return (
     <Grid
       container

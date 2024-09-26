@@ -1,6 +1,5 @@
 .button {
 	border: none;
-  border-radius: 10px;
   cursor: pointer;
   outline: none; 
   transition: background-color 0.3s ease;
@@ -37,4 +36,8 @@
 
 .transparent {
   background-color: transparent;
+
+  &.hover {
+    background-color: var(--skeleton-color);
+  }
 }

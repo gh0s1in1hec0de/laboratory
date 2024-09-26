@@ -1,18 +1,15 @@
 "use client";
 
-import { Locales, THEME, TonConnectUIProvider } from "@tonconnect/ui-react";
-import { TonConnectProviderProps } from "./types";
+import { Locales, TonConnectUIProvider } from "@tonconnect/ui-react";
 import { useLocale } from "next-intl";
+import { PropsWithChildren } from "react";
 
-export function TonConnectProvider({ children }: TonConnectProviderProps) {
+export function TonConnectProvider({ children }: PropsWithChildren) {
   const locale = useLocale();
 
   return (
     <TonConnectUIProvider 
       manifestUrl="https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json"
-      uiPreferences={{
-        theme: THEME.DARK,
-      }}
       language={locale as Locales}
     > 
       {children}

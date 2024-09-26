@@ -37,7 +37,7 @@ export function Navbar() {
       height={{ xs: 78 }}
       minHeight={78}
       position="static"
-      zIndex={1}
+      zIndex="var(--z-index-navbar)"
     >
       <Box
         className={styles.navbar}

@@ -13,6 +13,7 @@ export function CustomButton({
   as = "button",
   className,
   padding,
+  borderRadius = 10,
   addHover = true,
 }: CustomButtonProps) {
 
@@ -25,7 +26,10 @@ export function CustomButton({
           as={as}
           disabled={disabled}
           onClick={onClick}
-          style={{ padding: padding }}
+          style={{ 
+            padding: padding,
+            borderRadius: borderRadius
+          }}
           className={classNames(
             styles.button,
             {

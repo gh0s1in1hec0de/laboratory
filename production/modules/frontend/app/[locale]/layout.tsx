@@ -10,10 +10,7 @@ export default async function AppLayout({
   return (
     <RootContainer>
       <Navbar/>
-      <Container
-        as="main"
-        size={{ xs: 1, sm: 0.75 }}
-      >
+      <Container as="main">
         {children}
       </Container>
     </RootContainer>

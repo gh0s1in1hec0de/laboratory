@@ -12,6 +12,7 @@
 			"subtitle": "этап",
 			"tooltip": "Что это",
 			"connectWallet": "Подключить кошелек",
+			"disconnectWallet": "Отключиться от",
 			"tickets": "билетов",
 			"balance": "Ваш баланс"
 		},

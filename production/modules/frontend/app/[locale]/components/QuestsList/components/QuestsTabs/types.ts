@@ -1,6 +1,6 @@
-import { Tab } from "./components/Tabs";
+import { Tab, QuestCard } from "./components/QuestTab";
 
 export interface QuestsTabsProps {
-  tabs: Tab[];
+  tabs: Tab<QuestCard>[];
 }
 

@@ -3,9 +3,9 @@ import { Info } from "./components/Info";
 import { useTranslations } from "next-intl";
 import { TicketBalance } from "./components/TicketBalance";
 import { BgLight } from "@/common/BgLight";
-import { LanguageSwitcherWithTon } from "@/components/LanguageSwitcherWithTon";
-import { TonConnectProvider } from "@/common/TonConnectProvider";
+import { TonProvider } from "@/providers/ton";
 import { CustomConnectButton } from "@/components/CustomConnectButton";
+import { LangSwitcher } from "@/components/LangSwitcher";
 
 export function Header() {
   const t = useTranslations("Quests.header");
@@ -18,16 +18,20 @@ export function Header() {
       width="100%"
     >
       <BgLight />
-      <LanguageSwitcherWithTon />
+
+      <TonProvider>
+        <LangSwitcher />
+      </TonProvider>
 
       <Info />
 
-      <TonConnectProvider>
+      <TonProvider>
         <CustomConnectButton 
           title={t("connectWallet")}
+          disconnectLabel={t("disconnectWallet")}
           successChildren={<TicketBalance />}
         />
-      </TonConnectProvider>
+      </TonProvider>
     </Grid>
   );
 }

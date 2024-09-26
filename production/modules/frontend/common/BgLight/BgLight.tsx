@@ -8,8 +8,8 @@ export function BgLight({
 }: BgLightProps) {
   return (
     <Box
-      // width={width}
-      // height={height}
+      width={width}
+      height={height}
       className={styles.background}
     />
   );

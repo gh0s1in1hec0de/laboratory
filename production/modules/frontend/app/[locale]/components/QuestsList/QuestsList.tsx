@@ -1,16 +1,15 @@
 import { Label } from "@/common/Label";
 import Grid from "@mui/material/Grid2";
 import { useTranslations } from "next-intl";
-import { Tab } from "./components/QuestsTabs/components/Tabs";
-import { QuestsTabs } from "./components/QuestsTabs";
+import { QuestCard, QuestsTabs, Tab } from "./components/QuestsTabs";
 
 export function QuestsList() {
   const t = useTranslations("Quests.content");
 
-  const tabs: Tab[] = [
+  const tabs: Tab<QuestCard>[] = [
     {
       label: t("tabs.first.label"),
-      quests: [
+      content: [
         {
           title: "Reach for the star 1",
           description: "2/3 Done",
@@ -47,7 +46,7 @@ export function QuestsList() {
     },
     {
       label: t("tabs.second.label"),
-      quests: [
+      content: [
         {
           title: "Reach for the star 1 (staged)",
           description: "3/3 Done",

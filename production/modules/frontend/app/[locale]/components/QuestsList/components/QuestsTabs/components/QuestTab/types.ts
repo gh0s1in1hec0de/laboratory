@@ -9,12 +9,12 @@ export interface QuestCard {
   subQuests: SubQuest[];
 }
 
-export interface Tab {
+export interface Tab<T> {
   label: string;
-  quests: QuestCard[];
+  content?: T[];
 }
 
-export interface TabContentProps {
-  quests: QuestCard[];
+export interface QuestTabProps {
+  content?: QuestCard[];
   index: number;
 }

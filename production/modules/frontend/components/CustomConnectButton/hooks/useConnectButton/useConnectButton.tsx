@@ -32,6 +32,28 @@ export function useConnectButton() {
     };
   }, [tonConnectUI]);
 
+  // function setTelegramData(data: TelegramAuthData) {
+  //   const initDataRaw = new URLSearchParams([
+  //     ["user", JSON.stringify({
+  //       id: data.id,
+  //       first_name: data.first_name,
+  //       last_name: data.last_name,
+  //       username: data.username,
+  //       language_code: locale,
+  //     })],
+  //     ["hash", data.hash],
+  //     ["auth_date", data.auth_date.toString()],
+  //   ]).toString();
+
+  //   mockTelegramEnv({
+  //     themeParams: {},
+  //     initData: parseInitData(initDataRaw),
+  //     initDataRaw,
+  //     version: "7.10",
+  //     platform: "tdesktop",
+  //   });
+  // }
+
   function formatAddress(address: string) {
     const tempAddress = Address.parse(address).toString();
     return `${tempAddress.slice(0, 4)}...${tempAddress.slice(-4)}`;
@@ -39,7 +61,12 @@ export function useConnectButton() {
 
   async function handleConnectWallet() {
     startTransition(async () => {
-      await tonConnectUI.openModal();
+      try {
+        await tonConnectUI.openModal();
+        console.log("Wallet connected successfully!");
+      } catch (error) {
+        console.error(error);
+      }
     });
   }
 
