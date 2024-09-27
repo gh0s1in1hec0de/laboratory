@@ -129,3 +129,22 @@ export interface StoredTokenLaunchResponse {
     storedTokenLaunch: StoredTokenLaunch[],
     hasMore: boolean,
 }
+
+export interface ConnectedWalletRequest {
+    address: RawAddressString,
+}
+
+export interface TicketBalanceRequest {
+    address: RawAddressString,
+}
+
+export interface TasksRequest {
+    address: RawAddressString | "all",
+}
+
+export interface TasksResponse {
+    task_id: number,
+    name: string,
+    reward_tickets: number,
+    description: string,
+}

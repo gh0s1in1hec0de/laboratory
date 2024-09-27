@@ -27,6 +27,8 @@ export function CustomConnectButton({ title, successChildren, disconnectLabel }:
     );
   }
 
+  console.log(tonWalletAddress);
+
   if (tonWalletAddress) {
     // POST CONNECT WALLET
   }

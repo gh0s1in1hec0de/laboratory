@@ -2,6 +2,7 @@ CREATE TABLE tasks
 (
     task_id     SERIAL PRIMARY KEY,
     name        TEXT NOT NULL,
+    reward_tickets SMALLINT NOT NULL DEFAULT 1,
     description TEXT NOT NULL
 );
 
