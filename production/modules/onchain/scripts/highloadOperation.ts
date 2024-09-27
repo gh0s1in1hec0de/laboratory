@@ -1,29 +1,29 @@
 import { DEFAULT_TIMEOUT, HighloadWalletV3Code, SUBWALLET_ID } from "starton-periphery";
-import { mnemonicNew, mnemonicToWalletKey } from "@ton/crypto";
-import { compile, NetworkProvider } from "@ton/blueprint";
-import { Address, Cell, toNano } from "@ton/core";
 import { HighloadWalletV3 } from "../wrappers/HighloadWalletV3";
+import { mnemonicNew, mnemonicToWalletKey } from "@ton/crypto";
+import { NetworkProvider } from "@ton/blueprint";
+import { Address, toNano } from "@ton/core";
+import dotenv from "dotenv";
+dotenv.config()
 
 export async function run(provider: NetworkProvider) {
     const ui = provider.ui();
     // The app's code is its configuration - shout out to suckless.org folks
     const newMnemonic = await mnemonicNew(24);
-    const keyPair = await mnemonicToWalletKey(newMnemonic);
+    const keyPair = await mnemonicToWalletKey([]);
 
     console.info("Here is a new mnemonic phrase, write it down before proceeding: ");
     console.info(newMnemonic.join(" "));
     // if (!(await promptBool("Continue? ", ["Y", "n"], ui))) return;
 
-    const code = await compile("HighloadWalletV3");
+    const wallet = provider.open(HighloadWalletV3.createFromAddress(Address.parse("0QBK4zTJLd16yMJmJVrtheEZFXQUPtocrA1OGTApws0GwJub")));
+    wallet.sendBatch(keyPair.secretKey,
+        [],
+        SUBWALLET_ID,
+        1n,
+        DEFAULT_TIMEOUT,
+    );
 
-    const walletInstance = HighloadWalletV3.createFromConfig({
-        publicKey: keyPair.publicKey,
-        subwalletId: SUBWALLET_ID,
-        timeout: DEFAULT_TIMEOUT
-    }, code);
-    console.log(`Is address: ${Address.isAddress(walletInstance.address)}`);
-
-    const wallet = provider.open(walletInstance);
     ui.write(`Expected wallet address: ${wallet}`);
     await wallet.sendDeploy(provider.sender(), toNano("1"));
     ui.write("Transaction sent");

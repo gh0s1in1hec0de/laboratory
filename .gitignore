@@ -1,8 +1,8 @@
 .idea
 node_modules/
 postgres-data
-/production/modules/logs[manager]/
-/production/modules/logs[oracle]/
+/production/modules/logs[manager]
+/production/modules/logs[oracle]
 
 **/yarn.lock
 **/.yarnrc.yml
@@ -14,4 +14,3 @@ postgres-data
 .env
 .env.*
 !.env.example
-
