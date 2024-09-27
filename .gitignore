@@ -1,4 +1,6 @@
 .idea
+.DS_Store
+.vscode
 node_modules/
 postgres-data
 /production/modules/logs[manager]

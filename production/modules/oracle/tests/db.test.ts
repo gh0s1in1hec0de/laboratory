@@ -61,85 +61,85 @@ describe("Database", () => {
     //         }
     //     });
     // });
-    //
-    // test("Add mock data to the database", async () => {
-    //     await client`
-    //     INSERT INTO users (telegram_id, nickname)
-    //     VALUES (123456789, 'Pavel Durov')`;
-    //
-    //     const randUserAddress = randomAddress().toString();
-    //     await client`
-    //     INSERT INTO callers ("user", address)
-    //     VALUES (123456789, ${randUserAddress})`;
-    //
-    //     await client.unsafe(`
-    //     DO
-    //     $$
-    //     BEGIN
-    //         FOR i in 1..5 LOOP
-    //             INSERT INTO tasks (name, description)
-    //             VALUES (
-    //                 'task' || lpad(to_hex(i), 1, '0'),
-    //                 'some description'
-    //             );
-    //         END LOOP;
-    //     END;
-    //     $$;`
-    //     );
-    //
-    //     await client.unsafe(`
-    //     DO
-    //     $$
-    //     BEGIN
-    //         FOR i IN 1..20 LOOP
-    //             INSERT INTO token_launches (
-    //                 identifier, address, creator, version, metadata, timings, created_at, is_successful, post_deploy_enrollment_stats, dex_data
-    //             )
-    //             VALUES (
-    //                 'TokenLaunch_' || i,
-    //                 '0x' || lpad(to_hex(i), 48, '0'),
-    //                 '${randUserAddress}',
-    //                 'V1',  -- версия лаунча
-    //                 ('{"description": "Test metadata for launch ' || i || '"}')::jsonb,
-    //                 '{"start_time": "2024-09-01T00:00:00", "end_time": "2024-09-30T23:59:59"}'::jsonb,
-    //                 NOW(),
-    //                 NULL,
-    //                 NULL,
-    //                 NULL
-    //             );
-    //         END LOOP;
-    //     END;
-    //     $$;
-    //     `);
-    //
-    //
-    //     const users = await client`SELECT *
-    //                            FROM users;`;
-    //     expect(users.length).toBe(1);
-    //
-    //     const callers = await client`SELECT *
-    //                              FROM callers;`;
-    //     expect(callers.length).toBe(1);
-    //
-    //     const tasks = await client`SELECT *
-    //                            FROM tasks;`;
-    //     expect(tasks.length).toBe(5);
-    //
-    //     const tokenLaunches = await client`SELECT *
-    //                                    FROM token_launches;`;
-    //     expect(tokenLaunches.length).toBe(20);
+    
+    test("Add mock data to the database", async () => {
+        // await client`
+        // INSERT INTO users (telegram_id, nickname)
+        // VALUES (123456789, 'Pavel Durov')`;
+    
+        const randUserAddress = randomAddress().toString();
+        await client`
+        INSERT INTO callers (address, ticket_balance)
+        VALUES (${randUserAddress}, 0)`;
+    
+        // await client.unsafe(`
+        // DO
+        // $$
+        // BEGIN
+        //     FOR i in 1..5 LOOP
+        //         INSERT INTO tasks (name, description)
+        //         VALUES (
+        //             'task' || lpad(to_hex(i), 1, '0'),
+        //             'some description'
+        //         );
+        //     END LOOP;
+        // END;
+        // $$;`
+        // );
+    
+        // await client.unsafe(`
+        // DO
+        // $$
+        // BEGIN
+        //     FOR i IN 1..20 LOOP
+        //         INSERT INTO token_launches (
+        //             identifier, address, creator, version, metadata, timings, created_at, is_successful, post_deploy_enrollment_stats, dex_data
+        //         )
+        //         VALUES (
+        //             'TokenLaunch_' || i,
+        //             '0x' || lpad(to_hex(i), 48, '0'),
+        //             '${randUserAddress}',
+        //             'V1',  -- версия лаунча
+        //             ('{"description": "Test metadata for launch ' || i || '"}')::jsonb,
+        //             '{"start_time": "2024-09-01T00:00:00", "end_time": "2024-09-30T23:59:59"}'::jsonb,
+        //             NOW(),
+        //             NULL,
+        //             NULL,
+        //             NULL
+        //         );
+        //     END LOOP;
+        // END;
+        // $$;
+        // `);
+    
+    
+        // const users = await client`SELECT *
+        //                        FROM users;`;
+        // expect(users.length).toBe(1);
+    
+        const callers = await client`SELECT *
+                                 FROM callers;`;
+        expect(callers.length).toBe(1);
+    
+        // const tasks = await client`SELECT *
+        //                        FROM tasks;`;
+        // expect(tasks.length).toBe(5);
+    
+        // const tokenLaunches = await client`SELECT *
+        //                                FROM token_launches;`;
+        // expect(tokenLaunches.length).toBe(20);
+    });
+    
+    // test("any req", async () => {
+    //     const res = await db.getSortedTokenLaunches({
+    //         page: 1,
+    //         limit: 10,
+    //         orderBy: TokenLaunchFields.CREATED_AT,
+    //         order: SortOrder.ASC,
+    //         search: ""
+    //     }, client);
+    //     console.log(res?.storedTokenLaunch?.length);
     // });
-    //
-    // // test("any req", async () => {
-    // //     const res = await db.getSortedTokenLaunches({
-    // //         page: 1,
-    // //         limit: 10,
-    // //         orderBy: TokenLaunchFields.CREATED_AT,
-    // //         order: SortOrder.ASC,
-    // //         search: ""
-    // //     }, client);
-    // //     console.log(res?.storedTokenLaunch?.length);
-    // // });
     //
     // test("just some temporary shit I need to check fast", async () => {
     //

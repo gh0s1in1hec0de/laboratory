@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 10
+    },
+    "auditLog": "/Users/dondarubin/projects/laboratory/production/modules/logs[oracle]/.04d38ec42b01284ee83bf0409f88448ed465fcf3-audit.json",
+    "files": [
+        {
+            "date": 1727443817366,
+            "name": "/Users/dondarubin/projects/laboratory/production/modules/logs[oracle]/logs[dev]-2024-09-27.log",
+            "hash": "b759955a6aaa52aa474255a8ffb5622ecebb3c8bed5b6695ec338f08657f2705"
+        }
+    ],
+    "hashType": "sha256"
+}
