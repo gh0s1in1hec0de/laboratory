@@ -97,16 +97,26 @@ export enum EndedLaunchesCategories {
 }
 
 // Returns token launches, that have been already ended, needs to be categorized as "successful and waits for deployment"/"unsuccessful"
-export async function getTokenLaunchesByCategories(categories: EndedLaunchesCategories[], client?: SqlClient): Promise<StoredTokenLaunch[] | null> {
+export async function getTokenLaunchesByCategories(category: EndedLaunchesCategories, client?: SqlClient): Promise<StoredTokenLaunch[] | null> {
     const c = client ?? globalClient;
+    const isSuccessful = c`AND is_successful IS TRUE`;
+
+    let q;
+    switch (category) {
+        case EndedLaunchesCategories.Pending:
+            q = c`AND is_successful IS NULL`;
+            break;
+        case EndedLaunchesCategories.WaitingForJetton:
+            q = c`${isSuccessful} AND post_deploy_enrollment_stats IS NULL`;
+            break;
+        case EndedLaunchesCategories.WaitingForPool:
+            q = c`${isSuccessful} AND post_deploy_enrollment_stats IS NOT NULL AND (dex_data IS NULL OR (dex_data ->> 'addedLiquidity')::BOOLEAN = FALSE)`;
+            break;
+    }
     const res = await c<StoredTokenLaunch[]>`
         SELECT *
         FROM token_launches
-        WHERE EXTRACT(EPOCH FROM now()) > (timings ->> 'publicRoundEndTime')::BIGINT
-          AND post_deploy_enrollment_stats IS NULL
-            ${categories.includes(EndedLaunchesCategories.Pending) ? c`AND is_successful IS NULL` : c`AND is_successful IS TRUE`}
-            ${categories.includes(EndedLaunchesCategories.WaitingForJetton) ? c`AND post_deploy_enrollment_stats IS NULL` : c`AND post_deploy_enrollment_stats IS NOT NULL`}
-            ${categories.includes(EndedLaunchesCategories.WaitingForPool) ? c`AND (dex_data IS NULL OR (dex_data->>'addedLiquidity')::BOOLEAN = FALSE` : c``}
+        WHERE EXTRACT(EPOCH FROM now()) > (timings ->> 'publicRoundEndTime')::BIGINT ${q}
     `;
     return res.length ? res : null;
 }

@@ -1,4 +1,4 @@
-import { Address, internal as internal_relaxed, type OutActionSendMsg, SendMode } from "@ton/ton";
+import { Address, fromNano, internal as internal_relaxed, type OutActionSendMsg, SendMode } from "@ton/ton";
 import { balancedTonClient, retrieveAllUnknownTransactions } from "./api.ts";
 import { chief, getConfig } from "../config.ts";
 import { createPoolForJetton } from "./dedust";
@@ -34,11 +34,15 @@ export async function chiefScanning() {
 
 async function validateEndedPendingLaunches() {
     try {
-        const pendingLaunches = await db.getTokenLaunchesByCategories([db.EndedLaunchesCategories.Pending]);
-        const waitingForJettonLaunches = await db.getTokenLaunchesByCategories([db.EndedLaunchesCategories.WaitingForJetton]) ?? [];
-        if (!(pendingLaunches && waitingForJettonLaunches.length)) return;
+        const pendingLaunches = await db.getTokenLaunchesByCategories(db.EndedLaunchesCategories.Pending) ?? [];
+        const waitingForJettonLaunches = await db.getTokenLaunchesByCategories(db.EndedLaunchesCategories.WaitingForJetton) ?? [];
+        if (!(pendingLaunches.length || waitingForJettonLaunches.length)) {
+            logger().info("no pending/waiting for jettons launches found");
+            await delay(10);
+            return;
+        }
 
-        const queryId = Date.now() / 1000;
+        const queryId = Math.floor(Date.now() / 1000);
         const { keyPair, wallet, queryIdManager } = await chiefWalletData();
 
         const actions: OutActionSendMsg[] = [];
@@ -53,6 +57,8 @@ async function validateEndedPendingLaunches() {
             ]);
             const { totalTonsCollected } = parseMoneyFlows(moneyFlowsResponse.stack);
             const { minTonForSaleSuccess } = parseGetConfigResponse(getConfigCallResponse.stack);
+
+            logger().debug(`launch ${launch.address} ton stats c: ${fromNano(totalTonsCollected)} n: ${fromNano(minTonForSaleSuccess)}`);
             if (totalTonsCollected >= minTonForSaleSuccess) {
                 waitingForJettonLaunches.push(launch);
                 continue;
@@ -69,7 +75,7 @@ async function validateEndedPendingLaunches() {
                         .endCell()
                 }),
             });
-            logger().debug(`launch ${address} considered as failed`);
+            logger().info(`[*] launch ${address} considered as failed`);
             failedLaunches.push(launch);
         }
         if (waitingForJettonLaunches.length) {
@@ -92,6 +98,7 @@ async function validateEndedPendingLaunches() {
         }
         if (actions.length) {
             const highloadQueryId = await queryIdManager.getNextCached();
+            console.log(highloadQueryId);
             await balancedTonClient.execute(() =>
                 wallet.sendBatch(keyPair.secretKey,
                     actions,
@@ -112,11 +119,14 @@ async function validateEndedPendingLaunches() {
 }
 
 async function createPoolsForNewJettons() {
-    const waitingForPoolLaunches = await db.getTokenLaunchesByCategories([db.EndedLaunchesCategories.WaitingForPool]);
-    if (!waitingForPoolLaunches) return;
-    const queryId = Date.now() / 1000;
+    const waitingForPoolLaunches = await db.getTokenLaunchesByCategories(db.EndedLaunchesCategories.WaitingForPool);
+    if (!waitingForPoolLaunches) {
+        logger().info("no waiting for pool launches found");
+        await delay(10);
+        return;
+    }
+    const queryId = Math.floor(Date.now() / 1000);
     const { keyPair, wallet, queryIdManager } = await chiefWalletData();
-
 
     const actions: OutActionSendMsg[] = [];
     const poolCreationProcesses: Promise<void>[] = [];
@@ -186,11 +196,13 @@ async function createPoolsForNewJettons() {
 }
 
 async function handleChiefUpdates() {
+    const chiefAddress = Address.parse(chief().address).toRawString();
     try {
-        let currentHeight = await db.getHeight(chief().address) ?? 0n;
-        const newTxs = await retrieveAllUnknownTransactions(chief().address, currentHeight);
+        let currentHeight = await db.getHeight(chiefAddress) ?? 0n;
+        const newTxs = await retrieveAllUnknownTransactions(chiefAddress, currentHeight);
         if (!newTxs) {
-            logger().info("no updates for chief");
+            logger().info("updates for chief not found");
+            await delay(10);
             return;
         }
         for (const tx of newTxs) {
@@ -254,8 +266,8 @@ async function handleChiefUpdates() {
             }
         }
         currentHeight = newTxs[newTxs.length - 1].lt;
-        await db.setHeightForAddress(chief().address, currentHeight, true);
+        await db.setHeightForAddress(chiefAddress, currentHeight, true);
     } catch (e) {
-        logger().error(`failed to load chief(${chief().address}) updates with error: `, e);
+        logger().error(`failed to load chief(${chiefAddress}) updates with error: `, e);
     }
 }

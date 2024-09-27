@@ -32,7 +32,7 @@ export async function createPoolForJetton(
     launchAddress: RawAddressString
 ): Promise<void> {
     try {
-        const queryId = Date.now();
+        const queryId = Math.floor(Date.now() / 1000);
         logger().info(`[*] pool deployment process started for jetton ${jetton.masterAddress} (query id ${queryId}); god bless it...`);
 
         const dexData = (await db.getTokenLaunch(launchAddress))?.dexData;
@@ -56,29 +56,40 @@ export async function createPoolForJetton(
         const jettonVault = await balancedTonClient.execute(() => factory.getJettonVault(Address.parse(jetton.masterAddress)), true);
         const jettonVaultContract = await balancedTonClient.execute(c => c.open(jettonVault));
 
+        let iterationNumber = 1;
         while (true) {
-            vaultStatus = await balancedTonClient.execute(() => jettonVaultContract.getReadinessStatus(), true);
-            let delayTime = 15;
-            if (vaultStatus === ReadinessStatus.NOT_DEPLOYED) {
-                logger().info(`vault for jetton ${jetton.masterAddress} (launch ${launchAddress}) not found, deploying...`);
-                const message = FactoryMessageBuilder.createVaultMessage({ assets, queryId });
-                await balancedTonClient.execute(() =>
-                    wallet.sendExternalMessage(keyPair.secretKey, {
-                        createdAt: Date.now() / 1000,
-                        queryId: deployVaultQID,
-                        message,
-                        mode: SendMode.PAY_GAS_SEPARATELY,
-                        subwalletId: SUBWALLET_ID,
-                        timeout: DEFAULT_TIMEOUT
-                    })
-                );
-                delayTime = 47.5; // My soul said so
+            try {
+                let delayTime = 15;
+                vaultStatus = await balancedTonClient.execute(() => jettonVaultContract.getReadinessStatus(), true);
+                if (vaultStatus === ReadinessStatus.NOT_DEPLOYED) {
+                    logger().info(`vault for jetton ${jetton.masterAddress} (launch ${launchAddress}) not found, deploying...`);
+                    const message = FactoryMessageBuilder.createVaultMessage({ assets, queryId });
+                    await balancedTonClient.execute(() =>
+                        wallet.sendExternalMessage(keyPair.secretKey, {
+                            createdAt: Date.now() / 1000,
+                            queryId: deployVaultQID,
+                            message,
+                            mode: SendMode.PAY_GAS_SEPARATELY,
+                            subwalletId: SUBWALLET_ID,
+                            timeout: DEFAULT_TIMEOUT
+                        })
+                    );
+                    delayTime = 47.5; // My soul said so
+                }
+                if (vaultStatus === ReadinessStatus.READY) {
+                    logger().info(`vault for jetton ${jetton.masterAddress} (launch ${launchAddress}) is ready`);
+                    break;
+                }
+                await delay(delayTime);
+            } catch (e) {
+                logger().warn(`failed to create vault for ${jetton.masterAddress} (launch ${launchAddress}) with error: `, e);
+                await delay(20);
             }
-            if (vaultStatus === ReadinessStatus.READY) {
-                logger().info(`vault for jetton ${jetton.masterAddress} (launch ${launchAddress}) is ready`);
-                break;
+            iterationNumber += 1;
+            if (iterationNumber === 5) {
+                logger().error(`failed to create vault for ${jetton.masterAddress} (launch ${launchAddress}) after 5 tries, xoxo!`);
+                return;
             }
-            await delay(delayTime);
         }
 
         // ~ 3 requests consecutively, then delays
@@ -86,26 +97,37 @@ export async function createPoolForJetton(
         const pool = await balancedTonClient.execute(() => factory.getPool(PoolType.VOLATILE, assets), true);
         const poolContract = await balancedTonClient.execute(c => c.open(pool));
 
+        iterationNumber = 1;
         while (true) {
-            poolReadiness = await balancedTonClient.execute(() => poolContract.getReadinessStatus(), true);
+            try {
+                poolReadiness = await balancedTonClient.execute(() => poolContract.getReadinessStatus(), true);
 
-            if (poolReadiness !== ReadinessStatus.NOT_DEPLOYED) {
-                logger().info(`pool for jetton ${jetton.masterAddress} (launch ${launchAddress}) exists, moving forward...`);
-                break;
+                if (poolReadiness !== ReadinessStatus.NOT_DEPLOYED) {
+                    logger().info(`pool for jetton ${jetton.masterAddress} (launch ${launchAddress}) exists, moving forward...`);
+                    break;
+                }
+                logger().info(`pool for jetton ${jetton.masterAddress} (launch ${launchAddress}) not found, deploying...`);
+                const message = FactoryMessageBuilder.createVolatilePoolMessage({ assets, queryId });
+                await balancedTonClient.execute(() =>
+                    wallet.sendExternalMessage(keyPair.secretKey, {
+                        createdAt: Date.now() / 1000,
+                        queryId: createPoolQID,
+                        message,
+                        mode: SendMode.PAY_GAS_SEPARATELY,
+                        subwalletId: SUBWALLET_ID,
+                        timeout: DEFAULT_TIMEOUT
+                    })
+                );
+                await delay(60);
+            } catch (e) {
+                logger().warn(`failed to deploy pool for ${jetton.masterAddress} (launch ${launchAddress}, pool ${poolContract.address}) with error: `, e);
+                await delay(20);
             }
-            logger().info(`pool for jetton ${jetton.masterAddress} (launch ${launchAddress}) not found, deploying...`);
-            const message = FactoryMessageBuilder.createVolatilePoolMessage({ assets, queryId });
-            await balancedTonClient.execute(() =>
-                wallet.sendExternalMessage(keyPair.secretKey, {
-                    createdAt: Date.now() / 1000,
-                    queryId: createPoolQID,
-                    message,
-                    mode: SendMode.PAY_GAS_SEPARATELY,
-                    subwalletId: SUBWALLET_ID,
-                    timeout: DEFAULT_TIMEOUT
-                })
-            );
-            await delay(60);
+            iterationNumber += 1;
+            if (iterationNumber === 5) {
+                logger().error(`failed to deploy pool for ${jetton.masterAddress} (launch ${launchAddress}, pool ${poolContract.address}) after 5 tries, mua!`);
+                return;
+            }
         }
 
         // Only one request for those 2 messages as they can be processed simultaneously
@@ -135,9 +157,8 @@ export async function createPoolForJetton(
                 })
             });
 
-        let iterationNumber = 1;
-        let liquidityWasProvided = false;
-        while (!liquidityWasProvided) {
+        iterationNumber = 1;
+        while (true) {
             try {
                 const [reserve1, reserve2] = await balancedTonClient.execute(() => poolContract.getReserves(), true);
                 if (reserve1 > 0n && reserve2 > 0n) {
@@ -159,7 +180,7 @@ export async function createPoolForJetton(
                         };
                     }
                     await db.updateDexData(launchAddress, newDexData);
-                    liquidityWasProvided = true;
+                    break;
                 }
                 if (!(reserve1 || reserve2)) {
                     logger().info(`liquidity for ${jetton.masterAddress} (launch ${launchAddress}, pool ${poolContract.address}) not found, sending...`);
@@ -182,11 +203,11 @@ export async function createPoolForJetton(
                     await delay(60 + iterationNumber * 7.5);
                 }
             } catch (e) {
-                logger().error(`failed to add liquidity for ${jetton.masterAddress} (launch ${launchAddress}, pool ${poolContract.address}) with error: `, e);
+                logger().warn(`failed to add liquidity for ${jetton.masterAddress} (launch ${launchAddress}, pool ${poolContract.address}) with error: `, e);
             }
             iterationNumber += 1;
             if (iterationNumber === 5) {
-                logger().warn(`failed to add liquidity for ${jetton.masterAddress} (launch ${launchAddress}, pool ${poolContract.address}) after 5 tries, wrapping up!`);
+                logger().error(`failed to add liquidity for ${jetton.masterAddress} (launch ${launchAddress}, pool ${poolContract.address}) after 5 tries, wrapping up!`);
                 return;
             }
         }

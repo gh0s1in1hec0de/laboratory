@@ -23,7 +23,7 @@ async function main() {
         handleCoreUpdates(formatted, version);
     }
     spawnNewLaunchesScanners();
-    // chiefScanning();
+    chiefScanning();
 }
 
 main().then();

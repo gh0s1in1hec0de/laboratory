@@ -21,6 +21,6 @@ export async function chiefWalletData(): Promise<{
             c.open(HighloadWalletV3.createFromAddress(Address.parse(chief().address)))
         );
     }
-    if (!queryIdManager) queryIdManager = await CachedHighloadQueryIdManager.fromAddress(chief().address);
+    if (!queryIdManager) queryIdManager = await CachedHighloadQueryIdManager.fromAddress(Address.parse(chief().address).toRawString());
     return { keyPair, wallet, queryIdManager };
 }
