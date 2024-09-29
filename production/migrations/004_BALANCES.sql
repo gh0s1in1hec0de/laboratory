@@ -88,24 +88,6 @@ CREATE TRIGGER trigger_update_user_balance
     FOR EACH ROW
 EXECUTE FUNCTION update_user_balance();
 
--- One user can't have more than 15 addresses
-CREATE OR REPLACE FUNCTION check_max_callers()
-    RETURNS TRIGGER AS
-$$
-BEGIN
-    IF (SELECT COUNT(*) FROM callers WHERE "user" = NEW."user") >= 15 THEN
-        RAISE EXCEPTION 'a user cannot have more than 5 callers';
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_check_max_callers
-    BEFORE INSERT
-    ON callers
-    FOR EACH ROW
-EXECUTE FUNCTION check_max_callers();
-
 
 -- Automated balances creation
 CREATE OR REPLACE FUNCTION create_launch_balance()
