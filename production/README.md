@@ -34,7 +34,7 @@ docker run -d \
 -e POSTGRES_PASSWORD=example_password \
 -v ./postgres-data:/var/lib/postgresql/data \
 -p 5432:5432 \
-postgres:latest
+postgres:16
 ```
 
 ### Step 4: Run any services

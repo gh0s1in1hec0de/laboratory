@@ -88,7 +88,6 @@ CREATE TRIGGER trigger_update_user_balance
     FOR EACH ROW
 EXECUTE FUNCTION update_user_balance();
 
-
 -- Automated balances creation
 CREATE OR REPLACE FUNCTION create_launch_balance()
     RETURNS TRIGGER AS
@@ -130,4 +129,3 @@ CREATE TRIGGER trigger_update_launch_balance_public
     FOR EACH ROW
     WHEN (NEW.action_type IN ('public_buy', 'public_refund', 'total_refund'))
 EXECUTE FUNCTION update_launch_balance_public();
-

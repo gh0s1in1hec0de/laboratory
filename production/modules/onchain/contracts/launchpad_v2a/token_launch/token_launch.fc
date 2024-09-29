@@ -128,6 +128,7 @@
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::chief_address));
         accept_message();
         throw_if(error::bad_request, general_state::total_tons_collected < config::const::min_ton_for_sale_success);
+        throw_if(error::bad_request, general_state::fut_jet_deployed_balance > 0);
         int launch_success_treshold =
         general_state::total_tons_collected + this::operational_needs
         + get_jetton_deployment_total_gas_cost()
@@ -170,6 +171,7 @@
             return ();
         }
         raw_reserve(attached_value + this::operational_needs, RESERVE_ALL_BUT_AMOUNT);
+        this::operational_needs = 0;
         cell transfer_msg = simple_transfer(this::const::chief_address, 0, "opn");
         send_raw_message(transfer_msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
         save_data();

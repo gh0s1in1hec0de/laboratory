@@ -15,6 +15,7 @@ import {
     parseMoneyFlows,
     TokensLaunchOps,
     jettonFromNano,
+    type Coins,
 } from "starton-periphery";
 
 export async function chiefScanning() {
@@ -98,7 +99,6 @@ async function validateEndedPendingLaunches() {
         }
         if (actions.length) {
             const highloadQueryId = await queryIdManager.getNextCached();
-            console.log(highloadQueryId);
             await balancedTonClient.execute(() =>
                 wallet.sendBatch(keyPair.secretKey,
                     actions,
@@ -211,7 +211,7 @@ async function handleChiefUpdates() {
             if (inMsg.info.type !== "internal") continue;
 
             const sender = inMsg.info.src;
-            const value = inMsg.info.value.coins;
+            const value: Coins = inMsg.info.value.coins;
             const inMsgBody = inMsg.body.beginParse();
             // We don't care about simple transfers
             if (inMsgBody.remainingBits < (32 + 64)) continue;
@@ -219,7 +219,7 @@ async function handleChiefUpdates() {
 
             if (op === 0x7362d09c) {
                 const jettonAmount = msgBodyData.loadCoins();
-                const originalSender = msgBodyData.loadAddressAny();
+                const originalSender = msgBodyData.loadAddress();
                 const forwardPayload = msgBodyData.loadBit() ? msgBodyData.loadRef().beginParse() : msgBodyData;
 
                 // IMPORTANT: we have to verify the source of this message because it can be faked
@@ -241,15 +241,12 @@ async function handleChiefUpdates() {
                     continue;
                 }
 
-                if (forwardPayload.remainingBits < 248) {
-                    logger().info(`side jetton transfer from ${originalSender} with value ${jettonFromNano(jettonAmount)}`);
-                    continue;
-                }
                 try {
                     const dexAmount = forwardPayload.loadCoins();
                     const oursAmount = forwardPayload.loadCoins();
+                    logger().info(`launch ${sender} enrollment: [${fromNano(value)} TONs, ${jettonFromNano(oursAmount)}, ${jettonFromNano(dexAmount)}]`);
                     await db.updatePostDeployEnrollmentStats(
-                        (originalSender as Address).toRawString(),
+                        originalSender.toRawString(),
                         {
                             deployedJetton: {
                                 masterAddress: jettonMaster.toRawString(),
@@ -261,7 +258,7 @@ async function handleChiefUpdates() {
                         }
                     );
                 } catch (e) {
-                    logger().error(`error when parsing forward payload for tx with lt ${tx.lt}: `, e);
+                    logger().warn(`jetton transfer from ${originalSender} with value ${jettonFromNano(jettonAmount)} and without shares (or an error for right one)`, e);
                 }
             }
         }

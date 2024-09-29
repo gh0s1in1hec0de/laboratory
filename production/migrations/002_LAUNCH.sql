@@ -72,3 +72,24 @@ CREATE TABLE launch_balances
     pub_tons_collected     coins NOT NULL DEFAULT 0,
     total_tons_collected   coins NOT NULL DEFAULT 0
 );
+
+CREATE OR REPLACE FUNCTION register_caller_fallback() RETURNS TRIGGER AS
+$$
+BEGIN
+    -- Check if the actor (caller) exists in the callers table
+    IF NOT EXISTS (SELECT 1 FROM callers WHERE address = NEW.actor) THEN
+        -- Insert a new caller with the actor's address and default values
+        INSERT INTO callers (address)
+        VALUES (NEW.actor);
+    END IF;
+
+    -- Continue with the insertion in user_actions
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_check_and_insert_caller
+    BEFORE INSERT
+    ON user_actions
+    FOR EACH ROW
+EXECUTE FUNCTION register_caller_fallback();

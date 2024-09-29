@@ -24,9 +24,9 @@ CREATE OR REPLACE FUNCTION increment_ticket_balance()
     RETURNS TRIGGER AS
 $$
 BEGIN
-    UPDATE callers
+    UPDATE users
     SET ticket_balance = ticket_balance + 1
-    WHERE address = NEW.caller;
+    WHERE telegram_id = (SELECT "user" FROM callers WHERE address = NEW.caller);
 
     RETURN NEW;
 END;
@@ -43,9 +43,10 @@ CREATE OR REPLACE FUNCTION decrement_ticket_balance()
     RETURNS TRIGGER AS
 $$
 BEGIN
-    UPDATE callers
+    UPDATE users
     SET ticket_balance = ticket_balance - 1
-    WHERE address = NEW.caller_address;
+    WHERE telegram_id = (SELECT "user" FROM callers WHERE address = NEW.caller_address);
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

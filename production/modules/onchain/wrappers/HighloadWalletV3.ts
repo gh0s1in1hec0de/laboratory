@@ -27,7 +27,8 @@ export function highloadWalletV3ConfigToCell(config: HighloadWalletV3Config): Ce
 
 export class HighloadWalletV3 implements Contract {
 
-    constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {}
+    constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
+    }
 
     static createFromAddress(address: Address) {
         return new HighloadWalletV3(address);
@@ -69,7 +70,7 @@ export class HighloadWalletV3 implements Contract {
             messageBuilder.store(storeMessageRelaxed(opts.message));
             messageCell = messageBuilder.endCell();
         }
-        
+
         const messageInner = beginCell()
             .storeUint(opts.subwalletId, 32)
             .storeRef(messageCell)
@@ -89,7 +90,8 @@ export class HighloadWalletV3 implements Contract {
 
     async sendBatch(provider: ContractProvider, secretKey: Buffer, messages: OutActionSendMsg[], subwallet: number, queryId: bigint, timeout: number, createdAt?: number, value: bigint = 0n) {
         if (createdAt == undefined) {
-            createdAt = Math.floor(Date.now() / 1000);
+            createdAt = Math.round(Date.now() / 1000) - 10;
+            console.log(`message created_at set to ${createdAt}`);
         }
         return await this.sendExternalMessage(provider, secretKey, {
             message: this.packActions(messages, value, queryId),

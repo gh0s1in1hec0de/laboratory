@@ -1,4 +1,4 @@
-import type { Coins, RawAddressString, UnixTimeSeconds } from "starton-periphery";
+import type { Coins, RawAddressString, TokenLaunchTimings, UnixTimeSeconds } from "starton-periphery";
 import { ok as assert } from "assert";
 import { logger } from "../logger.ts";
 import { globalClient } from "./db";
@@ -119,6 +119,17 @@ export async function getTokenLaunchesByCategories(category: EndedLaunchesCatego
         WHERE EXTRACT(EPOCH FROM now()) > (timings ->> 'publicRoundEndTime')::BIGINT ${q}
     `;
     return res.length ? res : null;
+}
+
+export async function updateLaunchTimings(tokenLaunchAddress: RawAddressString, newTimings: TokenLaunchTimings, client?: SqlClient): Promise<void> {
+    // @ts-expect-error just postgres typechecking nonsense
+    const res = await (client ?? globalClient)`
+        UPDATE token_launches
+        SET timings = ${newTimings}
+        WHERE address = ${tokenLaunchAddress}
+        RETURNING 1;
+    `;
+    if (res.length !== 1) logger().error(`looks like timings for ${tokenLaunchAddress} wasn't updated`);
 }
 
 export async function markLaunchAsFailed(address: RawAddressString, client?: SqlClient): Promise<void> {

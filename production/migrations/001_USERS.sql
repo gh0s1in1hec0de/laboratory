@@ -11,23 +11,17 @@ CREATE TABLE heights
     height           BIGINT NOT NULL DEFAULT 0
 );
 
--- CREATE TABLE users
--- (
---     invited_by     telegram_id REFERENCES users (telegram_id),
---     telegram_id    telegram_id PRIMARY KEY,
---     nickname       TEXT,
---     ticket_balance SMALLINT NOT NULL DEFAULT 0
--- );
-
 CREATE TABLE callers
 (
-    address address PRIMARY KEY,
-    ticket_balance  SMALLINT CHECK (ticket_balance BETWEEN 0 AND 3) DEFAULT 0
+    address        address PRIMARY KEY,
+    telegram_id    telegram_id,
+    invited_by     telegram_id REFERENCES callers (address),
+    ticket_balance SMALLINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE summary_tickets_balances
 (
-    caller address REFERENCES callers (address),
-    ticket_balance   SMALLINT DEFAULT 0,
+    caller         address REFERENCES callers (address),
+    ticket_balance SMALLINT DEFAULT 0,
     PRIMARY KEY (caller)
 );

@@ -1,4 +1,4 @@
-import { GetConfigResponse, MoneyFlows } from "./types";
+import { GetConfigResponse, MoneyFlows, TokenLaunchTimings } from "./types";
 import { Cell, type Slice, TupleReader } from "@ton/core";
 import {
     BalanceUpdateMessage,
@@ -8,6 +8,7 @@ import {
     TokensLaunchOps,
     WithdrawConfirmationMessage,
 } from "./standards";
+import { UnixTimeSeconds } from "./utils";
 
 // === Message parsers ===
 
@@ -72,5 +73,20 @@ export function parseGetConfigResponse(stack: TupleReader): GetConfigResponse {
         futJetPlatformAmount: stack.readBigNumber(),
 
         minTonForSaleSuccess: stack.readBigNumber(),
+    };
+}
+
+export function parseTimings(stack: TupleReader, pollingDuration: number = 2 * 86400): TokenLaunchTimings {
+    const startTime = stack.readNumber();
+    const creatorRoundEndTime = stack.readNumber();
+    const wlRoundEndTime = stack.readNumber();
+    const publicRoundEndTime = stack.readNumber();
+    const endTime = publicRoundEndTime + pollingDuration;
+    return {
+        startTime,
+        creatorRoundEndTime,
+        wlRoundEndTime,
+        publicRoundEndTime,
+        endTime,
     };
 }

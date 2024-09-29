@@ -92,7 +92,8 @@ export class HighloadWalletV3 implements Contract {
 
     async sendBatch(provider: ContractProvider, secretKey: Buffer, messages: OutActionSendMsg[], subwallet: number, queryId: bigint, timeout: number, createdAt?: number, value: bigint = 0n) {
         if (createdAt == undefined) {
-            createdAt = Math.floor(Date.now() / 1000);
+            // -10 to avoid 35 exit code due to node specific time dimension [-_-]
+            createdAt = Math.floor(Date.now() / 1000) - 10;
         }
         return await this.sendExternalMessage(provider, secretKey, {
             message: this.packActions(messages, value, queryId),

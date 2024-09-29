@@ -11,9 +11,9 @@ export class CachedHighloadQueryIdManager extends HighloadQueryIdManager {
 
     async getNextCached(): Promise<bigint> {
         const { shift, bitnumber } = super.getNext();
-        const equalSeqno = HighloadQueryIdManager.calculateQueryId(shift, bitnumber);
+        const queryId = HighloadQueryIdManager.calculateQueryId(shift, bitnumber);
         const parametrized = `${this.cacheAddress}:query_id`;
-        await db.setHeightForAddress(parametrized, equalSeqno);
+        await db.setHeightForAddress(parametrized, queryId, true);
         return CachedHighloadQueryIdManager.calculateQueryId(shift, bitnumber);
     }
 

@@ -17,7 +17,7 @@ import {
     parseMoneyFlows,
     jettonFromNano,
     UserVaultOps,
-    type Coins,
+    parseTimings,
 } from "starton-periphery";
 
 export async function spawnNewLaunchesScanners(scanFrom?: number) {
@@ -59,7 +59,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
     }
     logger().info(`new token launch updates handler for ${launch.address} is up`);
     let currentHeight = await db.getLaunchHeight(launch.address) ?? 0n;
-    const endTimeMs = launch.timings.endTime * 1000;
+    let endTimeMs = launch.timings.endTime * 1000;
 
     while (true) {
         try {
@@ -106,30 +106,53 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                     } as db.UserAction);
                 }
                 if (op === TokensLaunchOps.CreatorBuyout) {
-                    const moneyFlowsResponse = await balancedTonClient.execute(
+                    const configResponse = await balancedTonClient.execute(
                         c => c.runMethod(Address.parse(launch.address), "get_config", []), true
                     );
                     const {
                         creatorFutJetBalance,
                         creatorFutJetPriceReversed
-                    } = parseGetConfigResponse(moneyFlowsResponse.stack);
-                    const investedValue = creatorFutJetBalance * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
-                    logger().info(`launch ${launch.address}: creator's buyout on ${fromNano(investedValue)} TONs is found`);
-
-                    const attachedValue: Coins = inMsg.info.value.coins ?? 0n;
-                    const cornerCase = investedValue > attachedValue;
-                    if (cornerCase) logger().error(`error in creator invested value calculations (${investedValue} > ${attachedValue}) for token launch ${launch.address}`);
-                    await db.updateLaunchBalance(
-                        launch.address,
-                        { creatorTonsCollected: cornerCase ? attachedValue * 98n / 100n : investedValue }
-                    );
+                    } = parseGetConfigResponse(configResponse.stack);
+                    const creatorTonsCollected = creatorFutJetBalance * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
+                    logger().info(`launch ${launch.address}: creator's buyout on ${fromNano(creatorTonsCollected)} TONs is found`);
+                    await db.updateLaunchBalance(launch.address, { creatorTonsCollected });
                 }
 
                 // Here we'll handle only DEPOSITING operations
                 for (const [, msg] of tx.outMessages) {
-                    if (msg.info.type === "internal" && msg.info.bounced) continue;
-                    const outMsgBody = msg.body.beginParse();
-                    const { msgBodyData, op, queryId } = await loadOpAndQueryId(outMsgBody);
+                    if (msg.info.type !== "internal") continue;
+                    if (msg.info.bounced) continue;
+                    const originalBody = msg.body.beginParse();
+                    const body = originalBody.clone();
+                    if (body.remainingBits < 32) {
+                        logger().warn(`launch ${launch.address}: unreachable tx (no op) to address ${msg.info.dest} with timestamp ${msg.info.createdAt}`);
+                        continue;
+                    }
+                    const preloadedOp = body.loadUint(32);
+                    if (preloadedOp === 0) {
+                        const comment = body.loadStringTail();
+                        switch (comment) {
+                            case "^^!": {
+                                const timingsResponse = await balancedTonClient.execute(
+                                    c => c.runMethod(Address.parse(launch.address), "get_sale_timings", []), true
+                                );
+                                const newTimings = parseTimings(timingsResponse.stack);
+                                await db.updateLaunchTimings(launch.address, newTimings);
+                                endTimeMs = newTimings.endTime * 1000;
+                                logger().info(`launch ${launch.address}: timings had been successfully updated (end time ${endTimeMs})`);
+                                break;
+                            }
+                            case "opn": {
+                                logger().debug(`launch ${launch.address}: detected new opn transfer with value ${fromNano(msg.info.value.coins)} TON`);
+                                break;
+                            }
+                            default:
+                                logger().warn(`launch ${launch.address}: unknown outer transfer to ${msg.info.dest} with timestamp ${msg.info.createdAt} and comment ${comment}`);
+                        }
+                        continue;
+                    }
+
+                    const { msgBodyData, op, queryId } = await loadOpAndQueryId(originalBody);
                     // Then we'll look for following operation: balanceUpdate
                     if (op !== UserVaultOps.balanceUpdate) continue;
                     const { mode, tons, futureJettons } = parseBalanceUpdate(msgBodyData);
@@ -174,7 +197,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                 balancedTonClient.decrementActiveLaunchesAmount();
                 logger().info(`new token launch updates handler for ${launch.address} is self-terminated`);
                 break;
-            } // 10 interval mins if we passed the end time\
+            } // 10 interval mins if we passed the end time
             const delayTime = endTimeMs - Date.now() > 86_400_000 ? balancedTonClient.delayValue() : 600;
             logger().debug(`operations for ${launch.address} was recorded successfully - waiting for ${delayTime} seconds`);
             await delay(delayTime);

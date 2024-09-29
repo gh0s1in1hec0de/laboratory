@@ -3,22 +3,22 @@ import { DEFAULT_TIMEOUT, SUBWALLET_ID } from "starton-periphery";
 import { HighloadWalletV3 } from "../wrappers/HighloadWalletV3";
 import { Address, beginCell, toNano } from "@ton/core";
 import { mnemonicToWalletKey } from "@ton/crypto";
-import { SendMode, TonClient } from "@ton/ton";
+import { SendMode, TonClient, TonClient4 } from "@ton/ton";
 import dotenv from "dotenv";
+import { getHttpV4Endpoint } from "@orbs-network/ton-access";
+import { NetworkProvider } from "@ton/blueprint";
 
 dotenv.config();
-const client = new TonClient({
-    endpoint: `https://testnet.toncenter.com/api/v2/jsonRPC`,
-    apiKey: process.env.TONCENTER_API_KEY!,
-    timeout: 20000
-});
 
 // The app's code is its configuration - shout out to suckless.org folks
-async function main() {
+export async function run(provider: NetworkProvider) {
+    // const client = new TonClient4({
+    //     endpoint: await getHttpV4Endpoint()
+    // });
     const mnemonic = process.env.HIGHLOAD_MNEMONIC!;
     const keyPair = await mnemonicToWalletKey(mnemonic.split(" "));
 
-    const wallet = client.open(
+    const wallet = provider.open(
         HighloadWalletV3.createFromAddress(
             Address.parse("0QBK4zTJLd16yMJmJVrtheEZFXQUPtocrA1OGTApws0GwJub")
         )
@@ -29,17 +29,27 @@ async function main() {
             mode: SendMode.PAY_GAS_SEPARATELY,
             outMsg: internal_relaxed({
                 to: Address.parse("0QBXsUwWZ6K9fXs_zpp0UANP58PO1do2B91Vve7qKCg9GXWw"),
-                value: toNano("1"),
+                value: toNano("0.1"),
                 body: beginCell()
                     .storeUint(0, 32)
-                    .storeStringRefTail("Ladies and gentlemen, we got em *v*")
+                    .storeStringRefTail("1st")
                     .endCell()
             }),
-        }],
+        },
+            {
+                type: "sendMsg",
+                mode: SendMode.PAY_GAS_SEPARATELY,
+                outMsg: internal_relaxed({
+                    to: Address.parse("0QBXsUwWZ6K9fXs_zpp0UANP58PO1do2B91Vve7qKCg9GXWw"),
+                    value: toNano("0.1"),
+                    body: beginCell()
+                        .storeUint(0, 32)
+                        .storeStringRefTail("2nd")
+                        .endCell()
+                }),
+            }],
         SUBWALLET_ID,
-        1n,
+        2n,
         DEFAULT_TIMEOUT,
     );
 }
-
-main().then();
