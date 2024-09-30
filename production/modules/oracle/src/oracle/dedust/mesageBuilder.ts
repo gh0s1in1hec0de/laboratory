@@ -72,7 +72,7 @@ export abstract class NativeVaultMessageBuilder {
                 .storeMaybeRef(fulfillPayload)
                 .storeMaybeRef(rejectPayload)
                 .endCell(),
-            value: amount + toNano("0.15"),
+            value: amount + toNano("0.3"),
         });
     }
 }

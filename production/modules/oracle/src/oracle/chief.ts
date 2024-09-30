@@ -28,7 +28,6 @@ export async function chiefScanning() {
             await handleChiefUpdates();
         } catch (e) {
             logger().error("interplanetary error on chief's side: ", e);
-            console.error(e);
             await delay(30);
         }
     }

@@ -219,7 +219,7 @@ export async function createPoolForJetton(
         const lpBalance = await balancedTonClient.execute(() => lpWalletContract.getBalance(), true);
 
         if (!lpBalance) return;
-        const lpJettonsBurnMessage = JettonWalletMessageBuilder.transferMessage(ourJettonWallet.address, toNano("0.5"), {
+        const lpJettonsBurnMessage = JettonWalletMessageBuilder.transferMessage(lpWalletContract.address, toNano("0.5"), {
             to: BURN_ADDR,
             jettonAmount: lpBalance,
             responseAddress: wallet.address,
