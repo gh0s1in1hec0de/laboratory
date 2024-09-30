@@ -21,7 +21,7 @@ import {
 export async function chiefScanning() {
     while (true) {
         try {
-            // await validateEndedPendingLaunches();
+            await validateEndedPendingLaunches();
             await delay(5);
             await createPoolsForNewJettons();
             await delay(5);
