@@ -1,29 +1,51 @@
+import { userService } from "@/services";
+import { getErrorText, localStorageWrapper } from "@/utils";
 import { Address } from "@ton/core";
 import { useIsConnectionRestored, useTonConnectUI } from "@tonconnect/ui-react";
 import { useEffect, useState, useTransition } from "react";
 
 export function useConnectButton() {
   const [tonConnectUI] = useTonConnectUI();
-  const [tonWalletAddress, setTonWalletAddress] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
   const connectionRestored = useIsConnectionRestored();
+  const [isPending, startTransition] = useTransition();
+  const [tonWalletAddress, setTonWalletAddress] = useState<string | null>(localStorageWrapper.get("address"));
+  const [error, setError] = useState<string | null>(null);
+  
+  async function handleConnectWallet(address: string){
+    localStorageWrapper.set("address", address);
+    await userService.postConnectWallet(address);
+    setTonWalletAddress(address);
+    console.debug("Wallet connected!");
+  }
+
+  async function handleDisconnectWallet(){
+    localStorageWrapper.remove("address");
+    setTonWalletAddress(null);
+    console.debug("Wallet disconnected!");
+  }
 
   useEffect(() => {
     (async () => {
-      if (tonConnectUI.account?.address) {
-        setTonWalletAddress(tonConnectUI.account.address);
-      } else {
-        setTonWalletAddress(null);
+      try {
+        if (tonConnectUI.account?.address) {
+          await handleConnectWallet(tonConnectUI.account.address);
+        } else {
+          await handleDisconnectWallet();
+        }
+      } catch (error) {
+        setError(getErrorText(error, "Quests.header.error"));
       }
     })();
 
-    const unsubscribe = tonConnectUI.onStatusChange((wallet) => {
-      if (wallet) {
-        setTonWalletAddress(wallet.account.address);
-        console.log("Wallet connected successfully!");
-      } else {
-        setTonWalletAddress(null);
-        console.log("Wallet disconnected successfully!");
+    const unsubscribe = tonConnectUI.onStatusChange(async (wallet) => {
+      try {
+        if (wallet) {
+          await handleConnectWallet(wallet.account.address);
+        } else {
+          await handleDisconnectWallet();
+        }
+      } catch (error) {
+        setError(getErrorText(error, "Quests.header.error"));
       }
     });
 
@@ -31,6 +53,21 @@ export function useConnectButton() {
       unsubscribe();
     };
   }, [tonConnectUI]);
+
+  function formatAddress(address: string) {
+    const tempAddress = Address.parse(address).toString();
+    return `${tempAddress.slice(0, 4)}...${tempAddress.slice(-4)}`;
+  }
+
+  async function handleClickConnectButton() {
+    startTransition(async () => {
+      try {
+        await tonConnectUI.openModal();
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  }
 
   // function setTelegramData(data: TelegramAuthData) {
   //   const initDataRaw = new URLSearchParams([
@@ -54,25 +91,13 @@ export function useConnectButton() {
   //   });
   // }
 
-  function formatAddress(address: string) {
-    const tempAddress = Address.parse(address).toString();
-    return `${tempAddress.slice(0, 4)}...${tempAddress.slice(-4)}`;
-  }
-
-  async function handleConnectWallet() {
+  async function handleClickDisconnectButton() {
     startTransition(async () => {
       try {
-        await tonConnectUI.openModal();
-        console.log("Wallet connected successfully!");
+        await tonConnectUI.disconnect();
       } catch (error) {
         console.error(error);
       }
-    });
-  }
-
-  async function handleDisconnectWallet() {
-    startTransition(async () => {
-      await tonConnectUI.disconnect();
     });
   }
 
@@ -80,8 +105,9 @@ export function useConnectButton() {
     isPending,
     connectionRestored,
     tonWalletAddress,
-    handleConnectWallet,
-    handleDisconnectWallet,
+    handleClickConnectButton,
+    handleClickDisconnectButton,
     formatAddress,
+    error,
   };
 }

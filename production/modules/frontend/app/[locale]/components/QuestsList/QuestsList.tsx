@@ -8,7 +8,7 @@ export function QuestsList() {
 
   const tabs: Tab<QuestCard>[] = [
     {
-      label: t("tabs.first.label"),
+      label: "Quests.content.tabs.first.label",
       content: [
         {
           title: "Reach for the star 1",
@@ -45,7 +45,7 @@ export function QuestsList() {
       ]
     },
     {
-      label: t("tabs.second.label"),
+      label: "Quests.content.tabs.second.label",
       content: [
         {
           title: "Reach for the star 1 (staged)",

@@ -1,3 +1,5 @@
+import { TypographyProps } from "@mui/material";
+
 type LabelVariants =
   | "medium10" 
   | "bold18"
@@ -14,9 +16,10 @@ export enum LabelColors {
   Orange = "orange",
   White = "white",
   Gray = "gray",
+  Red = "red",
 }
   
-export interface LabelProps {
+export interface LabelProps extends TypographyProps {
   label: string;
   variantSize?: LabelVariants;
   variantColor?: `${LabelColors}`;

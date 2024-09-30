@@ -2,35 +2,29 @@
 
 import { CustomButton } from "@/common/CustomButton";
 import { Label } from "@/common/Label";
-import Skeleton from "@mui/material/Skeleton";
 import { useConnectButton } from "./hooks/useConnectButton";
 import { CustomConnectButtonProps } from "./types";
+import { LoadingWrapper } from "@/common/LoadingWrapper";
+import { ConnectButtonSkeleton } from "./components/ConnectButtonSkeleton";
+import { CurrentWalletButton } from "./components/CurrentWalletButton";
+import { useTranslations } from "next-intl";
 
-export function CustomConnectButton({ title, successChildren, disconnectLabel }: CustomConnectButtonProps) {
+export function CustomConnectButton({ 
+  successChildren, 
+}: CustomConnectButtonProps) {
   const {
     isPending,
     tonWalletAddress,
-    handleConnectWallet,
-    handleDisconnectWallet,
+    handleClickConnectButton,
+    handleClickDisconnectButton,
     formatAddress,
     connectionRestored,
+    error,
   } = useConnectButton();
+  const t = useTranslations("Quests.header");
 
-  if (isPending || !connectionRestored) {
-    return (
-      <Skeleton
-        sx={{ bgcolor: "var(--skeleton-color)" }}
-        variant="rounded"
-        width="100%"
-        height="40px"
-      />
-    );
-  }
-
-  console.log(tonWalletAddress);
-
-  if (tonWalletAddress) {
-    // POST CONNECT WALLET
+  if (error) {
+    return <Label label={error} variantSize="medium14" color="red" />;
   }
 
   // if (connectionRestored) {
@@ -67,42 +61,31 @@ export function CustomConnectButton({ title, successChildren, disconnectLabel }:
   //   utils.openTelegramLink(inviteLink);
   // }
 
-  function getDisconnectButton(tonWalletAddress: string) {
-    return (
-      <CustomButton
-        background="orange"
-        onClick={handleDisconnectWallet}
-        padding="10px 0"
-        fullWidth
-      >
-        <Label 
-          label={`${disconnectLabel}: ${formatAddress(tonWalletAddress)}`} 
-          variantSize="medium14" 
-        />
-      </CustomButton>
-    );
-  }
   return (
-    <>
-      {tonWalletAddress && successChildren ? (
+    <LoadingWrapper 
+      isLoading={isPending || !connectionRestored}
+      skeleton={<ConnectButtonSkeleton />}
+    >
+      {tonWalletAddress ? (
         <>
-          {getDisconnectButton(tonWalletAddress)}
-          {successChildren}
+          <CurrentWalletButton
+            handleDisconnectWallet={handleClickDisconnectButton}
+            disconnectLabel={t("disconnectWallet")}
+            smallAddress={formatAddress(tonWalletAddress)}
+          />
+          {successChildren || null}
         </>
-      ) : tonWalletAddress && !successChildren ? (
-        // todo: dropdown
-        getDisconnectButton(tonWalletAddress)
       ) : (
         <CustomButton
           background="orange"
-          onClick={handleConnectWallet}
+          onClick={handleClickConnectButton}
           padding="10px 0"
           fullWidth
         >
-          <Label label={title} variantSize="medium14" />
+          <Label label={t("connectWallet")} variantSize="medium14" />
         </CustomButton>
       )}
-    </>
+    </LoadingWrapper>
   );
 }
 

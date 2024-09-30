@@ -1,3 +1,6 @@
 export enum USER_ERROR {
-  UserInfo = "Ошибка при получении данных пользователя",
+  ConnectWallet = "Error connecting wallet",
+  GetTicketBalance = "Error getting ticket balance",
 }
+
+

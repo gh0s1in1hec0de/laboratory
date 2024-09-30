@@ -1,13 +1,12 @@
-import type { SqlClient, TasksResponse } from "./types";
+import type { SqlClient, TasksDB } from "./types";
 import { globalClient } from "./db";
 
-export async function getTasks(address: string, client?: SqlClient): Promise<TasksResponse[] | null> {
+export async function getTasks(client?: SqlClient): Promise<TasksDB[] | null> {
     const c = client ?? globalClient;
 
-    const res = await c<TasksResponse[]>`
+    const res = await c<TasksDB[]>`
         SELECT *
         FROM tasks
-        ${address === "all" ? "" : c`WHERE address = ${address}`}
   `;
     return res.length ? res : null;
 }

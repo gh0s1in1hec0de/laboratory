@@ -4,3 +4,6 @@ export * from "./classNames";
 export * from "./isFunction";
 export * from "./storageWrapper";
 export * from "./removeLocaleFromPath";
+export * from "./getErrorText";
+export * from "./toCamelCase";
+export * from "./toSnakeCase";

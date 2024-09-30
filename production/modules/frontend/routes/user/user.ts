@@ -1,3 +1,4 @@
 export enum USER_ROUTES {
-  UserInfo = "/account/user_information",
+  ConnectWallet = "/user/connect-wallet",
+  GetTicketBalance = "/user/ticket-balance",
 }

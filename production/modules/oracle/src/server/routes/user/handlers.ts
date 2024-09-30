@@ -1,5 +1,4 @@
 import { logger } from "../../../logger";
-import { ok as assert } from "assert";
 import * as db from "../../../db";
 
 export async function connectWallet({
@@ -7,9 +6,10 @@ export async function connectWallet({
 }: db.ConnectedWalletRequest) {
     try {
         const res = await db.connectWallet(address);
+        if (!res) return "user already exists";
         return res;
     } catch (e){
-        logger().error(`function retrieval error: ${e}`);
+        logger().error(`error in http request 'connectWallet': ${e}`);
     }
 }
 
@@ -18,15 +18,15 @@ export async function getTicketBalance({
 }: db.TicketBalanceRequest) {
     try {
         const res = await db.getTicketBalance(address);
-        assert(res, "user with address not found: ${address}");
+        if (res === null) return `user with address not found: ${address}`;
         return res;
     } catch (e) {
-        logger().error(`function retrieval error: ${e}`);
+        logger().error(`error in http request 'getTicketBalance': ${e}`);
     }
 }
 
-function parseSubtasks(description: string): Array<{ name: string; description: string }> {
-    const subtasks = description.split('&');
+function parseSubtasks(description: string): Array<{ name: string, description: string }> {
+    const subtasks = description.split("&");
     const result = [];
 
     for (let i = 0; i < subtasks.length; i += 2) {
@@ -40,12 +40,10 @@ function parseSubtasks(description: string): Array<{ name: string; description: 
 }
 
 
-export async function getTasks({
-    address,
-}: db.TasksRequest) {
+export async function getTasks() {
     try {
-        const res = await db.getTasks(address);
-        assert(res, "tasks not found");
+        const res = await db.getTasks();
+        if (!res) return "tasks not found";
 
         const transformed = res.map(task => {
             const subQuests = parseSubtasks(task.description);
@@ -59,6 +57,6 @@ export async function getTasks({
 
         return transformed;
     } catch (e) {
-        logger().error(`function retrieval error: ${e}`);
+        logger().error(`error in http request 'getTasks': ${e}`);
     }
 }

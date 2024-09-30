@@ -9,5 +9,5 @@ export const GetTicketBalanceSchema = t.Object({
 });
 
 export const GetTasksSchema = t.Object({
-    address: t.Union([t.String(), t.Literal("all")]),
+    address: t.Optional(t.String()),
 });

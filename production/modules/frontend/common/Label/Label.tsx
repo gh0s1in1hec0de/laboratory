@@ -10,6 +10,7 @@ export function Label({
   offUserSelect = false,
   className,
   disabled = false,
+  ...props
 }: LabelProps) {
   return (
     <Typography 
@@ -25,6 +26,7 @@ export function Label({
           className
         ])
       }
+      {...props}
     >
       {label}
     </Typography>

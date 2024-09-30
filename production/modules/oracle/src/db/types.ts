@@ -139,12 +139,18 @@ export interface TicketBalanceRequest {
 }
 
 export interface TasksRequest {
-    address: RawAddressString | "all",
+    address?: RawAddressString,
 }
 
-export interface TasksResponse {
+export interface TasksDB {
     task_id: number,
     name: string,
     reward_tickets: number,
     description: string,
+}
+
+// todo replace the original caller with this
+export type NewCaller = {
+    address: RawAddressString,
+    ticket_balance: number,
 }

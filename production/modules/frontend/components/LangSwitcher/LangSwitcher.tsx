@@ -8,9 +8,9 @@ import { useLocale } from "next-intl";
 import { CustomButton } from "@/common/CustomButton";
 import { Label } from "@/common/Label";
 import { useTransition } from "react";
-import { Loader } from "@/common/Loader";
 import Box from "@mui/material/Box";
 import styles from "./LangSwitcher.module.scss";
+import { LoadingWrapper } from "@/common/LoadingWrapper";
 
 export function LangSwitcher() {
   const [_, setOptions] = useTonConnectUI();
@@ -30,31 +30,29 @@ export function LangSwitcher() {
     });
   }
 
-  if (isPending) {
-    return <Loader/>;
-  }
-
   return (
-    <Box className={styles.wrapper}>
-      {LOCALES.map((currLocale) => (
-        <CustomButton
-          key={currLocale} 
-          className={styles.button}
-          onClick={() => handleSwitchLanguage(currLocale)}
-          background={locale === currLocale ? "gray" : "transparent"}
-          padding="6px"
-          borderRadius={14}
-          addHover={locale !== currLocale}
-        >
-          {currLocale === "ru" ? "🇷🇺" : "🇬🇧"}
+    <LoadingWrapper isLoading={isPending}>
+      <Box className={styles.wrapper}>
+        {LOCALES.map((currLocale) => (
+          <CustomButton
+            key={currLocale} 
+            className={styles.button}
+            onClick={() => handleSwitchLanguage(currLocale)}
+            background={locale === currLocale ? "gray" : "transparent"}
+            padding="6px"
+            borderRadius={14}
+            addHover={locale !== currLocale}
+          >
+            {currLocale === "ru" ? "🇷🇺" : "🇬🇧"}
 
-          <Label
-            label={currLocale.toUpperCase()}
-            variantSize="regular14"
-            variantColor={locale === currLocale ? "white" : "gray"}
-          />
-        </CustomButton>
-      ))}
-    </Box>
+            <Label
+              label={currLocale.toUpperCase()}
+              variantSize="regular14"
+              variantColor={locale === currLocale ? "white" : "gray"}
+            />
+          </CustomButton>
+        ))}
+      </Box>
+    </LoadingWrapper>
   );
 }

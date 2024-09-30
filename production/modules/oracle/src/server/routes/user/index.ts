@@ -1,7 +1,8 @@
-import { createDetailsForEndpoint, SwaggerTags } from "../../config";
-import { ConnectWalletSchema, GetTasksSchema, GetTicketBalanceSchema } from "./types";
-import { connectWallet, getTasks, getTicketBalance } from "./handlers";
 import Elysia from "elysia";
+import { createDetailsForEndpoint, SwaggerTags } from "../../config";
+import { authMiddleware } from "../auth";
+import { connectWallet, getTasks, getTicketBalance } from "./handlers";
+import { ConnectWalletSchema, GetTicketBalanceSchema } from "./types";
 
 export function UserRoutes() {
     return new Elysia({ prefix: "/user" })
@@ -10,23 +11,21 @@ export function UserRoutes() {
             ({ body }) => connectWallet(body),
             {
                 body: ConnectWalletSchema,
-                ...createDetailsForEndpoint(SwaggerTags.TokenLaunch)
+                ...createDetailsForEndpoint(SwaggerTags.User)
             }
         )
+        .onBeforeHandle(authMiddleware)
         .get(
             "/ticket-balance",
             ({ query }) => getTicketBalance(query),
             {
                 query: GetTicketBalanceSchema,
-                ...createDetailsForEndpoint(SwaggerTags.TokenLaunch)
+                ...createDetailsForEndpoint(SwaggerTags.User)
             }
         )
         .get(
             "/tasks",
-            ({ query }) => getTasks(query),
-            {
-                query: GetTasksSchema,
-                ...createDetailsForEndpoint(SwaggerTags.TokenLaunch)
-            }
+            () => getTasks(),
+            createDetailsForEndpoint(SwaggerTags.User)
         );
 }

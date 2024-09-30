@@ -5,6 +5,7 @@ import { ok as assert } from "node:assert";
 import { getConfig } from "../config";
 import { logger } from "../logger";
 import Elysia from "elysia";
+import cors from "@elysiajs/cors";
 
 function createServer() {
     const {
@@ -19,6 +20,7 @@ function createServer() {
             title: title,
             version: version
         })))
+        .use(cors())
         .use(WebSocket())
         .use(UserRoutes())
         .use(TokenLaunchRoutes())

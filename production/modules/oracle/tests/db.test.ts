@@ -29,22 +29,23 @@ describe("Database", () => {
         await client.end();
     });
   
-    // beforeEach(async () => {
-    //     await client`
-    //     TRUNCATE
-    //         callers,
-    //         heights,
-    //         tasks,
-    //         token_launches,
-    //         user_actions,
-    //         user_balance_errors,
-    //         user_balances,
-    //         users,
-    //         users_tasks_relations,
-    //         whitelist_relations
-    //     RESTART IDENTITY CASCADE;
-    // `;
-    // });
+    beforeEach(async () => {
+        await client`
+        TRUNCATE
+            callers,
+            heights,
+            launch_balances,
+            summary_tickets_balances,
+            tasks,
+            token_launches,
+            user_actions,
+            user_balance_errors,
+            user_balances,
+            users_tasks_relations,
+            whitelist_relations
+        RESTART IDENTITY CASCADE;
+    `;
+    });
   
     // test.skip("migration being applied correctly", async () => {
     //     const directoryPath = path.join(__dirname, "../src/db/migrations");
@@ -68,6 +69,7 @@ describe("Database", () => {
         // VALUES (123456789, 'Pavel Durov')`;
     
         const randUserAddress = randomAddress().toString();
+        
         await client`
         INSERT INTO callers (address, ticket_balance)
         VALUES (${randUserAddress}, 0)`;
@@ -76,11 +78,11 @@ describe("Database", () => {
         DO
         $$
         BEGIN
-            FOR i in 1..5 LOOP
+            FOR i in 1..10 LOOP
                 INSERT INTO tasks (name, description)
                 VALUES (
-                    'task' || lpad(to_hex(i), 1, '0'),
-                    'some description'
+                    'Reach for the star ' || lpad(to_hex(i), 1, '0'),
+                    'task ' || lpad(to_hex(i), 1, '0') || '&'    || 'description ' || lpad(to_hex(i), 1, '0') || '&' || 'task ' || lpad(to_hex(i), 1, '0') || '&' || 'description ' || lpad(to_hex(i), 1, '0')
                 );
             END LOOP;
         END;
@@ -102,7 +104,7 @@ describe("Database", () => {
                     'V1',  -- версия лаунча
                     ('{"description": "Test metadata for launch ' || i || '"}')::jsonb,
                     '{"start_time": "2024-09-01T00:00:00", "end_time": "2024-09-30T23:59:59"}'::jsonb,
-                    NOW(),
+                    0,
                     NULL,
                     NULL,
                     NULL
@@ -123,7 +125,7 @@ describe("Database", () => {
     
         const tasks = await client`SELECT *
                                FROM tasks;`;
-        expect(tasks.length).toBe(5);
+        expect(tasks.length).toBe(10);
     
         const tokenLaunches = await client`SELECT *
                                        FROM token_launches;`;

@@ -3,7 +3,7 @@ mode: "dev"
 
 oracle:
   chief:
-    address: "",
+    address: ""
     mnemonic: ""
   cores:
     - address: ""

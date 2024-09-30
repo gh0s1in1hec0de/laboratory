@@ -3,6 +3,7 @@ import { MainBox } from "@/common/MainBox";
 import { TicketsIcon } from "@/icons";
 import Grid from "@mui/material/Grid2";
 import { useTranslations } from "next-intl";
+import { Balance } from "./components/Balance";
 
 export function TicketBalance() {
   const t = useTranslations("Quests.header");
@@ -17,12 +18,14 @@ export function TicketBalance() {
       rounded
       bgColor="transparent" 
     >
-      <Grid container size="grow" alignItems="center" gap={1}>
+      <Grid 
+        container 
+        size="grow"
+        alignItems="center"
+        gap={1}
+      >
         <TicketsIcon />
-        <Label 
-          label={`1/3 ${t("tickets")}`} 
-          variantSize="semiBold32" 
-        />
+        <Balance />
       </Grid>
 
       <Label 

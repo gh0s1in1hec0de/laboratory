@@ -35,6 +35,15 @@
   }
 }
 
+.red {
+  color: var(--red-regular);
+
+  &.disabled {
+    color: var(--red-dark);
+  }
+}
+
+
 // SIZES
 .semiBold32 {
   @include semiBold32;
