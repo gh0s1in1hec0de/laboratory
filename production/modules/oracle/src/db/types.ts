@@ -32,11 +32,12 @@ export type Caller = {
     address: RawAddressString,
 }
 
+export type StringifiedCoins = string;
 export type PostDeployEnrollmentStats = {
     deployedJetton: { masterAddress: RawAddressString, ourWalletAddress: RawAddressString },
-    totalTonsCollected: Coins,
-    oursAmount: Coins,
-    dexAmount: Coins,
+    totalTonsCollected: StringifiedCoins,
+    oursAmount: StringifiedCoins,
+    dexAmount: StringifiedCoins,
 }
 
 export type DexData = {

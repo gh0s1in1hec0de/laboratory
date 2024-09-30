@@ -8,17 +8,16 @@ import { Network } from "../../utils";
 const factoryAddress = currentNetwork() === Network.Mainnet ? MAINNET_FACTORY_ADDR : TESTNET_FACTORY_ADDR;
 
 export abstract class FactoryMessageBuilder {
-    static createVaultMessage(params: { queryId?: number | bigint, assets: [Asset, Asset] }): MessageRelaxed {
-        const { queryId, assets } = params;
+    static createVaultMessage(params: { queryId?: number | bigint, asset: Asset }): MessageRelaxed {
+        const { queryId, asset } = params;
         return internal_relaxed({
             to: factoryAddress,
-            body: beginCell()
-                .storeUint(Factory.CREATE_VOLATILE_POOL, 32)
+            body:beginCell()
+                .storeUint(Factory.CREATE_VAULT, 32)
                 .storeUint(queryId ?? 0, 64)
-                .storeSlice(assets[0].toSlice())
-                .storeSlice(assets[1].toSlice())
+                .storeSlice(asset.toSlice())
                 .endCell(),
-            value: toNano("0.25"),
+            value: toNano("0.1"),
         });
     }
 

@@ -63,10 +63,10 @@ export async function createPoolForJetton(
                 vaultStatus = await balancedTonClient.execute(() => jettonVaultContract.getReadinessStatus(), true);
                 if (vaultStatus === ReadinessStatus.NOT_DEPLOYED) {
                     logger().info(`vault for jetton ${jetton.masterAddress} (launch ${launchAddress}) not found, deploying...`);
-                    const message = FactoryMessageBuilder.createVaultMessage({ assets, queryId });
+                    const message = FactoryMessageBuilder.createVaultMessage({ queryId, asset });
                     await balancedTonClient.execute(() =>
                         wallet.sendExternalMessage(keyPair.secretKey, {
-                            createdAt: Date.now() / 1000,
+                            createdAt: Math.floor((Date.now() / 1000) - 10),
                             queryId: deployVaultQID,
                             message,
                             mode: SendMode.PAY_GAS_SEPARATELY,
@@ -83,6 +83,7 @@ export async function createPoolForJetton(
                 await delay(delayTime);
             } catch (e) {
                 logger().warn(`failed to create vault for ${jetton.masterAddress} (launch ${launchAddress}) with error: `, e);
+                console.error(e);
                 await delay(20);
             }
             iterationNumber += 1;
@@ -110,7 +111,7 @@ export async function createPoolForJetton(
                 const message = FactoryMessageBuilder.createVolatilePoolMessage({ assets, queryId });
                 await balancedTonClient.execute(() =>
                     wallet.sendExternalMessage(keyPair.secretKey, {
-                        createdAt: Date.now() / 1000,
+                        createdAt: Math.floor((Date.now() / 1000) - 10),
                         queryId: createPoolQID,
                         message,
                         mode: SendMode.PAY_GAS_SEPARATELY,
@@ -226,7 +227,7 @@ export async function createPoolForJetton(
         });
         await balancedTonClient.execute(() =>
             wallet.sendExternalMessage(keyPair.secretKey, {
-                createdAt: Date.now() / 1000,
+                createdAt: Math.floor((Date.now() / 1000) - 10),
                 queryId: lpBurnQID,
                 message: lpJettonsBurnMessage,
                 mode: SendMode.PAY_GAS_SEPARATELY,

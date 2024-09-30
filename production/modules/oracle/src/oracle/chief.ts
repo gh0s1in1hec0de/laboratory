@@ -21,13 +21,14 @@ import {
 export async function chiefScanning() {
     while (true) {
         try {
-            await validateEndedPendingLaunches();
+            // await validateEndedPendingLaunches();
             await delay(5);
             await createPoolsForNewJettons();
             await delay(5);
             await handleChiefUpdates();
         } catch (e) {
             logger().error("interplanetary error on chief's side: ", e);
+            console.error(e);
             await delay(30);
         }
     }
@@ -59,7 +60,7 @@ async function validateEndedPendingLaunches() {
             const { totalTonsCollected } = parseMoneyFlows(moneyFlowsResponse.stack);
             const { minTonForSaleSuccess } = parseGetConfigResponse(getConfigCallResponse.stack);
 
-            logger().debug(`launch ${launch.address} ton stats c: ${fromNano(totalTonsCollected)} n: ${fromNano(minTonForSaleSuccess)}`);
+            logger().debug(`found new ended launch ${launch.address} with ton stats c: ${fromNano(totalTonsCollected)} n: ${fromNano(minTonForSaleSuccess)}`);
             if (totalTonsCollected >= minTonForSaleSuccess) {
                 waitingForJettonLaunches.push(launch);
                 continue;
@@ -130,8 +131,10 @@ async function createPoolsForNewJettons() {
 
     const actions: OutActionSendMsg[] = [];
     const poolCreationProcesses: Promise<void>[] = [];
+    logger().info("[*] found new waiting for pool launches: ");
     for (const { address, creator, dexData, postDeployEnrollmentStats } of waitingForPoolLaunches) {
         const { deployedJetton, totalTonsCollected, dexAmount } = postDeployEnrollmentStats!;
+        logger().info(` -  ${address}; payed to creator: ${dexData?.payedToCreator}`);
         actions.push({
             type: "sendMsg",
             mode: SendMode.PAY_GAS_SEPARATELY,
@@ -150,7 +153,7 @@ async function createPoolsForNewJettons() {
                     ourWalletAddress: deployedJetton.ourWalletAddress,
                     masterAddress: deployedJetton.masterAddress,
                 },
-                [totalTonsCollected * BigInt(getConfig().sale.dex_share_pct / 100), dexAmount],
+                [BigInt(totalTonsCollected) * BigInt(getConfig().sale.dex_share_pct) / 100n, BigInt(dexAmount)],
                 address
             )
         );
@@ -160,7 +163,7 @@ async function createPoolsForNewJettons() {
             mode: SendMode.PAY_GAS_SEPARATELY,
             outMsg: internal_relaxed({
                 to: Address.parse(creator),
-                value: totalTonsCollected * BigInt(getConfig().sale.creator_share_pct / 100),
+                value: BigInt(totalTonsCollected) * BigInt(getConfig().sale.creator_share_pct) / 100n,
                 body: beginCell()
                     .storeUint(0, 32)
                     .storeStringRefTail("Ladies and gentlemen, we have now arrived at our destination. Thank you again for flying Starton, and we hope to see you on board again soon.")
@@ -252,13 +255,14 @@ async function handleChiefUpdates() {
                                 masterAddress: jettonMaster.toRawString(),
                                 ourWalletAddress: sender.toRawString()
                             },
-                            totalTonsCollected: value,
-                            oursAmount,
-                            dexAmount
+                            totalTonsCollected: value.toString(),
+                            oursAmount: oursAmount.toString(),
+                            dexAmount: dexAmount.toString()
                         }
                     );
                 } catch (e) {
                     logger().warn(`jetton transfer from ${originalSender} with value ${jettonFromNano(jettonAmount)} and without shares (or an error for right one)`, e);
+                    console.error(e);
                 }
             }
         }

@@ -64,8 +64,8 @@ export class BalancedTonClient {
         });
     }
 
-    async execute<T>(closure: (client: TonClient) => Promise<T> | T, resend: boolean = false): Promise<T> {
-        return resend ? maybeBruteforceOverload(closure(await this.client())) : closure(await this.client());
+    async execute<T>(closure: (client: TonClient) => Promise<T> | T, _resend: boolean = false): Promise<T> {
+        return closure(await this.client());
     }
 
     incrementActiveLaunchesAmount() {

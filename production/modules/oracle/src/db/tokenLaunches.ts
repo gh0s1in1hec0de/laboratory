@@ -146,7 +146,7 @@ export async function updatePostDeployEnrollmentStats(tokenLaunchAddress: RawAdd
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
         UPDATE token_launches
-        SET post_deploy_enrollment_stats = ${stats},
+        SET post_deploy_enrollment_stats = ${stats}::JSONB,
             is_successful                = TRUE
         WHERE address = ${tokenLaunchAddress}
         RETURNING 1;
