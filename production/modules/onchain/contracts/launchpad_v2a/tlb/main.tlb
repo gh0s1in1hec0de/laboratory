@@ -34,6 +34,7 @@ init#5ca04142 query_id:uint64 fut_jet_wallet_address:MsgAddressInt util_jet_wall
 // Buys
 // 32 + 64 = 96
 creator_buyout#0a535100 query_id:uint64 = TokenLaunchMsg;
+creator_refund#4d542b8a query_id:uint64 = TokenLaunchMsg;
 // 32 + 64 = 96
 public_purchase#32626062 query_id:uint64 = TokenLaunchMsg;
 wl_purchase#4eb1e316 query_id:uint64 = TokenLaunchMsg;

@@ -28,8 +28,8 @@ const SIMPLE_TRANSFER_FEE = 6000000;
 const CORE_STATE_BITS  = 47510;
 const CORE_STATE_CELLS = 122;
 ;; Use `loadAtMax` to measure
-const TOKEN_LAUNCH_STATE_BITS  = 43857;
-const TOKEN_LAUNCH_STATE_CELLS = 111;
+const TOKEN_LAUNCH_STATE_BITS  = 44124;
+const TOKEN_LAUNCH_STATE_CELLS = 113;
 
 const USER_VAULT_STATE_BITS  = 5092;
 const USER_VAULT_STATE_CELLS = 17;
@@ -105,6 +105,11 @@ const CREATOR_BUYOUT_GAS_CONSUMPTION = 13493;
     return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_BUYOUT_GAS_CONSUMPTION));
 }
 
+const CREATOR_REFUND_GAS_CONSUMPTION = 15559;
+(int, int) check_amount_is_enough_for_creator_refund(int msg_value) impure inline {
+    return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_REFUND_GAS_CONSUMPTION));
+}
+
 ;; === Whitelist Purchase ===
 const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 20860;
 (int, int) check_amount_is_enough_for_wl_purchase(int msg_value) impure inline {
@@ -124,7 +129,7 @@ const PUB_PURCHASE_GAS_CONSUMPTION = 21402;
 }
 
 ;; === Refund ===
-const REFUND_REQUEST_GAS_CONSUMPTION = 8255;
+const REFUND_REQUEST_GAS_CONSUMPTION = 14356;
 const REFUND_CONFIRMATION_GAS_CONSUMPTION = 19305;
 () check_amount_is_enough_for_refund(int msg_value) impure inline {
     int required_gas =

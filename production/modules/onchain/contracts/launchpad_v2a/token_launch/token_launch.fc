@@ -107,8 +107,14 @@
         return ();
     }
     if (op == op::tl::refund_request) {
-        raw_reserve(attached_value, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        ;; raw_reserve(attached_value, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
         handle_refund_request(query_id, attached_value, sender_address, in_msg_body~load_uint(4));
+        return ();
+    }
+    if (op == op::tl::creator_refund) {
+        throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::creator_address));
+        handle_creator_refund(attached_value);
+        save_data();
         return ();
     }
     if (op == op::tl::refund_confirmation) {
@@ -167,11 +173,11 @@
     }
     if (op == op::tl::claim_opn) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::chief_address));
-        if (~ (this::operational_needs > 0)) {
-            return ();
-        }
+        throw_unless(error::balance_lack, this::operational_needs > 0);
+
         raw_reserve(attached_value + this::operational_needs, RESERVE_ALL_BUT_AMOUNT);
         this::operational_needs = 0;
+
         cell transfer_msg = simple_transfer(this::const::chief_address, 0, "opn");
         send_raw_message(transfer_msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
         save_data();

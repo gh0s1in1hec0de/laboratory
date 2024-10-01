@@ -146,6 +146,11 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                                 logger().debug(`launch ${launch.address}: detected new opn transfer with value ${fromNano(msg.info.value.coins)} TON`);
                                 break;
                             }
+                            case "crr": {
+                                logger().info(`launch ${launch.address}: creator has refunded his TONs`);
+                                await db.updateLaunchBalance(launch.address, { creatorTonsCollected: 0n });
+                                break;
+                            }
                             default:
                                 logger().warn(`launch ${launch.address}: unknown outer transfer to ${msg.info.dest} with timestamp ${msg.info.createdAt} and comment ${comment}`);
                         }
@@ -182,7 +187,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                 try {
                     await db.storeUserAction(action);
                 } catch (e) {
-                    logger().error(`action[${action.actor}; ${action.timestamp}] record error: ${e}`);
+                    logger().error(`launch ${launch.address}: action[${action.actor}; ${action.timestamp}] record error: ${e}`);
                 }
             }
             currentHeight = newTxs[newTxs.length - 1].lt;

@@ -27,6 +27,7 @@ global int   general_state::total_tons_collected;
 global int   creator_round::fut_jet_left;
 ;; Amount of tokens, that creator bought back
 global int   creator_round::fut_jet_balance;
+;; Represents how many jettons will creator get for his tons
 global int   creator_round::const::fut_jet_price_reversed;
 global int   creator_round::const::end_time;
 

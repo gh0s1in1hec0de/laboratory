@@ -32,6 +32,7 @@ export enum CoreOps {
 export enum TokensLaunchOps {
     Init = 0x358b2487,
     CreatorBuyout = 0x0a535100,
+    CreatorRefund = 0x4d542b8a,
     PublicPurchase = 0x32626062,
     WlPurchase = 0x4eb1e316,
     WlCallback = 0x390f7cfd,

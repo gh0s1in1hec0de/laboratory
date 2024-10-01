@@ -12,6 +12,7 @@ const op::burn = 0x595f07bc; ;; 1499400124
 const op::upgrade = 0x055d212a;
 const op::tl::init = 0x358b2487;
 const op::tl::creator_buyout = 0x0a535100;
+const op::tl::creator_refund = 0x4d542b8a;
 const op::tl::wl_purchase = 0x4eb1e316;
 const op::tl::wl_callback = 0x390f7cfd;
 const op::tl::public_purchase = 0x32626062;

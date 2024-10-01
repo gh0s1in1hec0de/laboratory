@@ -59,6 +59,18 @@ export class TokenLaunchV2A implements Contract {
         });
     }
 
+    async sendCreatorRefund(provider: ContractProvider, sendMessageParams: SendMessageParams) {
+        const { queryId, via, value } = sendMessageParams;
+
+        const body = beginCell()
+            .storeUint(TokensLaunchOps.CreatorRefund, OP_LENGTH)
+            .storeUint(queryId, QUERY_ID_LENGTH)
+            .endCell();
+        await provider.internal(via, {
+            value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
+        });
+    }
+
     async sendWhitelistPurchase(provider: ContractProvider, sendMessageParams: SendMessageParams) {
         const { queryId, via, value } = sendMessageParams;
 
