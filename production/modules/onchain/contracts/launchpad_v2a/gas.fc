@@ -105,7 +105,7 @@ const CREATOR_BUYOUT_GAS_CONSUMPTION = 13493;
     return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_BUYOUT_GAS_CONSUMPTION));
 }
 
-const CREATOR_REFUND_GAS_CONSUMPTION = 15559;
+const CREATOR_REFUND_GAS_CONSUMPTION = 15117;
 (int, int) check_amount_is_enough_for_creator_refund(int msg_value) impure inline {
     return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_REFUND_GAS_CONSUMPTION));
 }

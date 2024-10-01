@@ -24,8 +24,11 @@
     this::operational_needs += opn;
 }
 
-() handle_creator_refund(int attached_value) impure inline {
+() handle_creator_refund() impure inline {
     throw_if(error::wrong_time, now() < public_round::const::end_time);
+    throw_if(error::bad_request, (general_state::fut_jet_deployed_balance > 0));
+    throw_if(error::bad_request, general_state::total_tons_collected > config::const::min_ton_for_sale_success);
+
     int creators_tons = creator_round::fut_jet_balance * MAX_WL_ROUND_TON_LIMIT / creator_round::const::fut_jet_price_reversed;
     general_state::total_tons_collected -= creators_tons;
     creator_round::fut_jet_balance = 0;
@@ -33,9 +36,8 @@
     (int pur_val, int opn) = validate_value(creators_tons, 0);
     this::operational_needs += opn;
 
-    raw_reserve(pur_val + attached_value, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
-    cell refund_transfer = simple_transfer(this::const::creator_address, 0, "crr");
-    send_raw_message(refund_transfer, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    cell refund_transfer = simple_transfer(this::const::creator_address, pur_val, "crr");
+    send_raw_message(refund_transfer, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
 () handle_wl_purchase(int query_id, int attached_value, slice initiator) impure inline {

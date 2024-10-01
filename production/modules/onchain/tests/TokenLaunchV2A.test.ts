@@ -503,7 +503,6 @@ describe("V2A", () => {
         test("creator can refund his share", async () => {
             const stateBeforeCreatorRefund = blockchain.snapshot();
             const tokenLaunchContractInstance = await blockchain.getContract(sampleTokenLaunch.address);
-            const contractBalanceBefore = tokenLaunchContractInstance.balance;
 
             const { creatorFutJetBalance, creatorFutJetPriceReversed } = await sampleTokenLaunch.getConfig();
             const { publicRoundEndTime } = await sampleTokenLaunch.getSaleTimings();
@@ -512,6 +511,7 @@ describe("V2A", () => {
             const creatorTonsCollected = creatorFutJetBalance * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
             console.log(`Creator's ton share: ${fromNano(creatorTonsCollected)} (${creatorTonsCollected})`);
 
+            const contractBalanceBefore = tokenLaunchContractInstance.balance;
             const refundResult = await sampleTokenLaunch.sendCreatorRefund({
                     queryId: 0n,
                     value: toNano("0.03"),
@@ -524,6 +524,13 @@ describe("V2A", () => {
                 op: TokensLaunchOps.CreatorRefund,
                 success: true,
             });
+            const contractBalanceAfter = tokenLaunchContractInstance.balance;
+            const { purified } = validateValue(creatorTonsCollected, 0n);
+            const balanceDiff = (contractBalanceBefore - contractBalanceAfter) - purified;
+            if (balanceDiff > 0) {
+                console.warn(`Balance diff after creator's refund: onchain ${fromNano(contractBalanceBefore - contractBalanceAfter)}; offchain ${fromNano(purified)}`);
+            }
+
             printTxGasStats("Creator refund request transaction: ", refundRequestTx);
 
             await blockchain.loadFrom(stateBeforeCreatorRefund);

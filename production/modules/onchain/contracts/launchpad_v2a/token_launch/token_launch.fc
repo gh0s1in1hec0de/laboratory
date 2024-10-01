@@ -113,7 +113,7 @@
     }
     if (op == op::tl::creator_refund) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::creator_address));
-        handle_creator_refund(attached_value);
+        handle_creator_refund();
         save_data();
         return ();
     }

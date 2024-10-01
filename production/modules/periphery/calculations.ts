@@ -38,7 +38,7 @@ export function getApproximateClaimAmount(
 // Mock function, that will help to pre-calculate operations' results on frontend etc
 
 export function validateValue(total: Coins, fee: Coins): { purified: Coins, opn: Coins } {
-    assert(!(fee > total), "not enough gas");
+    assert(fee < total, "not enough gas");
     const extra = total - fee;
     const purified = extra * 99n / 100n;
     assert(purified > 0, "balance lack");
