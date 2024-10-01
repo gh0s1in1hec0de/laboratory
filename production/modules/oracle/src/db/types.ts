@@ -28,8 +28,8 @@ export type StoredUser = {
 }
 
 export type Caller = {
-    user: TelegramId | null,
     address: RawAddressString,
+    ticket_balance: number,
 }
 
 export type StringifiedCoins = string;
@@ -140,18 +140,37 @@ export interface TicketBalanceRequest {
 }
 
 export interface TasksRequest {
-    address?: RawAddressString,
+    address: RawAddressString,
+    staged: string,
 }
 
-export interface TasksDB {
-    task_id: number,
+export interface StoredTasks {
+    taskId: number,
     name: string,
-    reward_tickets: number,
+    description: string,
+    rewardTickets: number,
+    staged: boolean,
+    // idk front need that? -________-
+    // createdAt: string,
+}
+
+export interface StoredUsersTasksRelation {
+    callerAddress: RawAddressString,
+    taskId: number,
+}
+
+export interface Subtask {
+    name: string,
     description: string,
 }
 
-// todo replace the original caller with this
-export type NewCaller = {
-    address: RawAddressString,
-    ticket_balance: number,
+export interface TasksResponse {
+    taskId: number,
+    name: string,
+    description: Subtask[],
+    rewardTickets: number,
+    staged: boolean,
+    completed: boolean,
+    // idk front need that? -________-
+    // createdAt: string,
 }

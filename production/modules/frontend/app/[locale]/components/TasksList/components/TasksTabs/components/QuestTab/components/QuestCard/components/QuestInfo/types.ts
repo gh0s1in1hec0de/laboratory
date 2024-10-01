@@ -1,6 +1,7 @@
 export interface QuestInfoProps {
   title: string;
-  description: string;
+  completed: boolean;
+  reward: number;
   open: boolean;
   disabled: boolean;
 }

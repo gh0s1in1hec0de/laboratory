@@ -79,15 +79,24 @@ describe("Database", () => {
         $$
         BEGIN
             FOR i in 1..10 LOOP
-                INSERT INTO tasks (name, description)
+                INSERT INTO tasks (name, description, created_at)
                 VALUES (
                     'Reach for the star ' || lpad(to_hex(i), 1, '0'),
-                    'task ' || lpad(to_hex(i), 1, '0') || '&'    || 'description ' || lpad(to_hex(i), 1, '0') || '&' || 'task ' || lpad(to_hex(i), 1, '0') || '&' || 'description ' || lpad(to_hex(i), 1, '0')
+                    'task ' || lpad(to_hex(i), 1, '0') || '&' || 'description ' || lpad(to_hex(i), 1, '0') || '&' || 'task ' || lpad(to_hex(i), 1, '0') || '&' || 'description ' || lpad(to_hex(i), 1, '0'),
+                    EXTRACT(EPOCH FROM NOW())::bigint
                 );
             END LOOP;
         END;
         $$;`
         );
+
+        await client`
+        INSERT INTO users_tasks_relations (caller_address, task_id)
+        VALUES (${randUserAddress}, 1)`;
+        await client`
+        INSERT INTO users_tasks_relations (caller_address, task_id)
+        VALUES (${randUserAddress}, 2)`;
+
     
         await client.unsafe(`
         DO
@@ -126,6 +135,10 @@ describe("Database", () => {
         const tasks = await client`SELECT *
                                FROM tasks;`;
         expect(tasks.length).toBe(10);
+
+        const usersTasksRelations = await client`SELECT *
+                               FROM users_tasks_relations;`;
+        expect(usersTasksRelations.length).toBe(2);
     
         const tokenLaunches = await client`SELECT *
                                        FROM token_launches;`;

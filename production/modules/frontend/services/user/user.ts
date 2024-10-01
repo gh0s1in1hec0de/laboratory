@@ -1,6 +1,7 @@
 import { baseService } from "@/api";
 import { USER_ERROR } from "@/errors";
 import { USER_ROUTES } from "@/routes";
+import { Task } from "@/types";
 import { localStorageWrapper } from "@/utils";
 
 async function postConnectWallet(address: string): Promise<void> {
@@ -29,7 +30,24 @@ async function getTicketBalance(): Promise<number> {
   }
 }
 
+async function getTasks(staged: boolean): Promise<Task[]> {
+  try {
+    const response = await baseService.get<Task[]>(USER_ROUTES.GetTasks, {
+      params: {
+        address: localStorageWrapper.get("address"),
+        staged,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error(USER_ERROR.GetTasks, error);
+    throw error;
+  }
+}
+
 export const userService = {
   postConnectWallet,
   getTicketBalance,
+  getTasks,
 };

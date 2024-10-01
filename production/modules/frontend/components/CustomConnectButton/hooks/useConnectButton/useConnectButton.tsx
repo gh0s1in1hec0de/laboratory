@@ -54,11 +54,6 @@ export function useConnectButton() {
     };
   }, [tonConnectUI]);
 
-  function formatAddress(address: string) {
-    const tempAddress = Address.parse(address).toString();
-    return `${tempAddress.slice(0, 4)}...${tempAddress.slice(-4)}`;
-  }
-
   async function handleClickConnectButton() {
     startTransition(async () => {
       try {
@@ -67,6 +62,21 @@ export function useConnectButton() {
         console.error(error);
       }
     });
+  }
+
+  async function handleClickDisconnectButton() {
+    startTransition(async () => {
+      try {
+        await tonConnectUI.disconnect();
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  }
+
+  function formatAddress(address: string) {
+    const tempAddress = Address.parse(address).toString();
+    return `${tempAddress.slice(0, 4)}...${tempAddress.slice(-4)}`;
   }
 
   // function setTelegramData(data: TelegramAuthData) {
@@ -90,16 +100,6 @@ export function useConnectButton() {
   //     platform: "tdesktop",
   //   });
   // }
-
-  async function handleClickDisconnectButton() {
-    startTransition(async () => {
-      try {
-        await tonConnectUI.disconnect();
-      } catch (error) {
-        console.error(error);
-      }
-    });
-  }
 
   return {
     isPending,

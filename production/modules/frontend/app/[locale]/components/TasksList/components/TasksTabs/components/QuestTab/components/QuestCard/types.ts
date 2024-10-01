@@ -1,7 +1,7 @@
-import { QuestCard } from "../../types";
+import { Task } from "@/types";
 
 export interface QuestCardProps {
-  quest: QuestCard;
+  task: Task;
   disabled: boolean;
   open: boolean;
 }

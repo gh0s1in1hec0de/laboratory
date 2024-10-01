@@ -1,0 +1,146 @@
+2024-10-01 15:40:40.209 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:40:40.218 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:40:40.218 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:41:37.318 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:41:37.338 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:41:37.339 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:41:50.680 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:41:50.689 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:41:50.690 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:42:02.201 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:42:02.213 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:42:02.214 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:43:59.122 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:43:59.139 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:43:59.141 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:44:13.892 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:44:13.910 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:44:13.910 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:44:49.380 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:44:49.399 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:44:49.400 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:44:54.723 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:44:54.732 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:44:54.733 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:45:00.070 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:45:00.091 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:45:00.092 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:45:13.016 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:45:13.024 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:45:13.025 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:46:13.375 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:46:13.390 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:46:13.391 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:46:52.332 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:46:52.365 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:46:52.367 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:49:06.589 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:49:06.630 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:49:06.631 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:51:19.114 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:51:19.158 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:51:19.161 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:54:34.471 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:54:34.515 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:54:34.517 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:54:38.901 [error]:  error in http request 'getTasks': Error: UNDEFINED_VALUE: Undefined values are not allowed
+2024-10-01 15:54:56.149 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:54:56.166 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:54:56.167 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:55:03.592 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:55:03.599 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:55:03.600 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:55:11.537 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:55:11.544 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:55:11.545 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:55:19.011 [error]:  error in http request 'getTasks': Error: UNDEFINED_VALUE: Undefined values are not allowed
+2024-10-01 15:55:58.076 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:55:58.113 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:55:58.114 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:55:59.710 [error]:  error in http request 'getTasks': Error: UNDEFINED_VALUE: Undefined values are not allowed
+2024-10-01 15:56:30.538 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:56:30.555 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:56:30.557 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:56:32.923 [error]:  error in http request 'getTasks': Error: UNDEFINED_VALUE: Undefined values are not allowed
+2024-10-01 15:56:55.080 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:56:55.088 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:56:55.089 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:57:03.441 [error]:  error in http request 'getTasks': Error: UNDEFINED_VALUE: Undefined values are not allowed
+2024-10-01 15:57:28.589 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:57:28.600 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:57:28.601 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:57:36.300 [error]:  error in http request 'getTasks': Error: UNDEFINED_VALUE: Undefined values are not allowed
+2024-10-01 15:57:47.937 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:57:47.951 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:57:47.952 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 15:59:13.228 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 15:59:13.236 [info]:  elysia server is running at localhost:5001
+2024-10-01 15:59:13.237 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:01:12.320 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:01:12.329 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:01:12.330 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:01:47.873 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:01:47.880 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:01:47.881 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:03:41.943 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:03:41.960 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:03:41.961 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:03:43.714 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:03:43.722 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:03:43.723 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:04:19.545 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:04:19.554 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:04:19.556 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:05:11.620 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:05:11.639 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:05:11.640 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:05:16.161 [error]:  error in http request 'getTasks': PostgresError: sorry, too many clients already
+2024-10-01 16:05:20.288 [error]:  error in http request 'getTasks': PostgresError: sorry, too many clients already
+2024-10-01 16:05:28.528 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:05:28.558 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:05:28.559 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:06:00.074 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:06:00.090 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:06:00.091 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:07:16.836 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:07:16.841 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:07:16.843 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:08:03.612 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:08:03.618 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:08:03.619 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:08:07.489 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:08:07.506 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:08:07.507 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:08:23.245 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:08:23.255 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:08:23.256 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:09:10.819 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:09:10.835 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:09:10.836 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:09:33.060 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:09:33.063 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:09:33.063 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:10:56.556 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:10:56.559 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:10:56.559 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 16:13:42.600 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 16:13:42.605 [info]:  elysia server is running at localhost:5001
+2024-10-01 16:13:42.605 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 18:13:04.086 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 18:13:04.089 [info]:  elysia server is running at localhost:5001
+2024-10-01 18:13:04.090 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 18:13:19.286 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 18:13:19.287 [info]:  elysia server is running at localhost:5001
+2024-10-01 18:13:19.287 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 18:18:40.590 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 18:18:40.593 [info]:  elysia server is running at localhost:5001
+2024-10-01 18:18:40.593 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 18:18:47.659 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 18:18:47.660 [info]:  elysia server is running at localhost:5001
+2024-10-01 18:18:47.660 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 18:22:08.255 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 18:22:08.256 [info]:  elysia server is running at localhost:5001
+2024-10-01 18:22:08.257 [info]:  swagger docs are available at http://localhost:5001/api/swagger
+2024-10-01 18:22:58.649 [debug]:  db config: launchpad | dev | dev_pass
+2024-10-01 18:22:58.653 [info]:  elysia server is running at localhost:5001
+2024-10-01 18:22:58.653 [info]:  swagger docs are available at http://localhost:5001/api/swagger

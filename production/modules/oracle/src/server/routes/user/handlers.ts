@@ -1,31 +1,33 @@
 import { logger } from "../../../logger";
 import * as db from "../../../db";
 
-export async function connectWallet({
+export async function connectCallerWallet({
     address,
-}: db.ConnectedWalletRequest) {
+}: db.ConnectedWalletRequest): Promise<db.Caller | string> {
     try {
         const res = await db.connectWallet(address);
         if (!res) return "user already exists";
         return res;
-    } catch (e){
+    } catch (e) {
         logger().error(`error in http request 'connectWallet': ${e}`);
+        return `error: ${e}`;
     }
 }
 
-export async function getTicketBalance({
+export async function getCallerTicketBalance({
     address,
-}: db.TicketBalanceRequest) {
+}: db.TicketBalanceRequest): Promise<number | string> {
     try {
         const res = await db.getTicketBalance(address);
         if (res === null) return `user with address not found: ${address}`;
         return res;
     } catch (e) {
         logger().error(`error in http request 'getTicketBalance': ${e}`);
+        return `error: ${e}`;
     }
 }
 
-function parseSubtasks(description: string): Array<{ name: string, description: string }> {
+function parseSubtasks(description: string): db.Subtask[] {
     const subtasks = description.split("&");
     const result = [];
 
@@ -40,23 +42,35 @@ function parseSubtasks(description: string): Array<{ name: string, description: 
 }
 
 
-export async function getTasks() {
+export async function getCallerTasks({
+    staged,
+    address,
+}: db.TasksRequest): Promise<db.TasksResponse[] | string> {
     try {
-        const res = await db.getTasks();
-        if (!res) return "tasks not found";
+        const tasksDb = await db.getTasks(staged);
+        if (!tasksDb) return "tasks not found";
 
-        const transformed = res.map(task => {
-            const subQuests = parseSubtasks(task.description);
+        const transformedTasks: db.TasksResponse[] = await Promise.all(
+            tasksDb.map(async (task) => {
+                const subQuests = parseSubtasks(task.description);
 
-            return {
-                title: task.name,
-                description: task.reward_tickets,
-                subQuests,
-            };
-        });
+                const usersTasksRelation = await db.getUsersTasksRelation(address, task.taskId);
 
-        return transformed;
+
+                return {
+                    taskId: task.taskId,
+                    name: task.name,
+                    description: subQuests,
+                    rewardTickets: task.rewardTickets,
+                    staged: task.staged,
+                    completed: !!usersTasksRelation,
+                };
+            })
+        );
+
+        return transformedTasks;
     } catch (e) {
         logger().error(`error in http request 'getTasks': ${e}`);
+        return `error: ${e}`;
     }
 }

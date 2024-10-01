@@ -5,7 +5,7 @@ import { SubQuests } from "./components/SubQuests";
 import { QuestInfo } from "./components/QuestInfo";
 import styles from "./QuestCard.module.scss";
 
-export function QuestCard({ quest, disabled, open }: QuestCardProps) {
+export function QuestCard({ task, disabled, open }: QuestCardProps) {
   return (
     <MainBox 
       container
@@ -18,21 +18,22 @@ export function QuestCard({ quest, disabled, open }: QuestCardProps) {
         className={styles.button}
       >
         <QuestInfo 
-          title={quest.title}
-          description={quest.description}
+          title={task.name}
+          completed={task.completed}
+          reward={task.rewardTickets}
           open={open}
           disabled={disabled}
         />
       </DisclosureButton>
 
       <DisclosurePanel static style={{ width: "100%" }}>
-        {({ open }) => (
+        {/* {({ open }) => (
           <SubQuests 
-            subQuests={quest.subQuests} 
+            subQuests={task.subTasks} 
             open={open} 
             disabled={disabled}
           />
-        )}
+        )} */}
       </DisclosurePanel>
     </MainBox>
   );

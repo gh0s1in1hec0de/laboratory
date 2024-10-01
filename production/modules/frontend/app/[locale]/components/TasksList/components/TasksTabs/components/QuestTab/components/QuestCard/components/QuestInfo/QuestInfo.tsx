@@ -4,7 +4,7 @@ import { ArrowIcon, StarIcon, TicketIcon } from "@/icons/quests";
 import Grid from "@mui/material/Grid2";
 import styles from "./QuestInfo.module.scss";
 
-export function QuestInfo({ title, description, open, disabled }: QuestInfoProps) {
+export function QuestInfo({ title, completed, reward, open, disabled }: QuestInfoProps) {
   return (
     <Grid 
       container
@@ -23,8 +23,9 @@ export function QuestInfo({ title, description, open, disabled }: QuestInfoProps
 
         <Grid container gap={1} alignItems="center">
           <Label 
-            label={description} 
+            label={completed ? "Done" : "Not Done"} 
             variantSize="regular14" 
+            // variantColor={completed ? "green" : "orange"}
             variantColor="orange"
             offUserSelect
             disabled={disabled}
@@ -33,7 +34,7 @@ export function QuestInfo({ title, description, open, disabled }: QuestInfoProps
           <StarIcon />
 
           <Label 
-            label="reward one ticket" 
+            label={`${reward} ticket`} 
             variantSize="regular14" 
             variantColor="gray"
             offUserSelect

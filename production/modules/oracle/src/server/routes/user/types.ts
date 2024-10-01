@@ -9,5 +9,6 @@ export const GetTicketBalanceSchema = t.Object({
 });
 
 export const GetTasksSchema = t.Object({
-    address: t.Optional(t.String()),
+    address: t.String(),
+    staged: t.String(),
 });

@@ -1,6 +1,6 @@
 import Grid from "@mui/material/Grid2";
 import { Header } from "./components/Header";
-import { QuestsList } from "./components/QuestsList";
+import { TasksList } from "./components/TasksList";
 
 export default function Quests() {
   return (
@@ -12,7 +12,7 @@ export default function Quests() {
     >
       <Header />
       
-      <QuestsList />
+      <TasksList />
     </Grid>
   );
 }

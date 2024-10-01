@@ -1,7 +1,7 @@
 "use client";
 
 import { Label } from "@/common/Label";
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import { Component, ErrorInfo, ReactNode } from "react";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -30,9 +30,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     const { children } = this.props;
 
     if (hasError) {
-      // todo добавить компонент ошибки
+      // todo add error component
       return (
-        <Label label="Произошла ошибка" variantColor="red" />
+        <Label label="Error" variantColor="red" />
       );
     }
 

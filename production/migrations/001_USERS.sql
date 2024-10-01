@@ -14,8 +14,7 @@ CREATE TABLE heights
 CREATE TABLE callers
 (
     address        address PRIMARY KEY,
-    telegram_id    telegram_id,
-    invited_by     telegram_id REFERENCES callers (address),
+    invited_by     address REFERENCES callers (address) ON DELETE SET NULL,
     ticket_balance SMALLINT NOT NULL DEFAULT 0
 );
 
