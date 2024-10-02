@@ -144,7 +144,7 @@ export interface TicketBalanceRequest {
 }
 
 export interface TasksRequest {
-    address: RawAddressString,
+    address?: RawAddressString,
     staged: string,
 }
 

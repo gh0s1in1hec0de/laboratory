@@ -4,8 +4,6 @@
   border-radius: 12px;
 }
 
-.tabs {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.disabled {
+  opacity: 0.5;
 }

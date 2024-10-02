@@ -2,35 +2,8 @@ import { Box } from "@mui/material";
 import styles from "./Navbar.module.scss";
 import { NavbarItems } from "./components/NavbarItems";
 import Grid from "@mui/material/Grid2";
-import { useTranslations } from "next-intl";
-import { NavbarItemType } from "./types";
 
 export function Navbar() {
-  const t = useTranslations("Navbar");
-
-  const mapperIntl: Pick<NavbarItemType, "label" | "page">[] = [
-    {
-      label: t("first"),
-      page: "",
-    },
-    {
-      label: t("soon"),
-      page: "token",
-    },
-    {
-      label: t("soon"),
-      page: "top"
-    },
-    {
-      label: t("soon"),
-      page: "rewards"
-    },
-    {
-      label: t("soon"),
-      page: "profile"
-    },
-  ];
-
   return (
     <Grid
       size={{ xs: 1 }}
@@ -58,7 +31,7 @@ export function Navbar() {
           paddingBottom={2}
           flexDirection="row"
         >
-          <NavbarItems itemLabels={mapperIntl}/>
+          <NavbarItems />
         </Grid>
       </Box>
     </Grid>

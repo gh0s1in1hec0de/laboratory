@@ -1,5 +1,8 @@
-import { NavbarItemType } from "../../types";
+import { PAGES } from "@/constants";
 
-export interface NavbarItemsProps {
-  itemLabels: Pick<NavbarItemType, "label" | "page">[];
+export interface NavbarItemType {
+  id: string;
+  page: `${PAGES}`;
+  label: string;
+  IconComponent: ({ active } : { active?: boolean }) => JSX.Element;
 }

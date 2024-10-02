@@ -35,6 +35,7 @@ export function CustomButton({
             {
               [styles.hover]: hover && addHover,
               [styles.fullWidth]: fullWidth,
+              [styles.disabled]: disabled,
             },
             [styles[background], className],
             // !hover && !active && "bg-sky-600",

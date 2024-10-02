@@ -6,6 +6,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .fullWidth {
   width: 100%;
 }

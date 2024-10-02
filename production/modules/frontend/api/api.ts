@@ -6,6 +6,13 @@ export const baseService = axios.create({
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
-    "address": localStorageWrapper.get("address"),
   },
+});
+
+baseService.interceptors.request.use((config) => {
+  const address = localStorageWrapper.get("address");
+  if (address) config.headers["address"] = address;
+  return config;
+}, (error) => {
+  return Promise.reject(error);
 });

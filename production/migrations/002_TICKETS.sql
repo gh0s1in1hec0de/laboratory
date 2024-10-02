@@ -19,32 +19,25 @@ CREATE TABLE users_tasks_relations
 CREATE OR REPLACE FUNCTION handle_users_tasks_relations_insert()
     RETURNS TRIGGER AS $$
 DECLARE
-    reward_tickets SMALLINT;
+    task_reward_tickets SMALLINT;
 BEGIN
-    -- Start a transaction block
     BEGIN
-        -- Get the reward tickets for the task being added
-        SELECT reward_tickets INTO reward_tickets
-        FROM tasks
-        WHERE task_id = NEW.task_id;
+        SELECT t.reward_tickets INTO task_reward_tickets
+        FROM tasks t
+        WHERE t.task_id = NEW.task_id;
 
-        -- Attempt to update or insert into earnings_per_period
-        -- If this throws an error, the transaction will be rolled back
         INSERT INTO earnings_per_period (caller, ticket_balance)
-        VALUES (NEW.caller_address, reward_tickets)
+        VALUES (NEW.caller_address, task_reward_tickets)
         ON CONFLICT (caller) DO UPDATE
             SET ticket_balance = earnings_per_period.ticket_balance + EXCLUDED.ticket_balance;
 
-        -- If the above operation succeeds, update the caller's ticket balance
         UPDATE callers
-        SET ticket_balance = ticket_balance + reward_tickets
+        SET ticket_balance = ticket_balance + task_reward_tickets
         WHERE address = NEW.caller_address;
 
-        -- Commit the transaction
         RETURN NEW;
 
     EXCEPTION WHEN OTHERS THEN
-        -- If any error occurs, raise an exception to roll back
         RAISE EXCEPTION 'Error occurred during ticket balance update: %', SQLERRM;
     END;
 END;

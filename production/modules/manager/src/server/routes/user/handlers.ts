@@ -48,14 +48,13 @@ export async function getCallerTasks({
 }: db.TasksRequest): Promise<db.TasksResponse[] | string> {
     try {
         const tasksDb = await db.getTasks(staged);
-        if (!tasksDb) return "tasks not found";
+        if (!tasksDb) return [];
         
+        const usersTasksRelation = address ? await db.getUsersTasksRelation(address) : null;
+
         const transformedTasks: db.TasksResponse[] = await Promise.all(
             tasksDb.map(async (task) => {
                 const subQuests = parseSubtasks(task.description);
-                // todo
-                const usersTasksRelation = await db.getUsersTasksRelation(address, task.taskId);
-
 
                 return {
                     taskId: task.taskId,
@@ -63,7 +62,7 @@ export async function getCallerTasks({
                     description: subQuests,
                     rewardTickets: task.rewardTickets,
                     createdAt: Number(task.createdAt),
-                    completed: !!usersTasksRelation,
+                    completed: usersTasksRelation ? usersTasksRelation.some(relation => relation.taskId === task.taskId) : false,
                 };
             })
         );

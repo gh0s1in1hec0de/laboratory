@@ -17,6 +17,7 @@ export enum LabelColors {
   White = "white",
   Gray = "gray",
   Red = "red",
+  Green = "green",
 }
   
 export interface LabelProps extends TypographyProps {

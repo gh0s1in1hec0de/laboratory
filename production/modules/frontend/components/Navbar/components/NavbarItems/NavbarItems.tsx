@@ -3,16 +3,16 @@
 import { Box, IconButton } from "@mui/material";
 import { Label } from "@/common/Label";
 import { usePathname, useRouter } from "next/navigation";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { removeLocaleFromPath } from "@/utils";
-import { NavbarItemsProps } from "./types";
 import { NAVBAR_ITEMS } from "./constants";
-import { NavbarItemType } from "../../types";
+import { NavbarItemType } from "./types";
 
-export function NavbarItems({ itemLabels }: NavbarItemsProps) {
+export function NavbarItems() {
   const router = useRouter();
   const locale = useLocale();
   const pathname = usePathname();
+  const t = useTranslations("");
 
   function handleClick(page: Pick<NavbarItemType, "page">) {
     // todo: delete when launchpad is done
@@ -24,15 +24,10 @@ export function NavbarItems({ itemLabels }: NavbarItemsProps) {
   function isActive(page: Pick<NavbarItemType, "page">) {
     return removeLocaleFromPath(pathname) === page.page;
   }
-
-  function getItemLabel(page: Pick<NavbarItemType, "page">) {
-    const item = itemLabels.find(item => item.page === page.page);
-    return item ? item.label : "";
-  }
   
   return(
     <>
-      {NAVBAR_ITEMS.map(({ page, IconComponent, id }) => (
+      {NAVBAR_ITEMS.map(({ page, IconComponent, id, label }) => (
         <Box
           key={id}
           minWidth={50}
@@ -48,7 +43,7 @@ export function NavbarItems({ itemLabels }: NavbarItemsProps) {
             <IconComponent active={isActive({ page })}/>
           </IconButton>
           <Label
-            label={getItemLabel({ page })}
+            label={t(label)}
             variantColor={isActive({ page }) ? "orange" : "gray"}
             variantSize="medium10"
             offUserSelect

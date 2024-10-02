@@ -1,11 +1,10 @@
 import { Label } from "@/common/Label";
 import Grid from "@mui/material/Grid2";
 import { useTranslations } from "next-intl";
-import { QuestCard, TasksTabs, Tab } from "./components/TasksTabs";
+import { TasksContent } from "./components/TasksContent";
 import { TonProvider } from "@/providers/ton";
-import { localStorageWrapper } from "@/utils";
 
-export function TasksList() {
+export function Tasks() {
   const t = useTranslations("Quests.content");
 
   return (
@@ -21,7 +20,7 @@ export function TasksList() {
       />
 
       <TonProvider>
-        <TasksTabs />
+        <TasksContent />
       </TonProvider>
     </Grid>
   );

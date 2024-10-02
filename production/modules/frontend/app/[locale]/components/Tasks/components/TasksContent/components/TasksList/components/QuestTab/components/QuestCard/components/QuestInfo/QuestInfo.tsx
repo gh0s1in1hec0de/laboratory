@@ -25,8 +25,8 @@ export function QuestInfo({ title, completed, reward, open, disabled }: QuestInf
           <Label 
             label={completed ? "Done" : "Not Done"} 
             variantSize="regular14" 
-            // variantColor={completed ? "green" : "orange"}
-            variantColor="orange"
+            variantColor={completed ? "green" : "orange"}
+            // variantColor="orange"
             offUserSelect
             disabled={disabled}
           />
@@ -34,7 +34,7 @@ export function QuestInfo({ title, completed, reward, open, disabled }: QuestInf
           <StarIcon />
 
           <Label 
-            label={`${reward} ticket`} 
+            label={`reward ${reward} ticket`} 
             variantSize="regular14" 
             variantColor="gray"
             offUserSelect

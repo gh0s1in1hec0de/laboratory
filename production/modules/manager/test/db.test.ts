@@ -34,7 +34,7 @@ describe("Database", () => {
             callers,
             heights,
             launch_balances,
-            summary_tickets_balances,
+            earnings_per_period,
             tasks,
             token_launches,
             user_actions,
@@ -70,8 +70,8 @@ describe("Database", () => {
         const randUserAddress = randomAddress().toString();
         
         await client`
-        INSERT INTO callers (address, ticket_balance)
-        VALUES (${randUserAddress}, 0)`;
+        INSERT INTO callers (address)
+        VALUES (${randUserAddress})`;
     
         await client.unsafe(`
         DO

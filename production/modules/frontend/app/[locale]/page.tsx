@@ -1,6 +1,6 @@
 import Grid from "@mui/material/Grid2";
 import { Header } from "./components/Header";
-import { TasksList } from "./components/TasksList";
+import { Tasks } from "./components/Tasks";
 
 export default function Quests() {
   return (
@@ -11,8 +11,7 @@ export default function Quests() {
       position="relative"
     >
       <Header />
-      
-      <TasksList />
+      <Tasks />
     </Grid>
   );
 }

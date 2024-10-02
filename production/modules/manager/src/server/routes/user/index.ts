@@ -14,20 +14,20 @@ export function UserRoutes() {
                 ...createDetailsForEndpoint(SwaggerTags.User)
             }
         )
+        .get(
+            "/tasks",
+            ({ query }) => getCallerTasks(query),
+            {
+                query: GetTasksSchema,
+                ...createDetailsForEndpoint(SwaggerTags.User)
+            }
+        )
         .onBeforeHandle(authMiddleware)
         .get(
             "/ticket-balance",
             ({ query }) => getCallerTicketBalance(query),
             {
                 query: GetTicketBalanceSchema,
-                ...createDetailsForEndpoint(SwaggerTags.User)
-            }
-        )
-        .get(
-            "/tasks",
-            ({ query }) => getCallerTasks(query),
-            {
-                query: GetTasksSchema,
                 ...createDetailsForEndpoint(SwaggerTags.User)
             }
         );

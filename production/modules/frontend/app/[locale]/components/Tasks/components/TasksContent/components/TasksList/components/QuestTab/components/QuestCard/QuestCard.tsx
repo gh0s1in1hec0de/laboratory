@@ -27,13 +27,13 @@ export function QuestCard({ task, disabled, open }: QuestCardProps) {
       </DisclosureButton>
 
       <DisclosurePanel static style={{ width: "100%" }}>
-        {/* {({ open }) => (
+        {({ open }) => (
           <SubQuests 
-            subQuests={task.subTasks} 
+            subQuests={task.description} 
             open={open} 
             disabled={disabled}
           />
-        )} */}
+        )}
       </DisclosurePanel>
     </MainBox>
   );

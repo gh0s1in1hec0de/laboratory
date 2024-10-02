@@ -10,7 +10,7 @@ export function useConnectButton() {
   const [isPending, startTransition] = useTransition();
   const [tonWalletAddress, setTonWalletAddress] = useState<string | null>(localStorageWrapper.get("address"));
   const [error, setError] = useState<string | null>(null);
-  
+
   async function handleConnectWallet(address: string){
     localStorageWrapper.set("address", address);
     await userService.postConnectWallet(address);

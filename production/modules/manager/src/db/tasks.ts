@@ -8,25 +8,25 @@ export async function getTasks(staged: string, client?: SqlClient): Promise<Stor
     const res = await c<StoredTasks[]>`
         SELECT *
         FROM tasks
-        ${staged ? c`WHERE EXTRACT(EPOCH FROM now()) - created_at <= 7 * 86400` : c``}
+        ${staged === "true" 
+        ? c`WHERE EXTRACT(EPOCH FROM now()) - created_at > 7 * 86400`
+        : c`WHERE EXTRACT(EPOCH FROM now()) - created_at <= 7 * 86400`}
   `;
     return res.length ? res : null;
 }
 
 export async function getUsersTasksRelation(
     address: RawAddressString,
-    taskId: number,
     client?: SqlClient
-): Promise<StoredUsersTasksRelations | null> {
+): Promise<Omit<StoredUsersTasksRelations, "callerAddress">[] | null> {
     const c = client ?? globalClient;
 
-    const res = await c<StoredUsersTasksRelations[]>`
-        SELECT *
+    const res = await c<Omit<StoredUsersTasksRelations, "callerAddress">[]>`
+        SELECT task_id
         FROM users_tasks_relations
         WHERE caller_address = ${address}
-        AND task_id = ${taskId}
   `;
-    return res.length ? res[0] : null;
+    return res.length ? res : null;
 }
 
 export async function storeUserTaskRelations(

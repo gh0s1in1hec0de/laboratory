@@ -43,6 +43,14 @@
   }
 }
 
+.green {
+  color: var(--green-regular);
+
+  &.disabled {
+    color: var(--green-dark);
+  }
+}
+
 
 // SIZES
 .semiBold32 {
