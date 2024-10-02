@@ -22,9 +22,17 @@ docker network create starlink
 This creates a network named `starlink` that will allow containers connected to it to communicate using their names as hostnames.
 
 ### Step 3: Run the PostgreSQL Container
-Now that the network is created, run the PostgreSQL container and connect it to the network. This will also mount a volume for persistent storage and expose the database on port 5432.
 
-Run the following command in directory, where We want to locate postgres volume directory:
+##### 1. Build the Docker Image
+First, ensure you are in the root directory of your project, where your postgres.Dockerfile is located. Run the following command to build the PostgreSQL image that includes the pg_cron extension:
+
+```bash
+docker build -t postgres-cron:latest --build-arg POSTGRES_DB=example_db_name -f postgres.Dockerfile .
+```
+
+##### 2. Run the PostgreSQL Container
+
+After the image has been built, run the following command to start the container:
 ```bash
 docker run -d \
 --name st-database \
@@ -34,7 +42,7 @@ docker run -d \
 -e POSTGRES_PASSWORD=example_password \
 -v ./postgres-data:/var/lib/postgresql/data \
 -p 5432:5432 \
-postgres:16
+postgres-cron:latest
 ```
 
 ### Step 4: Run any services
@@ -64,7 +72,7 @@ We can test the connection from the `manager-service` to the PostgreSQL containe
 
 ```bash
 docker exec -it manager-service bash
-psql -h database -U example_user -d example_db
+psql -h database -U example_user -d example_db_name
 ```
 If We’ve set an alias (e.g., db), We can connect using that as well:
 ```bash
@@ -72,7 +80,7 @@ docker network connect --alias db starlink database
 ```
 Now, inside the `manager-service`, We can use the alias db to connect:
 ```bash
-psql -h db -U example_user -d example_db
+psql -h db -U example_user -d example_db_name
 ```
 
 ### Bonus 

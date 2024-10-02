@@ -6,5 +6,6 @@ RUN apt-get update &&  \
     apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN echo "shared_preload_libraries = 'pg_cron'" >> /var/lib/postgresql/data/postgresql.conf && \
-    echo "cron.database_name = 'launchpad'" >> /var/lib/postgresql/data/postgresql.conf
+ARG POSTGRES_DB
+RUN echo "shared_preload_libraries='pg_cron'" >> /usr/share/postgresql/postgresql.conf.sample
+RUN echo "cron.database_name='${POSTGRES_DB}'" >> /usr/share/postgresql/postgresql.conf.sample

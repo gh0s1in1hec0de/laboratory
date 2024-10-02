@@ -66,8 +66,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE EXTENSION pg_cron;
-GRANT EXECUTE ON FUNCTION cron.schedule TO dev;
+CREATE EXTENSION IF NOT EXISTS pg_cron;
 SELECT cron.schedule('0 0 * * 0', $$SELECT delete_all_rows_from_earnings_per_period();$$);
 
 
