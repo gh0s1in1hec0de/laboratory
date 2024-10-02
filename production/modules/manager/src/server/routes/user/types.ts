@@ -10,5 +10,5 @@ export const GetTicketBalanceSchema = t.Object({
 
 export const GetTasksSchema = t.Object({
     address: t.String(),
-    staged: t.Boolean(),
+    staged: t.String(),
 });

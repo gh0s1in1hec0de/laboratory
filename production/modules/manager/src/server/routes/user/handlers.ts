@@ -53,6 +53,7 @@ export async function getCallerTasks({
         const transformedTasks: db.TasksResponse[] = await Promise.all(
             tasksDb.map(async (task) => {
                 const subQuests = parseSubtasks(task.description);
+                // todo
                 const usersTasksRelation = await db.getUsersTasksRelation(address, task.taskId);
 
 
