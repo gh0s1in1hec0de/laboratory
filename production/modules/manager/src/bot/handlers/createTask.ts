@@ -1,8 +1,8 @@
-import { getCancelConversationKeyboard, getMenuKeyboard, getReplyText } from "../constants";
+import { getCancelConversationKeyboard, getReplyText } from "../constants";
 import type { MyContext, MyConversation } from "..";
 import { logger } from "../../logger";
 import * as db from "../../db";
-import {isReadyTasksToDb} from "./common.ts";
+import { isReadyTasksToDb } from "./common";
 
 export async function createTask(conversation: MyConversation, ctx: MyContext): Promise<void> {
     await ctx.reply(getReplyText("createTaskRequest"),
@@ -12,6 +12,7 @@ export async function createTask(conversation: MyConversation, ctx: MyContext): 
     let progress = false;
     do {
         const { msg: { text } } = await conversation.waitFor("message:text");
+        
         const res = isReadyTasksToDb(text);
 
         if (!res) {

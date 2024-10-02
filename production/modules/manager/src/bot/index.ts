@@ -69,6 +69,8 @@ export async function createBot(): Promise<Bot<MyContext>> {
 
     maybeBot.catch(handleBotError);
 
+    logger().info("bot is running");
+
     await maybeBot.start();
 
     return maybeBot;
@@ -77,7 +79,6 @@ export async function createBot(): Promise<Bot<MyContext>> {
 export async function getBot(): Promise<Bot<MyContext>> {
     if (!maybeBot) {
         maybeBot = await createBot();
-        logger().info("bot is running");
     }
     return maybeBot;
 }

@@ -13,6 +13,13 @@ type Config = {
         token: string,
         admins: number[],
     },
+    server: {
+        port: number,
+        swagger: {
+            title: string,
+            version: string,
+        },
+    },
     logger: {
         bot_token: string,
         chat_id: number,

@@ -4,8 +4,7 @@ CREATE TABLE tasks
     name        TEXT NOT NULL,
     description TEXT NOT NULL,
     reward_tickets SMALLINT NOT NULL DEFAULT 1,
-    staged BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at unix_time_seconds NOT NULL
+    created_at unix_time_seconds NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())
 );
 
 CREATE TABLE users_tasks_relations
@@ -128,8 +127,7 @@ BEGIN
     -- Итерируем по всем задачам, добавленным более недели назад и еще не отмеченным как staged
     FOR task_record IN
         SELECT * FROM tasks
-        WHERE staged = FALSE
-          AND created_at <= EXTRACT(EPOCH FROM NOW()) - (7 * 24 * 60 * 60) -- 1 неделя
+        WHERE created_at <= EXTRACT(EPOCH FROM NOW()) - (7 * 24 * 60 * 60)
     LOOP
         -- Переводим задачу в состояние staged
         UPDATE tasks

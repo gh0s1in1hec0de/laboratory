@@ -18,7 +18,7 @@ async function handleListLaunches(
 ): Promise<void> {
     try {
         const data = await db.getSortedTokenLaunches(sortData);
-    
+        
         if (!data) {
             await ctx.callbackQuery.message!.editText(
                 getReplyText("noLaunches"),

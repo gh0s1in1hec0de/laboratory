@@ -1,5 +1,12 @@
-# if not - console.debug will not be shown
-mode: "dev"
+mode: "dev" # | "prod"
+db:
+  should_migrate: true
+
+server:
+  port: 5002
+  swagger:
+    title: "Starton API Documentation"
+    version: "1.0.0"
 
 oracle:
   chief:
@@ -18,16 +25,6 @@ oracle:
         - "key"
       mainnet:
         - "key"
-
-server:
-  port: 3000
-  swagger:
-    title: "Starton API Documentation"
-    version: "1.0.0"
-
-bot:
-  token: ""
-  admins: [ 1111, 2222 ]
 
 logger:
   bot_token: ""

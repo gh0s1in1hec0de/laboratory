@@ -2,6 +2,7 @@ import type { Sql } from "postgres";
 import {
     type TokenLaunchTimings,
     type RawAddressString,
+    type UnixTimeSeconds,
     type GlobalVersions,
     type TokenMetadata,
     BalanceUpdateMode,
@@ -27,15 +28,16 @@ export type StoredUser = {
 }
 
 export type Caller = {
-    user: TelegramId | null,
     address: RawAddressString,
+    ticket_balance: number,
 }
 
+export type StringifiedCoins = string;
 export type PostDeployEnrollmentStats = {
     deployedJetton: { masterAddress: RawAddressString, ourWalletAddress: RawAddressString },
-    totalTonsCollected: Coins,
-    oursAmount: Coins,
-    dexAmount: Coins,
+    totalTonsCollected: StringifiedCoins,
+    oursAmount: StringifiedCoins,
+    dexAmount: StringifiedCoins,
 }
 
 export type DexData = {
@@ -55,7 +57,7 @@ export type StoredTokenLaunch = {
 
     metadata: TokenMetadata,
     timings: TokenLaunchTimings,
-    createdAt: Date,
+    createdAt: UnixTimeSeconds,
 
     isSuccessful: boolean | null,
     postDeployEnrollmentStats: PostDeployEnrollmentStats | null,
@@ -89,7 +91,7 @@ export type UserAction = {
     publicTons: Coins,
     jettons: Coins,
     lt: LamportTime,
-    timestamp: Date,
+    timestamp: UnixTimeSeconds,
     queryId: bigint,
 };
 
@@ -115,6 +117,10 @@ export type StoredWhitelistRelations = {
     callerAddress: string,
 }
 
+export type StoredTasksRelations = {
+    callerAddress: string,
+    taskId: number,
+}
 
 export interface StoredTokenLaunchRequest {
     page: number,
@@ -127,4 +133,44 @@ export interface StoredTokenLaunchRequest {
 export interface StoredTokenLaunchResponse {
     storedTokenLaunch: StoredTokenLaunch[],
     hasMore: boolean,
+}
+
+export interface ConnectedWalletRequest {
+    address: RawAddressString,
+}
+
+export interface TicketBalanceRequest {
+    address: RawAddressString,
+}
+
+export interface TasksRequest {
+    address: RawAddressString,
+    staged: string,
+}
+
+export interface StoredTasks {
+    taskId: number,
+    name: string,
+    description: string,
+    rewardTickets: number,
+    createdAt: UnixTimeSeconds,
+}
+
+export interface StoredUsersTasksRelations {
+    callerAddress: RawAddressString,
+    taskId: number,
+}
+
+export interface Subtask {
+    name: string,
+    description: string,
+}
+
+export interface TasksResponse {
+    taskId: number,
+    name: string,
+    description: Subtask[],
+    rewardTickets: number,
+    completed: boolean,
+    createdAt: number,
 }

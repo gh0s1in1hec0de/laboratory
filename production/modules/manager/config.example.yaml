@@ -1,15 +1,19 @@
-# if not - console.debug will not be shown
-mode: "dev"
+mode: "dev" # | "prod"
+db:
+  should_migrate: true
 
 server:
-  port: 3001
+  port: 5001
+  swagger:
+    title: "Starton API Documentation"
+    version: "1.0.0"
 
 bot:
-  token: ""
-  admins: [ 1111, 2222 ]
+  token: "7365089241:AAFaCGvuAUHDIrkiCkOg6foMpjDVmgAY0CU"
+  admins: [ 941212988, 483149881 ]
 
 logger:
-  bot_token: ""
-  chat_id: -0
-  dev_thread_id: 0
-  prod_thread_id: 0
+  bot_token: "7535360860:AAFClh-9FhVd4zgbNKE1pxABvj_xE3EA9DE"
+  chat_id: -1002199101106
+  dev_thread_id: 2
+  prod_thread_id: 4

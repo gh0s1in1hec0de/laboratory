@@ -13,31 +13,3 @@ export async function storeWhitelistRelations(
     `;
     return res.length ? res[0] : null;
 }
-
-export async function storeUserTaskRelations(
-    userAddress: string,
-    taskId: string,
-    client?: SqlClient
-): Promise<StoredWhitelistRelations | null> {
-    const res = await (client ?? globalClient)<StoredWhitelistRelations[]>`
-        INSERT INTO users_tasks_relations (caller, task)
-        VALUES (${userAddress}, ${taskId})
-        ON CONFLICT DO NOTHING
-        RETURNING 1
-    `;
-    return res.length ? res[0] : null;
-}
-
-export async function storeTask(
-    taskName: string,
-    description: string,
-    client?: SqlClient
-): Promise<StoredWhitelistRelations | null> {
-    const res = await (client ?? globalClient)<StoredWhitelistRelations[]>`
-        INSERT INTO tasks (name, description)
-        VALUES (${taskName}, ${description})
-        ON CONFLICT DO NOTHING
-        RETURNING 1
-    `;
-    return res.length ? res[0] : null;
-}

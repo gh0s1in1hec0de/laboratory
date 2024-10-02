@@ -38,7 +38,6 @@ export function isReadyUsersTasksToDb(str: string): Map<string, string[]> | null
         const trimmedId = taskId?.trim();
 
         if (!trimmedAddress || !trimmedId || Address.isAddress(userAddress.trim())) return null;
-        // || Address.isAddress(userAddress.trim())
 
         if (mapAddressTasks.has(trimmedAddress)) {
             mapAddressTasks.get(trimmedAddress)?.push(trimmedId);
@@ -56,22 +55,28 @@ export function isReadyTasksToDb(str: string): Map<string, string> | null {
     mapTasks.clear();
 
     for (const pair of str.split(/\r?\n/)) {
-        const [taskName, subtasks] = pair.split("|");
-        const trimmedTaskName = taskName?.trim();
+        const [taskWithNumber, subtasks] = pair.split("|");
+        const trimmedTaskWithNumber = taskWithNumber?.trim();
         const trimmedSubTasks = subtasks?.trim();
 
-        if (!trimmedTaskName || !trimmedSubTasks) return null;
+        if (!trimmedTaskWithNumber || !trimmedSubTasks) return null;
+
+        const [taskName, taskNumber] = trimmedTaskWithNumber.split("$");
+        if (!taskName || !taskNumber || taskNumber.trim() === "") return null;
 
         const subtaskArray = trimmedSubTasks.split("&");
         if (subtaskArray.length % 2 !== 0 || subtaskArray.some(item => item.trim() === "")) return null;
 
-        if (mapTasks.has(trimmedTaskName)) {
-            const storedDescription = mapTasks.get(trimmedTaskName);
-            mapTasks.set(trimmedTaskName, `${storedDescription}&${subtaskArray.join("&")}`);
+        const fullTaskKey = `${taskName.trim()}$${taskNumber.trim()}`;
+
+        if (mapTasks.has(fullTaskKey)) {
+            const storedDescription = mapTasks.get(fullTaskKey);
+            mapTasks.set(fullTaskKey, `${storedDescription}&${subtaskArray.join("&")}`);
         } else {
-            mapTasks.set(trimmedTaskName, subtaskArray.join("&"));
+            mapTasks.set(fullTaskKey, subtaskArray.join("&"));
         }
     }
 
     return mapTasks;
 }
+
