@@ -18,9 +18,10 @@ CREATE TABLE callers
     ticket_balance SMALLINT NOT NULL DEFAULT 0
 );
 
-CREATE TABLE summary_tickets_balances
+-- Not referencing caller allow people accomplish tasks without logging in firstly
+CREATE TABLE earnings_per_period
 (
-    caller         address REFERENCES callers (address),
-    ticket_balance SMALLINT DEFAULT 0,
+    caller         address,
+    ticket_balance SMALLINT DEFAULT 0 CHECK (ticket_balance <= 3),
     PRIMARY KEY (caller)
 );

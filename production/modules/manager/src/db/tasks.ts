@@ -1,4 +1,4 @@
-import type { SqlClient, StoredTasks, StoredUsersTasksRelations, StoredWhitelistRelations } from "./types";
+import type { SqlClient, StoredTasks, StoredUsersTasksRelations } from "./types";
 import { globalClient } from "./db";
 import type { RawAddressString } from "starton-periphery";
 

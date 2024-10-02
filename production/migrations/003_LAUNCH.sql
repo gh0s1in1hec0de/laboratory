@@ -18,6 +18,13 @@ CREATE TABLE token_launches
     dex_data                     JSONB
 );
 
+CREATE TABLE whitelist_relations
+(
+    token_launch_address address REFERENCES token_launches (address),
+    caller_address       address REFERENCES callers (address),
+    PRIMARY KEY (token_launch_address, caller_address)
+);
+
 CREATE TYPE user_action_type AS ENUM ('whitelist_buy', 'public_buy', 'whitelist_refund', 'public_refund', 'total_refund', 'claim');
 CREATE TABLE user_actions
 (

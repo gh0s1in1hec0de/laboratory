@@ -1,7 +1,7 @@
 import type { SqlClient, StoredWhitelistRelations } from "./types";
 import { globalClient } from "./db";
 
-export async function storeWhitelistRelations(
+export async function storeWhitelistRelation(
     tokenLaunchAddress: string,
     callerAddress: string,
     client?: SqlClient
