@@ -3,8 +3,7 @@
 .vscode
 node_modules/
 postgres-data
-/production/modules/logs[manager]
-/production/modules/logs[oracle]
+**/logs*/
 
 **/yarn.lock
 **/.yarnrc.yml

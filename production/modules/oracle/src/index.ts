@@ -16,14 +16,14 @@ logger().debug(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_U
 async function main() {
     getServer();
 
-    // Separated logic for  core and launches indexing for better flexibility
-    for (const { address, height, force_height, version } of config.oracle.cores) {
-        const formatted = Address.parse(address).toRawString();
-        if (height) await db.setHeightForAddress(formatted, height, force_height);
-        handleCoreUpdates(formatted, version);
-    }
-    spawnNewLaunchesScanners();
-    chiefScanning();
+    // // Separated logic for  core and launches indexing for better flexibility
+    // for (const { address, height, force_height, version } of config.oracle.cores) {
+    //     const formatted = Address.parse(address).toRawString();
+    //     if (height) await db.setHeightForAddress(formatted, height, force_height);
+    //     handleCoreUpdates(formatted, version);
+    // }
+    // spawnNewLaunchesScanners();
+    // chiefScanning();
 }
 
 main().then();

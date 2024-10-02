@@ -79,7 +79,7 @@ function configureLogger(): Logger {
                 disableNotification: true,
             }),
             new DailyRotateFile({
-                filename: path.resolve(__dirname, `../../logs[manager]/logs[${isDev ? "dev" : "prod"}]-%DATE%.log`),
+                filename: path.resolve(__dirname, `../../logs_manager/logs_${isDev ? "dev" : "prod"}_%DATE%.log`),
                 datePattern: "YYYY-MM-DD",
                 maxFiles: "10d",
                 level,
