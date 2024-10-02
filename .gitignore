@@ -10,6 +10,9 @@ postgres-data
 **/.yarnrc.yml
 **/.yarn
 **/.lockb
+**/.log
+**/.DS_Store
+
 
 # Ignore all config.yaml files
 **/config.yaml
