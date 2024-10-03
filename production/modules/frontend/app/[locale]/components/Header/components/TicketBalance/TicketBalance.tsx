@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Balance } from "./components/Balance";
 
 export function TicketBalance() {
-  const t = useTranslations("Quests.header");
+  const t = useTranslations("Tasks.header");
   
   return (
     <MainBox 

@@ -1,3 +1,4 @@
+import { Address } from "@ton/core";
 import type { MyContext, MyConversation } from "..";
 import * as db from "../../db";
 import { logger } from "../../logger";
@@ -24,7 +25,7 @@ export async function addWalletsToRelations(conversation: MyConversation, ctx: M
         try {
             for (const [userAddress, taskIds] of res) {
                 for (const taskId of taskIds) {
-                    await db.storeUserTaskRelations(userAddress, taskId);
+                    await db.storeUserTaskRelations(Address.parse(userAddress).toRawString(), taskId);
                 }
             }
         } catch (error) {

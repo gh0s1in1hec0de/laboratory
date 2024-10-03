@@ -1,11 +1,12 @@
 "use client";
 
 import Grid from "@mui/material/Grid2";
-import { TasksTabs } from "./components/TasksTabs";
+import { CustomTabs } from "@/common/CustomTabs";
 import { TasksList } from "./components/TasksList";
 import { useState } from "react";
 import { TasksTabsValues } from "./types";
 import { useTasks } from "./hooks/useTasks";
+import { TASKS_TABS } from "./constants";
 
 export function TasksContent() {
   const [selectedTab, setSelectedTab] = useState<TasksTabsValues>(TasksTabsValues.NEW);
@@ -22,10 +23,11 @@ export function TasksContent() {
       gap={2}
       width="100%"
     >
-      <TasksTabs 
+      <CustomTabs 
         selectedTab={selectedTab}
         onChange={setSelectedTab}
         disabled={isLoading}
+        tabs={TASKS_TABS}
       />
 
       <TasksList 

@@ -21,45 +21,11 @@ export function CustomConnectButton({
     connectionRestored,
     error,
   } = useConnectButton();
-  const t = useTranslations("Quests.header");
+  const t = useTranslations("Tasks.header");
 
   if (error) {
     return <Label label={error} variantSize="medium14" color="red" />;
   }
-
-  // if (connectionRestored) {
-  //   return (
-  //     <CustomButton
-  //       background="orange"
-  //       onClick={handleDisconnectWallet}
-  //       padding="10px 0"
-  //       fullWidth
-  //     >
-  //       <Label label={formatAddress(tonWalletAddress)} variantSize="medium14" />
-  //     </CustomButton>
-  //   );
-  // }
-  // try {
-  //   retrieveLaunchParams();
-  // } catch (error) {
-  //   return (
-  //     <LoginButton
-  //       botUsername={"starton_sender_bot"}
-  //       buttonSize="large" // "large" | "medium" | "small"
-  //       cornerRadius={5} // 0 - 20
-  //       showAvatar={false} // true | false
-  //       lang="en"
-  //       onAuthCallback={setTelegramData}
-  //     />
-  //   );
-  // }
-
-  // function handleShare() {
-  //   const inviteLink = `${INVITE_URL}?startapp=${launchParams.initData?.user?.id}`;
-  //   const shareText = "Join me on this awesome Telegram mini app!";
-  //   const fullUrl = `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(shareText)}`;
-  //   utils.openTelegramLink(inviteLink);
-  // }
 
   return (
     <LoadingWrapper 

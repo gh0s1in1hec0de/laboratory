@@ -1,4 +1,5 @@
 import { baseService } from "@/api";
+import { CALLER_ADDRESS } from "@/constants";
 import { USER_ERROR } from "@/errors";
 import { USER_ROUTES } from "@/routes";
 import { Task } from "@/types";
@@ -19,7 +20,7 @@ async function getTicketBalance(): Promise<number> {
   try {
     const response = await baseService.get<number>(USER_ROUTES.GetTicketBalance, {
       params: {
-        address: localStorageWrapper.get("address"),
+        address: localStorageWrapper.get(CALLER_ADDRESS),
       },
     });
 
@@ -34,7 +35,7 @@ async function getTasks(staged: boolean): Promise<Task[]> {
   try {
     const response = await baseService.get<Task[]>(USER_ROUTES.GetTasks, {
       params: {
-        address: localStorageWrapper.get("address"),
+        address: localStorageWrapper.get(CALLER_ADDRESS),
         staged,
       },
     });

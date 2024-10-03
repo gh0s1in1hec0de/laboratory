@@ -1,3 +1,4 @@
+import { CALLER_ADDRESS } from "@/constants";
 import { userService } from "@/services";
 import { getErrorText, localStorageWrapper } from "@/utils";
 import { Address } from "@ton/core";
@@ -8,18 +9,18 @@ export function useConnectButton() {
   const [tonConnectUI] = useTonConnectUI();
   const connectionRestored = useIsConnectionRestored();
   const [isPending, startTransition] = useTransition();
-  const [tonWalletAddress, setTonWalletAddress] = useState<string | null>(localStorageWrapper.get("address"));
+  const [tonWalletAddress, setTonWalletAddress] = useState<string | null>(localStorageWrapper.get(CALLER_ADDRESS));
   const [error, setError] = useState<string | null>(null);
 
   async function handleConnectWallet(address: string){
-    localStorageWrapper.set("address", address);
+    localStorageWrapper.set(CALLER_ADDRESS, address);
     await userService.postConnectWallet(address);
     setTonWalletAddress(address);
     console.debug("Wallet connected!");
   }
 
   async function handleDisconnectWallet(){
-    localStorageWrapper.remove("address");
+    localStorageWrapper.remove(CALLER_ADDRESS);
     setTonWalletAddress(null);
     console.debug("Wallet disconnected!");
   }

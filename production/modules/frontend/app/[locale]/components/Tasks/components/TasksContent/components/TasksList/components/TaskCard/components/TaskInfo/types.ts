@@ -1,4 +1,4 @@
-export interface QuestInfoProps {
+export interface TaskInfoProps {
   title: string;
   completed: boolean;
   reward: number;

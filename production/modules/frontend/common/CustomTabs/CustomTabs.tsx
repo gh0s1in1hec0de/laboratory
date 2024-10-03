@@ -1,40 +1,57 @@
-import { TabGroup, TabList, TabPanels } from "@headlessui/react";
 import Grid from "@mui/material/Grid2";
-import { TabLabel } from "./components/TabLabel";
 import styles from "./CustomTabs.module.scss";
-import { CustomTabsProps } from "./types";
-import { useState } from "react";
+import { CustomTabsProps, CustomTabsVariant } from "./types";
+import { useTranslations } from "next-intl";
+import { classNames } from "@/utils";
+import { CustomButton } from "../CustomButton";
+import { Label } from "../Label";
+import { TAB_VARIANT_CONFIG } from "./constants";
 
-export function CustomTabs({
-  tabLabels,
-  children,
-}: CustomTabsProps) {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  function handleSetCurrentValue(index: number) {
-    setSelectedIndex(index);
-  }
+export function CustomTabs<T>({
+  selectedTab,
+  onChange,
+  disabled,
+  tabs,
+  variant = CustomTabsVariant.DEFAULT,
+}: CustomTabsProps<T>) {
+  const t = useTranslations("");
+  const config = TAB_VARIANT_CONFIG[variant];
 
   return (
-    <TabGroup
-      selectedIndex={selectedIndex}
-      onChange={handleSetCurrentValue}
-      className={styles.tabs}
+    <Grid 
+      className={classNames(
+        styles.bg,
+        { [styles.disabled]: disabled },
+        [styles[variant]]
+      )}
+      container
+      size={12}
+      spacing={1}
     >
-      <TabList className={styles.bg}>
-        <Grid container gap={1}>
-          {tabLabels.map((tab, index) => (
-            <TabLabel
-              key={index}
-              label={tab}
-            />
-          ))}
-        </Grid>
-      </TabList>
+      {tabs.map((tab, index) => {
+        const isSelected = selectedTab === tab.value;
+        const { button, label } = config;
 
-      <TabPanels>
-        {children}
-      </TabPanels>
-    </TabGroup>
+        return (
+          <Grid key={index} size={6}>
+            <CustomButton 
+              padding="8px"
+              fullWidth 
+              onClick={() => onChange(tab.value)} 
+              background={button.background(isSelected)}
+              addHover={button.addHover(isSelected, disabled)}
+              disabled={disabled}
+              borderColor={button.borderColor(isSelected)}
+            >
+              <Label
+                label={t(tab.label)}
+                variantSize="medium16"
+                variantColor={label.variantColor(isSelected)}
+              />
+            </CustomButton>
+          </Grid>
+        );
+      })}
+    </Grid>
   );
 }

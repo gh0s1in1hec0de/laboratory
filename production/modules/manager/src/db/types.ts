@@ -28,6 +28,7 @@ export type StoredUser = {
 }
 
 export type Caller = {
+    callerId: number,
     address: RawAddressString,
     ticket_balance: number,
 }

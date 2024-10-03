@@ -1,9 +1,10 @@
 import { userService } from "@/services";
 import { Task } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { UseTasksProps } from "./types";
 import { TasksTabsValues } from "../../types";
 import { useIsConnectionRestored, useTonConnectUI } from "@tonconnect/ui-react";
+import { CALLER_ADDRESS } from "@/constants";
 import { localStorageWrapper } from "@/utils";
 
 export function useTasks({ selectedTab }: UseTasksProps) {
@@ -13,32 +14,32 @@ export function useTasks({ selectedTab }: UseTasksProps) {
   const [tonConnectUI] = useTonConnectUI();
   const connectionRestored = useIsConnectionRestored();
 
-  useEffect(() => {
-    (async () => {
-      setError("");
-      try {
-        const tasks = await userService.getTasks(selectedTab === TasksTabsValues.STAGED);
-        setTasks(tasks);
-      } catch (error) {
-        setError("error");
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-
+  const fetchTasks = useCallback(async () => {
+    setError("");
+    try {
+      const tasks = await userService.getTasks(selectedTab === TasksTabsValues.STAGED);
+      setTasks(tasks);
+    } catch (error) {
+      setError("Error fetching tasks");
+    }
   }, [selectedTab]);
 
   useEffect(() => {
+    fetchTasks();
+
     const unsubscribe = tonConnectUI.onStatusChange(async (wallet) => {
       if (wallet) {
-        localStorageWrapper.set("address", wallet?.account.address);
+        localStorageWrapper.set(CALLER_ADDRESS, wallet.account.address);
+        await fetchTasks();
       }
     });
+
+    setIsLoading(false);
 
     return () => {
       unsubscribe();
     };
-  }, [tonConnectUI]);
+  }, [fetchTasks, tonConnectUI, selectedTab]);
 
   return {
     isLoading: isLoading || !connectionRestored,

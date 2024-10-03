@@ -1,3 +1,4 @@
+import { CALLER_ADDRESS } from "@/constants";
 import { localStorageWrapper } from "@/utils";
 import axios from "axios";
 
@@ -10,8 +11,8 @@ export const baseService = axios.create({
 });
 
 baseService.interceptors.request.use((config) => {
-  const address = localStorageWrapper.get("address");
-  if (address) config.headers["address"] = address;
+  const address = localStorageWrapper.get(CALLER_ADDRESS);
+  if (address) config.headers[CALLER_ADDRESS] = address;
   return config;
 }, (error) => {
   return Promise.reject(error);

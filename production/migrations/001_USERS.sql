@@ -13,6 +13,7 @@ CREATE TABLE heights
 
 CREATE TABLE callers
 (
+    caller_id      SERIAL UNIQUE,
     address        address PRIMARY KEY,
     invited_by     address REFERENCES callers (address) ON DELETE SET NULL,
     ticket_balance SMALLINT NOT NULL DEFAULT 0

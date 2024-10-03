@@ -5,6 +5,13 @@ export enum ButtonBackground {
 	Red = "red",
 	Gray = "gray",
 	Transparent = "transparent",
+  TransparentOutline = "transparentOutline",
+}
+
+export enum ButtonBorderColor {
+	BorderOrange = "borderOrange",
+	BorderGray = "borderGray",
+  BorderTransparent = "borderTransparent",
 }
 
 export interface CustomButtonProps {
@@ -18,4 +25,5 @@ export interface CustomButtonProps {
 	padding?: string | number;
 	addHover?: boolean;
 	borderRadius?: number;
+	borderColor?: `${ButtonBorderColor}`;
 }

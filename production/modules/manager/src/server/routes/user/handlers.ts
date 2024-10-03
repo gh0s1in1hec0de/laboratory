@@ -1,11 +1,12 @@
 import { logger } from "../../../logger";
 import * as db from "../../../db";
+import { Address } from "@ton/core";
 
 export async function connectCallerWallet({
     address,
 }: db.ConnectedWalletRequest): Promise<db.Caller | string> {
     try {
-        const res = await db.connectWallet(address);
+        const res = await db.connectWallet(Address.parse(address).toRawString());
         if (!res) return "user already exists";
         return res;
     } catch (e) {
@@ -18,7 +19,7 @@ export async function getCallerTicketBalance({
     address,
 }: db.TicketBalanceRequest): Promise<number | string> {
     try {
-        const res = await db.getTicketBalance(address);
+        const res = await db.getTicketBalance(Address.parse(address).toRawString());
         if (res === null) return `user with address not found: ${address}`;
         return res;
     } catch (e) {
@@ -50,7 +51,7 @@ export async function getCallerTasks({
         const tasksDb = await db.getTasks(staged);
         if (!tasksDb) return [];
         
-        const usersTasksRelation = address ? await db.getUsersTasksRelation(address) : null;
+        const usersTasksRelations = address ? await db.getUsersTasksRelations(Address.parse(address).toRawString()) : null;
 
         const transformedTasks: db.TasksResponse[] = await Promise.all(
             tasksDb.map(async (task) => {
@@ -62,7 +63,7 @@ export async function getCallerTasks({
                     description: subQuests,
                     rewardTickets: task.rewardTickets,
                     createdAt: Number(task.createdAt),
-                    completed: usersTasksRelation ? usersTasksRelation.some(relation => relation.taskId === task.taskId) : false,
+                    completed: usersTasksRelations ? usersTasksRelations.some(relation => relation.taskId === task.taskId) : false,
                 };
             })
         );

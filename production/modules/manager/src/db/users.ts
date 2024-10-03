@@ -1,19 +1,20 @@
 import type { Caller, SqlClient } from "./types";
 import { globalClient } from "./db.ts";
+import type { RawAddressString } from "starton-periphery";
 
-export async function getCaller(address: string, client?: SqlClient): Promise<Caller | null> {
+export async function getCaller(callerAddress: RawAddressString, client?: SqlClient): Promise<Caller | null> {
     const res = await (client ?? globalClient)<Caller[]>`
         SELECT *
         FROM callers
-        WHERE address = ${address}
+        WHERE address = ${callerAddress}
     `;
     return res.length ? res[0] : null;
 }
 
-export async function connectWallet(address: string, client?: SqlClient): Promise<Caller | null> {
+export async function connectWallet(callerAddress: RawAddressString, client?: SqlClient): Promise<Caller | null> {
     const res = await (client ?? globalClient)<Caller[]>`
         INSERT INTO callers (address)
-        VALUES (${address})
+        VALUES (${callerAddress})
         ON CONFLICT DO NOTHING
         RETURNING *;
     `;
@@ -21,11 +22,11 @@ export async function connectWallet(address: string, client?: SqlClient): Promis
     return res.length ? res[0] : null;
 }
 
-export async function getTicketBalance(address: string, client?: SqlClient): Promise<number | null> {
+export async function getTicketBalance(callerAddress: RawAddressString, client?: SqlClient): Promise<number | null> {
     const res = await (client ?? globalClient)<{ ticketBalance: number }[]>`
         SELECT ticket_balance
         FROM callers
-        WHERE address = ${address}
+        WHERE address = ${callerAddress}
     `;
     return res.length ? res[0].ticketBalance : null;
 }

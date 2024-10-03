@@ -1,9 +1,10 @@
 import type { SqlClient, StoredWhitelistRelations } from "./types";
 import { globalClient } from "./db";
+import type { RawAddressString } from "starton-periphery";
 
 export async function storeWhitelistRelation(
     tokenLaunchAddress: string,
-    callerAddress: string,
+    callerAddress: RawAddressString,
     client?: SqlClient
 ): Promise<StoredWhitelistRelations | null> {
     const res = await (client ?? globalClient)<StoredWhitelistRelations[]>`

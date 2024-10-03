@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { QuestionIcon, StarIcon } from "@/icons";
 
 export const Info = () => {
-  const t = useTranslations("Quests.header");
+  const t = useTranslations("Tasks.header");
 
   return (
     <Grid 

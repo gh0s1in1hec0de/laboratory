@@ -9,7 +9,7 @@ export function Balance() {
     balance, 
     error 
   } = useTicketBalance();
-  const t = useTranslations("Quests.header");
+  const t = useTranslations("Tasks.header");
 
   return (
     <Label 

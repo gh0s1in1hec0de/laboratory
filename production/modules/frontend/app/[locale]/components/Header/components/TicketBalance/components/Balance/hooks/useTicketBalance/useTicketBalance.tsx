@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { userService } from "@/services";
 
 export function useTicketBalance() {
-  const [balance, setBalance] = useState<number>();
+  const [balance, setBalance] = useState<number>(0);
   const [error, setError] = useState<string>("");
 
   useEffect(() => {

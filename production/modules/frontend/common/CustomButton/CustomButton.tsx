@@ -1,6 +1,6 @@
 import { Button } from "@headlessui/react";
 import styles from "./CustomButton.module.scss";
-import { ButtonBackground, CustomButtonProps } from "./types";
+import { ButtonBackground, ButtonBorderColor, CustomButtonProps } from "./types";
 import { classNames } from "@/utils";
 import { Fragment } from "react";
 
@@ -14,6 +14,7 @@ export function CustomButton({
   className,
   padding,
   borderRadius = 10,
+  borderColor = ButtonBorderColor.BorderTransparent,
   addHover = true,
 }: CustomButtonProps) {
 
@@ -28,7 +29,7 @@ export function CustomButton({
           onClick={onClick}
           style={{ 
             padding: padding,
-            borderRadius: borderRadius
+            borderRadius: borderRadius,
           }}
           className={classNames(
             styles.button,
@@ -37,7 +38,7 @@ export function CustomButton({
               [styles.fullWidth]: fullWidth,
               [styles.disabled]: disabled,
             },
-            [styles[background], className],
+            [styles[background], styles[borderColor], className],
             // !hover && !active && "bg-sky-600",
             // hover && !active && "bg-sky-500",
             // active && "bg-sky-700"

@@ -15,7 +15,7 @@ export async function getTasks(staged: string, client?: SqlClient): Promise<Stor
     return res.length ? res : null;
 }
 
-export async function getUsersTasksRelation(
+export async function getUsersTasksRelations(
     address: RawAddressString,
     client?: SqlClient
 ): Promise<Omit<StoredUsersTasksRelations, "callerAddress">[] | null> {
@@ -30,13 +30,13 @@ export async function getUsersTasksRelation(
 }
 
 export async function storeUserTaskRelations(
-    userAddress: string,
+    callerAddress: RawAddressString,
     taskId: string,
     client?: SqlClient
 ): Promise<StoredUsersTasksRelations | null> {
     const res = await (client ?? globalClient)<StoredUsersTasksRelations[]>`
         INSERT INTO users_tasks_relations (caller_address, task_id)
-        VALUES (${userAddress}, ${taskId})
+        VALUES (${callerAddress}, ${taskId})
         ON CONFLICT DO NOTHING
         RETURNING 1
     `;

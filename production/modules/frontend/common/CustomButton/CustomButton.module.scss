@@ -2,7 +2,7 @@
 	border: none;
   cursor: pointer;
   outline: none; 
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -45,4 +45,16 @@
   &.hover {
     background-color: var(--skeleton-color);
   }
+}
+
+.borderOrange {
+  border: 1px solid var(--orange-regular);
+}
+
+.borderGray {
+  border: 1px solid var(--gray-dark);
+}
+
+.borderTransparent {
+  border: none;
 }

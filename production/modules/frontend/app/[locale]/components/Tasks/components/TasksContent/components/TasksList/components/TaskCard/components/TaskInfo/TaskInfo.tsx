@@ -1,10 +1,13 @@
-import { QuestInfoProps } from "./types";
+import { TaskInfoProps } from "./types";
 import { Label } from "@/common/Label";
 import { ArrowIcon, StarIcon, TicketIcon } from "@/icons/quests";
 import Grid from "@mui/material/Grid2";
-import styles from "./QuestInfo.module.scss";
+import styles from "./TaskInfo.module.scss";
+import { useTranslations } from "next-intl";
 
-export function QuestInfo({ title, completed, reward, open, disabled }: QuestInfoProps) {
+export function TaskInfo({ title, completed, reward, open, disabled }: TaskInfoProps) {
+  const t = useTranslations("Tasks.content");
+
   return (
     <Grid 
       container
@@ -23,10 +26,9 @@ export function QuestInfo({ title, completed, reward, open, disabled }: QuestInf
 
         <Grid container gap={1} alignItems="center">
           <Label 
-            label={completed ? "Done" : "Not Done"} 
+            label={completed ? t("done") : t("notDone")} 
             variantSize="regular14" 
             variantColor={completed ? "green" : "orange"}
-            // variantColor="orange"
             offUserSelect
             disabled={disabled}
           />
@@ -34,7 +36,7 @@ export function QuestInfo({ title, completed, reward, open, disabled }: QuestInf
           <StarIcon />
 
           <Label 
-            label={`reward ${reward} ticket`} 
+            label={`${t("reward")} ${reward} ${t("ticket")}`} 
             variantSize="regular14" 
             variantColor="gray"
             offUserSelect

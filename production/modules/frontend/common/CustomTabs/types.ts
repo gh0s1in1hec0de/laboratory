@@ -1,6 +1,40 @@
-import { ReactNode } from "react";
+import { ButtonBackground, ButtonBorderColor } from "../CustomButton";
+import { LabelColors } from "../Label";
 
-export interface CustomTabsProps {
-  tabLabels: string[];
-  children?: ReactNode;
+export enum CustomTabsVariant {
+  DEFAULT = "default",
+  TRANSPARENT_OUTLINE = "transparentOutline",
 }
+
+export interface Tab<T> {
+  label: string;
+  value: T;
+}
+
+export interface CustomTabsProps<T> {
+  selectedTab: T;
+  onChange: (tab: T) => void;
+  disabled: boolean;
+  tabs: Tab<T>[];
+  variant?: `${CustomTabsVariant}`;
+}
+
+
+interface ButtonConfig {
+  background: (selected: boolean) => `${ButtonBackground}`;
+  borderColor: (selected: boolean) => `${ButtonBorderColor}`;
+  addHover: (selected: boolean, disabled: boolean) => boolean;
+}
+
+interface LabelConfig {
+  variantColor: (selected: boolean) => `${LabelColors}`;
+}
+
+interface TabVariantConfig {
+  button: ButtonConfig;
+  label: LabelConfig;
+}
+
+export type TabVariantsConfigMap = {
+  [key in `${CustomTabsVariant}`]: TabVariantConfig;
+};

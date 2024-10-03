@@ -1,1 +1,0 @@
-export { TabLabel } from "./TabLabel";

@@ -2,6 +2,7 @@ import { getMenuKeyboard, getReplyText } from "../constants";
 import type { CallbackQueryContext } from "grammy";
 import type { MyContext } from "../index";
 import { Address } from "@ton/core";
+import type { RawAddressString } from "starton-periphery";
 
 export async function handleEnterConversationCallback(ctx: CallbackQueryContext<MyContext>, conversationName: string): Promise<void> {
     await ctx.answerCallbackQuery();

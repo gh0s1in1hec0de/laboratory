@@ -5,7 +5,7 @@ import { TasksContent } from "./components/TasksContent";
 import { TonProvider } from "@/providers/ton";
 
 export function Tasks() {
-  const t = useTranslations("Quests.content");
+  const t = useTranslations("Tasks.content");
 
   return (
     <Grid 
