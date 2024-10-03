@@ -129,3 +129,26 @@ CREATE TRIGGER trigger_update_launch_balance_public
     FOR EACH ROW
     WHEN (NEW.action_type IN ('public_buy', 'public_refund', 'total_refund'))
 EXECUTE FUNCTION update_launch_balance_public();
+
+CREATE OR REPLACE FUNCTION notify_user_balance_error()
+    RETURNS trigger AS
+$$
+BEGIN
+    PERFORM pg_notify(
+            'user_balance_error',
+            json_build_object(
+                    'id', NEW.id,
+                    'action', NEW.action,
+                    'details', NEW.details
+            )::text
+            );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER after_insert_user_balance_error
+    AFTER INSERT
+    ON user_balance_errors
+    FOR EACH ROW
+EXECUTE FUNCTION notify_user_balance_error();
+

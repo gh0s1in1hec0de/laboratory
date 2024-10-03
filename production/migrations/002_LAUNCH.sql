@@ -12,7 +12,7 @@ CREATE TABLE token_launches
     timings                      JSONB             NOT NULL,
     -- Time of transaction, where actual launch was created
     created_at                   unix_time_seconds NOT NULL,
-    -- Both null by default
+    -- All null by default
     is_successful                BOOLEAN,
     post_deploy_enrollment_stats JSONB,
     dex_data                     JSONB
@@ -58,6 +58,17 @@ CREATE TABLE user_actions
         (action_type = 'public_refund' AND public_tons > 0 AND jettons > 0 AND whitelist_tons = 0)
             OR (action_type != 'public_refund')
         )
+);
+
+-- Separate table for claims with actual claimed jettons value
+-- It is user by dispenser to count reward after
+CREATE TABLE user_claims
+(
+    token_launch  address NOT NULL REFERENCES token_launches (address),
+    actor         address NOT NULL REFERENCES callers (address),
+    jetton_amount coins   NOT NULL CHECK ( jetton_amount > 0 ),
+    -- As user is able to claim jettons only once for one launch
+    UNIQUE (actor, token_launch)
 );
 
 -- Balances can't be negative by design
