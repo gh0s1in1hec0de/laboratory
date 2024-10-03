@@ -11,7 +11,8 @@ function createServer() {
     const {
         server: {
             swagger: { title, version },
-            port
+            port,
+            frontendUrl
         }
     } = getConfig();
 
@@ -20,7 +21,10 @@ function createServer() {
             title: title,
             version: version
         })))
-        .use(cors())
+        .use(cors({
+            origin: frontendUrl,
+            credentials: true
+        }))
         .use(UserRoutes())
         .onError((err) => {
             logger().error(err);

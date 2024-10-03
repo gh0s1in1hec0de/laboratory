@@ -19,6 +19,7 @@ type Config = {
             title: string,
             version: string,
         },
+        frontendUrl: string,
     },
     logger: {
         bot_token: string,
