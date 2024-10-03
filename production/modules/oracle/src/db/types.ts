@@ -57,6 +57,7 @@ export type StoredTokenLaunch = {
 
     metadata: TokenMetadata,
     timings: TokenLaunchTimings,
+    totalSupply: Coins,
     createdAt: UnixTimeSeconds,
 
     isSuccessful: boolean | null,
@@ -93,6 +94,12 @@ export type UserAction = {
     lt: LamportTime,
     timestamp: UnixTimeSeconds,
     queryId: bigint,
+};
+
+export type UserClaim = {
+    tokenLaunch: RawAddressString,
+    actor: RawAddressString,
+    jettonAmount: Coins,
 };
 
 export type StoredUserBalance = {

@@ -46,7 +46,7 @@ export async function getTokenLaunchById(id: number, client?: SqlClient): Promis
 }
 
 export async function storeTokenLaunch(
-    { identifier, address, creator, version, metadata, timings, createdAt }:
+    { identifier, address, creator, version, metadata, timings, totalSupply, createdAt }:
         Omit<
             StoredTokenLaunch,
             "id" | "isSuccessful" | "postDeployEnrollmentStats" | "dexData"
@@ -55,8 +55,8 @@ export async function storeTokenLaunch(
 ): Promise<void> {
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
-        INSERT INTO token_launches (identifier, address, creator, version, metadata, timings, created_at)
-        VALUES (${identifier}, ${address}, ${creator}, ${version}, ${metadata}, ${timings}, ${createdAt})
+        INSERT INTO token_launches (identifier, address, creator, version, metadata, timings, total_supply, created_at)
+        VALUES (${identifier}, ${address}, ${creator}, ${version}, ${metadata}, ${timings}, ${totalSupply} ${createdAt})
         RETURNING 1;
     `;
     if (res.length !== 1) logger().warn(`exactly 1 column must be created, got: ${res}`);

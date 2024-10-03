@@ -90,3 +90,14 @@ export function parseTimings(stack: TupleReader, pollingDuration: number = 2 * 8
         endTime,
     };
 }
+
+export function parseJettonTransfer(purifiedMessageBody: Slice) {
+    return {
+        jettonAmount: purifiedMessageBody.loadCoins(),
+        to: purifiedMessageBody.loadAddress(),
+        response: purifiedMessageBody.loadAddress(),
+        customPayload: purifiedMessageBody.loadMaybeRef(),
+        forwardTons: purifiedMessageBody.loadCoins(),
+        forwardPayload: purifiedMessageBody.loadMaybeRef()
+    }
+}

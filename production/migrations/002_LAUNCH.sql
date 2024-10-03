@@ -10,6 +10,7 @@ CREATE TABLE token_launches
     -- Original json, not one with url field only
     metadata                     JSONB             NOT NULL,
     timings                      JSONB             NOT NULL,
+    total_supply                 coins             NOT NULL,
     -- Time of transaction, where actual launch was created
     created_at                   unix_time_seconds NOT NULL,
     -- All null by default

@@ -17,8 +17,9 @@ import {
     parseMoneyFlows,
     jettonFromNano,
     UserVaultOps,
-    parseTimings,
+    parseTimings, JettonOps, parseJettonTransfer,
 } from "starton-periphery";
+import { storeUserAction, storeUserClaim } from "../db";
 
 export async function spawnNewLaunchesScanners(scanFrom?: number) {
     let timeUpdate = scanFrom;
@@ -132,7 +133,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                     if (preloadedOp === 0) {
                         const comment = body.loadStringTail();
                         switch (comment) {
-                            case "^^!": {
+                            case "shift!": {
                                 const timingsResponse = await balancedTonClient.execute(
                                     c => c.runMethod(Address.parse(launch.address), "get_sale_timings", []), true
                                 );
@@ -159,24 +160,42 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
 
                     const { msgBodyData, op, queryId } = await loadOpAndQueryId(originalBody);
                     // Then we'll look for following operation: balanceUpdate
-                    if (op !== UserVaultOps.balanceUpdate) continue;
-                    const { mode, tons, futureJettons } = parseBalanceUpdate(msgBodyData);
-                    if (![BalanceUpdateMode.PublicDeposit, BalanceUpdateMode.WhitelistDeposit].includes(mode)) continue;
-                    logger().debug(`launch ${launch.address}: new operation ${op} - [${fromNano(tons)}; ${jettonFromNano(futureJettons)}]`);
+                    if (op === UserVaultOps.balanceUpdate) {
+                        const { mode, tons, futureJettons } = parseBalanceUpdate(msgBodyData);
+                        if (![BalanceUpdateMode.PublicDeposit, BalanceUpdateMode.WhitelistDeposit].includes(mode)) continue;
+                        logger().debug(`launch ${launch.address}: new operation ${op} - [${fromNano(tons)}; ${jettonFromNano(futureJettons)}]`);
 
-                    const [whitelistTons, publicTons] =
-                        mode === BalanceUpdateMode.WhitelistDeposit ? [tons, 0n] : [0n, tons];
-                    userActions.push({
-                        actor: inMsgSender.toRawString(),
-                        tokenLaunch: launch.address,
-                        actionType: db.balanceUpdateModeToUserActionType[mode],
-                        whitelistTons,
-                        publicTons,
-                        jettons: futureJettons,
-                        lt,
-                        timestamp: tx.now,
-                        queryId
-                    } as db.UserAction);
+                        const [whitelistTons, publicTons] =
+                            mode === BalanceUpdateMode.WhitelistDeposit ? [tons, 0n] : [0n, tons];
+                        userActions.push({
+                            actor: inMsgSender.toRawString(),
+                            tokenLaunch: launch.address,
+                            actionType: db.balanceUpdateModeToUserActionType[mode],
+                            whitelistTons,
+                            publicTons,
+                            jettons: futureJettons,
+                            lt,
+                            timestamp: tx.now,
+                            queryId
+                        } as db.UserAction);
+                    }
+                    if (op === JettonOps.Transfer) {
+                        const { jettonAmount, to, forwardPayload } = parseJettonTransfer(msgBodyData);
+                        if (!forwardPayload) continue;
+                        try {
+                            const cs = forwardPayload.beginParse();
+                            const comment = cs.loadStringTail();
+                            if (comment !== "claim") continue;
+                            logger().debug(`launch ${launch.address}: claim transfer to ${to.toRawString()} for ${jettonFromNano(jettonAmount)} jettons`);
+                            await storeUserClaim({
+                                tokenLaunch: launch.address,
+                                actor: to.toRawString(),
+                                jettonAmount
+                            });
+                        } catch (e) {
+                            logger().error(`failed to record maybe? claim for [${to.toRawString()}; launch ${launch.address}]`);
+                        }
+                    }
                 }
                 newActionsChunk.push(...userActions);
             }

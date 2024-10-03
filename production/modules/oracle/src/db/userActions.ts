@@ -1,4 +1,4 @@
-import type { UserActionType, SqlClient, UserAction } from "./types";
+import type { UserActionType, SqlClient, UserAction, UserClaim } from "./types";
 import type { RawAddressString, UnixTimeSeconds } from "starton-periphery";
 import { globalClient } from "./db";
 import { logger } from "../logger";
@@ -26,7 +26,7 @@ export async function storeUserAction(
         ON CONFLICT DO NOTHING
         RETURNING 1;
     `;
-    if (res.length === 0) logger().error(`looks like action for {actor}[${new Date(timestamp)}] already exists`);
+    if (res.length === 0) logger().error(`looks like action for ${actor}[${new Date(timestamp)}] already exists`);
 }
 
 // Returns `null` to show that nothing was found the explicit way
@@ -47,4 +47,22 @@ export async function getCallerActions(
             ${after ? c`AND timestamp > ${after}` : c``};
     `;
     return res.length ? res : null;
+}
+
+export async function storeUserClaim(
+    {
+        tokenLaunch,
+        actor,
+        jettonAmount
+    }: UserClaim,
+    client?: SqlClient
+): Promise<void> {
+    const res = await (client ?? globalClient)`
+        INSERT INTO user_claims
+            (token_launch, actor, jetton_amount)
+        VALUES (${tokenLaunch}, ${actor}, ${jettonAmount})
+        ON CONFLICT DO NOTHING
+        RETURNING 1;
+    `;
+    if (res.length === 0) logger().error(`looks like claim for [actor ${actor}; launch ${tokenLaunch}] already exists`);
 }

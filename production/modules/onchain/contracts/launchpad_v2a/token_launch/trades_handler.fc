@@ -86,7 +86,7 @@
     send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     if (remainings > 0) {
         ;; We use simple transfer here, as it also solves a problem of unique sign to oracle to refresh timings
-        cell excesses = simple_transfer(initiator, remainings, "^^!");
+        cell excesses = simple_transfer(initiator, remainings, "shift!");
         send_raw_message(excesses, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     }
 }
@@ -228,7 +228,7 @@
         fut_jet_wallet_address,
         recipient,
         get_compute_fee(MY_WORKCHAIN, 350),
-        null()
+        begin_cell().store_slice("claim").end_cell()
     );
     send_raw_message(transfer_msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }

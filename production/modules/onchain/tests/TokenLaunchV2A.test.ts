@@ -659,7 +659,7 @@ describe("V2A", () => {
                 op: 0x0,
                 to: consumer.address,
                 success: true,
-                body: beginCell().storeUint(0, 32).storeBuffer(Buffer.from("^^!")).endCell(),
+                body: beginCell().storeUint(0, 32).storeStringTail("shift!").endCell(),
                 value: (v) => (v ?? 0n) > toNano("3")
             });
             const newTimings = await sampleTokenLaunch.getSaleTimings();
@@ -1040,12 +1040,13 @@ describe("V2A", () => {
             const { wlTonBalance, jettonBalance } = await consumerVault.getVaultData();
             const moneyFlows = await sampleTokenLaunch.getMoneyFlows();
             const config = await sampleTokenLaunch.getConfig();
+            const queryId = 1n;
 
             const expectedJettonAmount = getApproximateClaimAmount(
                 moneyFlows, config, { wlTons: wlTonBalance ?? 0n, jettons: jettonBalance ?? 0n }
             );
             const claimRequestResult = await sampleTokenLaunch.sendJettonClaimRequest({
-                queryId: 1n,
+                queryId,
                 value: toNano("0.1"),
                 via: consumer.getSender()
             });
@@ -1070,12 +1071,30 @@ describe("V2A", () => {
             expect(claimRequestResult.transactions).toHaveTransaction({
                 op: JettonOps.Transfer,
                 to: tokenLaunchDerivedJettonWallet.address,
-                success: true
+                success: true,
+                body: beginCell()
+                    .storeUint(JettonOps.Transfer, 32)
+                    .storeUint(queryId, 64)
+                    .storeCoins(expectedJettonAmount)
+                    .storeAddress(consumer.address)
+                    .storeAddress(consumer.address)
+                    .storeMaybeRef()
+                    .storeCoins(computeGasFee(gasPrices, 350n))
+                    .storeMaybeRef(beginCell().storeStringTail("claim").endCell())
+                    .endCell()
             });
             const transferNotificationTx = findTransactionRequired(claimRequestResult.transactions, {
                 op: JettonOps.TransferNotification,
                 to: consumer.address,
-                success: true
+                success: true,
+                body: beginCell()
+                    .storeUint(JettonOps.TransferNotification, 32)
+                    .storeUint(queryId, 64)
+                    .storeCoins(expectedJettonAmount)
+                    .storeAddress(sampleTokenLaunch.address)
+                    .storeBit(true)
+                    .storeStringRefTail("claim")
+                    .endCell()
             });
             printTxGasStats("Transfer notification transaction: ", transferNotificationTx);
             const totalFees = claimRequestComputeFee
