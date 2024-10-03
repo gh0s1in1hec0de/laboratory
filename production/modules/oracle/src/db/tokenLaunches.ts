@@ -56,7 +56,7 @@ export async function storeTokenLaunch(
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
         INSERT INTO token_launches (identifier, address, creator, version, metadata, timings, total_supply, created_at)
-        VALUES (${identifier}, ${address}, ${creator}, ${version}, ${metadata}, ${timings}, ${totalSupply} ${createdAt})
+        VALUES (${identifier}, ${address}, ${creator}, ${version}, ${metadata}, ${timings}, ${totalSupply}, ${createdAt})
         RETURNING 1;
     `;
     if (res.length !== 1) logger().warn(`exactly 1 column must be created, got: ${res}`);

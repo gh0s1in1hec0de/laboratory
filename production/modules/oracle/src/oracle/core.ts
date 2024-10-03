@@ -49,6 +49,7 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
                     /* TODO
                         Fetch metadata by url inside
                         Build name from ticker + token */
+                    console.log(msg.info.createdAt, parsedStateInit.saleConfig.futJetTotalSupply)
                     await db.storeTokenLaunch({
                         identifier: `dummy${Date.now()}`,
                         address,

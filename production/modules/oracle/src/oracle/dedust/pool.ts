@@ -83,7 +83,6 @@ export async function createPoolForJetton(
                 await delay(delayTime);
             } catch (e) {
                 logger().warn(`failed to create vault for ${jetton.masterAddress} (launch ${launchAddress}) with error: `, e);
-                console.error(e);
                 await delay(20);
             }
             iterationNumber += 1;

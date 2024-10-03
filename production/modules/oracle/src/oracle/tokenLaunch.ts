@@ -86,6 +86,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
 
                 const { msgBodyData, op, queryId } = await loadOpAndQueryId(inMsgBody);
                 if ([TokensLaunchOps.JettonClaimConfirmation, TokensLaunchOps.RefundConfirmation].includes(op)) {
+                    console.log("before")
                     const {
                         whitelistTons,
                         publicTons,
@@ -93,6 +94,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                         recipient,
                         mode
                     } = parseRefundOrClaim(op, msgBodyData);
+                    console.log("after")
                     logger().debug(`launch ${launch.address}: new operation ${op}:${mode} - [${fromNano(whitelistTons)}; ${fromNano(publicTons)}; ${jettonFromNano(futureJettons)}]`);
                     userActions.push({
                         actor: recipient,
@@ -185,6 +187,8 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                         try {
                             const cs = forwardPayload.beginParse();
                             const comment = cs.loadStringTail();
+                            cs.endParse();
+
                             if (comment !== "claim") continue;
                             logger().debug(`launch ${launch.address}: claim transfer to ${to.toRawString()} for ${jettonFromNano(jettonAmount)} jettons`);
                             await storeUserClaim({
@@ -228,6 +232,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
         } catch (e) {
             logger().error(`failed to handle launch ${launch.address} update with general error: `, e);
             await delay(balancedTonClient.delayValue() / 2);
+            console.log(e);
         }
     }
 }

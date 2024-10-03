@@ -6,10 +6,10 @@ export async function run(provider: NetworkProvider) {
     const ui = provider.ui();
 
     try {
-        const tokenLaunch = provider.open(TokenLaunchV2A.createFromAddress(Address.parse("launch address")));
+        const tokenLaunch = provider.open(TokenLaunchV2A.createFromAddress(Address.parse("kQCKPOZZOQO3XMcbARNLfkPji1s_iGxej4qUDjqxAC3C5utC")));
 
         await tokenLaunch.sendJettonClaimRequest({
-            via: provider.sender(), value: toNano("value"), queryId: 0n
+            via: provider.sender(), value: toNano("0.1"), queryId: 0n
         });
 
         ui.write("Transaction sent");

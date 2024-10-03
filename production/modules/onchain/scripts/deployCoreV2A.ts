@@ -11,7 +11,7 @@ export async function run(provider: NetworkProvider) {
     const jettonMasterCode = await compile("JettonMaster");
     const jettonWalletCode = await compile("JettonWallet");
 
-    const chief = Address.parse("0QBK4zTJLd16yMJmJVrtheEZFXQUPtocrA1OGTApws0GwJub");
+    const chief = Address.parse("0QCkmYN_RSz4qhhHEV3ralAbUfssRM59lqxbXeh5W5oCrYHO");
 
     // The app's code is its configuration - shout out to suckless.org folks
     try {

@@ -260,8 +260,8 @@ async function handleChiefUpdates() {
                         }
                     );
                 } catch (e) {
-                    logger().warn(`jetton transfer from ${originalSender} with value ${jettonFromNano(jettonAmount)} and without shares (or an error for right one)`, e);
-                    console.error(e);
+                    // Expected to be thrown at LPs enrollment
+                    logger().warn(`jetton transfer from ${originalSender} with value ${jettonFromNano(jettonAmount)} and without shares (or an error for correct one)`, e);
                 }
             }
         }

@@ -37,7 +37,7 @@ export function parseRefundOrClaim(op: TokensLaunchOps, purifiedMessageBody: Sli
     const publicTons = purifiedMessageBody.loadCoins();
     const futureJettons = purifiedMessageBody.loadCoins();
     const recipient = purifiedMessageBody.loadAddress().toRawString();
-    const mode = op === TokensLaunchOps.ClaimOpn ? undefined : purifiedMessageBody.loadUint(4);
+    const mode = op === TokensLaunchOps.JettonClaimConfirmation ? undefined : purifiedMessageBody.loadUint(4);
     return { whitelistTons, publicTons, futureJettons, recipient, mode };
 }
 
