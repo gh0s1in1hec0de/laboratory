@@ -22,9 +22,9 @@ export async function chiefScanning() {
     while (true) {
         try {
             await validateEndedPendingLaunches();
-            await delay(5);
+            await delay(7.5);
             await createPoolsForNewJettons();
-            await delay(5);
+            await delay(7.5);
             await handleChiefUpdates();
         } catch (e) {
             logger().error("interplanetary error on chief's side: ", e);
@@ -39,7 +39,7 @@ async function validateEndedPendingLaunches() {
         const waitingForJettonLaunches = await db.getTokenLaunchesByCategories(db.EndedLaunchesCategories.WaitingForJetton) ?? [];
         if (!(pendingLaunches.length || waitingForJettonLaunches.length)) {
             logger().info("no pending/waiting for jettons launches found");
-            await delay(10);
+            await delay(15);
             return;
         }
 
@@ -122,7 +122,7 @@ async function createPoolsForNewJettons() {
     const waitingForPoolLaunches = await db.getTokenLaunchesByCategories(db.EndedLaunchesCategories.WaitingForPool);
     if (!waitingForPoolLaunches) {
         logger().info("no waiting for pool launches found");
-        await delay(10);
+        await delay(15);
         return;
     }
     const queryId = Math.floor(Date.now() / 1000);
@@ -204,7 +204,7 @@ async function handleChiefUpdates() {
         const newTxs = await retrieveAllUnknownTransactions(chiefAddress, currentHeight);
         if (!newTxs) {
             logger().info("updates for chief not found");
-            await delay(10);
+            await delay(15);
             return;
         }
         for (const tx of newTxs) {

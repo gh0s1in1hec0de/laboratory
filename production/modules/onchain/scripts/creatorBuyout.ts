@@ -8,7 +8,7 @@ export async function run(provider: NetworkProvider) {
     try {
         const tokenLaunch = provider.open(
             TokenLaunchV2A.createFromAddress(
-                Address.parse("kQCKPOZZOQO3XMcbARNLfkPji1s_iGxej4qUDjqxAC3C5utC")
+                Address.parse("kQDjycaYALIhm9jgUI6BkrkJ419TsOWxYntMN9dKJ50yu6gW")
             )
         );
 

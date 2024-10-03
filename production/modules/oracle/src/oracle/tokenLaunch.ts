@@ -19,7 +19,6 @@ import {
     UserVaultOps,
     parseTimings, JettonOps, parseJettonTransfer,
 } from "starton-periphery";
-import { storeUserAction, storeUserClaim } from "../db";
 
 export async function spawnNewLaunchesScanners(scanFrom?: number) {
     let timeUpdate = scanFrom;
@@ -86,7 +85,6 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
 
                 const { msgBodyData, op, queryId } = await loadOpAndQueryId(inMsgBody);
                 if ([TokensLaunchOps.JettonClaimConfirmation, TokensLaunchOps.RefundConfirmation].includes(op)) {
-                    console.log("before")
                     const {
                         whitelistTons,
                         publicTons,
@@ -94,7 +92,6 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                         recipient,
                         mode
                     } = parseRefundOrClaim(op, msgBodyData);
-                    console.log("after")
                     logger().debug(`launch ${launch.address}: new operation ${op}:${mode} - [${fromNano(whitelistTons)}; ${fromNano(publicTons)}; ${jettonFromNano(futureJettons)}]`);
                     userActions.push({
                         actor: recipient,
@@ -191,7 +188,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
 
                             if (comment !== "claim") continue;
                             logger().debug(`launch ${launch.address}: claim transfer to ${to.toRawString()} for ${jettonFromNano(jettonAmount)} jettons`);
-                            await storeUserClaim({
+                            await db.storeUserClaim({
                                 tokenLaunch: launch.address,
                                 actor: to.toRawString(),
                                 jettonAmount

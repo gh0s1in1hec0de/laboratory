@@ -175,11 +175,9 @@
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::chief_address));
         throw_unless(error::balance_lack, this::operational_needs > 0);
 
-        raw_reserve(attached_value + this::operational_needs, RESERVE_ALL_BUT_AMOUNT);
         this::operational_needs = 0;
-
-        cell transfer_msg = simple_transfer(this::const::chief_address, 0, "opn");
-        send_raw_message(transfer_msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+        cell transfer_msg = simple_transfer(this::const::chief_address, this::operational_needs, "opn");
+        send_raw_message(transfer_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
         save_data();
         return ();
     }

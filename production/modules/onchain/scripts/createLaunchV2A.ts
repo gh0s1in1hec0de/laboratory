@@ -15,7 +15,7 @@ export async function run(provider: NetworkProvider) {
     };
     const core = provider.open(
         CoreV2A.createFromAddress(
-            Address.parse("kQBQ4brYok-qvpWfmP_J_-Rrl-ztO_Bm1CNh-FKbAfkDlkeY")
+            Address.parse("kQDJi05w0K6He5sXuyIHVstOTU3P4EVbSKtBWZDTZOQ_348O")
         )
     );
     await core.sendCreateLaunch({ via: provider.sender(), value: toNano("1"), queryId: 0n }, params);

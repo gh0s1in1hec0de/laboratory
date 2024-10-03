@@ -55,8 +55,6 @@ export class BalancedTonClient {
         if (this.currentKeyIndex < this.keys.length - 1) this.currentKeyIndex += 1;
         else this.currentKeyIndex = 0;
         const apiKey = this.keys[this.currentKeyIndex];
-
-        logger().debug(` - tonclient apikey for operation: ${apiKey}`);
         return new TonClient({
             endpoint: `https://${currentNetwork() === Network.Testnet ? "testnet." : ""}toncenter.com/api/v2/jsonRPC`,
             apiKey,
