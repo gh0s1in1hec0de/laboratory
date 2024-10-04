@@ -8,11 +8,11 @@ server:
   frontend_url: https://quick-hagfish-curious.ngrok-free.app
 
 bot:
-  token: "7365089241:AAFaCGvuAUHDIrkiCkOg6foMpjDVmgAY0CU"
-  admins: [ 941212988, 483149881 ]
+  token: ""
+  admins: [ 1111111111, 1111111111 ]
 
 logger:
-  bot_token: "7535360860:AAFClh-9FhVd4zgbNKE1pxABvj_xE3EA9DE"
-  chat_id: -1002199101106
+  bot_token: ""
+  chat_id: -1111111111111
   dev_thread_id: 2
   prod_thread_id: 4

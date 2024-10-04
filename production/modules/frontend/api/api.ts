@@ -3,7 +3,7 @@ import { localStorageWrapper } from "@/utils";
 import axios from "axios";
 
 export const baseService = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_BACKEND_DEV}/api`,
+  baseURL: `${process.env.NEXT_PUBLIC_BACKEND_PROD}/api`,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
