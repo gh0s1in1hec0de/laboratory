@@ -1,42 +1,24 @@
-# Stage 1: Dependencies
-FROM oven/bun:latest AS deps
+# Use the Bun base image
+FROM oven/bun:latest
 
+# Set the working directory
 WORKDIR /app
 
-# Copy the entire project directory
+# Copy the entire project to the container
 COPY . .
 
-# Install dependencies (including workspace packages)
+# Install the dependencies for the entire workspace
 RUN bun install
 
-# Stage 2: Build the Next.js app
-FROM oven/bun:latest AS builder
-
-WORKDIR /app
-
-# Use the dependencies from the first stage
-COPY --from=deps /app/node_modules ./node_modules
-
-# Build the frontend
+# Move to the frontend directory and run the build
 WORKDIR /app/modules/frontend
-CMD ["bun", "run", "build", "--cwd", "modules/frontend"]
+RUN bun run build
 
-# Stage 3: Final runner stage
-FROM oven/bun:latest AS runner
-
-WORKDIR /app
-
-# Copy the necessary build artifacts from the builder stage
-COPY --from=builder /app/modules/frontend/.next ./.next
-COPY --from=builder /app/modules/frontend/public ./public
-COPY --from=builder /app/modules/frontend/next.config.js ./next.config.js
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/modules/frontend/package.json ./package.json
-
-# Expose the Next.js port
+# Expose the Next.js app port
 EXPOSE 3000
 
-# Command to start the Next.js app in production mode
+# Start the Next.js app
 CMD ["bun", "run", "start", "--cwd", "modules/frontend"]
+
 
 
