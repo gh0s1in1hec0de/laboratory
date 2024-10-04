@@ -35,7 +35,7 @@ docker build -t postgres-cron:latest --build-arg POSTGRES_DB=example_db_name -f 
 After the image has been built, run the following command to start the container:
 ```bash
 docker run -d \
---name st-database \
+--name db \
 --network starlink \
 -e POSTGRES_DB=example_db \
 -e POSTGRES_USER=example_user \
@@ -48,12 +48,12 @@ postgres-cron:latest
 ### Step 4: Run any services
 To run any service container correctly, we need to provide our custom network as an argument:
 ```bash
-docker run -d \
-        --name manager-service \
-        --network starlink \
-        -v $(pwd)/modules/logs[manager]:/app/modules/logs[manager] \
-        -v $(pwd)/modules/manager/config.yaml:/app/modules/manager/config.yaml \
-        manager:latest
+service="manager/oracle/etc" docker run -d \
+  --name st-${service} \
+  --network starlink \
+  -v $(pwd)/modules/logs_${service}:/app/modules/logs_${service} \
+  -v $(pwd)/modules/${service}/config.yaml:/app/modules/${service}/config.yaml \
+  ${service}:latest
 ```
 We also create volumes for logging and dynamic config parsing here.
 
@@ -64,41 +64,33 @@ We can verify that both containers are connected to the `starlink` by inspecting
 ```bash
 docker network inspect starlink
 ```
-This command will show us a list of containers attached to the network. We should see both `database` and `manager-service` listed.
+This command will show us a list of containers attached to the network. We should see both `database` and `st-manager` listed.
 
 #### 2. Test the Connection:
 
-We can test the connection from the `manager-service` to the PostgreSQL container by running:
+We can test the connection from the `st-manager` to the PostgreSQL container by running:
 
 ```bash
-docker exec -it manager-service bash
+docker exec -it st-manager bash
 psql -h database -U example_user -d example_db_name
 ```
 If We’ve set an alias (e.g., db), We can connect using that as well:
 ```bash
 docker network connect --alias db starlink database
 ```
-Now, inside the `manager-service`, We can use the alias db to connect:
+Now, inside the `st-manager`, We can use the alias db to connect:
 ```bash
 psql -h db -U example_user -d example_db_name
 ```
 
-### Bonus 
-To save time here is unified command for all the services - just set the name:
+### P.S. 
+
+Fishell version looks like this:
 ```bash
-service="manager" docker run -d \
-  --name ${service}-service \
-  --network starlink \
-  -v $(pwd)/modules/logs[${service}]:/app/modules/logs[${service}] \
-  -v $(pwd)/modules/${service}/config.yaml:/app/modules/${service}/config.yaml \
-  ${service}:latest
-```
-P.S. fishell version looks like this:
-```bash
-service="manager" docker run -d \
+service="manager/oracle/etc" docker run -d \
         --name {$service}-service \
         --network starlink \
-        -v $(pwd)/modules/logs[{$service}]:/app/modules/logs[{$service}] \
+        -v $(pwd)/modules/logs_{$service}:/app/modules/logs_{$service} \
         -v $(pwd)/modules/{$service}/config.yaml:/app/modules/{$service}/config.yaml \
         {$service}:latest
 ```

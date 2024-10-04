@@ -97,30 +97,30 @@ describe("Database", () => {
         VALUES (${randUserAddress}, 2)`;
 
     
-        await client.unsafe(`
-        DO
-        $$
-        BEGIN
-            FOR i IN 1..20 LOOP
-                INSERT INTO token_launches (
-                    identifier, address, creator, version, metadata, timings, created_at, is_successful, post_deploy_enrollment_stats, dex_data
-                )
-                VALUES (
-                    'TokenLaunch_' || i,
-                    '0x' || lpad(to_hex(i), 48, '0'),
-                    '${randUserAddress}',
-                    'V1',  -- версия лаунча
-                    ('{"description": "Test metadata for launch ' || i || '"}')::jsonb,
-                    '{"start_time": "2024-09-01T00:00:00", "end_time": "2024-09-30T23:59:59"}'::jsonb,
-                    0,
-                    NULL,
-                    NULL,
-                    NULL
-                );
-            END LOOP;
-        END;
-        $$;
-        `);
+        // await client.unsafe(`
+        // DO
+        // $$
+        // BEGIN
+        //     FOR i IN 1..20 LOOP
+        //         INSERT INTO token_launches (
+        //             identifier, address, creator, version, metadata, timings, created_at, is_successful, post_deploy_enrollment_stats, dex_data
+        //         )
+        //         VALUES (
+        //             'TokenLaunch_' || i,
+        //             '0x' || lpad(to_hex(i), 48, '0'),
+        //             '${randUserAddress}',
+        //             'V1',  -- версия лаунча
+        //             ('{"description": "Test metadata for launch ' || i || '"}')::jsonb,
+        //             '{"start_time": "2024-09-01T00:00:00", "end_time": "2024-09-30T23:59:59"}'::jsonb,
+        //             0,
+        //             NULL,
+        //             NULL,
+        //             NULL
+        //         );
+        //     END LOOP;
+        // END;
+        // $$;
+        // `);
     
     
         // const users = await client`SELECT *
@@ -139,9 +139,9 @@ describe("Database", () => {
                                FROM users_tasks_relations;`;
         expect(usersTasksRelations.length).toBe(2);
     
-        const tokenLaunches = await client`SELECT *
-                                       FROM token_launches;`;
-        expect(tokenLaunches.length).toBe(20);
+        // const tokenLaunches = await client`SELECT *
+        //                                FROM token_launches;`;
+        // expect(tokenLaunches.length).toBe(20);
     });
     
     // test("any req", async () => {

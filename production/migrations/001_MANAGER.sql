@@ -15,7 +15,7 @@ CREATE TABLE callers
 (
     caller_id      SERIAL UNIQUE,
     address        address PRIMARY KEY,
-    invited_by     address REFERENCES callers (address) ON DELETE SET NULL,
+    invited_by     address  REFERENCES callers (address) ON DELETE SET NULL,
     ticket_balance SMALLINT NOT NULL DEFAULT 0
 );
 
@@ -46,12 +46,14 @@ CREATE TABLE users_tasks_relations
 
 -- Create the function to handle the logic
 CREATE OR REPLACE FUNCTION handle_users_tasks_relations_insert()
-    RETURNS TRIGGER AS $$
+    RETURNS TRIGGER AS
+$$
 DECLARE
     task_reward_tickets SMALLINT;
 BEGIN
     BEGIN
-        SELECT t.reward_tickets INTO task_reward_tickets
+        SELECT t.reward_tickets
+        INTO task_reward_tickets
         FROM tasks t
         WHERE t.task_id = NEW.task_id;
 
@@ -66,15 +68,17 @@ BEGIN
 
         RETURN NEW;
 
-    EXCEPTION WHEN OTHERS THEN
-        RAISE EXCEPTION 'Error occurred during ticket balance update: %', SQLERRM;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error occurred during ticket balance update: %', SQLERRM;
     END;
 END;
 $$ LANGUAGE plpgsql;
 
 -- Create the trigger to call the function after insert on users_tasks_relations
 CREATE TRIGGER trg_insert_users_tasks_relations
-    AFTER INSERT ON users_tasks_relations
+    AFTER INSERT
+    ON users_tasks_relations
     FOR EACH ROW
 EXECUTE FUNCTION handle_users_tasks_relations_insert();
 
@@ -82,7 +86,8 @@ EXECUTE FUNCTION handle_users_tasks_relations_insert();
 
 -- Create the function to delete all rows (if you prefer deleting records)
 CREATE OR REPLACE FUNCTION delete_all_rows_from_earnings_per_period()
-    RETURNS VOID AS $$
+    RETURNS VOID AS
+$$
 BEGIN
     DELETE FROM earnings_per_period;
 END;

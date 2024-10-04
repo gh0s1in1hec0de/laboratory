@@ -1,11 +1,9 @@
 node_modules
 postgres-data
-modules/onchain
 
 # We don't need em inside container
 **/**.Dockerfile
 **/docker-compose.yaml
-**/bun.lockb
 
 .git
 **/.gitignore

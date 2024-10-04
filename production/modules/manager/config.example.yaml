@@ -1,6 +1,4 @@
 mode: "dev" # | "prod"
-db:
-  should_migrate: true
 
 server:
   port: 5001

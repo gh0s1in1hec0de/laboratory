@@ -9,6 +9,6 @@ COPY . /app
 RUN rm -f .env && mv .env.docker .env
 
 RUN bun install
-EXPOSE 3001
+EXPOSE 5001
 
 CMD bun run manager
