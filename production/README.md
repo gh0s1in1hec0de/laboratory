@@ -94,3 +94,12 @@ service="manager/oracle/etc" docker run -d \
         -v $(pwd)/modules/{$service}/config.yaml:/app/modules/{$service}/config.yaml \
         {$service}:latest
 ```
+
+```bash
+docker run -d \
+  --name st-frontend \
+  --network starlink \
+  -p 3000:3000 \
+  -v $(pwd)/modules/frontend/.env:/app/modules/frontend/.env \
+  frontend:latest
+```

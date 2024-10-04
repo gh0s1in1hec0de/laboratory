@@ -18,7 +18,4 @@ RUN bun run build
 EXPOSE 3000
 
 # Start the Next.js app
-CMD ["bun", "run", "start", "--cwd", "modules/frontend"]
-
-
-
+CMD ["bun", "run", "start"]
