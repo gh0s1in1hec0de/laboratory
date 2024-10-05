@@ -2,6 +2,7 @@ import { t } from "elysia";
 
 export const ConnectWalletSchema = t.Object({
     address: t.String(),
+    referral: t.Optional(t.String()),
 });
 
 export const GetTicketBalanceSchema = t.Object({

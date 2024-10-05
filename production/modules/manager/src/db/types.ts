@@ -143,6 +143,7 @@ export interface StoredTokenLaunchResponse {
 
 export interface ConnectedWalletRequest {
     address: RawAddressString,
+    referral?: string,
 }
 
 export interface TicketBalanceRequest {

@@ -5,9 +5,9 @@ import { Api, Bot, type Context, session, type SessionFlavor } from "grammy";
 import { getConfig } from "../config";
 import { logger } from "../logger";
 import {
-    handleLaunchesPaginationCallback,
+    // handleLaunchesPaginationCallback,
     addWalletsToRelations,
-    handleListLaunchesCallback,
+    // handleListLaunchesCallback,
     handleStartCommand,
     handleMenuCommand,
     handleBotError,
@@ -57,8 +57,8 @@ export async function createBot(): Promise<Bot<MyContext>> {
     maybeBot.command("start", handleStartCommand);
     maybeBot.command("menu").filter(getAdminFilter, handleMenuCommand);
 
-    maybeBot.callbackQuery("list_launches", handleListLaunchesCallback);
-    maybeBot.callbackQuery(["next_launches", "prev_launches", "reset_launches"], handleLaunchesPaginationCallback);
+    // maybeBot.callbackQuery("list_launches", handleListLaunchesCallback);
+    // maybeBot.callbackQuery(["next_launches", "prev_launches", "reset_launches"], handleLaunchesPaginationCallback);
 
     maybeBot.callbackQuery("list_tasks", handleListTasksCallback);
     maybeBot.callbackQuery(["next_tasks", "prev_tasks", "reset_tasks"], handleTasksPaginationCallback);

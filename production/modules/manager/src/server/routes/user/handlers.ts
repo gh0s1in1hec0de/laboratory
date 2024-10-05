@@ -4,9 +4,13 @@ import { Address } from "@ton/core";
 
 export async function connectCallerWallet({
     address,
+    referral,
 }: db.ConnectedWalletRequest): Promise<db.Caller | string> {
     try {
-        const res = await db.connectWallet(Address.parse(address).toRawString());
+        const res = await db.connectWallet(
+            Address.parse(address).toRawString(),
+            referral && Address.parse(referral).toRawString(),
+        );
         if (!res) return "user already exists";
         return res;
     } catch (e) {

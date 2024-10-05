@@ -115,7 +115,7 @@ export async function getUnknownMsgReply(ctx: MyContext) {
  */
 export function getMenuKeyboard(): InlineKeyboard {
     return new InlineKeyboard()
-        .text("get token launches", "list_launches").row()
+        // .text("get token launches", "list_launches").row()
         .text("users complete tasks", "add_wallets").row()
         .text("get tasks", "list_tasks").row()
         .text("create tasks", "create_task")

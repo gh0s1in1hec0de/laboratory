@@ -48,8 +48,8 @@ export function isReadyUsersTasksToDb(str: string): ValidationUsersTasksToDbResu
     for (const pair of str.split(",")) {
         const [userAddress, taskId] = pair.split("|");
 
-        const trimmedAddress = userAddress.trim();
-        const trimmedId = taskId.trim();
+        const trimmedAddress = userAddress?.trim();
+        const trimmedId = taskId?.trim();
 
         if (!trimmedAddress) {
             errors.push(`Error in line ${index + 1}: empty address`);

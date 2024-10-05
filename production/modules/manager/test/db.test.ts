@@ -65,7 +65,7 @@ describe("Database", () => {
     test("Add mock data to the database", async () => {
         const randUserAddress = randomAddress().toRawString();
         
-        await db.connectWallet(randUserAddress, client);
+        await db.connectWallet(randUserAddress, undefined, client);
 
         for (let i = 1; i <= 20; i++) {
             const taskName = `Reach for the star ${i}`;
@@ -77,48 +77,56 @@ describe("Database", () => {
             await db.storeUserTaskRelations(randUserAddress, i.toString(), client);
         }
 
-        await client.unsafe(`
-        DO
-        $$
-        BEGIN
-            FOR i IN 1..20 LOOP
-                INSERT INTO token_launches (
-                    identifier, address, creator, version, metadata, timings, total_supply, created_at, is_successful, post_deploy_enrollment_stats, dex_data
-                )
-                VALUES (
-                    'TokenLaunch_' || i,
-                    '0x' || lpad(to_hex(i), 48, '0'),
-                    '0x' || lpad(to_hex(i + 100), 48, '0'),
-                    'V1',
-                    ('{"description": "Test metadata for launch ' || i || '"}')::jsonb,
-                    '{"start_time": "2024-09-01T00:00:00", "end_time": "2024-09-30T23:59:59"}'::jsonb,
-                    1000000000,
-                    extract(epoch from now())::bigint,
-                    NULL,  -- is_successful
-                    NULL,  -- post_deploy_enrollment_stats
-                    NULL   -- dex_data
-                );
-            END LOOP;
-        END;
-        $$;
-        `);
+        // await client.unsafe(`
+        // DO
+        // $$
+        // BEGIN
+        //     FOR i IN 1..20 LOOP
+        //         INSERT INTO token_launches (
+        //             identifier, address, creator, version, metadata, timings, total_supply, created_at, is_successful, post_deploy_enrollment_stats, dex_data
+        //         )
+        //         VALUES (
+        //             'TokenLaunch_' || i,
+        //             '0x' || lpad(to_hex(i), 48, '0'),
+        //             '0x' || lpad(to_hex(i + 100), 48, '0'),
+        //             'V1',
+        //             ('{"description": "Test metadata for launch ' || i || '"}')::jsonb,
+        //             '{"start_time": "2024-09-01T00:00:00", "end_time": "2024-09-30T23:59:59"}'::jsonb,
+        //             1000000000,
+        //             extract(epoch from now())::bigint,
+        //             NULL,  -- is_successful
+        //             NULL,  -- post_deploy_enrollment_stats
+        //             NULL   -- dex_data
+        //         );
+        //     END LOOP;
+        // END;
+        // $$;
+        // `);
     
     
-        const callers = await client`SELECT *
-                                 FROM callers;`;
+        const callers = await client`
+            SELECT *
+            FROM callers;
+        `;
         expect(callers.length).toBe(1);
     
-        const tasks = await client`SELECT *
-                               FROM tasks;`;
+        const tasks = await client`
+            SELECT *
+            FROM tasks;
+        `;
         expect(tasks.length).toBe(20);
 
-        const usersTasksRelations = await client`SELECT *
-                               FROM users_tasks_relations;`;
+        const usersTasksRelations = await client`
+            SELECT *
+            FROM users_tasks_relations;
+        `;
         expect(usersTasksRelations.length).toBe(2);
     
-        const tokenLaunches = await client`SELECT *
-                                       FROM token_launches;`;
-        expect(tokenLaunches.length).toBe(20);
+        // const tokenLaunches = await client`
+        //     SELECT *
+        //     FROM token_launches;
+        // `;
+        // expect(tokenLaunches.length).toBe(20);
     });
     
     // test("any req", async () => {

@@ -44,53 +44,38 @@ CREATE TABLE users_tasks_relations
     PRIMARY KEY (caller_address, task_id)
 );
 
+
 CREATE OR REPLACE FUNCTION handle_users_tasks_relations_insert()
     RETURNS TRIGGER AS
 $$
 DECLARE
     task_reward_tickets SMALLINT;
 BEGIN
-    -- Fetch the reward tickets for the task
-    SELECT t.reward_tickets
-    INTO task_reward_tickets
-    FROM tasks t
-    WHERE t.task_id = NEW.task_id;
-
-    -- Insert or update the earnings for the caller
-    INSERT INTO earnings_per_period (caller, ticket_balance)
-    VALUES (NEW.caller_address, task_reward_tickets)
-    ON CONFLICT (caller) DO UPDATE
-        SET ticket_balance = earnings_per_period.ticket_balance + EXCLUDED.ticket_balance;
-
-    -- Update the ticket balance in the callers table
-    UPDATE callers
-    SET ticket_balance = ticket_balance + task_reward_tickets
-    WHERE address = NEW.caller_address;
-
-    -- If everything goes well, allow the insert to proceed
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION register_caller_if_not_exists()
-    RETURNS TRIGGER AS
-$$
-BEGIN
     IF NOT EXISTS (SELECT 1 FROM callers WHERE address = NEW.caller_address) THEN
         INSERT INTO callers (address)
         VALUES (NEW.caller_address);
     END IF;
 
+    SELECT t.reward_tickets
+    INTO task_reward_tickets
+    FROM tasks t
+    WHERE t.task_id = NEW.task_id;
+
+    INSERT INTO earnings_per_period (caller, ticket_balance)
+    VALUES (NEW.caller_address, task_reward_tickets)
+    ON CONFLICT (caller) DO UPDATE
+        SET ticket_balance = earnings_per_period.ticket_balance + EXCLUDED.ticket_balance;
+
+    UPDATE callers
+    SET ticket_balance = ticket_balance + task_reward_tickets
+    WHERE address = NEW.caller_address;
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_register_caller_if_not_exists
-    BEFORE INSERT ON users_tasks_relations
-    FOR EACH ROW
-EXECUTE FUNCTION register_caller_if_not_exists();
 
-CREATE TRIGGER trg_insert_users_tasks_relations
+CREATE OR REPLACE TRIGGER trg_insert_users_tasks_relations
     BEFORE INSERT
     ON users_tasks_relations
     FOR EACH ROW
