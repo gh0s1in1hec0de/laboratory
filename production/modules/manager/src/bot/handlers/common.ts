@@ -50,13 +50,16 @@ export function isReadyUsersTasksToDb(str: string): ValidationUsersTasksToDbResu
 
         const trimmedAddress = userAddress.trim();
         const trimmedId = taskId.trim();
-        
-        if (!Address.isAddress(trimmedAddress)) {
-            errors.push(`Error in line ${index + 1}: The address looks more like shit`);
-            continue;
-        }
+
         if (!trimmedAddress) {
             errors.push(`Error in line ${index + 1}: empty address`);
+            continue;
+        }
+        try {
+            // As isAddress doesn't work the proper way with raw addresses :) Good job Ton!
+            Address.parse(trimmedAddress);
+        } catch (e) {
+            errors.push(`Error in line ${index + 1}: The address looks more like shit`);
             continue;
         }
         if (!trimmedId) {
