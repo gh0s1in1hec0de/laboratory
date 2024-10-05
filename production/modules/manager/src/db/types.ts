@@ -131,6 +131,11 @@ export interface StoredTokenLaunchRequest {
     search?: string,
 }
 
+export interface StoredTasksRequest {
+    page: number,
+    limit: number,
+}
+
 export interface StoredTokenLaunchResponse {
     storedTokenLaunch: StoredTokenLaunch[],
     hasMore: boolean,
@@ -147,6 +152,16 @@ export interface TicketBalanceRequest {
 export interface TasksRequest {
     address?: RawAddressString,
     staged: string,
+}
+
+export interface SortedTasksRequest {
+    page: number,
+    limit: number,
+}
+
+export interface SortedTasks {
+    storedTasks: StoredTasks[],
+    hasMore: boolean,
 }
 
 export interface StoredTasks {
@@ -172,6 +187,6 @@ export interface TasksResponse {
     name: string,
     description: Subtask[],
     rewardTickets: number,
-    completed: boolean,
     createdAt: number,
+    completed: boolean,
 }

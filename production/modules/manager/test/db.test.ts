@@ -63,69 +63,46 @@ describe("Database", () => {
     // });
     
     test("Add mock data to the database", async () => {
-        // await client`
-        // INSERT INTO users (telegram_id, nickname)
-        // VALUES (123456789, 'Pavel Durov')`;
-    
-        const randUserAddress = randomAddress().toString();
+        const randUserAddress = randomAddress().toRawString();
         
-        await client`
-        INSERT INTO callers (address)
-        VALUES (${randUserAddress})`;
-    
+        await db.connectWallet(randUserAddress, client);
+
+        for (let i = 1; i <= 20; i++) {
+            const taskName = `Reach for the star ${i}`;
+            const description = `task ${i}&description ${i}&task ${i}&description ${i}`;
+            await db.storeTask(taskName, description, client);
+        }
+
+        for (let i = 1; i <= 2; i++) {
+            await db.storeUserTaskRelations(randUserAddress, i.toString(), client);
+        }
+
         await client.unsafe(`
         DO
         $$
         BEGIN
-            FOR i in 1..10 LOOP
-                INSERT INTO tasks (name, description, created_at)
+            FOR i IN 1..20 LOOP
+                INSERT INTO token_launches (
+                    identifier, address, creator, version, metadata, timings, total_supply, created_at, is_successful, post_deploy_enrollment_stats, dex_data
+                )
                 VALUES (
-                    'Reach for the star ' || lpad(to_hex(i), 1, '0'),
-                    'task ' || lpad(to_hex(i), 1, '0') || '&' || 'description ' || lpad(to_hex(i), 1, '0') || '&' || 'task ' || lpad(to_hex(i), 1, '0') || '&' || 'description ' || lpad(to_hex(i), 1, '0'),
-                    EXTRACT(EPOCH FROM NOW())::bigint
+                    'TokenLaunch_' || i,
+                    '0x' || lpad(to_hex(i), 48, '0'),
+                    '0x' || lpad(to_hex(i + 100), 48, '0'),
+                    'V1',
+                    ('{"description": "Test metadata for launch ' || i || '"}')::jsonb,
+                    '{"start_time": "2024-09-01T00:00:00", "end_time": "2024-09-30T23:59:59"}'::jsonb,
+                    1000000000,
+                    extract(epoch from now())::bigint,
+                    NULL,  -- is_successful
+                    NULL,  -- post_deploy_enrollment_stats
+                    NULL   -- dex_data
                 );
             END LOOP;
         END;
-        $$;`
-        );
-
-        await client`
-        INSERT INTO users_tasks_relations (caller_address, task_id)
-        VALUES (${randUserAddress}, 1)`;
-        await client`
-        INSERT INTO users_tasks_relations (caller_address, task_id)
-        VALUES (${randUserAddress}, 2)`;
-
+        $$;
+        `);
     
-        // await client.unsafe(`
-        // DO
-        // $$
-        // BEGIN
-        //     FOR i IN 1..20 LOOP
-        //         INSERT INTO token_launches (
-        //             identifier, address, creator, version, metadata, timings, created_at, is_successful, post_deploy_enrollment_stats, dex_data
-        //         )
-        //         VALUES (
-        //             'TokenLaunch_' || i,
-        //             '0x' || lpad(to_hex(i), 48, '0'),
-        //             '${randUserAddress}',
-        //             'V1',  -- версия лаунча
-        //             ('{"description": "Test metadata for launch ' || i || '"}')::jsonb,
-        //             '{"start_time": "2024-09-01T00:00:00", "end_time": "2024-09-30T23:59:59"}'::jsonb,
-        //             0,
-        //             NULL,
-        //             NULL,
-        //             NULL
-        //         );
-        //     END LOOP;
-        // END;
-        // $$;
-        // `);
-    
-    
-        // const users = await client`SELECT *
-        //                        FROM users;`;
-        // expect(users.length).toBe(1);
     
         const callers = await client`SELECT *
                                  FROM callers;`;
@@ -133,15 +110,15 @@ describe("Database", () => {
     
         const tasks = await client`SELECT *
                                FROM tasks;`;
-        expect(tasks.length).toBe(10);
+        expect(tasks.length).toBe(20);
 
         const usersTasksRelations = await client`SELECT *
                                FROM users_tasks_relations;`;
         expect(usersTasksRelations.length).toBe(2);
     
-        // const tokenLaunches = await client`SELECT *
-        //                                FROM token_launches;`;
-        // expect(tokenLaunches.length).toBe(20);
+        const tokenLaunches = await client`SELECT *
+                                       FROM token_launches;`;
+        expect(tokenLaunches.length).toBe(20);
     });
     
     // test("any req", async () => {

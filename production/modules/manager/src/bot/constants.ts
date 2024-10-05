@@ -1,4 +1,4 @@
-import type { StoredTokenLaunch, StoredTokenLaunchRequest } from "../db";
+import type { StoredTasks, StoredTasksRequest, StoredTokenLaunch, StoredTokenLaunchRequest } from "../db";
 import { SortOrder, TokenLaunchFields } from "starton-periphery";
 import { type HearsContext, InlineKeyboard } from "grammy";
 import type { MyContext } from "./index";
@@ -17,7 +17,7 @@ export const commands: ICommand[] = [
     { command: "menu", description: "go to hell" }
 ];
 
-export const initSortData: StoredTokenLaunchRequest = {
+export const initLaunchesSortData: StoredTokenLaunchRequest = {
     page: 1,
     limit: 10,
     orderBy: TokenLaunchFields.CREATED_AT,
@@ -25,9 +25,15 @@ export const initSortData: StoredTokenLaunchRequest = {
     search: ""
 };
 
+export const initTasksSortData: StoredTasksRequest = {
+    page: 1,
+    limit: 10,
+};
+
 export enum Conversations {
     addWallets = "addWalletsToRelations",
     createTask = "createTask",
+    deleteTask = "deleteTask",
 }
 
 // ٩(ఠ益ఠ)۶
@@ -46,14 +52,20 @@ const replies = {
     noLaunches: "I don`t have token launches (￣ヘ￣)",
     error: "I got an error. Try later 〜(＞_＜)〜",
     idRequest: "Send me <b>ID</b> of token launch (⊙_⊙)",
-    invalidId: "Invalid <b>ID</b> (￣ヘ￣). Try again dumbass...",
+    invalidId: "Invalid <b>ID</b> (￣ヘ￣).",
     addressListRequest: "Send me <b>User Address</b> and <b>Task ID</b> (￣▽￣)ノ\n\nExample: <code>userAdr1|taskID1, userAdr2|taskID2</code>",
-    invalidAddUsersTasksRelations: "Invalid <b>data</b> (￣ヘ￣). Try again dumbass...",
+    invalidAddUsersTasksRelations: "Invalid <b>data</b> (￣ヘ￣).",
     unknown: "I don't understand the language of people ╮(￣_￣)╭",
-    addWalletsSuccess: "Nice! Wallets successfully added! ＼(￣▽￣)／",
-    createTaskRequest: "Let's create a task together!\nWhat will the task consist of? ╮(￣_￣)╭\n\nExample:\n<code>taskName1$rewardTickets|subtaskName1&subtaskDescription1\ntaskName2$rewardTickets|subtaskName2&subtaskDescription2</code>",
-    invalidAddTasks: "Invalid <b>data</b> (￣ヘ￣). Try again dumbass...",
-    addTasksSuccess: "Nice! Tasks successfully added! ＼(￣▽￣)／",
+    addWalletsSuccess: "Nice! Wallets successfully added! ＼(￣▽￣)／\n\n<b>Want continue?</b> Click on /menu",
+    createTaskRequest: "Let's create a task together!\nWhat will the task consist of? ╮(￣_￣)╭\n\n<b>Example:</b>\n<code>taskName1|subtaskName1&subtaskDescription1\ntaskName2|subtaskName2&subtaskDescription2</code>",
+    invalidAddTasks: "Invalid <b>data</b> (￣ヘ￣).",
+    addTasksSuccess: "Nice! Tasks successfully added! ＼(￣▽￣)／\n\n<b>Want continue?</b> Click on /menu.",
+    noTasks: "I don`t have tasks (￣ヘ￣)",
+    deleteTaskRequest: "Send me <b>Task ID</b> (￣▽￣)ノ\n\nExample: <code>taskID1, taskID2</code>",
+    deleteTasksSuccess: "Nice! Tasks successfully deleted! ＼(￣▽￣)／\n\n<b>Want continue?</b> Click on /menu.",
+    confirmDeleteTask: "Are you sure you want to delete this tasks? ٩(ఠ益ఠ)۶",
+    deleteTasksCanceled: "Deleting tasks successfully canceled ＼(￣▽￣)／\n\n<b>Want continue?</b> Click on /menu",
+    invalidDeleteTasks: "Invalid <b>data</b> (￣ヘ￣).",
 };
 export function getReplyText(key: keyof typeof replies): string {
     return replies[key];
@@ -74,6 +86,26 @@ export function getLaunchesReply(storedTokenLaunch: StoredTokenLaunch[]): string
     }).join("\n");
 }
 
+export function getTasksReply(storedTasks: StoredTasks[]): string {
+    const oneWeekInSeconds = 7 * 24 * 60 * 60;
+    const currentTime = Math.floor(Date.now() / 1000);
+    
+    return storedTasks.map((task) => {
+        const { taskId, name, createdAt } = task;
+        const date = new Date(Number(createdAt) * 1000);
+
+        const formattedDate = date.toLocaleDateString("ru-RU", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+        });
+
+        const status = (currentTime - Number(createdAt)) > oneWeekInSeconds ? "staged" : "not staged";
+
+        return `${taskId}. ${name} - ${formattedDate} - (${status})`;
+    }).join("\n");
+}
+
 export async function getUnknownMsgReply(ctx: MyContext) {
     await ctx.reply(getReplyText("unknown"));
 }
@@ -83,30 +115,64 @@ export async function getUnknownMsgReply(ctx: MyContext) {
  */
 export function getMenuKeyboard(): InlineKeyboard {
     return new InlineKeyboard()
-        .text("list of token launches", "list_launches")
-        .text("wallets complete task", "add_wallets").row()
-        .text("add tasks", "add_task");
+        .text("get token launches", "list_launches").row()
+        .text("users complete tasks", "add_wallets").row()
+        .text("get tasks", "list_tasks").row()
+        .text("create tasks", "create_task")
+        .text("delete tasks", "delete_task");
 }
 
-export function getListLaunchesKeyboard(hasMore: boolean, page: number): InlineKeyboard {
+export function getLaunchesPaginationKeyboard(hasMore: boolean, page: number): InlineKeyboard {
     const keyboard = new InlineKeyboard();
   
-    page > 1 ? keyboard.text("< prev", "prev") : keyboard.text(".", "nothing");
+    page > 1 ? keyboard.text("< prev", "prev_launches") : keyboard.text(".", "nothing");
     keyboard.text(`· ${page} ·`, "nothing");
-    hasMore ? keyboard.text("next >", "next").row() : keyboard.text(".", "nothing").row();
+    hasMore ? keyboard.text("next >", "next_launches").row() : keyboard.text(".", "nothing").row();
   
     return keyboard.text("« back to menu", "back");
 }
 
-export function getRetryKeyboard(): InlineKeyboard {
+export function getTasksPaginationKeyboard(hasMore: boolean, page: number): InlineKeyboard {
+    const keyboard = new InlineKeyboard();
+  
+    page > 1 ? keyboard.text("< prev", "prev_tasks") : keyboard.text(".", "nothing");
+    keyboard.text(`· ${page} ·`, "nothing");
+    hasMore ? keyboard.text("next >", "next_tasks").row() : keyboard.text(".", "nothing").row();
+  
+    return keyboard.text("« back to menu", "back");
+}
+
+export function getResetLaunchesKeyboard(): InlineKeyboard {
     return new InlineKeyboard()
-        .text("reset", "reset_list").row()
+        .text("reset", "reset_launches").row()
         .text("< back to menu", "back");
 }
 
-export function getCancelConversationKeyboard(): InlineKeyboard {
+export function getResetTasksKeyboard(): InlineKeyboard {
     return new InlineKeyboard()
-        .text("cancel", "cancel_conv").row();
+        .text("reset", "reset_tasks").row()
+        .text("< back to menu", "back");
+}
+
+export function getCancelAddWalletsConvKeyboard(): InlineKeyboard {
+    return new InlineKeyboard()
+        .text("cancel", "cancel_conv_add_wallets").row();
+}
+
+export function getCancelCreateTaskConvKeyboard(): InlineKeyboard {
+    return new InlineKeyboard()
+        .text("cancel", "cancel_conv_create_task").row();
+}
+
+export function getCancelDeleteTaskConvKeyboard(): InlineKeyboard {
+    return new InlineKeyboard()
+        .text("cancel", "cancel_conv_delete_task").row();
+}
+
+export function getConfirmDeleteTaskConvKeyboard(): InlineKeyboard {
+    return new InlineKeyboard()
+        .text("yes", "confirm_delete_task").row()
+        .text("cancel", "cancel_conv_delete_task").row();
 }
 
 /**

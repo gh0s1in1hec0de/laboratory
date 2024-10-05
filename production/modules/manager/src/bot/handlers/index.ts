@@ -5,3 +5,5 @@ export * from "./menu";
 export * from "./addWallets";
 export * from "./common";
 export * from "./createTask";
+export * from "./getTasks";
+export * from "./deleteTask";

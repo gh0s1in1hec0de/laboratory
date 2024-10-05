@@ -1,10 +1,11 @@
 import { getMenuKeyboard, getReplyText } from "../constants";
 import type { CallbackQueryContext } from "grammy";
 import type { MyContext } from "../index";
-import { Address } from "@ton/core";
-import type { RawAddressString } from "starton-periphery";
 
-export async function handleEnterConversationCallback(ctx: CallbackQueryContext<MyContext>, conversationName: string): Promise<void> {
+export async function handleEnterConversationCallback(
+    ctx: CallbackQueryContext<MyContext>,
+    conversationName: string
+): Promise<void> {
     await ctx.answerCallbackQuery();
     await ctx.conversation.enter(conversationName);
 }
@@ -18,7 +19,10 @@ export async function handleBackToMenuCallback(ctx: CallbackQueryContext<MyConte
     await ctx.answerCallbackQuery();
 }
 
-export async function handleCancelConversationCallback(ctx: CallbackQueryContext<MyContext>, conversationName: string) {
+export async function handleCancelConversationCallback(
+    ctx: CallbackQueryContext<MyContext>,
+    conversationName: string
+) {
     await ctx.conversation.exit(conversationName);
     await ctx.answerCallbackQuery("Left conversation");
     await ctx.reply(getReplyText("menu"), {
@@ -27,57 +31,91 @@ export async function handleCancelConversationCallback(ctx: CallbackQueryContext
     });
 }
 
+interface ValidationUsersTasksToDbResult {
+    validMap: Map<string, string[]>,
+    errors: string[],
+}
+
 const mapAddressTasks: Map<string, string[]> = new Map();
 
-export function isReadyUsersTasksToDb(str: string): Map<string, string[]> | null {
+export function isReadyUsersTasksToDb(str: string): ValidationUsersTasksToDbResult {
     mapAddressTasks.clear();
+    const errors: string[] = [];
+    
+    let index = 0;
 
     for (const pair of str.split(",")) {
         const [userAddress, taskId] = pair.split("|");
 
         const trimmedAddress = userAddress?.trim();
         const trimmedId = taskId?.trim();
-
-        if (!trimmedAddress || !trimmedId || Address.isAddress(userAddress.trim())) return null;
+        
+        // todo figure out how to check address Address.isAddress(userAddress.trim())
+        if (!trimmedAddress) {
+            errors.push(`Error in line ${index + 1}: empty address`);
+            continue;
+        }
+        
+        if (!trimmedId) {
+            errors.push(`Error in line ${index + 1}: empty task id`);
+            continue;
+        }
 
         if (mapAddressTasks.has(trimmedAddress)) {
             mapAddressTasks.get(trimmedAddress)?.push(trimmedId);
         } else {
             mapAddressTasks.set(trimmedAddress, [trimmedId]);
         }
+
+        index++;
     }
 
-    return mapAddressTasks;
+    return { validMap: mapAddressTasks, errors };
+}
+
+interface ValidationTasksToDbResult {
+    validMap: Map<string, string>,
+    errors: string[],
 }
 
 const mapTasks: Map<string, string> = new Map();
 
-export function isReadyTasksToDb(str: string): Map<string, string> | null {
+export function isReadyTasksToDb(str: string): ValidationTasksToDbResult {
     mapTasks.clear();
+    const errors: string[] = [];
+    let index = 0;
 
     for (const pair of str.split(/\r?\n/)) {
-        const [taskWithNumber, subtasks] = pair.split("|");
-        const trimmedTaskWithNumber = taskWithNumber?.trim();
+        const [taskName, subtasks] = pair.split("|");
+        const trimmedTaskName = taskName?.trim();
         const trimmedSubTasks = subtasks?.trim();
 
-        if (!trimmedTaskWithNumber || !trimmedSubTasks) return null;
+        if (!trimmedTaskName) {
+            errors.push(`Error in line ${index + 1}: empty task name`);
+            continue;
+        }
 
-        const [taskName, taskNumber] = trimmedTaskWithNumber.split("$");
-        if (!taskName || !taskNumber || taskNumber.trim() === "") return null;
+        if (!trimmedSubTasks) {
+            errors.push(`Error in line ${index + 1}: empty subtasks`);
+            continue;
+        }
 
         const subtaskArray = trimmedSubTasks.split("&");
-        if (subtaskArray.length % 2 !== 0 || subtaskArray.some(item => item.trim() === "")) return null;
-
-        const fullTaskKey = `${taskName.trim()}$${taskNumber.trim()}`;
-
-        if (mapTasks.has(fullTaskKey)) {
-            const storedDescription = mapTasks.get(fullTaskKey);
-            mapTasks.set(fullTaskKey, `${storedDescription}&${subtaskArray.join("&")}`);
-        } else {
-            mapTasks.set(fullTaskKey, subtaskArray.join("&"));
+        if (subtaskArray.length % 2 !== 0 || subtaskArray.some(item => item.trim() === "")) {
+            errors.push(`Error in line ${index + 1}: subtask must have a name and description`);
+            continue;
         }
+
+        if (mapTasks.has(trimmedTaskName)) {
+            const storedDescription = mapTasks.get(trimmedTaskName);
+            mapTasks.set(trimmedTaskName, `${storedDescription}&${subtaskArray.join("&")}`);
+        } else {
+            mapTasks.set(trimmedTaskName, subtaskArray.join("&"));
+        }
+
+        index++;
     }
 
-    return mapTasks;
+    return { validMap: mapTasks, errors };
 }
 

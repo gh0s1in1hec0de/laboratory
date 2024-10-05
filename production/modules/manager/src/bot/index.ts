@@ -5,20 +5,24 @@ import { Api, Bot, type Context, session, type SessionFlavor } from "grammy";
 import { getConfig } from "../config";
 import { logger } from "../logger";
 import {
-    handlePaginationCallback,
+    handleLaunchesPaginationCallback,
     addWalletsToRelations,
-    handleListCallback,
+    handleListLaunchesCallback,
     handleStartCommand,
     handleMenuCommand,
     handleBotError,
     handleEnterConversationCallback,
     handleCancelConversationCallback,
     handleBackToMenuCallback,
-    createTask
+    createTask,
+    handleListTasksCallback,
+    handleTasksPaginationCallback,
+    deleteTask
 } from "./handlers";
 
 interface SessionData {
-    page: number,
+    launchesPage: number,
+    tasksPage: number,
 }
 
 export type MyContext = HydrateFlavor<Context> & ConversationFlavor & SessionFlavor<SessionData>;
@@ -37,13 +41,14 @@ export async function createBot(): Promise<Bot<MyContext>> {
     maybeBot = new Bot<MyContext, MyApi>(token);
 
     function initial(): SessionData {
-        return { page: 1 };
+        return { launchesPage: 1, tasksPage: 1 };
     }
 
     maybeBot.use(session({ initial }));
     maybeBot.use(conversations());
     maybeBot.use(createConversation(addWalletsToRelations));
     maybeBot.use(createConversation(createTask));
+    maybeBot.use(createConversation(deleteTask));
     maybeBot.use(hydrate());
     maybeBot.api.config.use(hydrateApi());
 
@@ -52,14 +57,20 @@ export async function createBot(): Promise<Bot<MyContext>> {
     maybeBot.command("start", handleStartCommand);
     maybeBot.command("menu").filter(getAdminFilter, handleMenuCommand);
 
-    maybeBot.callbackQuery("list_launches", handleListCallback);
-    maybeBot.callbackQuery(["next", "prev", "reset_list"], handlePaginationCallback);
+    maybeBot.callbackQuery("list_launches", handleListLaunchesCallback);
+    maybeBot.callbackQuery(["next_launches", "prev_launches", "reset_launches"], handleLaunchesPaginationCallback);
+
+    maybeBot.callbackQuery("list_tasks", handleListTasksCallback);
+    maybeBot.callbackQuery(["next_tasks", "prev_tasks", "reset_tasks"], handleTasksPaginationCallback);
 
     maybeBot.callbackQuery("add_wallets", (ctx) => handleEnterConversationCallback(ctx, Conversations.addWallets));
-    maybeBot.callbackQuery("cancel_conv", (ctx) => handleCancelConversationCallback(ctx, Conversations.addWallets));
+    maybeBot.callbackQuery("cancel_conv_add_wallets", (ctx) => handleCancelConversationCallback(ctx, Conversations.addWallets));
 
-    maybeBot.callbackQuery("add_task", (ctx) => handleEnterConversationCallback(ctx, Conversations.createTask));
-    maybeBot.callbackQuery("cancel_conv", (ctx) => handleCancelConversationCallback(ctx, Conversations.createTask));
+    maybeBot.callbackQuery("create_task", (ctx) => handleEnterConversationCallback(ctx, Conversations.createTask));
+    maybeBot.callbackQuery("cancel_conv_create_task", (ctx) => handleCancelConversationCallback(ctx, Conversations.createTask));
+
+    maybeBot.callbackQuery("delete_task", (ctx) => handleEnterConversationCallback(ctx, Conversations.deleteTask));
+    maybeBot.callbackQuery("cancel_conv_delete_task", (ctx) => handleCancelConversationCallback(ctx, Conversations.deleteTask));
 
     maybeBot.callbackQuery("back", handleBackToMenuCallback);
 

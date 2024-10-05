@@ -2,35 +2,38 @@ import { Address } from "@ton/core";
 import type { MyContext, MyConversation } from "..";
 import * as db from "../../db";
 import { logger } from "../../logger";
-import { getCancelConversationKeyboard, getReplyText } from "../constants";
+import { getCancelAddWalletsConvKeyboard, getReplyText } from "../constants";
 import { isReadyUsersTasksToDb } from "./common";
 
 export async function addWalletsToRelations(conversation: MyConversation, ctx: MyContext): Promise<void> {
     await ctx.reply(getReplyText("addressListRequest"),
-        { parse_mode: "HTML", reply_markup: getCancelConversationKeyboard() }
+        { parse_mode: "HTML", reply_markup: getCancelAddWalletsConvKeyboard() }
     );
 
     let progress = false;
     do {
         const { msg: { text } } = await conversation.waitFor("message:text");
-        const res = isReadyUsersTasksToDb(text);
-        if (!res) {
-            await ctx.reply(getReplyText("invalidAddUsersTasksRelations"), {
+        const { validMap, errors } = isReadyUsersTasksToDb(text);
+
+        if (errors.length) {
+            await ctx.reply(getReplyText("invalidAddUsersTasksRelations") + "\n" + errors.join("\n"), {
                 parse_mode: "HTML",
-                reply_markup: getCancelConversationKeyboard()
+                reply_markup: getCancelAddWalletsConvKeyboard()
             });
             continue;
         }
 
+        // todo if caller doest exist in db - create new
         try {
-            for (const [userAddress, taskIds] of res) {
+            for (const [userAddress, taskIds] of validMap) {
                 for (const taskId of taskIds) {
                     await db.storeUserTaskRelations(Address.parse(userAddress).toRawString(), taskId);
+
                 }
             }
         } catch (error) {
             await ctx.reply(getReplyText("error"),
-                { parse_mode: "HTML", reply_markup: getCancelConversationKeyboard() }
+                { parse_mode: "HTML", reply_markup: getCancelAddWalletsConvKeyboard() }
             );
             if (error instanceof Error) {
                 logger().error("error in db when adding to table 'UserTaskRelation'", error.message);
@@ -43,6 +46,8 @@ export async function addWalletsToRelations(conversation: MyConversation, ctx: M
         progress = true;
     } while (!progress);
 
-    await ctx.reply(getReplyText("addWalletsSuccess"));
+    await ctx.reply(getReplyText("addWalletsSuccess"), {
+        parse_mode: "HTML",
+    });
     return;
 }

@@ -1,9 +1,9 @@
 import {
-    getListLaunchesKeyboard,
-    getRetryKeyboard,
+    getResetLaunchesKeyboard,
     getLaunchesReply, 
-    initSortData, 
-    getReplyText
+    initLaunchesSortData, 
+    getReplyText,
+    getLaunchesPaginationKeyboard
 } from "../constants";
 import type { StoredTokenLaunchRequest } from "../../db";
 import { type CallbackQueryContext } from "grammy";
@@ -22,19 +22,19 @@ async function handleListLaunches(
         if (!data) {
             await ctx.callbackQuery.message!.editText(
                 getReplyText("noLaunches"),
-                { reply_markup: getRetryKeyboard() }
+                { reply_markup: getResetLaunchesKeyboard() }
             );
             return;
         }
       
         await ctx.callbackQuery.message!.editText(
             getLaunchesReply(data.storedTokenLaunch),
-            { reply_markup: getListLaunchesKeyboard(data.hasMore, sortData.page) }
+            { reply_markup: getLaunchesPaginationKeyboard(data.hasMore, sortData.page) }
         );
     } catch (error) {
         await ctx.callbackQuery.message!.editText(
             getReplyText("error"),
-            { reply_markup: getRetryKeyboard() }
+            { reply_markup: getResetLaunchesKeyboard() }
         );
         if (error instanceof Error) {
             logger().error("error when trying to retrieve a list launches: ", error.message);
@@ -44,23 +44,23 @@ async function handleListLaunches(
     }
 }
 
-export async function handleListCallback(ctx: CallbackQueryContext<MyContext>) {
+export async function handleListLaunchesCallback(ctx: CallbackQueryContext<MyContext>) {
     await ctx.answerCallbackQuery();
     await handleListLaunches(ctx, {
-        ...initSortData,
-        page: ctx.session.page
+        ...initLaunchesSortData,
+        page: ctx.session.launchesPage
     });
 }
 
-export async function handlePaginationCallback(ctx: CallbackQueryContext<MyContext>){
+export async function handleLaunchesPaginationCallback(ctx: CallbackQueryContext<MyContext>){
     await ctx.answerCallbackQuery();
-    const newPage = ctx.callbackQuery.data == "next"
-        ? ctx.session.page += 1
-        : ctx.callbackQuery.data == "prev"
-            ? ctx.session.page -= 1
-            : ctx.session.page = 1;
+    const newPage = ctx.callbackQuery.data == "next_launches"
+        ? ctx.session.launchesPage += 1
+        : ctx.callbackQuery.data == "prev_launches"
+            ? ctx.session.launchesPage -= 1
+            : ctx.session.launchesPage = 1;
     await handleListLaunches(ctx, {
-        ...initSortData,
+        ...initLaunchesSortData,
         page: newPage
     });
 }

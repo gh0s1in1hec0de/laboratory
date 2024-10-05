@@ -1,4 +1,4 @@
-import { getCancelConversationKeyboard, getReplyText } from "../constants";
+import { getCancelCreateTaskConvKeyboard, getReplyText } from "../constants";
 import type { MyContext, MyConversation } from "..";
 import { logger } from "../../logger";
 import * as db from "../../db";
@@ -6,30 +6,30 @@ import { isReadyTasksToDb } from "./common";
 
 export async function createTask(conversation: MyConversation, ctx: MyContext): Promise<void> {
     await ctx.reply(getReplyText("createTaskRequest"),
-        { parse_mode: "HTML", reply_markup: getCancelConversationKeyboard() }
+        { parse_mode: "HTML", reply_markup: getCancelCreateTaskConvKeyboard() }
     );
 
     let progress = false;
     do {
         const { msg: { text } } = await conversation.waitFor("message:text");
         
-        const res = isReadyTasksToDb(text);
+        const { validMap, errors } = isReadyTasksToDb(text);
 
-        if (!res) {
-            await ctx.reply(getReplyText("invalidAddTasks"), {
+        if (errors.length) {
+            await ctx.reply(getReplyText("invalidAddTasks") + "\n" + errors.join("\n"), {
                 parse_mode: "HTML",
-                reply_markup: getCancelConversationKeyboard()
+                reply_markup: getCancelCreateTaskConvKeyboard()
             });
             continue;
         }
 
         try {
-            for (const [taskName, description] of res.entries()) {
+            for (const [taskName, description] of validMap.entries()) {
                 await db.storeTask(taskName, description);
             }
         } catch (error) {
             await ctx.reply(getReplyText("error"),
-                { parse_mode: "HTML", reply_markup: getCancelConversationKeyboard() }
+                { parse_mode: "HTML", reply_markup: getCancelCreateTaskConvKeyboard() }
             );
             if (error instanceof Error) {
                 logger().error("error in db when adding to table 'Tasks'",error.message);
@@ -42,6 +42,8 @@ export async function createTask(conversation: MyConversation, ctx: MyContext): 
         progress = true;
     } while (!progress);
 
-    await ctx.reply(getReplyText("addTasksSuccess"));
+    await ctx.reply(getReplyText("addTasksSuccess"), {
+        parse_mode: "HTML",
+    });
     return;
 }
