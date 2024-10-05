@@ -1,6 +1,7 @@
 import { getMenuKeyboard, getReplyText } from "../constants";
 import type { CallbackQueryContext } from "grammy";
 import type { MyContext } from "../index";
+import { Address } from "@ton/core";
 
 export async function handleEnterConversationCallback(
     ctx: CallbackQueryContext<MyContext>,
@@ -47,26 +48,26 @@ export function isReadyUsersTasksToDb(str: string): ValidationUsersTasksToDbResu
     for (const pair of str.split(",")) {
         const [userAddress, taskId] = pair.split("|");
 
-        const trimmedAddress = userAddress?.trim();
-        const trimmedId = taskId?.trim();
+        const trimmedAddress = userAddress.trim();
+        const trimmedId = taskId.trim();
         
-        // todo figure out how to check address Address.isAddress(userAddress.trim())
+        if (!Address.isAddress(trimmedAddress)) {
+            errors.push(`Error in line ${index + 1}: The address looks more like shit`);
+            continue;
+        }
         if (!trimmedAddress) {
             errors.push(`Error in line ${index + 1}: empty address`);
             continue;
         }
-        
         if (!trimmedId) {
             errors.push(`Error in line ${index + 1}: empty task id`);
             continue;
         }
 
-        if (mapAddressTasks.has(trimmedAddress)) {
-            mapAddressTasks.get(trimmedAddress)?.push(trimmedId);
-        } else {
-            mapAddressTasks.set(trimmedAddress, [trimmedId]);
-        }
-
+        mapAddressTasks.set(trimmedAddress, [
+            ...(mapAddressTasks.get(trimmedAddress) ?? []),
+            trimmedId
+        ]);
         index++;
     }
 
