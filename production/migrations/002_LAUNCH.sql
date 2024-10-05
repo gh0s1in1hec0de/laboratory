@@ -92,7 +92,7 @@ CREATE TABLE launch_balances
     total_tons_collected   coins NOT NULL DEFAULT 0
 );
 
-CREATE OR REPLACE FUNCTION register_caller_fallback() RETURNS TRIGGER AS
+CREATE OR REPLACE FUNCTION register_actor_fallback() RETURNS TRIGGER AS
 $$
 BEGIN
     -- Check if the actor (caller) exists in the callers table
@@ -107,8 +107,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_check_and_insert_caller
+CREATE TRIGGER trigger_verify_actor
     BEFORE INSERT
     ON user_actions
     FOR EACH ROW
-EXECUTE FUNCTION register_caller_fallback();
+EXECUTE FUNCTION register_actor_fallback();

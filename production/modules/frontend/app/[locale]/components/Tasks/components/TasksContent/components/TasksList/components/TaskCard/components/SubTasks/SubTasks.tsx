@@ -47,7 +47,7 @@ export function SubTasks({ subTasks, open, disabled }: SubTasksProps) {
                 disabled={disabled}
               />
               <Label
-                label={subTask.name}
+                label={subTask.description}
                 variantSize="regular14"
                 variantColor="gray"
                 offUserSelect

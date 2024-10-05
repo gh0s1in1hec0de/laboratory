@@ -12,6 +12,7 @@ RUN bun install
 
 # Move to the frontend directory and run the build
 WORKDIR /app/modules/frontend
+
 RUN bun run build
 
 # Expose the Next.js app port

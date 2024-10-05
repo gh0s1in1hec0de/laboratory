@@ -23,12 +23,10 @@ export async function addWalletsToRelations(conversation: MyConversation, ctx: M
             continue;
         }
 
-        // todo if caller doest exist in db - create new
         try {
             for (const [userAddress, taskIds] of validMap) {
                 for (const taskId of taskIds) {
                     await db.storeUserTaskRelations(Address.parse(userAddress).toRawString(), taskId);
-
                 }
             }
         } catch (error) {
