@@ -16,11 +16,14 @@ export function useTasks({ selectedTab }: UseTasksProps) {
 
   const fetchTasks = useCallback(async () => {
     setError("");
+    setIsLoading(true);
     try {
       const tasks = await userService.getTasks(selectedTab === TasksTabsValues.STAGED);
       setTasks(tasks);
     } catch (error) {
       setError("Error fetching tasks");
+    } finally {
+      setIsLoading(false);
     }
   }, [selectedTab]);
 
@@ -34,12 +37,10 @@ export function useTasks({ selectedTab }: UseTasksProps) {
       }
     });
 
-    setIsLoading(false);
-
     return () => {
       unsubscribe();
     };
-  }, [fetchTasks, tonConnectUI, selectedTab]);
+  }, [tonConnectUI, fetchTasks]);
 
   return {
     isLoading: isLoading || !connectionRestored,

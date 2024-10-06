@@ -1,8 +1,8 @@
 import Grid from "@mui/material/Grid2";
 import { Label } from "@/common/Label/Label";
-import { MainBox } from "@/common/MainBox";
 import { useTranslations } from "next-intl";
-import { QuestionIcon, StarIcon } from "@/icons";
+import { StarIcon } from "@/icons";
+import { TicketDrawer } from "./components/TicketDrawer";
 
 export const Info = () => {
   const t = useTranslations("Tasks.header");
@@ -15,34 +15,19 @@ export const Info = () => {
       gap={1}
     >
       <Label 
-        label="Star Season" 
+        label="Star Seasons" 
         variantSize="bold18" 
       />
 
       <StarIcon />
 
       <Label 
-        label={`2 ${t("subtitle")}`} 
+        label={`1 ${t("subtitle")}`} 
         variantSize="regular16" 
         variantColor="gray"
       />
 
-      <MainBox 
-        style={{ marginLeft: "auto" }}
-        container
-        padding="4px 12px"
-        gap="2px"
-        bgColor="gray" 
-        rounded
-      >
-        <Label 
-          label={t("tooltip")} 
-          variantSize="regular14" 
-          offUserSelect
-        />
-				
-        <QuestionIcon />
-      </MainBox>
+      <TicketDrawer />
     </Grid>
   );
 };

@@ -36,7 +36,7 @@ export function TaskInfo({ title, completed, reward, open, disabled }: TaskInfoP
           <StarIcon />
 
           <Label 
-            label={`${t("reward")} ${reward} ${t("ticket")}`} 
+            label={`${reward} ${t("ticket")}`} 
             variantSize="regular14" 
             variantColor="gray"
             offUserSelect

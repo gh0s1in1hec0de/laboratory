@@ -9,13 +9,39 @@
 	},
 	"Tasks": {
 		"header": {
-			"subtitle": "stage",
+			"subtitle": "season",
 			"tooltip": "What is it",
 			"connectWallet": "Connect wallet",
-			"disconnectWallet": "Disconnect from",
+			"disconnectWallet": "Disconnect",
 			"tickets": "tickets",
 			"balance": "Your balance",
-			"error": "Oops, something went wrong... Please reload the page or try again later."
+			"copyAddress": "Copy Address",
+			"copyReferral": "Copy Referral",
+			"error": "Oops, something went wrong... Please reload the page or try again later.",
+			"drawer": {
+				"firstParagraph": {
+					"text1": "Star Tickets"
+				},
+				"secondParagraph": {
+					"text1": "Ready to ",
+					"text2": "boost your profits?"
+				},
+				"thirdParagraph": {
+					"text1": "With Star tickets, you can access Wavelaunch token sales ",
+					"text2": "before anyone else!"
+				},
+				"fourthParagraph": {
+					"text1": "Imagine making profits faster and easier than ever."
+				},
+				"fifthParagraph": {
+					"text1": "Each Star ticket opens doors to ",
+					"text2": "exclusive Wavelaunches",
+					"text3": " just for you."
+				},
+				"sixthParagraph": {
+					"text1": "Complete 3 quests to earn 1 ticket and start your journey to success today!"
+				}
+			}
 		},
 		"content": {
 			"title": "Quests",

@@ -19,10 +19,32 @@ const manrope = Manrope({
   variable: "--font-manrope"
 });
 
-// todo: add metadata
 export const metadata: Metadata = {
-  title: "StartON",
-  description: "Application for creating tokens",
+  title: "StartON - Safest TON Launchpad",
+  description: "StartON is the safest platform for launching and trading TON tokens. Explore tokens, participate in trading, and stay safe with StartON’s secure launchpad.",
+  // openGraph: {
+  //   title: "StartON - The Safest TON Launchpad",
+  //   description: "Join StartON to discover, trade, and launch the most exciting tokens on TON. The platform offers secure, fast transactions with support for a growing ecosystem.",
+  //   url: "https://starton.mom",
+  //   type: "website",
+  //   images: [
+  //     {
+  //       url: "https://starton.mom/logo.png",
+  //       width: 800,
+  //       height: 600,
+  //       alt: "StartON Logo",
+  //     },
+  //   ],
+  // },
+  // twitter: {
+  //   card: "summary_large_image",
+  //   site: "@starton",
+  //   title: "StartON - TON Launchpad",
+  //   description: "Trade and launch tokens on the TON blockchain with StartON, a secure and fast platform.",
+  // },
+  keywords: [
+    "TON Blockchain", "Tokens", "Cryptocurrency", "Launchpad", "StartON", "Trading", "Blockchain", "Crypto tokens", "Decentralized finance", "TON trading"
+  ],
 };
 
 export default async function RootLayout({
@@ -33,7 +55,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <body className={manrope.className}>
+      <body className={`${manrope.variable} ${manrope.className}`}>
         <NextIntlClientProvider messages={messages}>
           <AppRouterCacheProvider options={{ key: "css", enableCssLayer: true }}>
             {children}

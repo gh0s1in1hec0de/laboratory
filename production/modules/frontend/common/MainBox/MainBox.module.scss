@@ -11,6 +11,10 @@
 		background-color: var(--gray-dark);
 	}
 
+	&.orange {
+		background-color: var(--orange-extra-dark);
+	}
+
 	&.transparent {
 		border: 1px solid var(--gray-dark);
 		background-color: transparent;

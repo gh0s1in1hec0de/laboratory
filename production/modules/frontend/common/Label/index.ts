@@ -1,2 +1,2 @@
 export { Label } from "./Label";
-export { LabelColors } from "./types";
+export { LabelColors, type LabelVariants } from "./types";

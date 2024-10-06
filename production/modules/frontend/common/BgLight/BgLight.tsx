@@ -3,7 +3,7 @@ import styles from "./BgLight.module.scss";
 import { BgLightProps } from "./types";
 
 export function BgLight({
-  width = "50%",
+  width = "65%",
   height = "150px",
 }: BgLightProps) {
   return (

@@ -10,15 +10,21 @@ export function Label({
   offUserSelect = false,
   className,
   disabled = false,
+  isBold = false,
+  isCursive = false,
+  component = "span",
   ...props
 }: LabelProps) {
   return (
     <Typography 
+      component={component}
       className={classNames(
         styles.label,
         { 
           [styles.offUserSelect]: offUserSelect,
-          [styles.disabled]: disabled
+          [styles.disabled]: disabled,
+          [styles.bold]: isBold,
+          [styles.cursive]: isCursive,
         },
         [
           styles[`${variant}`], 

@@ -1,11 +1,13 @@
-import { CALLER_ADDRESS } from "@/constants";
+import { CALLER_ADDRESS, REFERRAL } from "@/constants";
 import { userService } from "@/services";
 import { getErrorText, localStorageWrapper } from "@/utils";
 import { Address } from "@ton/core";
 import { useIsConnectionRestored, useTonConnectUI } from "@tonconnect/ui-react";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
 export function useConnectButton() {
+  const searchParams = useSearchParams();
   const [tonConnectUI] = useTonConnectUI();
   const connectionRestored = useIsConnectionRestored();
   const [isPending, startTransition] = useTransition();
@@ -14,7 +16,7 @@ export function useConnectButton() {
 
   async function handleConnectWallet(address: string){
     localStorageWrapper.set(CALLER_ADDRESS, address);
-    await userService.postConnectWallet(address);
+    await userService.postConnectWallet(address, decodeURIComponent(searchParams.get(REFERRAL) || ""));
     setTonWalletAddress(address);
     console.debug("Wallet connected!");
   }
@@ -80,27 +82,13 @@ export function useConnectButton() {
     return `${tempAddress.slice(0, 4)}...${tempAddress.slice(-4)}`;
   }
 
-  // function setTelegramData(data: TelegramAuthData) {
-  //   const initDataRaw = new URLSearchParams([
-  //     ["user", JSON.stringify({
-  //       id: data.id,
-  //       first_name: data.first_name,
-  //       last_name: data.last_name,
-  //       username: data.username,
-  //       language_code: locale,
-  //     })],
-  //     ["hash", data.hash],
-  //     ["auth_date", data.auth_date.toString()],
-  //   ]).toString();
+  function handleCopyAddress(address: string) {
+    navigator.clipboard.writeText(Address.parse(address).toString());
+  }
 
-  //   mockTelegramEnv({
-  //     themeParams: {},
-  //     initData: parseInitData(initDataRaw),
-  //     initDataRaw,
-  //     version: "7.10",
-  //     platform: "tdesktop",
-  //   });
-  // }
+  function handleCopyReferral(address: string) {
+    navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_FRONTEND_URL}/?referral=${Address.parse(address).toRawString()}`);
+  }
 
   return {
     isPending,
@@ -110,5 +98,7 @@ export function useConnectButton() {
     handleClickDisconnectButton,
     formatAddress,
     error,
+    handleCopyAddress,
+    handleCopyReferral
   };
 }

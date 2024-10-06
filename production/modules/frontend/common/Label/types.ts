@@ -1,6 +1,6 @@
 import { TypographyProps } from "@mui/material";
 
-type LabelVariants =
+export type LabelVariants =
   | "medium10" 
   | "bold18"
   | "regular16"
@@ -27,4 +27,6 @@ export interface LabelProps extends TypographyProps {
   className?: string;
   offUserSelect?: boolean;
   disabled?: boolean;
+  isBold?: boolean;
+  isCursive?: boolean;
 }

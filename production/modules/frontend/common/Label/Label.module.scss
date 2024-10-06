@@ -1,13 +1,24 @@
 @import "@/styles/mixins";
 
 .label {
-  font-family: unset;
+  font-family: var(--font-manrope);
   transition: color 0.3s ease;
+  letter-spacing: 0;
+  line-height: normal;
 
   &.offUserSelect {
     user-select: none;
   }
+
+  &.bold {
+    font-weight: bold;
+  }
+
+  &.cursive {
+    font-style: italic;
+  } 
 }
+
 
 
 // COLORS

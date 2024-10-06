@@ -1,3 +1,11 @@
+import { ReactNode } from "react";
+
+export interface CustomDropdownItem {
+  label: string;
+  onClick: () => void;
+}
+
 export interface CustomDropdownProps {
-  children: React.ReactNode;
+  Button: ReactNode;
+  items: CustomDropdownItem[];
 }

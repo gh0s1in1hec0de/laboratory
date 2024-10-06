@@ -29,7 +29,7 @@ export function SubTasks({ subTasks, open, disabled }: SubTasksProps) {
               variant={index === 0 ? "first" : index === subTasks.length - 1 ? "last" : "middle"} 
             />
           ))}
-        </Grid>
+        </Grid> 
 
         <Grid container flexDirection="column" size="grow">
           {subTasks.map((subTask, index) => (

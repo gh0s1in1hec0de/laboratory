@@ -1,0 +1,27 @@
+.button {
+  width: 100%;
+  background: none;
+  outline: none;
+  border: none;
+  padding: 0;
+  border-radius: 10px;
+}
+.items{
+  min-width: 150px; 
+  border-radius: 14px; 
+  border: 1px solid var(--white-transparent); 
+  background-color: var(--white-transparent); 
+  backdrop-filter: blur(10px);
+  padding: 4px;
+  margin-top: 4px; 
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--white-transparent);
+  border-radius: 10px;
+}
