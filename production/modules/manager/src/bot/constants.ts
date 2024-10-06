@@ -47,26 +47,27 @@ export enum Conversations {
  * REPLY
  */
 const replies = {
-    start: "<b>Hello, it`s Starton</b> (￣▽￣)ノ\nClick on /menu to go to hell",
-    menu: "<b>What are we gonna do?</b> ＼(￣o￣)／",
-    noLaunches: "I don`t have token launches (￣ヘ￣)",
-    error: "I got an error. Try later 〜(＞_＜)〜",
-    idRequest: "Send me <b>ID</b> of token launch (⊙_⊙)",
+    start: "<b>Hello, this is Starton</b> (￣▽￣)ノ\nClick /menu to begin.",
+    menu: "<b>What would you like to do?</b> ＼(￣o￣)／",
+    noLaunches: "No token launches available (￣ヘ￣)",
+    error: "Oops! An error occurred. Please try again later 〜(＞_＜)〜",
+    idRequest: "Please send the <b>ID</b> of the token launch (⊙_⊙)",
     invalidId: "Invalid <b>ID</b> (￣ヘ￣).",
-    addressListRequest: "Send me <b>User Address</b> and <b>Task ID</b> (￣▽￣)ノ\n\nExample: <code>userAdr1|taskID1, userAdr2|taskID2</code>",
+    addressListRequest: "Please provide a <b>User Address</b> and <b>Task ID</b> (￣▽￣)ノ\n\nExample: <code>userAddress1|taskId1, userAddress2|taskId2</code>",
     invalidAddUsersTasksRelations: "Invalid <b>data</b> (￣ヘ￣).",
-    unknown: "I don't understand the language of people ╮(￣_￣)╭",
-    addWalletsSuccess: "Nice! Wallets successfully added! ＼(￣▽￣)／\n\n<b>Want continue?</b> Click on /menu",
-    createTaskRequest: "Let's create a task together!\nWhat will the task consist of? ╮(￣_￣)╭\n\n<b>Example:</b>\n<code>taskName1|subtaskName1&subtaskDescription1\ntaskName2|subtaskName2&subtaskDescription2</code>",
+    unknown: "I don't understand that command ╮(￣_￣)╭",
+    addWalletsSuccess: "Success! Wallets added! ＼(￣▽￣)／\n\n<b>Want to continue?</b> Click /menu",
+    createTaskRequest: "Let's create a task!\nWhat should the task include? ╮(￣_￣)╭\n\n<b>Example:</b>\n<code>taskName1|subtaskName1&subtaskDescription1\ntaskName2|subtaskName2&subtaskDescription2</code>",
     invalidAddTasks: "Invalid <b>data</b> (￣ヘ￣).",
-    addTasksSuccess: "Nice! Tasks successfully added! ＼(￣▽￣)／\n\n<b>Want continue?</b> Click on /menu.",
-    noTasks: "I don`t have tasks (￣ヘ￣)",
-    deleteTaskRequest: "Send me <b>Task ID</b> (￣▽￣)ノ\n\nExample: <code>taskID1, taskID2</code>",
-    deleteTasksSuccess: "Nice! Tasks successfully deleted! ＼(￣▽￣)／\n\n<b>Want continue?</b> Click on /menu.",
-    confirmDeleteTask: "Are you sure you want to delete this tasks? ٩(ఠ益ఠ)۶",
-    deleteTasksCanceled: "Deleting tasks successfully canceled ＼(￣▽￣)／\n\n<b>Want continue?</b> Click on /menu",
+    addTasksSuccess: "Success! Tasks added! ＼(￣▽￣)／\n\n<b>Want to continue?</b> Click /menu.",
+    noTasks: "No tasks available (￣ヘ￣)",
+    deleteTaskRequest: "Please send the <b>Task ID</b> (￣▽￣)ノ\n\nExample: <code>taskID1, taskID2</code>",
+    deleteTasksSuccess: "Success! Tasks deleted! ＼(￣▽￣)／\n\n<b>Want to continue?</b> Click /menu.",
+    confirmDeleteTask: "Are you sure you want to delete these tasks? ٩(ఠ益ఠ)۶",
+    deleteTasksCanceled: "Task deletion canceled successfully! ＼(￣▽￣)／\n\n<b>Want to continue?</b> Click /menu",
     invalidDeleteTasks: "Invalid <b>data</b> (￣ヘ￣).",
 };
+
 export function getReplyText(key: keyof typeof replies): string {
     return replies[key];
 }
