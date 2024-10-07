@@ -25,7 +25,7 @@ function createServer() {
         .use(cors())
         .use(UserRoutes())
         .onError((err) => {
-            logger().error(err);
+            logger().error("Error in Elysia: ", err);
         })
         .listen(port);
     assert(res.server, "caught dat bitch");

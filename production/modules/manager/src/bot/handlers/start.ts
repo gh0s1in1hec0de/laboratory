@@ -10,7 +10,7 @@ export async function handleStartCommand(ctx: CommandContext<MyContext>): Promis
         });
     } catch (error) {
         if (error instanceof Error) {
-            logger().error(error.message);
+            logger().error("Error in start command: ", error.message);
         } else {
             logger().error("Unknown error");
         }

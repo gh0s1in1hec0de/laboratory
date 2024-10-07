@@ -11,7 +11,7 @@ export async function handleMenuCommand(ctx: CommandContext<MyContext>): Promise
         });
     } catch (error) {
         if (error instanceof Error) {
-            logger().error(error.message);
+            logger().error("Error in menu command: ", error.message);
         } else {
             logger().error("Unknown error");
         }

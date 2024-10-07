@@ -32,7 +32,7 @@ export async function createTask(conversation: MyConversation, ctx: MyContext): 
                 { parse_mode: "HTML", reply_markup: getCancelCreateTaskConvKeyboard() }
             );
             if (error instanceof Error) {
-                logger().error("error in db when adding to table 'Tasks'",error.message);
+                logger().error("error in db when adding to table 'Tasks'", error.message);
             } else {
                 logger().error("unknown error");
             }

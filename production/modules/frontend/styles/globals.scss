@@ -43,3 +43,28 @@ body {
   background: var(--black-dark);
   color: var(--white-regular);
 }
+
+// todo стилизовать скроллбар
+// /* Главный контейнер скроллбара */
+// ::-webkit-scrollbar {
+//   width: 4px;
+//   height: 4px;
+//   background: var(--gray-dark);
+// }
+
+// /* Вертикальный бегунок */
+// ::-webkit-scrollbar-thumb {
+//   background: var(--orange-regular);
+//   border-radius: 6px;
+// }
+
+// /* Горизонтальный бегунок */
+// ::-webkit-scrollbar-thumb:horizontal {
+//   background: var(--orange-regular);
+//   border-radius: 6px;
+// }
+
+// /* Место стыка скролла */
+// ::-webkit-scrollbar-corner {
+//   background: var(--gray-dark);
+// }
