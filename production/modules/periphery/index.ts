@@ -1,6 +1,7 @@
 export * from "./HighloadWalletV3";
 export * from "./calculations";
 export * from "./standards";
+export * from "./metadata";
 export * from "./parsers";
 export * from "./utils";
 export * from "./types";

@@ -1,7 +1,6 @@
 import { getTransactionsForAccount, retrieveAllUnknownTransactions } from "../src/oracle";
 import { Address, TonClient, TonClient4, type Transaction, JettonMaster } from "@ton/ton";
-import { getHttpV4Endpoint } from "@orbs-network/ton-access";
-import type { RawAddressString } from "starton-periphery";
+import { parseJettonMetadata, type RawAddressString } from "starton-periphery";
 import { test, describe, beforeAll } from "bun:test";
 import dotenv from "dotenv";
 
@@ -23,11 +22,11 @@ describe("Ton Eye", () => {
 
     beforeAll(async () => {
         tonClientInstance = new TonClient({
-            endpoint: "https://testnet.toncenter.com/api/v2/jsonRPC",
-            apiKey: "588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82",
+            endpoint: "https://toncenter.com/api/v2/jsonRPC",
+            apiKey: "867e7c7e9a1655809100a503744da279f4da6e235b600c469cafd746fe4d58c2",
             timeout: 20000
         });
-        tonClient4Instance = new TonClient4({ endpoint: await getHttpV4Endpoint({ network: "testnet" }) });
+        // tonClient4Instance = new TonClient4({ endpoint: await getHttpV4Endpoint({ network: "testnet" }) });
         addressVaultTestnetAddress = Address.parse("EQBx3ogufv7zZlqNqvGsnhGOfsIprcyKnMEe04KSREQAEG3z").toRawString();
         printTxs = (txs) => {
             let counter = 0;
@@ -101,7 +100,13 @@ describe("Ton Eye", () => {
             throw new Error("^^");
         }
     });
-    test("just some temporary shit I need to check fast", async () => {
-
+    test("jetton metadata parsing", async () => {
+        const jettonContract = tonClientInstance.open(
+            JettonMaster.create(
+                Address.parse("EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs")
+            )
+        );
+        const { content } = await jettonContract.getJettonData();
+        console.log(await parseJettonMetadata(content));
     });
 });

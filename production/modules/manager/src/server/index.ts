@@ -12,7 +12,7 @@ function createServer() {
         server: {
             swagger: { title, version },
             port,
-            // frontend_url
+            frontend_url
         }
     } = getConfig();
 
@@ -21,12 +21,10 @@ function createServer() {
             title: title,
             version: version
         })))
-        // .use(cors({ origin: frontend_url }))
+        .use(cors({ origin: frontend_url }))
         .use(cors())
         .use(UserRoutes())
-        .onError((err) => {
-            logger().error("Error in Elysia: ", err);
-        })
+        .onError(err => logger().error("Error in Elysia: ", err))
         .listen(port);
     assert(res.server, "caught dat bitch");
     return res;

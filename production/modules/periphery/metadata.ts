@@ -1,14 +1,37 @@
 import { beginCell, Builder, Cell, Dictionary, DictionaryValue, Slice } from "@ton/core";
 import { sha256 } from "ton-crypto";
+import axios from "axios";
 
 export const defaultJettonKeys = ["uri", "name", "description", "image", "image_data", "symbol", "decimals", "amount_style"];
 
-const keysToHashMap = async (keys: string[]) => {
-    let keyMap: { [key: string]: bigint } = {};
-    for (let i = 0; i < keys.length; i++) {
-        keyMap[keys[i]] = BigInt("0x" + (await sha256(keys[i])).toString("hex"));
-    }
+// Use type instead of interface
+export type JettonMetadata = {
+    uri?: string;
+    name?: string;
+    description?: string;
+    image?: string;
+    image_data?: string;
+    symbol?: string;
+    decimals?: string;
+    amount_style?: string;
 };
+
+export async function parseJettonMetadata(content: Cell): Promise<JettonMetadata> {
+    const cs = content.beginParse();
+    const contentType = cs.loadUint(8);
+
+    switch (contentType) {
+        case 1: // Off-chain content
+            const contentUrl = cs.remainingBits === 0 ? cs.loadStringRefTail() : cs.loadStringTail();
+            return await axios.get(formatLink(contentUrl)).then(res => res.data);
+        case 0: // On-chain content
+            const onChainData = await loadOnChainData(cs);
+            const offChainData: JettonMetadata = onChainData.uri ? await axios.get(formatLink(onChainData.uri)).then(res => res.data) : {};
+            return buildJettonMetadataFromSource(onChainData, offChainData);
+        default: // Unknown content type
+            throw new Error(`Unknown metadata type: ${contentType}`);
+    }
+}
 
 const contentValue: DictionaryValue<string> = {
     serialize: (src: string, builder: Builder) => {
@@ -20,41 +43,37 @@ const contentValue: DictionaryValue<string> = {
         if (prefix == 0) {
             return sc.loadStringTail();
         } else if (prefix == 1) {
-            // Not really tested, but feels like it should work
             const chunkDict = Dictionary.loadDirect(Dictionary.Keys.Uint(32), Dictionary.Values.Cell(), sc);
             return chunkDict.values().map(x => x.beginParse().loadStringTail()).join("");
-        } else {
-            throw (Error(`Prefix ${prefix} is not supported yet`));
-        }
+        } else
+            throw Error(`Prefix ${prefix} is not supported yet`);
     }
 };
-export async function parseJettonMetadata(content: Cell, additional?: string[]) {
-    const cs = content.beginParse();
-    const contentType = cs.loadUint(8);
-    if (contentType == 1) {
-        const noData = cs.remainingBits == 0;
-        if (noData && cs.remainingRefs == 0) {
-            console.info("No data in content cell!\n");
-        } else {
-            const contentUrl = noData ? cs.loadStringRefTail() : cs.loadStringTail();
-            console.info(`Content metadata url:${contentUrl}\n`);
-        }
-    } else if (contentType == 0) {
-        const hasAdditional = additional !== undefined && additional.length > 0;
-        const contentDict = Dictionary.load(Dictionary.Keys.BigUint(256), contentValue, cs);
-        const contentMap: { [key: string]: string } = {};
-        const contentKeys: string[] = hasAdditional ? [...defaultJettonKeys, ...additional] : defaultJettonKeys;
 
-        for (const name of contentKeys) {
-            // I know we should pre-compute hashed keys for known values... just not today.
-            const dictKey = BigInt("0x" + (await sha256(name)).toString("hex"));
-            const dictValue = contentDict.get(dictKey);
-            if (dictValue !== undefined) {
-                contentMap[name] = dictValue;
-            }
-        }
-        console.info(`Content:${JSON.stringify(contentMap, null, 2)}`);
-    } else {
-        console.info(`Unknown content format indicator:${contentType}\n`);
-    }
-};
+// Helper to load on-chain data into JettonMetadata
+async function loadOnChainData(cs: any): Promise<JettonMetadata> {
+    const contentDict = Dictionary.load(Dictionary.Keys.BigUint(256), contentValue, cs);
+    const onChainData: JettonMetadata = {};
+
+    await Promise.all(defaultJettonKeys.map(async (key) => {
+        const dictKey = BigInt("0x" + (await sha256(key)).toString("hex"));
+        const dictValue = contentDict.get(dictKey);
+        if (dictValue !== undefined) onChainData[key as keyof JettonMetadata] = dictValue;
+    }));
+    return onChainData;
+}
+
+// Helper to merge on-chain and off-chain data
+function buildJettonMetadataFromSource(onChainData: JettonMetadata, offChainData: JettonMetadata): JettonMetadata {
+    return defaultJettonKeys.reduce(
+        (metadata, key) => {
+            metadata[key as keyof JettonMetadata] = onChainData[key as keyof JettonMetadata] || offChainData[key as keyof JettonMetadata] || "";
+            return metadata;
+        },
+        {} as JettonMetadata
+    );
+}
+
+function formatLink(url: string): string {
+    return url.startsWith("ipfs://") ? url.replace("ipfs://", "https://ipfs.io/ipfs/") : url;
+}
