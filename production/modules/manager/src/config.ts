@@ -27,6 +27,14 @@ type Config = {
         dev_thread_id: number,
         prod_thread_id: number,
     },
+    ton_api: {
+        network: "testnet" | "mainnet",
+        limit_per_second: number,
+        keys: {
+            testnet: string,
+            mainnet: string,
+        },
+    },
 }
 
 let config: Config | null = null;
