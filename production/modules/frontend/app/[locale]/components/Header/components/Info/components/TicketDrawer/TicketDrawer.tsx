@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { useState, KeyboardEvent, MouseEvent } from "react";
 import { DrawerParagraph } from "./components/DrawerParagraph";
 import { DRAWER_FIFTH_TEXT_DATA, DRAWER_FIRST_TEXT_DATA, DRAWER_FOURTH_TEXT_DATA, DRAWER_SECOND_TEXT_DATA, DRAWER_SIXTH_TEXT_DATA, DRAWER_THIRD_TEXT_DATA } from "./constants";
+import { CustomButton } from "@/common/CustomButton";
 
 export function TicketDrawer() {
   const t = useTranslations("Tasks.header");
@@ -20,21 +21,6 @@ export function TicketDrawer() {
 
   function onClickCloseDrawerHandler() {
     setIsOpenDrawer(false);
-  }
-
-  function toggleDrawer(open: boolean) {
-    return (event: KeyboardEvent | MouseEvent) => {
-      if (
-        event &&
-        event.type === "keydown" &&
-        ((event as React.KeyboardEvent).key === "Tab" ||
-          (event as React.KeyboardEvent).key === "Shift")
-      ) {
-        return;
-      }
-
-      setIsOpenDrawer(open);
-    };
   }
   
   return (
@@ -58,6 +44,7 @@ export function TicketDrawer() {
       </MainBox>
       
       <CustomDrawer
+        closeButtonLabel={t("closeButton")}
         isOpen={isOpenDrawer}
         onClose={onClickCloseDrawerHandler}
         onOpen={onClickOpenDrawerHandler}

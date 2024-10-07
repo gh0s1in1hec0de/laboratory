@@ -28,7 +28,7 @@ export function Navbar() {
           height="100%"
           gap={{ xs: 0, sm: "5vw" }}
           paddingTop={1}
-          paddingBottom={2}
+          paddingBottom={2.5}
           flexDirection="row"
         >
           <NavbarItems />

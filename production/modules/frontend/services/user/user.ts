@@ -5,7 +5,7 @@ import { USER_ROUTES } from "@/routes";
 import { Task } from "@/types";
 import { localStorageWrapper } from "@/utils";
 
-async function postConnectWallet(address: string, referral: string | null): Promise<void> {
+async function postConnectWallet(address: string, referral?: string): Promise<void> {
   try {
     await baseService.post(USER_ROUTES.ConnectWallet, {
       address,

@@ -11,6 +11,7 @@
 		"header": {
 			"subtitle": "season",
 			"tooltip": "What is it",
+			"closeButton": "Got it!",
 			"connectWallet": "Connect wallet",
 			"disconnectWallet": "Disconnect",
 			"tickets": "tickets",
@@ -34,9 +35,11 @@
 					"text1": "Imagine making profits faster and easier than ever."
 				},
 				"fifthParagraph": {
-					"text1": "Each Star ticket opens doors to ",
-					"text2": "exclusive Wavelaunches",
-					"text3": " just for you."
+					"text1": "Each Star Ticket opens doors to ",
+					"text2": "Star Club Waves",
+					"text3": " in our ",
+					"text4": "Wavelaunches",
+					"text5": " just for you."
 				},
 				"sixthParagraph": {
 					"text1": "Complete 3 quests to earn 1 ticket and start your journey to success today!"

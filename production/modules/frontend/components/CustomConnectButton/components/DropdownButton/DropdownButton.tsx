@@ -1,6 +1,9 @@
 import { CustomButton } from "@/common/CustomButton";
 import { Label } from "@/common/Label";
 import { DropdownButtonProps } from "./types";
+import { ArrowIcon } from "@/icons/quests";
+import Grid from "@mui/material/Grid2";
+import styles from "./DropdownButton.module.scss";
 
 export function DropdownButton({
   smallAddress,
@@ -9,15 +12,23 @@ export function DropdownButton({
   return (
     <CustomButton 
       as="div"
-      background="orange"
       onClick={() => {}}
       padding="10px 0"
       fullWidth
     >
-      <Label
-        label={smallAddress}
-        variantSize="medium16"
-      />
+      <Grid 
+        container 
+        alignItems="center" 
+        justifyContent="center"
+        gap={1}
+      >
+        <Label
+          label={smallAddress}
+          variantSize="medium16"
+        />
+        
+        <ArrowIcon className={styles.icon} />
+      </Grid>
     </CustomButton>
   );
 }

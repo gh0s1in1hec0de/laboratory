@@ -3,6 +3,11 @@
   font-weight: 600;
 }
 
+@mixin medium32 {
+  font-size: 32px;
+  font-weight: 500;
+}
+
 @mixin semiBold18 {
   font-size: 18px;
   font-weight: 600;

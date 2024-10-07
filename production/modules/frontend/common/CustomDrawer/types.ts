@@ -7,4 +7,5 @@ export interface CustomDrawerProps {
   children: ReactNode;
   anchor?: "bottom" | "left" | "top" | "right";
   autoFocus?: boolean;
+  closeButtonLabel?: string;
 }

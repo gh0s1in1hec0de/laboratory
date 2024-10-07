@@ -7,6 +7,7 @@ export type LabelVariants =
   | "regular14"
   | "medium14"
   | "semiBold32"
+  | "medium32"
   | "regular12"
   | "bold18"
   | "medium16"

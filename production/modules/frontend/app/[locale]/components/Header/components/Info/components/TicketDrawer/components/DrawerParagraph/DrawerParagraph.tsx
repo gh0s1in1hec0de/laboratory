@@ -15,10 +15,8 @@ export function DrawerParagraph({
     <Box>
       {inBox ? (
         <MainBox 
-          style={{ marginLeft: "auto", cursor: "pointer" }}
           container
           padding="4px 12px"
-          alignItems="center"
           gap="2px"
           bgColor="orange" 
           rounded

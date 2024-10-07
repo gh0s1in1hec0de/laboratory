@@ -5,6 +5,9 @@ import styles from "./CustomDrawer.module.scss";
 import { CustomDrawerProps } from "./types";
 import { Container } from "../Container";
 import Grid from "@mui/material/Grid2";
+import { CustomButton } from "../CustomButton";
+import { Label } from "../Label";
+
 export function CustomDrawer({
   isOpen,
   onClose,
@@ -12,6 +15,7 @@ export function CustomDrawer({
   children,
   anchor = "bottom",
   autoFocus = true,
+  closeButtonLabel,
 }: CustomDrawerProps) {
 
   return (
@@ -37,9 +41,23 @@ export function CustomDrawer({
             <Box className={styles.button} />
           </Grid>
 
-          <Grid container width="100%">
+          <Grid container width="100%" paddingBottom="20px">
             {children}
           </Grid>
+
+          {closeButtonLabel && (
+            <CustomButton 
+              onClick={onClose}
+              padding="10px 0"
+              fullWidth
+            >
+              <Label 
+                label={closeButtonLabel} 
+                variantSize="regular14" 
+                offUserSelect
+              />
+            </CustomButton>
+          )}
         </Container>
       </SwipeableDrawer>
     </Portal>

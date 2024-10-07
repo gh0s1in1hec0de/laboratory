@@ -14,7 +14,7 @@ export function Balance() {
   return (
     <Label 
       label={error ? t("error") : `${balance}/3 ${t("tickets")}`} 
-      variantSize={error ? "medium14" : "semiBold32"} 
+      variantSize={error ? "medium14" : "medium32"} 
       variantColor={error ? "red" : "white"}
     />
   );

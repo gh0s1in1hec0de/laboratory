@@ -17,7 +17,7 @@ export function SubTasks({ subTasks, open, disabled }: SubTasksProps) {
       }}
       transition={{
         height: { duration: 0.3, ease: [0.42, 0, 0.58, 1] },
-        opacity: { duration: 0.3, ease: "easeInOut" },
+        opacity: { duration: 0.1, ease: "easeInOut" },
         layout: { duration: 0.1, ease: "easeInOut" },
       }}
     >
@@ -36,7 +36,6 @@ export function SubTasks({ subTasks, open, disabled }: SubTasksProps) {
             <Grid 
               key={index} 
               container 
-              size="grow" 
               flexDirection="column"
             >
               <Label

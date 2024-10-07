@@ -1,6 +1,5 @@
-import { ReactNode } from "react";
+import { PropsWithChildren } from "react";
 
-export interface RootLayoutProps {
-    children: ReactNode;
+export interface RootLayoutProps extends PropsWithChildren {
     params: {locale: string};
 }

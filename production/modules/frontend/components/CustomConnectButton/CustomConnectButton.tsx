@@ -58,6 +58,7 @@ export function CustomConnectButton({
               },
             ]}
           />
+          
           {successChildren || null}
         </>
       ) : (

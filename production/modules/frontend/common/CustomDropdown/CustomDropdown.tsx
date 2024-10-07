@@ -45,6 +45,7 @@ export function CustomDropdown({
                         <Label
                           label={t(item.label)}
                           variantSize="regular14" 
+                          offUserSelect
                         />
                       </CustomButton>
                     </MenuItem>

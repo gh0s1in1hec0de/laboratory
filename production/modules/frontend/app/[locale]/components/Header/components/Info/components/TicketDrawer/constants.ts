@@ -85,11 +85,27 @@ export const DRAWER_FIFTH_TEXT_DATA: TextData[] = [
     isCursive: false,
     variantSize: "regular16",
   },  
+  {
+    id: "10",
+    text: "fifthParagraph.text4",
+    isBold: true,
+    isHighlight: false,
+    isCursive: false,
+    variantSize: "regular16",
+  },  
+  {
+    id: "11",
+    text: "fifthParagraph.text5",
+    isBold: false,
+    isHighlight: false,
+    isCursive: false,
+    variantSize: "regular16",
+  },  
 ];
 
 export const DRAWER_SIXTH_TEXT_DATA: TextData[] = [
   {
-    id: "10",
+    id: "12",
     text: "sixthParagraph.text1",
     isBold: false,
     isHighlight: true,
