@@ -31,7 +31,12 @@ export function SubTasks({ subTasks, open, disabled }: SubTasksProps) {
           ))}
         </Grid> 
 
-        <Grid container flexDirection="column" size="grow">
+        <Grid 
+          container
+          flexDirection="column"
+          size="grow"
+          justifyContent="space-between"
+        >
           {subTasks.map((subTask, index) => (
             <Grid 
               key={index} 
