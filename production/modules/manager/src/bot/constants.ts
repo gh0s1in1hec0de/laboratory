@@ -187,7 +187,7 @@ export async function getAdminFilter(ctx: MyContext | HearsContext<MyContext>): 
     } = getConfig();
 
     if (!admins.includes(ctx.from!.id)) {
-        await ctx.reply("(⊙_⊙) Fuck off, you are not an admin...");
+        await ctx.reply("(⊙_⊙) Shutta f up, you are not an admin...");
         await ctx.stopPoll();
         return false;
     }

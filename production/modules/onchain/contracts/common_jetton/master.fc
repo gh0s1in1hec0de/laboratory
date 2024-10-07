@@ -240,7 +240,7 @@ cell build_content_cell(slice metadata_uri) inline {
 
 (int, int, slice, cell, cell) get_jetton_data() method_id {
     (int total_supply, slice admin_address, cell jetton_wallet_code, cell metadata_uri) = load_data();
-    return (total_supply, TRUE, admin_address, build_content_cell(metadata_uri.begin_parse()), jetton_wallet_code);
+    return (total_supply, FALSE, admin_address, build_content_cell(metadata_uri.begin_parse()), jetton_wallet_code);
 }
 
 slice get_wallet_address(slice owner_address) method_id {

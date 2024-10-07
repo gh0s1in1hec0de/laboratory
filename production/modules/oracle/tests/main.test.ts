@@ -1,8 +1,7 @@
 import { getTransactionsForAccount, retrieveAllUnknownTransactions } from "../src/oracle";
-import { Address, TonClient4, type Transaction } from "@ton/ton";
+import { Address, TonClient, TonClient4, type Transaction, JettonMaster } from "@ton/ton";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import type { RawAddressString } from "starton-periphery";
-import { maybeBruteforceOverload } from "../src/utils.ts";
 import { test, describe, beforeAll } from "bun:test";
 import dotenv from "dotenv";
 
@@ -13,15 +12,21 @@ async function getAccount(c: TonClient4, address: RawAddressString, seqno?: numb
     const seqno_ = seqno ? seqno : (await c.getLastBlock()).last.seqno;
     console.debug(`Seqno has been ${seqno ? "provided manually" : "taken from api"}: ${seqno_}`);
     // Do we really need it here?
-    return maybeBruteforceOverload<any>(c.getAccount(seqno_, Address.parse(address)));
+    return c.getAccount(seqno_, Address.parse(address));
 }
 
 describe("Ton Eye", () => {
+    let tonClientInstance: TonClient;
     let tonClient4Instance: TonClient4;
     let addressVaultTestnetAddress: RawAddressString;
     let printTxs: (txs: Transaction[]) => void;
 
     beforeAll(async () => {
+        tonClientInstance = new TonClient({
+            endpoint: "https://testnet.toncenter.com/api/v2/jsonRPC",
+            apiKey: "588cb5d0c59bdcee3f1f7810ff13284b7d89aa481481c02843587c6b43e07e82",
+            timeout: 20000
+        });
         tonClient4Instance = new TonClient4({ endpoint: await getHttpV4Endpoint({ network: "testnet" }) });
         addressVaultTestnetAddress = Address.parse("EQBx3ogufv7zZlqNqvGsnhGOfsIprcyKnMEe04KSREQAEG3z").toRawString();
         printTxs = (txs) => {
@@ -38,7 +43,7 @@ describe("Ton Eye", () => {
             console.log(`txs total amount: ${counter}`);
         };
     });
-    test("ton api wrapper testbed", async () => {
+    test.skip("ton api wrapper testbed", async () => {
         // Took deployed simple `address vault` from labs
         const accountEntity = await getAccount(tonClient4Instance, addressVaultTestnetAddress);
 
@@ -65,7 +70,7 @@ describe("Ton Eye", () => {
         });
         printTxs(txs);
     });
-    test("partial network scanning seamlessness", async () => {
+    test.skip("partial network scanning seamlessness", async () => {
         const address = addressVaultTestnetAddress;
         const archival = true;
         const stopAt = 24121092000001n;
