@@ -64,13 +64,7 @@ export async function storeTokenLaunch(
 }
 
 export async function getSortedTokenLaunches(
-    {
-        page,
-        limit,
-        orderBy,
-        order,
-        search = "",
-    }: StoredTokenLaunchRequest,
+    { page, limit, orderBy, order, search = "", }: StoredTokenLaunchRequest,
     client?: SqlClient
 ): Promise<StoredTokenLaunchResponse | null> {
     const offset = (page - 1) * limit;

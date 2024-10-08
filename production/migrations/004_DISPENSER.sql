@@ -12,12 +12,20 @@ CREATE TABLE reward_jettons
 CREATE OR REPLACE FUNCTION create_reward_pool_for_new_token_launch()
     RETURNS TRIGGER AS
 $$
+DECLARE
+    reward_total RECORD;
 BEGIN
-    -- Insert a new reward pool for each reward_jetton where current_balance > reward_amount
-    INSERT INTO reward_pools (token_launch, reward_jetton, reward_amount)
-    SELECT NEW.address, master_address, reward_amount
+    SELECT array_agg(master_address) AS master_addresses, array_agg(reward_amount) AS reward_amounts
+    INTO reward_total
     FROM reward_jettons
     WHERE current_balance > reward_amount;
+
+    INSERT INTO reward_pools (token_launch, reward_jetton, reward_amount)
+    SELECT NEW.address, unnest(reward_total.master_addresses), unnest(reward_total.reward_amounts);
+
+    UPDATE reward_jettons
+    SET current_balance = current_balance - reward_amount
+    WHERE master_address = ANY (reward_total.master_addresses);
 
     RETURN NEW;
 END;
@@ -28,7 +36,6 @@ CREATE TRIGGER trigger_create_reward_pool
     ON token_launches
     FOR EACH ROW
 EXECUTE FUNCTION create_reward_pool_for_new_token_launch();
-
 
 CREATE TABLE reward_pools
 (
@@ -74,7 +81,8 @@ BEGIN
     INTO current_balance
     FROM user_reward_jetton_balances
     WHERE "user" = OLD."user"
-      AND reward_jetton = OLD.reward_jetton;
+      AND reward_jetton = OLD.reward_jetton
+        FOR UPDATE; -- Locker
 
     IF current_balance - OLD.balance = 0 THEN
         -- Cleaning dead data

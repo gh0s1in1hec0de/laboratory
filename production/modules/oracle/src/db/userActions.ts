@@ -10,17 +10,8 @@ import {
 } from "starton-periphery";
 
 export async function storeUserAction(
-    {
-        actor,
-        tokenLaunch,
-        actionType,
-        whitelistTons,
-        publicTons,
-        jettons,
-        lt,
-        timestamp,
-        queryId
-    }: UserAction,
+    { actor, tokenLaunch, actionType, whitelistTons, publicTons, jettons, lt, timestamp, queryId }:
+        Omit<UserAction, "id">,
     client?: SqlClient
 ): Promise<void> {
     const res = await (client ?? globalClient)`

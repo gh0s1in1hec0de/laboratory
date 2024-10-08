@@ -27,13 +27,14 @@ type Config = {
         dev_thread_id: number,
         prod_thread_id: number,
     },
-    ton_api: {
+    onchain: {
         network: "testnet" | "mainnet",
         limit_per_second: number,
-        keys: {
+        api_keys: {
             testnet: string,
             mainnet: string,
         },
+        dispenser_wallet_address: string,
     },
 }
 

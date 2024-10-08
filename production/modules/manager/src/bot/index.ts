@@ -19,6 +19,7 @@ import {
     handleTasksPaginationCallback,
     deleteTask
 } from "./handlers";
+import { addRewardJetton } from "./handlers/addRewardJetton.ts";
 
 interface SessionData {
     launchesPage: number,
@@ -47,6 +48,7 @@ export async function createBot(): Promise<Bot<MyContext>> {
     maybeBot.use(session({ initial }));
     maybeBot.use(conversations());
     maybeBot.use(createConversation(addWalletsToRelations));
+    maybeBot.use(createConversation(addRewardJetton));
     maybeBot.use(createConversation(createTask));
     maybeBot.use(createConversation(deleteTask));
     maybeBot.use(hydrate());

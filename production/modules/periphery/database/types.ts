@@ -71,7 +71,7 @@ export enum UserActionType {
 
 // Id is optional as we use the same type for recording and retrieving data
 export type UserAction = {
-    id?: bigint,
+    id: bigint,
     actor: RawAddressString,
     tokenLaunch: RawAddressString,
     actionType: UserActionType,
@@ -83,9 +83,8 @@ export type UserAction = {
     queryId: bigint,
 };
 
-// TODO Figure out about ids
 export type UserClaim = {
-    id?: bigint,
+    id: bigint,
     tokenLaunch: RawAddressString,
     actor: RawAddressString,
     jettonAmount: Coins,
@@ -116,7 +115,7 @@ export type StoredWhitelistRelations = {
 // Dispenser
 export type RewardJetton = {
     masterAddress: RawAddressString,
-    metadata: JettonMetadata, // Assuming JSONB can be any object
+    metadata: JettonMetadata,
     currentBalance: Coins,
     rewardAmount: Coins,
 };

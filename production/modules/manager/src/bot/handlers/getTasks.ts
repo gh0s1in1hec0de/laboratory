@@ -1,19 +1,18 @@
 import type { CallbackQueryContext } from "grammy";
 import type { MyContext } from "..";
-import { 
-    getReplyText, 
-    getResetTasksKeyboard, 
-    initTasksSortData, 
-    getTasksReply, 
-    getTasksPaginationKeyboard 
-} from "../constants";
 import { logger } from "../../logger";
-import type { StoredTasksRequest } from "../../db/types";
 import * as db from "../../db";
+import {
+    getTasksPaginationKeyboard,
+    getResetTasksKeyboard,
+    initTasksSortData,
+    getTasksReply,
+    getReplyText,
+} from "../constants";
 
 async function handleListTasks(
     ctx: CallbackQueryContext<MyContext>,
-    sortData: StoredTasksRequest,
+    sortData: db.StoredTasksRequest,
 ): Promise<void> {
     try {
         const data = await db.getSortedTasks(sortData.page, sortData.limit);
@@ -25,7 +24,7 @@ async function handleListTasks(
             );
             return;
         }
-    
+
         await ctx.callbackQuery.message!.editText(
             getTasksReply(data.storedTasks),
             { reply_markup: getTasksPaginationKeyboard(data.hasMore, sortData.page) }
@@ -52,7 +51,7 @@ export async function handleListTasksCallback(ctx: CallbackQueryContext<MyContex
     });
 }
 
-export async function handleTasksPaginationCallback(ctx: CallbackQueryContext<MyContext>){
+export async function handleTasksPaginationCallback(ctx: CallbackQueryContext<MyContext>) {
     await ctx.answerCallbackQuery();
     const newPage = ctx.callbackQuery.data == "next_tasks"
         ? ctx.session.tasksPage += 1

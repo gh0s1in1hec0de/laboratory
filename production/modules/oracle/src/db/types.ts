@@ -11,7 +11,7 @@ type SqlTypes = { bigint: bigint };
 export type SqlClient = Sql<SqlTypes>;
 
 // DB entities
-export interface StoredTokenLaunchRequest {
+export type StoredTokenLaunchRequest = {
     page: number,
     limit: number,
     orderBy: TokenLaunchFields,
@@ -19,41 +19,41 @@ export interface StoredTokenLaunchRequest {
     search?: string,
 }
 
-export interface StoredTokenLaunchResponse {
+export type StoredTokenLaunchResponse = {
     storedTokenLaunch: StoredTokenLaunch[],
     hasMore: boolean,
 }
 
-export interface StoredTasksRequest {
+export type StoredTasksRequest = {
     page: number,
     limit: number,
 }
 
-export interface ConnectedWalletRequest {
+export type ConnectedWalletRequest = {
     address: RawAddressString,
     referral?: string,
 }
 
-export interface TicketBalanceRequest {
+export type TicketBalanceRequest = {
     address: RawAddressString,
 }
 
-export interface TasksRequest {
+export type TasksRequest = {
     address?: RawAddressString,
     staged: string,
 }
 
-export interface SortedTasksRequest {
+export type SortedTasksRequest = {
     page: number,
     limit: number,
 }
 
-export interface SortedTasks {
+export type SortedTasks = {
     storedTasks: StoredTasks[],
     hasMore: boolean,
 }
 
-export interface StoredTasks {
+export type StoredTasks = {
     taskId: number,
     name: string,
     description: string,
@@ -61,17 +61,17 @@ export interface StoredTasks {
     createdAt: UnixTimeSeconds,
 }
 
-export interface StoredUsersTasksRelations {
+export type StoredUsersTasksRelations = {
     callerAddress: RawAddressString,
     taskId: number,
 }
 
-export interface Subtask {
+export type Subtask = {
     name: string,
     description: string,
 }
 
-export interface TasksResponse {
+export type TasksResponse = {
     taskId: number,
     name: string,
     description: Subtask[],

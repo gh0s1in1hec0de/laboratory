@@ -1,5 +1,5 @@
-import type { StoredTasks, StoredTasksRequest, StoredTokenLaunch, StoredTokenLaunchRequest } from "../db";
-import { SortOrder, TokenLaunchFields } from "starton-periphery";
+import { SortOrder, type StoredTokenLaunch, TokenLaunchFields } from "starton-periphery";
+import type { StoredTasks, StoredTasksRequest, StoredTokenLaunchRequest } from "../db";
 import { type HearsContext, InlineKeyboard } from "grammy";
 import type { MyContext } from "./index";
 import { getConfig } from "../config";
