@@ -1,6 +1,6 @@
-import * as db from "../../../db";
 import { logger } from "../../../logger";
 import { ok as assert } from "assert";
+import * as db from "../../../db";
 
 export async function getTokenLaunches({
     orderBy,

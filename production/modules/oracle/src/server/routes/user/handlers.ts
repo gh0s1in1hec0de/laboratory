@@ -1,6 +1,6 @@
+import type { Caller } from "starton-periphery";
 import { logger } from "../../../logger";
 import * as db from "../../../db";
-import type { Caller } from "starton-periphery";
 
 export async function connectCallerWallet({
     address,
@@ -11,67 +11,6 @@ export async function connectCallerWallet({
         return res;
     } catch (e) {
         logger().error(`error in http request 'connectWallet': ${e}`);
-        return `error: ${e}`;
-    }
-}
-
-export async function getCallerTicketBalance({
-    address,
-}: db.TicketBalanceRequest): Promise<number | string> {
-    try {
-        const res = await db.getTicketBalance(address);
-        if (res === null) return `user with address not found: ${address}`;
-        return res;
-    } catch (e) {
-        logger().error(`error in http request 'getTicketBalance': ${e}`);
-        return `error: ${e}`;
-    }
-}
-
-function parseSubtasks(description: string): db.Subtask[] {
-    const subtasks = description.split("&");
-    const result = [];
-
-    for (let i = 0; i < subtasks.length; i += 2) {
-        result.push({
-            name: subtasks[i],
-            description: subtasks[i + 1] || "",
-        });
-    }
-
-    return result;
-}
-
-
-export async function getCallerTasks({
-    staged,
-    address,
-}: db.TasksRequest): Promise<db.TasksResponse[] | string> {
-    try {
-        const tasksDb = await db.getTasks(staged);
-        if (!tasksDb) return "tasks not found";
-
-        const transformedTasks: db.TasksResponse[] = await Promise.all(
-            tasksDb.map(async (task) => {
-                const subQuests = parseSubtasks(task.description);
-
-                const usersTasksRelation = await db.getUsersTasksRelation(address, task.taskId);
-
-
-                return {
-                    taskId: task.taskId,
-                    name: task.name,
-                    description: subQuests,
-                    rewardTickets: task.rewardTickets,
-                    staged: task.staged,
-                    completed: !!usersTasksRelation,
-                };
-            })
-        );
-
-        return transformedTasks;
-    } catch (e) {
-        logger().error(`error in http request 'getTasks': ${e}`);
         return `error: ${e}`;
     }
 }
