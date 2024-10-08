@@ -40,8 +40,8 @@ CREATE TABLE reward_pools
     PRIMARY KEY (token_launch, reward_jetton)
 );
 
-CREATE TYPE user_launch_reward_status AS ENUM ('unclaimed', 'processing', 'claimed');
-CREATE TABLE user_launch_rewards
+CREATE TYPE user_launch_reward_status AS ENUM ('unclaimed', 'claimed');
+CREATE TABLE user_launch_reward_positions
 (
     "user"        address                   NOT NULL REFERENCES callers (address),
     token_launch  address                   NOT NULL REFERENCES token_launches (address),
@@ -50,7 +50,6 @@ CREATE TABLE user_launch_rewards
 
     balance       coins                     NOT NULL DEFAULT 0,
     status        user_launch_reward_status NOT NULL DEFAULT 'unclaimed',
-    created_at    TIMESTAMP                 NOT NULL DEFAULT now(),
 
     PRIMARY KEY ("user", token_launch, reward_jetton)
 );
@@ -63,6 +62,46 @@ CREATE TABLE user_reward_jetton_balances
     balance       coins   NOT NULL DEFAULT 0,
     PRIMARY KEY ("user", reward_jetton)
 );
+
+CREATE OR REPLACE FUNCTION handle_reward_claim()
+    RETURNS TRIGGER AS
+$$
+DECLARE
+    current_balance coins;
+BEGIN
+    -- Get the current balance for the user and reward jetton
+    SELECT balance
+    INTO current_balance
+    FROM user_reward_jetton_balances
+    WHERE "user" = OLD."user"
+      AND reward_jetton = OLD.reward_jetton;
+
+    IF current_balance - OLD.balance = 0 THEN
+        -- Cleaning dead data
+        DELETE
+        FROM user_reward_jetton_balances
+        WHERE "user" = OLD."user"
+          AND reward_jetton = OLD.reward_jetton;
+    ELSIF current_balance - OLD.balance > 0 THEN
+        UPDATE user_reward_jetton_balances
+        SET balance = balance - OLD.balance
+        WHERE "user" = OLD."user"
+          AND reward_jetton = OLD.reward_jetton;
+    ELSE
+        RAISE EXCEPTION 'Insufficient balance to claim. Current balance: %, Claim amount: %', current_balance, OLD.balance;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_handle_reward_claim
+    AFTER UPDATE OF status
+    ON user_launch_reward_positions
+    FOR EACH ROW
+    WHEN (NEW.status = 'claimed')
+EXECUTE FUNCTION handle_reward_claim();
+
 
 -- ERROR HANDLING
 CREATE TABLE user_launch_reward_errors
@@ -99,7 +138,7 @@ BEGIN
             WHERE rp.token_launch = NEW.token_launch
             LOOP
                 -- Insert into user_launch_reward
-                INSERT INTO user_launch_rewards ("user", token_launch, reward_jetton, user_claim, balance)
+                INSERT INTO user_launch_reward_positions ("user", token_launch, reward_jetton, user_claim, balance)
                 VALUES (NEW.actor, NEW.token_launch, reward_jetton_value, NEW.id, calculated_balance_value);
 
                 -- Upsert (Insert or Update) the user_reward_jetton_balances
@@ -123,65 +162,7 @@ CREATE TRIGGER trigger_create_user_launch_reward
     FOR EACH ROW
 EXECUTE FUNCTION create_user_launch_reward_for_claim();
 
--- Code, related to claims of corresponding withdrawals
-CREATE TABLE user_claim_applications
-(
-    id           VARCHAR(512) NOT NULL,
-    "user"       address      NOT NULL REFERENCES callers (address),
-    token_launch address REFERENCES token_launches (address),
-
-    created_at   TIMESTAMP    NOT NULL DEFAULT now(),
-    satisfied    BOOLEAN      NOT NULL DEFAULT FALSE
-);
-
-CREATE OR REPLACE FUNCTION mark_rewards_as_processing()
-    RETURNS TRIGGER AS
-$$
-BEGIN
-    -- Update user_launch_reward to 'processing' for rewards created before the user_claim_application
-    UPDATE user_launch_rewards
-    SET status = 'processing'
-    WHERE "user" = NEW."user"
-      AND created_at < NEW.created_at
-      AND status = 'unclaimed'
-      AND (NEW.token_launch IS NULL OR token_launch = NEW.token_launch);
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_mark_rewards_processing
-    AFTER INSERT
-    ON user_claim_applications
-    FOR EACH ROW
-EXECUTE FUNCTION mark_rewards_as_processing();
-
-
-CREATE OR REPLACE FUNCTION mark_rewards_as_claimed()
-    RETURNS TRIGGER AS
-$$
-BEGIN
-    IF NEW.satisfied THEN
-        -- Update user_launch_reward to 'claimed' if token_launch is provided or based on creation time
-        UPDATE user_launch_rewards
-        SET status = 'claimed'
-        WHERE "user" = NEW."user"
-          AND created_at < NEW.created_at
-          AND status = 'processing'
-          AND (NEW.token_launch IS NULL OR token_launch = NEW.token_launch);
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_mark_rewards_claimed
-    AFTER UPDATE OF satisfied
-    ON user_claim_applications
-    FOR EACH ROW
-EXECUTE FUNCTION mark_rewards_as_claimed();
-
--- Listening for user launch reward errors
+-- Errors tracing to client-
 CREATE OR REPLACE FUNCTION notify_user_launch_reward_error()
     RETURNS trigger AS
 $$
@@ -203,7 +184,6 @@ CREATE TRIGGER after_insert_user_launch_reward_error
     ON user_launch_reward_errors
     FOR EACH ROW
 EXECUTE FUNCTION notify_user_launch_reward_error();
-
 
 
 

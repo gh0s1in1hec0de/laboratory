@@ -1,0 +1,17 @@
+mode: "dev" # | "prod"
+
+server:
+  port: 5001
+
+logger:
+  bot_token: ""
+  chat_id: -1111111111111
+  dev_thread_id: 2
+  prod_thread_id: 4
+
+ton_api:
+  network: "testnet"
+  limit_per_second: 10
+  keys:
+    testnet: ""
+    mainnet: ""
