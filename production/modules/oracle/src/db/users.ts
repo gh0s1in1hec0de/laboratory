@@ -1,4 +1,5 @@
-import type { Caller, SqlClient } from "./types";
+import type { Caller } from "starton-periphery";
+import type { SqlClient } from "./types";
 import { globalClient } from "./db.ts";
 
 export async function getCaller(address: string, client?: SqlClient): Promise<Caller | null> {

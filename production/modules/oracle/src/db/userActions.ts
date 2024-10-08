@@ -1,7 +1,13 @@
-import type { UserActionType, SqlClient, UserAction, UserClaim } from "./types";
-import type { RawAddressString, UnixTimeSeconds } from "starton-periphery";
+import type { SqlClient } from "./types";
 import { globalClient } from "./db";
 import { logger } from "../logger";
+import {
+    type RawAddressString,
+    type UnixTimeSeconds,
+    type UserAction,
+    type UserClaim,
+    UserActionType,
+} from "starton-periphery";
 
 export async function storeUserAction(
     {

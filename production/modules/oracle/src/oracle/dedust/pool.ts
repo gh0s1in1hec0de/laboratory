@@ -1,6 +1,6 @@
 import {
+    SUBWALLET_ID, type RawAddressString, type Coins, type DexData,
     TESTNET_FACTORY_ADDR, BURN_ADDR, DEFAULT_TIMEOUT,
-    SUBWALLET_ID, type RawAddressString, type Coins,
 } from "starton-periphery";
 import { chiefWalletData } from "../highload";
 import { currentNetwork } from "../../config";
@@ -164,7 +164,7 @@ export async function createPoolForJetton(
                 if (reserve1 > 0n && reserve2 > 0n) {
                     logger().info(`liquidity deposit [${reserve1}, ${reserve2}] confirmed for ${jetton.masterAddress} (launch ${launchAddress}, pool ${poolContract.address})`);
 
-                    let newDexData: db.DexData;
+                    let newDexData: DexData;
                     if (dexData) {
                         newDexData = dexData;
                         newDexData.addedLiquidity = true;

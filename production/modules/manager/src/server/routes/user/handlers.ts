@@ -1,11 +1,12 @@
+import type { Caller } from "starton-periphery";
 import { logger } from "../../../logger";
-import * as db from "../../../db";
 import { Address } from "@ton/core";
+import * as db from "../../../db";
 
 export async function connectCallerWallet({
     address,
     referral,
-}: db.ConnectedWalletRequest): Promise<db.Caller | string> {
+}: db.ConnectedWalletRequest): Promise<Caller | string> {
     try {
         const res = await db.connectWallet(
             Address.parse(address).toRawString(),
@@ -57,10 +58,9 @@ export async function getCallerTasks({
         
         const usersTasksRelations = address ? await db.getUsersTasksRelations(Address.parse(address).toRawString()) : null;
 
-        const transformedTasks: db.TasksResponse[] = await Promise.all(
+        return await Promise.all(
             tasksDb.map(async (task) => {
                 const subQuests = parseSubtasks(task.description);
-
                 return {
                     taskId: task.taskId,
                     name: task.name,
@@ -71,8 +71,6 @@ export async function getCallerTasks({
                 };
             })
         );
-
-        return transformedTasks;
     } catch (e) {
         logger().error(`error in http request 'getTasks': ${e}`);
         return `error: ${e}`;

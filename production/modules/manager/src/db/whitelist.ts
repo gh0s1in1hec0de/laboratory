@@ -1,6 +1,6 @@
-import type { SqlClient, StoredWhitelistRelations } from "./types";
+import type { RawAddressString, StoredWhitelistRelations } from "starton-periphery";
+import type { SqlClient } from "./types";
 import { globalClient } from "./db";
-import type { RawAddressString } from "starton-periphery";
 
 export async function storeWhitelistRelation(
     tokenLaunchAddress: string,

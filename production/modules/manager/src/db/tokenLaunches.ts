@@ -1,8 +1,8 @@
+import type { StoredTokenLaunch } from "starton-periphery";
 import { globalClient } from "./db";
 import type {
     StoredTokenLaunchResponse,
     StoredTokenLaunchRequest,
-    StoredTokenLaunch,
     SqlClient,
 } from "./types";
 

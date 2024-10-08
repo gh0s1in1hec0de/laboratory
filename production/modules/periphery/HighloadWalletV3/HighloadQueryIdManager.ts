@@ -29,6 +29,7 @@ export class HighloadQueryIdManager {
         if (this.bitnumber > MAX_BIT_NUMBER) {
             this.bitnumber = 0n;
             this.shift += 1n;
+            // TODO Zero maxshift too
             assert(this.shift <= BigInt(maxShift), "wallet overload");
         }
 

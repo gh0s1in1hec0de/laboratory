@@ -1,5 +1,5 @@
-import type{ StoredUserBalance, SqlClient } from "./types";
-import type { RawAddressString } from "starton-periphery";
+import type { RawAddressString, StoredUserBalance } from "starton-periphery";
+import type { SqlClient } from "./types";
 import { globalClient } from "./db";
 
 export async function getCallerBalance(address: RawAddressString, launch: RawAddressString, client?: SqlClient): Promise<StoredUserBalance | null> {

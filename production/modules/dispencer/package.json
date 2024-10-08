@@ -1,5 +1,5 @@
 {
-  "name": "manager",
+  "name": "dispencer",
   "module": "src/index.ts",
   "type": "module",
   "devDependencies": {

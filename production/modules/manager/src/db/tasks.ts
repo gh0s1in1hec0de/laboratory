@@ -1,10 +1,11 @@
 import type { SortedTasks, SqlClient, StoredTasks, StoredUsersTasksRelations } from "./types";
-import { globalClient } from "./db";
 import type { RawAddressString } from "starton-periphery";
+import { globalClient } from "./db";
 
 export async function getTasks(
     staged: string,
-    client?: SqlClient
+    client?: SqlClient,
+    createdAt: number = 7 * 86400
 ): Promise<StoredTasks[] | null> {
     const c = client ?? globalClient;
 
@@ -12,8 +13,8 @@ export async function getTasks(
         SELECT *
         FROM tasks
         ${staged === "true" 
-        ? c`WHERE EXTRACT(EPOCH FROM now()) - created_at > 7 * 86400`
-        : c`WHERE EXTRACT(EPOCH FROM now()) - created_at <= 7 * 86400`}
+        ? c`WHERE EXTRACT(EPOCH FROM now()) - created_at > ${createdAt}`
+        : c`WHERE EXTRACT(EPOCH FROM now()) - created_at <= ${createdAt}`}
   `;
     return res.length ? res : null;
 }

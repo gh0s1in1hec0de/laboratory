@@ -5,7 +5,6 @@ import { HighloadWalletV3 } from "starton-periphery";
 import { balancedTonClient } from "../api";
 import { chief } from "../../config";
 
-
 let keyPair: KeyPair | null = null;
 let wallet: OpenedContract<HighloadWalletV3> | null = null;
 let queryIdManager: CachedHighloadQueryIdManager | null;

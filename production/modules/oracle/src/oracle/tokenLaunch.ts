@@ -1,24 +1,16 @@
+import {
+    type RawAddressString, type LamportTime, type UserAction, type StoredTokenLaunch,
+    parseGetConfigResponse, parseBalanceUpdate, parseRefundOrClaim, loadOpAndQueryId,
+    BalanceUpdateMode, TokensLaunchOps, UserVaultOps, JettonOps, UserActionType,
+    parseMoneyFlows, jettonFromNano, parseJettonTransfer, parseTimings,
+    MAX_WL_ROUND_TON_LIMIT, balanceUpdateModeToUserActionType,
+} from "starton-periphery";
 import { balancedTonClient, retrieveAllUnknownTransactions } from "./api";
 import { Address, fromNano } from "@ton/ton";
 import { ok as assert } from "node:assert";
 import { logger } from "../logger";
 import { delay } from "../utils";
 import * as db from "../db";
-import {
-    MAX_WL_ROUND_TON_LIMIT,
-    parseGetConfigResponse,
-    type RawAddressString,
-    parseBalanceUpdate,
-    parseRefundOrClaim,
-    BalanceUpdateMode,
-    type LamportTime,
-    loadOpAndQueryId,
-    TokensLaunchOps,
-    parseMoneyFlows,
-    jettonFromNano,
-    UserVaultOps,
-    parseTimings, JettonOps, parseJettonTransfer,
-} from "starton-periphery";
 
 export async function spawnNewLaunchesScanners(scanFrom?: number) {
     let timeUpdate = scanFrom;
@@ -50,7 +42,7 @@ export async function spawnNewLaunchesScanners(scanFrom?: number) {
     }
 }
 
-async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, launchAddress?: RawAddressString,) {
+async function handleTokenLaunchUpdates(tokenLaunch?: StoredTokenLaunch, launchAddress?: RawAddressString,) {
     assert(launchAddress || tokenLaunch, "must provide launch data or an address");
     const launch = tokenLaunch ?? await db.getTokenLaunch(launchAddress!);
     if (!launch) {
@@ -70,9 +62,9 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                 await delay(delayTime);
                 continue;
             }
-            const newActionsChunk: db.UserAction[] = [];
+            const newActionsChunk: UserAction[] = [];
             for (const tx of newTxs) {
-                const userActions: db.UserAction[] = [];
+                const userActions: UserAction[] = [];
                 const inMsg = tx.inMessage;
                 if (!inMsg) continue;
                 if (inMsg.info.type !== "internal" || inMsg.info.bounced) continue;
@@ -96,14 +88,14 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                     userActions.push({
                         actor: recipient,
                         tokenLaunch: launch.address,
-                        actionType: mode !== undefined ? db.balanceUpdateModeToUserActionType[mode] : db.UserActionType.Claim,
+                        actionType: mode !== undefined ? balanceUpdateModeToUserActionType[mode] : UserActionType.Claim,
                         whitelistTons,
                         publicTons,
                         jettons: futureJettons,
                         lt,
                         timestamp: tx.now,
                         queryId
-                    } as db.UserAction);
+                    } as UserAction);
                 }
                 if (op === TokensLaunchOps.CreatorBuyout) {
                     const configResponse = await balancedTonClient.execute(
@@ -169,14 +161,14 @@ async function handleTokenLaunchUpdates(tokenLaunch?: db.StoredTokenLaunch, laun
                         userActions.push({
                             actor: inMsgSender.toRawString(),
                             tokenLaunch: launch.address,
-                            actionType: db.balanceUpdateModeToUserActionType[mode],
+                            actionType: balanceUpdateModeToUserActionType[mode],
                             whitelistTons,
                             publicTons,
                             jettons: futureJettons,
                             lt,
                             timestamp: tx.now,
                             queryId
-                        } as db.UserAction);
+                        } as UserAction);
                     }
                     if (op === JettonOps.Transfer) {
                         const { jettonAmount, to, forwardPayload } = parseJettonTransfer(msgBodyData);

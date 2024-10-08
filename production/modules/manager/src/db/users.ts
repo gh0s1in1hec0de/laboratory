@@ -1,6 +1,6 @@
-import type { Caller, SqlClient } from "./types";
+import type { RawAddressString, Caller } from "starton-periphery";
+import type {  SqlClient } from "./types";
 import { globalClient } from "./db.ts";
-import type { RawAddressString } from "starton-periphery";
 
 export async function getCaller(
     callerAddress: RawAddressString,

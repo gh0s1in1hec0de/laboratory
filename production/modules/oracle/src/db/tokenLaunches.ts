@@ -1,16 +1,16 @@
-import type { Coins, RawAddressString, TokenLaunchTimings, UnixTimeSeconds } from "starton-periphery";
+import type { StoredTokenLaunchResponse, StoredTokenLaunchRequest, SqlClient, } from "./types";
 import { ok as assert } from "assert";
 import { logger } from "../logger.ts";
 import { globalClient } from "./db";
 import postgres from "postgres";
 import type {
-    StoredTokenLaunchResponse,
     PostDeployEnrollmentStats,
-    StoredTokenLaunchRequest,
+    TokenLaunchTimings,
     StoredTokenLaunch,
-    SqlClient,
-    DexData,
-} from "./types";
+    RawAddressString,
+    UnixTimeSeconds,
+    Coins, DexData,
+} from "starton-periphery";
 
 // Warning! In runtime, when `StoredTokenLaunch` is returned - `TokenLaunchTimings`' fields are strings.
 // So - be careful, when using it - its better convert it via `new Date()`.
@@ -56,7 +56,8 @@ export async function storeTokenLaunch(
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
         INSERT INTO token_launches (identifier, address, creator, version, metadata, timings, total_supply, created_at)
-        VALUES (${identifier}, ${address}, ${creator}, ${version}, ${metadata}, ${timings}, ${totalSupply}, ${createdAt})
+        VALUES (${identifier}, ${address}, ${creator}, ${version}, ${metadata}, ${timings}, ${totalSupply},
+                ${createdAt})
         RETURNING 1;
     `;
     if (res.length !== 1) logger().warn(`exactly 1 column must be created, got: ${res}`);

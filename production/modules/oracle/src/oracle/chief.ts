@@ -10,12 +10,14 @@ import * as db from "../db";
 import {
     DEFAULT_TIMEOUT, QUERY_ID_LENGTH,
     SUBWALLET_ID, OP_LENGTH,
+    type StoredTokenLaunch,
     parseGetConfigResponse,
     loadOpAndQueryId,
     parseMoneyFlows,
     TokensLaunchOps,
     jettonFromNano,
-    type Coins,
+    type DexData,
+    type Coins
 } from "starton-periphery";
 
 export async function chiefScanning() {
@@ -47,7 +49,7 @@ async function validateEndedPendingLaunches() {
         const { keyPair, wallet, queryIdManager } = await chiefWalletData();
 
         const actions: OutActionSendMsg[] = [];
-        const failedLaunches: db.StoredTokenLaunch[] = [];
+        const failedLaunches: StoredTokenLaunch[] = [];
         for (const launch of pendingLaunches) {
             const { address } = launch;
             const launchAddressParsed = Address.parse(address);
@@ -182,7 +184,7 @@ async function createPoolsForNewJettons() {
         );
         for (const { address, dexData } of waitingForPoolLaunches) {
             if (dexData?.payedToCreator) continue;
-            let newDexData: db.DexData;
+            let newDexData: DexData;
             if (dexData) {
                 newDexData = dexData;
                 newDexData.payedToCreator = true;

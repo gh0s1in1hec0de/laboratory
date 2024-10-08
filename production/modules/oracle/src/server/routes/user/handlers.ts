@@ -1,9 +1,10 @@
 import { logger } from "../../../logger";
 import * as db from "../../../db";
+import type { Caller } from "starton-periphery";
 
 export async function connectCallerWallet({
     address,
-}: db.ConnectedWalletRequest): Promise<db.Caller | string> {
+}: db.ConnectedWalletRequest): Promise<Caller | string> {
     try {
         const res = await db.connectWallet(address);
         if (!res) return "user already exists";

@@ -1,8 +1,7 @@
 import { currentNetwork, getConfig, mainnetKeys, testnetKeys } from "../config";
-import { Address, TonClient, TonClient4, type Transaction } from "@ton/ton";
 import type { LamportTime, RawAddressString } from "starton-periphery";
-import { delay, maybeBruteforceOverload, Network } from "../utils";
-import { getHttpV4Endpoint } from "@orbs-network/ton-access";
+import { Address, TonClient, type Transaction } from "@ton/ton";
+import { delay, Network } from "../utils";
 import { logger } from "../logger";
 
 class RateLimiter {

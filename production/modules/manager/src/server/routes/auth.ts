@@ -1,6 +1,6 @@
 import { type Context } from "elysia";
-import * as db from "../../db";
 import { Address } from "@ton/core";
+import * as db from "../../db";
 
 export async function authMiddleware(context: Context) {
     const callerAddress = context.request.headers.get("address");
