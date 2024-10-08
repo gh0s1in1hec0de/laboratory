@@ -1,6 +1,7 @@
 import { type Coins, type RawAddressString, type RewardJetton } from "starton-periphery";
-import { globalClient, type SqlClient } from "oracle/src/db";
 import { logger } from "oracle/src/logger.ts";
+import type { SqlClient } from "./types";
+import { globalClient } from "./db";
 
 export async function getRewardJetton(masterAddress: RawAddressString, client?: SqlClient): Promise<RewardJetton | null> {
     const res = await (client ?? globalClient)<RewardJetton[]>`

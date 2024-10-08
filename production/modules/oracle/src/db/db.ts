@@ -2,10 +2,6 @@ import type { SqlClient } from "./types";
 import { logger } from "../logger";
 import postgres from "postgres";
 
-/*
-  TODO Verify if it is needed to do JSON.stringify() in queries?
-*/
-
 let cachedGlobalClient: SqlClient | null = null;
 export const globalClient = await createPostgresClient();
 
