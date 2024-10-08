@@ -2,13 +2,14 @@ import { UserRoutes } from "./routes";
 import { getSwaggerConfig } from "./config";
 import { swagger } from "@elysiajs/swagger";
 import { ok as assert } from "node:assert";
-import { getConfig } from "../config";
+import { AppMode, getConfig } from "../config";
 import { logger } from "../logger";
 import Elysia from "elysia";
 import cors from "@elysiajs/cors";
 
 function createServer() {
     const {
+        mode,
         server: {
             swagger: { title, version },
             port,
@@ -21,8 +22,7 @@ function createServer() {
             title: title,
             version: version
         })))
-        .use(cors({ origin: frontend_url }))
-        .use(cors())
+        .use(cors(mode === AppMode.PROD ? { origin: frontend_url } : {}))
         .use(UserRoutes())
         .onError(err => logger().error("Error in Elysia: ", err))
         .listen(port);
