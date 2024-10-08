@@ -10,7 +10,7 @@ CREATE TABLE token_launches
     -- Original json, not one with url field only
     metadata                     JSONB             NOT NULL,
     timings                      JSONB             NOT NULL,
-        total_supply                 coins             NOT NULL,
+    total_supply                 coins             NOT NULL,
     -- Time of transaction, where actual launch was created
     created_at                   unix_time_seconds NOT NULL,
     -- All null by default
@@ -65,7 +65,7 @@ CREATE TABLE user_actions
 -- It is user by dispenser to count reward after
 CREATE TABLE user_claims
 (
-    id BIGSERIAL PRIMARY KEY,
+    id            BIGSERIAL PRIMARY KEY,
     token_launch  address NOT NULL REFERENCES token_launches (address),
     actor         address NOT NULL REFERENCES callers (address),
     jetton_amount coins   NOT NULL CHECK ( jetton_amount > 0 ),

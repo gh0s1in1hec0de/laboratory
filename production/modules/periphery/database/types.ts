@@ -1,6 +1,7 @@
 import { BalanceUpdateMode, Coins, GlobalVersions, LamportTime, RawAddressString, TokenMetadata } from "../standards";
 import type { TokenLaunchTimings } from "../types";
 import type { UnixTimeSeconds } from "../utils";
+import { JettonMetadata } from "../metadata";
 
 export type StoredHeight = {
     contractAddress: RawAddressString,
@@ -82,7 +83,9 @@ export type UserAction = {
     queryId: bigint,
 };
 
+// TODO Figure out about ids
 export type UserClaim = {
+    id?: bigint,
     tokenLaunch: RawAddressString,
     actor: RawAddressString,
     jettonAmount: Coins,
@@ -109,3 +112,37 @@ export type StoredWhitelistRelations = {
     tokenLaunchAddress: string,
     callerAddress: string,
 }
+
+// Dispenser
+export type RewardJetton = {
+    masterAddress: RawAddressString,
+    metadata: JettonMetadata, // Assuming JSONB can be any object
+    currentBalance: Coins,
+    rewardAmount: Coins,
+};
+
+export type RewardPool = {
+    tokenLaunch: RawAddressString,
+    rewardJetton: RawAddressString,
+    rewardAmount: Coins,
+};
+
+export enum UserLaunchRewardStatus {
+    Unclaimed = "unclaimed",
+    Claimed = "claimed",
+}
+
+export type UserLaunchRewardPosition = {
+    user: RawAddressString,
+    tokenLaunch: RawAddressString,
+    rewardJetton: RawAddressString,
+    userClaim: bigint,
+    balance: Coins,
+    status: UserLaunchRewardStatus,
+};
+
+export type UserRewardJettonBalance = {
+    user: RawAddressString,
+    rewardJetton: RawAddressString,
+    balance: Coins,
+};
