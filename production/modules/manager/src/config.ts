@@ -27,7 +27,7 @@ type Config = {
         dev_thread_id: number,
         prod_thread_id: number,
     },
-    onchain: {
+    ton: {
         network: "testnet" | "mainnet",
         limit_per_second: number,
         api_keys: {

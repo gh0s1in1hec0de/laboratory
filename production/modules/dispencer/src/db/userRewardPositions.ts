@@ -3,7 +3,7 @@ import type { SqlClient } from "./types";
 import { globalClient } from "./db";
 import { logger } from "../logger";
 
-export async function getRewardPositions(userAddress: RawAddressString, tokenLaunch?: RawAddressString, client?: SqlClient): Promise<UserRewardJettonBalance[] | null> {
+export async function getRewardPositions(userAddress: RawAddressString, tokenLaunch?: RawAddressString, client?: SqlClient): Promise<UserLaunchRewardPosition[] | null> {
     const c = client ?? globalClient;
     const res = await c<UserLaunchRewardPosition[]>`
         SELECT *

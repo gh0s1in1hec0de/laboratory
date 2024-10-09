@@ -17,15 +17,15 @@ export async function addRewardJetton(conversation: MyConversation, ctx: MyConte
     }
 
     const client = new TonClient({
-        endpoint: `https://${getConfig().onchain.network === "testnet" ? "testnet." : ""}toncenter.com/api/v2/jsonRPC`,
-        apiKey: getConfig().onchain.api_keys.testnet
+        endpoint: `https://${getConfig().ton.network === "testnet" ? "testnet." : ""}toncenter.com/api/v2/jsonRPC`,
+        apiKey: getConfig().ton.api_keys.testnet
     });
     const jettonContract = client.open(
         JettonMaster.create(jettonAddressParsed)
     );
     const { content } = await jettonContract.getJettonData();
     const metadata = await parseJettonMetadata(content);
-    const ourWalletAddress = await jettonContract.getWalletAddress(Address.parse(getConfig().onchain.dispenser_wallet_address));
+    const ourWalletAddress = await jettonContract.getWalletAddress(Address.parse(getConfig().ton.dispenser_wallet_address));
     const ourWallet = client.open(
         JettonWallet.create(ourWalletAddress)
     );

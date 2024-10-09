@@ -17,7 +17,7 @@ logger:
   dev_thread_id: 2
   prod_thread_id: 4
 
-onchain:
+ton:
   network: "testnet"
   limit_per_second: 10
   api_keys:
