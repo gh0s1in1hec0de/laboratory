@@ -20,7 +20,9 @@ logger:
 ton:
   network: "testnet"
   limit_per_second: 10
-  api_keys:
-    testnet: ""
-    mainnet: ""
+  keys:
+    testnet:
+      - ""
+    mainnet:
+      - ""
   dispenser_wallet_address: ""

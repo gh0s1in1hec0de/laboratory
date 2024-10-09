@@ -13,13 +13,13 @@ export async function getRewardJetton(masterAddress: RawAddressString, client?: 
 }
 
 export async function storeRewardJetton(
-    { masterAddress, metadata, currentBalance, rewardAmount }: RewardJetton,
+    { masterAddress, ourWalletAddress, metadata, currentBalance, rewardAmount }: RewardJetton,
     client?: SqlClient
 ): Promise<void> {
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
-        INSERT INTO reward_jettons (master_address, metadata, current_balance, reward_amount)
-        VALUES (${masterAddress}, ${metadata}, ${currentBalance}, ${rewardAmount})
+        INSERT INTO reward_jettons (master_address, metadata, our_wallet_address, current_balance, reward_amount)
+        VALUES (${masterAddress}, ${ourWalletAddress}, ${metadata}, ${currentBalance}, ${rewardAmount})
         RETURNING 1;
     `;
     if (res.length !== 1) logger().warn(`exactly 1 column must be created, got: ${res}`);

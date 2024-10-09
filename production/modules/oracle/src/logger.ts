@@ -1,5 +1,5 @@
 import { AppMode, getConfig } from "./config.ts";
-import WinstonTelegram from "winston-telegram";
+// import WinstonTelegram from "winston-telegram";
 import winston, { type Logger } from "winston";
 import "winston-daily-rotate-file";
 import path from "path";

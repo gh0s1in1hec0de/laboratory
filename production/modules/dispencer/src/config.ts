@@ -1,11 +1,7 @@
+import { AppMode, Network } from "starton-periphery";
 import YAML from "yaml";
 import path from "path";
 import fs from "fs";
-
-export enum AppMode {
-    DEV = "dev",
-    PROD = "prod"
-}
 
 type Config = {
     mode: AppMode,
@@ -28,13 +24,17 @@ type Config = {
         prod_thread_id: number,
     },
     ton: {
-        network: "testnet" | "mainnet",
+        network: Network,
         limit_per_second: number,
         keys: {
-            testnet: string,
-            mainnet: string,
+            testnet: string[],
+            mainnet: string[],
         },
         jetton_transfer_fee: bigint,
+        wallet: {
+            address: string,
+            mnemonic: string,
+        },
     },
 }
 

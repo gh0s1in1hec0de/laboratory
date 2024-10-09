@@ -115,6 +115,7 @@ export type StoredWhitelistRelations = {
 // Dispenser
 export type RewardJetton = {
     masterAddress: RawAddressString,
+    ourWalletAddress: RawAddressString,
     metadata: JettonMetadata,
     currentBalance: Coins,
     rewardAmount: Coins,

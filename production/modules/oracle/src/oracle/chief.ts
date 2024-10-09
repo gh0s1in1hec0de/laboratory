@@ -1,14 +1,14 @@
 import { Address, fromNano, internal as internal_relaxed, type OutActionSendMsg, SendMode } from "@ton/ton";
-import { balancedTonClient, retrieveAllUnknownTransactions } from "./api.ts";
+import { balancedTonClient } from "./client.ts";
 import { chief, getConfig } from "../config.ts";
 import { createPoolForJetton } from "./dedust";
 import { beginCell, toNano } from "@ton/core";
 import { chiefWalletData } from "./highload";
 import { logger } from "../logger.ts";
-import { delay } from "../utils.ts";
 import * as db from "../db";
 import {
     DEFAULT_TIMEOUT, QUERY_ID_LENGTH,
+    retrieveAllUnknownTransactions,
     SUBWALLET_ID, OP_LENGTH,
     type StoredTokenLaunch,
     parseGetConfigResponse,
@@ -17,7 +17,8 @@ import {
     TokensLaunchOps,
     jettonFromNano,
     type DexData,
-    type Coins
+    type Coins,
+    delay,
 } from "starton-periphery";
 
 export async function chiefScanning() {
@@ -203,7 +204,7 @@ async function handleChiefUpdates() {
     const chiefAddress = Address.parse(chief().address).toRawString();
     try {
         let currentHeight = await db.getHeight(chiefAddress) ?? 0n;
-        const newTxs = await retrieveAllUnknownTransactions(chiefAddress, currentHeight);
+        const newTxs = await retrieveAllUnknownTransactions(chiefAddress, currentHeight, logger, balancedTonClient);
         if (!newTxs) {
             logger().info("updates for chief not found");
             await delay(15);

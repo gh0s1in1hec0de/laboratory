@@ -51,7 +51,7 @@ export async function storeUserClaim(
         tokenLaunch,
         actor,
         jettonAmount
-    }: UserClaim,
+    }: Omit<UserClaim, "id">,
     client?: SqlClient
 ): Promise<void> {
     const res = await (client ?? globalClient)`

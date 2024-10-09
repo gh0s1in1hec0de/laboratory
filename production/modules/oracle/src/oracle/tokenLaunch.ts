@@ -1,15 +1,14 @@
 import {
+    parseMoneyFlows, jettonFromNano, parseJettonTransfer, parseTimings, delay, retrieveAllUnknownTransactions,
     type RawAddressString, type LamportTime, type UserAction, type StoredTokenLaunch,
     parseGetConfigResponse, parseBalanceUpdate, parseRefundOrClaim, loadOpAndQueryId,
     BalanceUpdateMode, TokensLaunchOps, UserVaultOps, JettonOps, UserActionType,
-    parseMoneyFlows, jettonFromNano, parseJettonTransfer, parseTimings,
     MAX_WL_ROUND_TON_LIMIT, balanceUpdateModeToUserActionType,
 } from "starton-periphery";
-import { balancedTonClient, retrieveAllUnknownTransactions } from "./api";
 import { Address, fromNano } from "@ton/ton";
 import { ok as assert } from "node:assert";
+import { balancedTonClient } from "./api";
 import { logger } from "../logger";
-import { delay } from "../utils";
 import * as db from "../db";
 
 export async function spawnNewLaunchesScanners(scanFrom?: number) {
@@ -55,7 +54,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: StoredTokenLaunch, launchA
 
     while (true) {
         try {
-            const newTxs = await retrieveAllUnknownTransactions(launch.address, currentHeight);
+            const newTxs = await retrieveAllUnknownTransactions(launch.address, currentHeight, logger, balancedTonClient);
             if (!newTxs) {
                 const delayTime = endTimeMs - Date.now() > 86_400_000 ? balancedTonClient.delayValue() : 300;
                 logger().debug(`no updates found for launch ${launch.address}, sleeping for ${delayTime} seconds`);

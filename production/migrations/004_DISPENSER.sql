@@ -1,10 +1,11 @@
 CREATE TABLE reward_jettons
 (
-    master_address  address PRIMARY KEY,
-    metadata        JSONB,
+    master_address     address PRIMARY KEY,
+    our_wallet_address address NOT NULL,
+    metadata           JSONB   NOT NULL,
 
-    current_balance coins NOT NULL DEFAULT 0,
-    reward_amount   coins NOT NULL CHECK ( reward_amount > 0 ),
+    current_balance    coins   NOT NULL DEFAULT 0,
+    reward_amount      coins   NOT NULL CHECK ( reward_amount > 0 ),
 
     CHECK (current_balance > reward_amount)
 );

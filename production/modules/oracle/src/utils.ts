@@ -1,10 +1,5 @@
 import { logger } from "./logger";
 
-export enum Network {
-    Mainnet = "mainnet",
-    Testnet = "testnet"
-}
-
 export async function maybeBruteforceOverload<T>(
     operation: Promise<T> | T,
     retries = 4,
@@ -25,9 +20,6 @@ export async function maybeBruteforceOverload<T>(
         attempt += 1;
     }
     throw new Error(`operation TOTALLY SUCKED (${attempt} attempts)`);
-}
-export function delay(sec: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, sec * 1000));
 }
 
 export function greeting() {

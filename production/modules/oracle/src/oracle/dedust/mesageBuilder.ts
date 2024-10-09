@@ -1,9 +1,8 @@
 import { internal as internal_relaxed, beginCell, toNano, type MessageRelaxed, Cell } from "@ton/core";
 import { Asset, Factory, MAINNET_FACTORY_ADDR, type PoolType, VaultNative } from "@dedust/sdk";
-import { type Coins, JettonOps, TESTNET_FACTORY_ADDR } from "starton-periphery";
+import { type Coins, JettonOps, Network, TESTNET_FACTORY_ADDR } from "starton-periphery";
 import { currentNetwork } from "../../config";
 import type { Address } from "@ton/ton";
-import { Network } from "../../utils";
 
 const factoryAddress = currentNetwork() === Network.Mainnet ? MAINNET_FACTORY_ADDR : TESTNET_FACTORY_ADDR;
 

@@ -58,6 +58,20 @@ export function getQueryId() {
     return closestDivisible * 1000 + ms;
 }
 
+export function delay(sec: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, sec * 1000));
+}
+
+export enum Network {
+    Mainnet = "mainnet",
+    Testnet = "testnet"
+}
+
+export enum AppMode {
+    DEV = "dev",
+    PROD = "prod"
+}
+
 // Server requests
 export enum SortOrder {
     ASC = "ASC",

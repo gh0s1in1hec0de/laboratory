@@ -1,9 +1,9 @@
-import { retrieveAllUnknownTransactions } from "./api";
+import { balancedTonClient } from "./api.ts";
 import type { Address } from "@ton/ton";
 import { logger } from "../logger";
-import { delay } from "../utils";
 import * as db from "../db";
 import {
+    retrieveAllUnknownTransactions,
     parseTokenLaunchV2AStorage,
     parseTokenLaunchV1Storage,
     parseTokenLaunchTimings,
@@ -12,13 +12,14 @@ import {
     loadOpAndQueryId,
     TokensLaunchOps,
     GlobalVersions,
+    delay,
 } from "starton-periphery";
 
 export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersion: GlobalVersions) {
     let currentHeight = await db.getHeight(coreAddress) ?? 0n;
     while (true) {
         try {
-            const newTxs = await retrieveAllUnknownTransactions(coreAddress, currentHeight);
+            const newTxs = await retrieveAllUnknownTransactions(coreAddress, currentHeight, logger, balancedTonClient);
             if (!newTxs) {
                 const delayTime = 30;
                 logger().info(`no updates for code ${coreAddress}, sleeping for ${delayTime} seconds...`);

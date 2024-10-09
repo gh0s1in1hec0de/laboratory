@@ -1,8 +1,7 @@
-import { currentNetwork, getConfig, mainnetKeys, testnetKeys } from "../config";
-import type { LamportTime, RawAddressString } from "starton-periphery";
 import { Address, TonClient, type Transaction } from "@ton/ton";
+import type { LamportTime, RawAddressString } from "../standards";
 import { delay, Network } from "../utils";
-import { logger } from "../logger";
+import type { Logger } from "winston";
 
 class RateLimiter {
     private tokens: number;
@@ -41,12 +40,14 @@ export class BalancedTonClient {
     private currentKeyIndex: number;
     private activeLaunchesNumber: number;
     private rateLimiter: RateLimiter;
+    private readonly network: Network;
 
-    constructor(network: Network) {
-        this.currentKeyIndex = 0;
+    constructor(network: Network, apiKeys: string[], limitPerSecond: number) {
+        this.rateLimiter = new RateLimiter(limitPerSecond);
         this.activeLaunchesNumber = 0;
-        this.keys = network === Network.Testnet ? testnetKeys() : mainnetKeys();
-        this.rateLimiter = new RateLimiter(getConfig().oracle.api.limit_per_second);
+        this.currentKeyIndex = 0;
+        this.network = network;
+        this.keys = apiKeys;
     }
 
     async client(): Promise<TonClient> {
@@ -55,7 +56,7 @@ export class BalancedTonClient {
         else this.currentKeyIndex = 0;
         const apiKey = this.keys[this.currentKeyIndex];
         return new TonClient({
-            endpoint: `https://${currentNetwork() === Network.Testnet ? "testnet." : ""}toncenter.com/api/v2/jsonRPC`,
+            endpoint: `https://${this.network === Network.Testnet ? "testnet." : ""}toncenter.com/api/v2/jsonRPC`,
             apiKey,
             timeout: 20000
         });
@@ -77,27 +78,26 @@ export class BalancedTonClient {
         // Are you ready for dumb code? TODO Rewrite this shame
         return this.activeLaunchesNumber < 10 ? 15 : 30;
     }
+
+    // Limited to 100 transactions per request by TonCenter;
+    //
+    // When lt and hash are set to transaction x, parsing begins from the transaction immediately following `x`, excluding `x` itself.
+    getTransactionsForAccount(address: RawAddressString, to_lt?: LamportTime, from?: {
+        lt: LamportTime,
+        hash: string,
+    }, archival = true, limit = 100) {
+        return this.execute(c =>
+            c.getTransactions(Address.parse(address), {
+                limit,
+                lt: from?.lt?.toString(),
+                hash: from?.hash,
+                to_lt: to_lt?.toString(),
+                archival
+            }), true
+        );
+    }
 }
 
-export const balancedTonClient = new BalancedTonClient(currentNetwork() as Network);
-
-// Limited to 100 transactions per request by TonCenter;
-//
-// When lt and hash are set to transaction x, parsing begins from the transaction immediately following `x`, excluding `x` itself.
-export async function getTransactionsForAccount(address: RawAddressString, to_lt?: LamportTime, from?: {
-    lt: LamportTime,
-    hash: string,
-}, archival = true, limit = 100) {
-    return balancedTonClient.execute(c =>
-        c.getTransactions(Address.parse(address), {
-            limit,
-            lt: from?.lt?.toString(),
-            hash: from?.hash,
-            to_lt: to_lt?.toString(),
-            archival
-        }), true
-    );
-}
 
 // `stopAt` is lamport time of last known tx; returns an array of new transactions oldest -> the newest
 //
@@ -105,10 +105,12 @@ export async function getTransactionsForAccount(address: RawAddressString, to_lt
 export async function retrieveAllUnknownTransactions(
     address: RawAddressString,
     stopAt: LamportTime,
+    logger: () => Logger,
+    client: BalancedTonClient,
     parsingOptions?: {
         archival: boolean,
         limit: number,
-    }
+    },
 ): Promise<Transaction[] | null> {
     logger().debug(`[*] ${retrieveAllUnknownTransactions.name}`); // THIS CODE IS A FUCKING JOKE BTW
     logger().debug(` - start txs parsing for account ${address} from ${stopAt}`);
@@ -123,7 +125,7 @@ export async function retrieveAllUnknownTransactions(
             await delay(1);
         }
 
-        const transactions = await getTransactionsForAccount(address, stopAt, startFrom, parsingOptions?.archival, parsingOptions?.limit);
+        const transactions = await client.getTransactionsForAccount(address, stopAt, startFrom, parsingOptions?.archival, parsingOptions?.limit);
 
         if (transactions.length === 0) break;
         newTransactions.push(...transactions);
@@ -148,4 +150,3 @@ export async function retrieveAllUnknownTransactions(
     logger().info(`found ${newTransactions.length} new transactions for ${address}`);
     return newTransactions;
 }
-

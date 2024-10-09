@@ -23,16 +23,16 @@ export class HighloadQueryIdManager {
 
     getNext(): CompositeHighloadQueryId {
         this.bitnumber += 1n;
-
+    
         assert(!(this.shift === BigInt(maxShift) && this.bitnumber > (MAX_BIT_NUMBER - 1n)), "wallet overload");
-
+    
         if (this.bitnumber > MAX_BIT_NUMBER) {
             this.bitnumber = 0n;
             this.shift += 1n;
-            // TODO Zero maxshift too
-            assert(this.shift <= BigInt(maxShift), "wallet overload");
+            
+            if (this.shift > BigInt(maxShift))  this.shift = 0n; 
         }
-
+    
         return { shift: this.shift, bitnumber: this.bitnumber };
     }
 

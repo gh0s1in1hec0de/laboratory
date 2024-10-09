@@ -1,8 +1,10 @@
 import { formatLink, jettonFromNano, parseJettonMetadata } from "starton-periphery";
-import { Address, JettonMaster, JettonWallet, TonClient } from "@ton/ton";
+import { Address, JettonMaster, JettonWallet } from "@ton/ton";
 import type { MyContext, MyConversation } from "..";
+import { balancedTonClient } from "../../client";
 import { getConfig } from "../../config.ts";
 import * as db from "../../db";
+
 
 export async function addRewardJetton(conversation: MyConversation, ctx: MyContext): Promise<void> {
     await ctx.reply("Please provide the address of the jetton you wish to add to rewards");
@@ -16,20 +18,20 @@ export async function addRewardJetton(conversation: MyConversation, ctx: MyConte
         return;
     }
 
-    const client = new TonClient({
-        endpoint: `https://${getConfig().ton.network === "testnet" ? "testnet." : ""}toncenter.com/api/v2/jsonRPC`,
-        apiKey: getConfig().ton.api_keys.testnet
-    });
-    const jettonContract = client.open(
-        JettonMaster.create(jettonAddressParsed)
+    const jettonContract = await balancedTonClient.execute(c =>
+        c.open(JettonMaster.create(jettonAddressParsed))
     );
-    const { content } = await jettonContract.getJettonData();
+    const { content } = await balancedTonClient.execute(() => jettonContract.getJettonData());
     const metadata = await parseJettonMetadata(content);
-    const ourWalletAddress = await jettonContract.getWalletAddress(Address.parse(getConfig().ton.dispenser_wallet_address));
-    const ourWallet = client.open(
-        JettonWallet.create(ourWalletAddress)
+    const ourWalletAddress = await balancedTonClient.execute(() =>
+        jettonContract.getWalletAddress(
+            Address.parse(getConfig().ton.dispenser_wallet_address)
+        )
     );
-    const currentBalance = await ourWallet.getBalance();
+    const ourWallet = await balancedTonClient.execute(c =>
+        c.open(JettonWallet.create(ourWalletAddress))
+    );
+    const currentBalance = await balancedTonClient.execute(() => ourWallet.getBalance());
 
     if (!currentBalance) {
         await ctx.reply(`Jettons on the wallet ${ourWalletAddress} not found`);
@@ -57,6 +59,7 @@ Please enter reward amount (raw)
         } else {
             await db.storeRewardJetton({
                 masterAddress: jettonAddressParsed.toRawString(),
+                ourWalletAddress: ourWalletAddress.toRawString(),
                 metadata,
                 currentBalance,
                 rewardAmount: BigInt(rewardAmount)

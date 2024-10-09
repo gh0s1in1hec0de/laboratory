@@ -1,13 +1,7 @@
-import type { GlobalVersions } from "starton-periphery";
-import type { Network } from "./utils.ts";
+import { AppMode, type GlobalVersions, Network } from "starton-periphery";
 import YAML from "yaml";
 import path from "path";
 import fs from "fs";
-
-export enum AppMode {
-    DEV = "dev",
-    PROD = "prod"
-}
 
 type Config = {
     mode: AppMode,
@@ -62,14 +56,6 @@ export function getConfig(): Config {
 
 export function currentNetwork(): Network {
     return getConfig().oracle.network;
-}
-
-export function testnetKeys(): string[] {
-    return getConfig().oracle.api.keys.testnet;
-}
-
-export function mainnetKeys(): string[] {
-    return getConfig().oracle.api.keys.mainnet;
 }
 
 export function chief() {
