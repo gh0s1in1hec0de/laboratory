@@ -1,15 +1,14 @@
 import { t } from "elysia";
 
-export const getAmountSchema = t.Object({
+export const GetPositionsOrAmountSchema = t.Object({
     userAddress: t.String(),
     tokenLaunch: t.Optional(t.String()),
 });
 
-export const GetTicketBalanceSchema = t.Object({
-    address: t.String(),
+export const GetRewardBalancesSchema = t.Object({
+    userAddress: t.String(),
 });
 
-export const GetTasksSchema = t.Object({
-    address: t.Optional(t.String()),
-    staged: t.String(),
+export const GetRewardPoolsSchema = t.Object({
+    tokenLaunch: t.String(),
 });

@@ -1,18 +1,71 @@
+import { getAmount, getLaunchRewardPools, getRewardBalances, getRewardPositions } from "./handlers";
+import { GetPositionsOrAmountSchema, GetRewardBalancesSchema, GetRewardPoolsSchema } from "./types";
 import { createDetailsForEndpoint, SwaggerTags } from "../../config";
-import { getAmountSchema } from "./types";
+import { CommonServerError } from "starton-periphery";
 import { authMiddleware } from "../auth";
-import { getAmount } from "./handlers";
 import Elysia from "elysia";
 
-export function UserRoutes() {
-    return new Elysia({ prefix: "/user" })
-        .post(
-            "/get-amount",
-            async ({ body }) => await getAmount(body),
+export function rewardRoutes() {
+    return new Elysia({ prefix: "/rewards" })
+        .get(
+            "/get-reward-pools",
+            async ({ body, error }) => {
+                try {
+                    return await getLaunchRewardPools(body);
+                } catch (e) {
+                    if (e instanceof CommonServerError) return error(e.code, e.message);
+                    else return error(500, e);
+                }
+            },
             {
-                body: getAmountSchema,
+                body: GetRewardPoolsSchema,
                 ...createDetailsForEndpoint(SwaggerTags.User)
             }
         )
-        .onBeforeHandle(authMiddleware);
+        .onBeforeHandle(authMiddleware)
+        .get(
+            "/get-amount",
+            async ({ body, error }) => {
+                try {
+                    return await getAmount(body);
+                } catch (e) {
+                    if (e instanceof CommonServerError) return error(e.code, e.message);
+                    else return error(500, e);
+                }
+            },
+            {
+                body: GetPositionsOrAmountSchema,
+                ...createDetailsForEndpoint(SwaggerTags.User)
+            }
+        )
+        .get(
+            "/get-reward-positions",
+            async ({ body, error }) => {
+                try {
+                    return await getRewardPositions(body);
+                } catch (e) {
+                    if (e instanceof CommonServerError) return error(e.code, e.message);
+                    else return error(500, e);
+                }
+            },
+            {
+                body: GetPositionsOrAmountSchema,
+                ...createDetailsForEndpoint(SwaggerTags.User)
+            }
+        )
+        .get(
+            "/get-reward-balances",
+            async ({ body, error }) => {
+                try {
+                    return await getRewardBalances(body);
+                } catch (e) {
+                    if (e instanceof CommonServerError) return error(e.code, e.message);
+                    else return error(500, e);
+                }
+            },
+            {
+                body: GetRewardBalancesSchema,
+                ...createDetailsForEndpoint(SwaggerTags.User)
+            }
+        );
 }

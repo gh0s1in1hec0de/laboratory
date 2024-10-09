@@ -58,6 +58,7 @@ export function getQueryId() {
     return closestDivisible * 1000 + ms;
 }
 
+// Server requests
 export enum SortOrder {
     ASC = "ASC",
     DESC = "DESC"
@@ -65,4 +66,16 @@ export enum SortOrder {
 
 export enum TokenLaunchFields {
     CREATED_AT = "created_at"
+}
+
+export class CommonServerError extends Error {
+    public code: number;
+    public message: string;
+
+    constructor(code: number, message: string) {
+        super(message);
+        this.code = code;
+        this.message = message;
+        this.name = "CommonServerError";
+    }
 }
