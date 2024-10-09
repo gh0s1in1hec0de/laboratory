@@ -9,9 +9,15 @@ logger:
   dev_thread_id: 2
   prod_thread_id: 4
 
-ton_api:
+ton:
   network: "testnet"
   limit_per_second: 10
   keys:
-    testnet: ""
-    mainnet: ""
+    testnet:
+      - ""
+    mainnet:
+      - ""
+  jetton_transfer_fee: 30000000
+  wallet:
+    address: ""
+    mnemonic: ""
