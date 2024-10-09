@@ -5,7 +5,7 @@ import { CommonServerError } from "starton-periphery";
 import { authMiddleware } from "../auth";
 import Elysia from "elysia";
 
-export function rewardRoutes() {
+export function RewardRoutes() {
     return new Elysia({ prefix: "/rewards" })
         .get(
             "/get-reward-pools",

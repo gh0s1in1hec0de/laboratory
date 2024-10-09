@@ -1,4 +1,4 @@
-import { rewardRoutes } from "./routes";
+import { RewardRoutes } from "./routes";
 import { getSwaggerConfig } from "./config";
 import { swagger } from "@elysiajs/swagger";
 import { ok as assert } from "node:assert";
@@ -23,7 +23,7 @@ function createServer() {
         })))
         .use(cors({ origin: frontend_url }))
         .use(cors())
-        .use(rewardRoutes())
+        .use(RewardRoutes())
         .onError(err => logger().error("Error in Elysia: ", err))
         .listen(port);
     assert(res.server, "caught dat bitch");
