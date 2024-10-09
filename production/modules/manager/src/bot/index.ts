@@ -89,7 +89,7 @@ export async function createBot(): Promise<Bot<MyContext>> {
     return maybeBot;
 }
 
-export async function getBot(): Promise<Bot<MyContext>> {
+export async function startBot(): Promise<Bot<MyContext>> {
     if (!maybeBot) {
         maybeBot = await createBot();
     }

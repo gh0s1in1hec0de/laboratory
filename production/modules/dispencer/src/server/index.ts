@@ -33,7 +33,7 @@ function createServer() {
 type ElysiaAPI = ReturnType<typeof createServer>;
 let maybeServer: ElysiaAPI | null;
 
-export function getServer(): ElysiaAPI {
+export function startServer(): ElysiaAPI {
     if (!maybeServer) {
         maybeServer = createServer();
         logger().info(`elysia server is running at ${maybeServer.server!.hostname}:${maybeServer.server!.port}`);

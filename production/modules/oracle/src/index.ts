@@ -1,6 +1,6 @@
 import { handleCoreUpdates, spawnNewLaunchesScanners, chiefScanning } from "./oracle";
 import { getConfig } from "./config";
-import { getServer } from "./server";
+import { startServer } from "./server";
 import { Address } from "@ton/ton";
 import { greeting } from "./utils";
 import { logger } from "./logger";
@@ -9,15 +9,15 @@ import * as db from "./db";
 
 dotenv.config();
 greeting();
-const config = getConfig();
+const { oracle } = getConfig();
 
 logger().debug(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_USER} | ${process.env.POSTGRES_PASSWORD}`);
 
 async function main() {
-    getServer();
+    startServer();
 
     // Separated logic for  core and launches indexing for better flexibility
-    for (const { address, height, force_height, version } of config.oracle.cores) {
+    for (const { address, height, force_height, version } of oracle.cores) {
         const formatted = Address.parse(address).toRawString();
         if (height) await db.setHeightForAddress(formatted, height, force_height);
         handleCoreUpdates(formatted, version);
