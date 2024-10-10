@@ -1,4 +1,4 @@
-import { balancedTonClient } from "./api.ts";
+import { balancedTonClient } from "./client";
 import type { Address } from "@ton/ton";
 import { logger } from "../logger";
 import * as db from "../db";

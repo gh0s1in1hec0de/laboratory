@@ -47,10 +47,9 @@ async function validateEndedPendingLaunches() {
         }
 
         const queryId = Math.floor(Date.now() / 1000);
-        const { keyPair, wallet, queryIdManager } = await chiefWalletData();
-
         const actions: OutActionSendMsg[] = [];
         const failedLaunches: StoredTokenLaunch[] = [];
+
         for (const launch of pendingLaunches) {
             const { address } = launch;
             const launchAddressParsed = Address.parse(address);
@@ -100,7 +99,9 @@ async function validateEndedPendingLaunches() {
                 });
             }
         }
+
         if (actions.length) {
+            const { keyPair, wallet, queryIdManager } = await chiefWalletData();
             const highloadQueryId = await queryIdManager.getNextCached();
             await balancedTonClient.execute(() =>
                 wallet.sendBatch(keyPair.secretKey,
@@ -129,7 +130,6 @@ async function createPoolsForNewJettons() {
         return;
     }
     const queryId = Math.floor(Date.now() / 1000);
-    const { keyPair, wallet, queryIdManager } = await chiefWalletData();
 
     const actions: OutActionSendMsg[] = [];
     const poolCreationProcesses: Promise<void>[] = [];
@@ -174,6 +174,7 @@ async function createPoolsForNewJettons() {
         });
     }
     try {
+        const { keyPair, wallet, queryIdManager } = await chiefWalletData();
         const highloadQueryId = await queryIdManager.getNextCached();
         await balancedTonClient.execute(() =>
             wallet.sendBatch(keyPair.secretKey,

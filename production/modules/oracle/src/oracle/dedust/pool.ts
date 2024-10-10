@@ -2,10 +2,10 @@ import {
     TESTNET_FACTORY_ADDR, BURN_ADDR, DEFAULT_TIMEOUT, Network, delay,
     SUBWALLET_ID, type RawAddressString, type Coins, type DexData,
 } from "starton-periphery";
+import { balancedTonClient } from "../client.ts";
 import { chiefWalletData } from "../highload";
 import { currentNetwork } from "../../config";
 import { Address, SendMode } from "@ton/ton";
-import { balancedTonClient } from "../api";
 import { logger } from "../../logger";
 import { toNano } from "@ton/core";
 import * as db from "../../db";

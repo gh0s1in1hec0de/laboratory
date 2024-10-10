@@ -5,9 +5,9 @@ import {
     BalanceUpdateMode, TokensLaunchOps, UserVaultOps, JettonOps, UserActionType,
     MAX_WL_ROUND_TON_LIMIT, balanceUpdateModeToUserActionType,
 } from "starton-periphery";
+import { balancedTonClient } from "./client";
 import { Address, fromNano } from "@ton/ton";
 import { ok as assert } from "node:assert";
-import { balancedTonClient } from "./api";
 import { logger } from "../logger";
 import * as db from "../db";
 
