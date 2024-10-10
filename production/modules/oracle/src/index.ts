@@ -20,10 +20,10 @@ async function main() {
     for (const { address, height, force_height, version } of oracle.cores) {
         const formatted = Address.parse(address).toRawString();
         if (height) await db.setHeightForAddress(formatted, height, force_height);
-        handleCoreUpdates(formatted, version);
+        handleCoreUpdates(formatted, version).then();
     }
-    spawnNewLaunchesScanners();
-    chiefScanning();
+    spawnNewLaunchesScanners().then();
+    chiefScanning().then();
 }
 
 main().then();

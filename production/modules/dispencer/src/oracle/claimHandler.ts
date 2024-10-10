@@ -2,6 +2,7 @@ import { internal as internal_relaxed } from "@ton/core/dist/types/_helpers";
 import { fromNano, type OutActionSendMsg, SendMode } from "@ton/ton";
 import { chiefWalletData } from "oracle/src/oracle/highload";
 import { Address, beginCell } from "@ton/core";
+import type { ClaimRequest } from "./scanner";
 import { balancedTonClient } from "../client";
 import { getConfig } from "../config";
 import { logger } from "../logger";
@@ -11,15 +12,13 @@ import {
     OP_LENGTH, QUERY_ID_LENGTH,
     type RawAddressString,
     type RewardJetton,
-    type Coins,
     JettonOps,
     delay,
 } from "starton-periphery";
-import type { ClaimRequest } from "./scanner.ts";
 
-export async function handleMaybeClaimRequest(
-    { user, requestType, attachedValue }: ClaimRequest
-) {
+export async function handleMaybeClaimRequest(request: ClaimRequest) {
+    const { user, requestType, attachedValue } = request;
+
     const actions: OutActionSendMsg[] = [];
 
     if (requestType === "t") {
@@ -27,16 +26,16 @@ export async function handleMaybeClaimRequest(
         const rewardBalances = await db.getRewardJettonBalances(user.toRawString());
         if (!rewardBalances) {
             logger().warn(`reward balances gone at some reason for user ${user}`);
-            return refund(user, attachedValue);
+            return refund(request);
         }
         if (attachedValue < BigInt(rewardBalances.length) * getConfig().ton.jetton_transfer_fee) {
             logger().warn(`user ${user} sent not enough value to claim all the balances`);
-            return refund(user, attachedValue);
+            return refund(request);
         }
         const rewardJettons = await db.getRewardJettons(rewardBalances.map(p => p.rewardJetton));
         if (!rewardJettons || rewardJettons.length < rewardBalances.length) {
             logger().error(`unreachable: corrupted jetton data for user ${user} total`);
-            return refund(user, attachedValue);
+            return refund(request);
         }
         const rewardJettonMap: Record<RawAddressString, Omit<RewardJetton, "masterAddress">> = rewardJettons.reduce(
             (acc, { masterAddress, ...rest }) => ({
@@ -73,21 +72,21 @@ export async function handleMaybeClaimRequest(
             launchAddress = Address.parse(requestType);
         } catch (e) {
             logger().error(`user ${user} sent bad claim application with comment ${requestType}`);
-            return refund(user, attachedValue);
+            return refund(request);
         }
         const rewardPositions = await db.getRewardPositions(user.toRawString(), launchAddress.toRawString());
         if (!rewardPositions) {
             logger().warn(`reward positions gone at some reason for user ${user}`);
-            return refund(user, attachedValue);
+            return refund(request);
         }
         if (attachedValue < BigInt(rewardPositions.length) * getConfig().ton.jetton_transfer_fee) {
             logger().warn(`user ${user} sent not enough value to claim all the positions per launch ${launchAddress.toRawString()}`);
-            return refund(user, attachedValue);
+            return refund(request);
         }
         const rewardJettons = await db.getRewardJettons(rewardPositions.map(p => p.rewardJetton));
         if (!rewardJettons || rewardJettons.length < rewardPositions.length) {
             logger().error(`unreachable: corrupted jetton data for [user ${user}; launch ${launchAddress.toRawString()}]`);
-            return refund(user, attachedValue);
+            return refund(request);
         }
         const rewardJettonMap: Record<RawAddressString, Omit<RewardJetton, "masterAddress">> = rewardJettons.reduce(
             (acc, { masterAddress, ...rest }) => ({
@@ -151,7 +150,9 @@ export async function handleMaybeClaimRequest(
     }
 }
 
-export async function refund(to: Address, value: Coins) {
+export async function refund(
+    { user, attachedValue }: ClaimRequest
+) {
     const { keyPair, wallet, queryIdManager } = await chiefWalletData();
     const highloadQueryId = await queryIdManager.getNextCached();
 
@@ -164,7 +165,8 @@ export async function refund(to: Address, value: Coins) {
                     createdAt: Math.floor((Date.now() / 1000) - 10),
                     queryId: highloadQueryId,
                     message: internal_relaxed({
-                        to, value,
+                        to: user,
+                        value: attachedValue,
                         body: beginCell()
                             .storeUint(0, 32)
                             .storeStringRefTail("failed to handle the claim rewards request, please contact support")
@@ -175,10 +177,10 @@ export async function refund(to: Address, value: Coins) {
                     timeout: DEFAULT_TIMEOUT
                 })
             );
-            logger().info(`successfully refunded user ${to.toRawString()} with value ${fromNano(value)}`);
+            logger().info(`successfully refunded user ${user.toRawString()} with value ${fromNano(attachedValue)}`);
             break;
         } catch (e) {
-            logger().error(`failed to refund user ${to.toRawString()} with error`, e);
+            logger().error(`failed to refund user ${user.toRawString()} with error`, e);
         }
         tryNumber++;
     }

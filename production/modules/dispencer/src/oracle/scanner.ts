@@ -1,10 +1,10 @@
 import { type Coins, delay, retrieveAllUnknownTransactions } from "starton-periphery";
-import { balancedTonClient } from "../client.ts";
+import { handleMaybeClaimRequest } from "./claimHandler";
+import { balancedTonClient } from "../client";
 import { Address, fromNano } from "@ton/ton";
-import { getConfig } from "../config.ts";
-import { logger } from "../logger.ts";
+import { getConfig } from "../config";
+import { logger } from "../logger";
 import * as db from "../db";
-import { handleMaybeClaimRequest } from "./claimHandler.ts";
 
 export type ClaimRequest = {
     user: Address,
@@ -12,7 +12,7 @@ export type ClaimRequest = {
     attachedValue: Coins,
 }
 
-export async function scanner() {
+export async function scanForRequests() {
     const walletAddress = Address.parse(getConfig().ton.wallet.address).toRawString();
     while (true) {
         try {
@@ -21,7 +21,7 @@ export async function scanner() {
             if (!newTxs) {
                 logger().info("updates for chief not found");
                 await delay(15);
-                return;
+                continue;
             }
 
             const requests: ClaimRequest[] = [];
@@ -39,23 +39,30 @@ export async function scanner() {
 
                 const op = inMsgBody.loadUint(32);
                 if (op !== 0) continue;
-
-                const comment = inMsgBody.loadStringTail();
-                logger().info(`New transfer from ${sender} with value ${fromNano(attachedValue)} TON and comment: "${comment}"`);
-                requests.push({ user: sender, requestType: comment, attachedValue });
+                try {
+                    const comment = inMsgBody.loadStringTail();
+                    logger().info(`New transfer from ${sender} with value ${fromNano(attachedValue)} TON and comment: "${comment}"`);
+                    requests.push({ user: sender, requestType: comment, attachedValue });
+                } catch (e) {
+                    logger().warn(`failed to load comment for transfer [${sender.toRawString()}; ${fromNano(attachedValue)} TONs; ${tx.now}]`);
+                }
             }
+            const startTime = Date.now();
+            await Promise.allSettled(
+                requests.map((request, index) =>
+                    delay(index / 2).then(() => handleMaybeClaimRequest(request))
+                )
+            );
+            const elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
+            logger().debug(`processed ${requests.length} requests in ${elapsedTime} seconds`);
+
+
             currentHeight = newTxs[newTxs.length - 1].lt;
             await db.setHeightForAddress(walletAddress, currentHeight, true);
-
-            // TODO await
-            for (const request of requests) {
-                handleMaybeClaimRequest(request);
-                delay(1);
-            }
-            await delay(35);
+            await delay(Math.max(5 - elapsedTime, 0));
         } catch (e) {
-            logger().error(`failed to load chief(${walletAddress}) updates with error: `, e);
-            await delay(17.5);
+            logger().error("failed to load new requests with error: ", e);
+            await delay(15);
         }
     }
 }
