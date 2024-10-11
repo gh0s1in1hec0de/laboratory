@@ -1,17 +1,17 @@
-import { Address, toNano } from "@ton/core";
-import { JettonMaster } from "../wrappers/JettonMaster";
 import { compile, NetworkProvider } from "@ton/blueprint";
+import { JettonMaster } from "../wrappers/JettonMaster";
+import { Address, toNano } from "@ton/core";
 
 export async function run(provider: NetworkProvider) {
-    const jettonWalletCode = await compile("JettonWallet");
+    const master = provider.open(JettonMaster.createFromConfig({
+                admin: Address.parse("0QBXsUwWZ6K9fXs_zpp0UANP58PO1do2B91Vve7qKCg9GXWw"),
+                supply: 0n,
+                walletCode: await compile("JettonWallet"),
+                jettonContent: { uri: "https://ipfs.io/ipfs/QmVCMdxyudybb9vDefct1qU3DEZBhj3zhg3n9uM6EqGbN6" }
+            },
+            await compile("JettonMaster"))
+    );
 
-    const minter = provider.open(JettonMaster.createFromConfig({
-            admin: Address.parse(""),
-            supply: 0n,
-            walletCode: jettonWalletCode,
-            jettonContent: { uri: "" }
-        },
-        await compile("JettonMinter")));
-
-    await minter.sendDeploy(provider.sender(), toNano("1.5")); // send 1.5 TON
+    console.info(`Expected master address: ${master.address}`);
+    await master.sendDeploy(provider.sender(), toNano("1.5"));
 }
