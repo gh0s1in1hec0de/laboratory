@@ -25,46 +25,46 @@ export function RewardRoutes() {
         .onBeforeHandle(authMiddleware)
         .get(
             "/get-amount",
-            async ({ body, error }) => {
+            async ({ query, error }) => {
                 try {
-                    return await getAmount(body);
+                    return await getAmount(query);
                 } catch (e) {
                     if (e instanceof CommonServerError) return error(e.code, e.message);
                     else return error(500, e);
                 }
             },
             {
-                body: GetPositionsOrAmountSchema,
+                query: GetPositionsOrAmountSchema,
                 ...createDetailsForEndpoint(SwaggerTags.User)
             }
         )
         .get(
             "/get-reward-positions",
-            async ({ body, error }) => {
+            async ({ query, error }) => {
                 try {
-                    return await getRewardPositions(body);
+                    return await getRewardPositions(query);
                 } catch (e) {
                     if (e instanceof CommonServerError) return error(e.code, e.message);
                     else return error(500, e);
                 }
             },
             {
-                body: GetPositionsOrAmountSchema,
+                query: GetPositionsOrAmountSchema,
                 ...createDetailsForEndpoint(SwaggerTags.User)
             }
         )
         .get(
             "/get-reward-balances",
-            async ({ body, error }) => {
+            async ({ query, error }) => {
                 try {
-                    return await getRewardBalances(body);
+                    return await getRewardBalances(query);
                 } catch (e) {
                     if (e instanceof CommonServerError) return error(e.code, e.message);
                     else return error(500, e);
                 }
             },
             {
-                body: GetRewardBalancesSchema,
+                query: GetRewardBalancesSchema,
                 ...createDetailsForEndpoint(SwaggerTags.User)
             }
         );

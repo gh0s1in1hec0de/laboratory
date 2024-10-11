@@ -1,15 +1,12 @@
-# backend
-
-To install dependencies:
+# Creating IPFS node, necessary for storing new launches metadata
 
 ```bash
-bun install
+docker run -d --name ipfs_daemon \
+   -v /opt/ipfs_stuff/export:/export \
+   -v /opt/ipfs_stuff/data:/data/ipfs \
+   -p 4001:4001 \
+   -p 4001:4001/udp \
+   -p 0.0.0.0:8080:8080 \
+   -p 0.0.0.0:5010:5010 \
+   ipfs/kubo:latest
 ```
-
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.1.20. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.

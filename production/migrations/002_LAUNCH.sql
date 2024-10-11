@@ -1,3 +1,12 @@
+CREATE TABLE launch_metadata
+(
+    onchain_metadata_link TEXT NOT NULL PRIMARY KEY,
+    telegram_link         TEXT,
+    x_link                TEXT,
+    website               TEXT,
+    extra                 TEXT
+);
+
 CREATE TYPE launch_version AS ENUM ('V1', 'V2A');
 CREATE TABLE token_launches
 (

@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "starton-periphery": "file:../periphery",
+    "ipfs-http-client": "^60.0.1",
     "winston-daily-rotate-file": "^5.0.0",
     "winston-telegram": "^2.7.0",
     "@grammyjs/conversations": "^1.2.0",

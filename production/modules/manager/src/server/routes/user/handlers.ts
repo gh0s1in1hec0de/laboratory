@@ -1,4 +1,4 @@
-import type { Caller } from "starton-periphery";
+import { type Caller, CommonServerError } from "starton-periphery";
 import { logger } from "../../../logger";
 import { Address } from "@ton/core";
 import * as db from "../../../db";
@@ -6,31 +6,21 @@ import * as db from "../../../db";
 export async function connectCallerWallet({
     address,
     referral,
-}: db.ConnectedWalletRequest): Promise<Caller | string> {
-    try {
-        const res = await db.connectWallet(
-            Address.parse(address).toRawString(),
-            referral && Address.parse(referral).toRawString(),
-        );
-        if (!res) return "user already exists";
-        return res;
-    } catch (e) {
-        logger().error(`error in http request 'connectWallet': ${e}`);
-        return `error: ${e}`;
-    }
+}: db.ConnectedWalletRequest): Promise<Caller> {
+    const res = await db.connectWallet(
+        Address.parse(address).toRawString(),
+        referral && Address.parse(referral).toRawString(),
+    );
+    if (!res) throw new CommonServerError(400, "user already exists");
+    return res;
 }
 
 export async function getCallerTicketBalance({
     address,
 }: db.TicketBalanceRequest): Promise<number | string> {
-    try {
-        const res = await db.getTicketBalance(Address.parse(address).toRawString());
-        if (res === null) return `user with address not found: ${address}`;
-        return res;
-    } catch (e) {
-        logger().error(`error in http request 'getTicketBalance': ${e}`);
-        return `error: ${e}`;
-    }
+    const res = await db.getTicketBalance(Address.parse(address).toRawString());
+    if (res === null) throw new CommonServerError(400, `user with address not found: ${address}`);
+    return res;
 }
 
 function parseSubtasks(description: string): db.Subtask[] {
@@ -47,32 +37,26 @@ function parseSubtasks(description: string): db.Subtask[] {
     return result;
 }
 
-
 export async function getCallerTasks({
     staged,
     address,
 }: db.TasksRequest): Promise<db.TasksResponse[] | string> {
-    try {
-        const tasksDb = await db.getTasks(staged);
-        if (!tasksDb) return [];
-        
-        const usersTasksRelations = address ? await db.getUsersTasksRelations(Address.parse(address).toRawString()) : null;
+    const tasksDb = await db.getTasks(staged);
+    if (!tasksDb) return [];
 
-        return await Promise.all(
-            tasksDb.map(async (task) => {
-                const subQuests = parseSubtasks(task.description);
-                return {
-                    taskId: task.taskId,
-                    name: task.name,
-                    description: subQuests,
-                    rewardTickets: task.rewardTickets,
-                    createdAt: Number(task.createdAt),
-                    completed: usersTasksRelations ? usersTasksRelations.some(relation => relation.taskId === task.taskId) : false,
-                };
-            })
-        );
-    } catch (e) {
-        logger().error(`error in http request 'getTasks': ${e}`);
-        return `error: ${e}`;
-    }
+    const usersTasksRelations = address ? await db.getUsersTasksRelations(Address.parse(address).toRawString()) : null;
+    return await Promise.all(
+        tasksDb.map(async (task) => {
+            const subQuests = parseSubtasks(task.description);
+            return {
+                taskId: task.taskId,
+                name: task.name,
+                description: subQuests,
+                rewardTickets: task.rewardTickets,
+                createdAt: Number(task.createdAt),
+                completed: usersTasksRelations ? usersTasksRelations.some(relation => relation.taskId === task.taskId) : false,
+            };
+        })
+    );
+
 }

@@ -34,6 +34,14 @@ export type DexData = {
     payedToCreator: boolean,
 }
 
+export type LaunchMetadata = {
+    onchainMetadataLink: string,
+    telegramLink?: string,
+    xLink?: string,
+    website?: string,
+    extra?: string,
+};
+
 export type StoredTokenLaunch = {
     id: number,
     identifier: string,

@@ -17,6 +17,10 @@ logger:
   dev_thread_id: 2
   prod_thread_id: 4
 
+ipfs:
+  host: "0.0.0.0"
+  port: "5001"
+
 ton:
   network: "testnet"
   limit_per_second: 10

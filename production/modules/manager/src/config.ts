@@ -28,6 +28,10 @@ type Config = {
         dev_thread_id: number,
         prod_thread_id: number,
     },
+    ipfs: {
+        host: string,
+        port: number,
+    },
     ton: {
         network: Network,
         limit_per_second: number,
