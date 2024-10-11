@@ -2,10 +2,12 @@ import { createDetailsForEndpoint, SwaggerTags } from "../../config";
 import { CommonServerError } from "starton-periphery";
 import { uploadMetadataToIpfs } from "./handlers";
 import { UploadMetaSchema } from "./types";
+import { authMiddleware } from "../auth";
 import Elysia from "elysia";
 
-export function UserRoutes() {
+export function LaunchRoutes() {
     return new Elysia({ prefix: "/launch" })
+        .onBeforeHandle(authMiddleware)
         .post(
             "/upload-meta",
             async ({ body, error }) => {
@@ -18,7 +20,7 @@ export function UserRoutes() {
             },
             {
                 body: UploadMetaSchema,
-                ...createDetailsForEndpoint(SwaggerTags.User)
+                ...createDetailsForEndpoint(SwaggerTags.TokenLaunch)
             }
         );
 }

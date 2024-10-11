@@ -1,12 +1,7 @@
+import { AppMode, Network } from "starton-periphery";
 import YAML from "yaml";
 import path from "path";
 import fs from "fs";
-import { Network } from "starton-periphery";
-
-export enum AppMode {
-    DEV = "dev",
-    PROD = "prod"
-}
 
 type Config = {
     mode: AppMode,

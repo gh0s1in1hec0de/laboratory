@@ -1,6 +1,6 @@
-import { AppMode, getConfig } from "./config.ts";
 import WinstonTelegram from "winston-telegram";
 import winston, { type Logger } from "winston";
+import { getConfig } from "./config.ts";
 import "winston-daily-rotate-file";
 import path from "path";
 
@@ -57,7 +57,7 @@ function configureLogger(): Logger {
         bot_token,
         chat_id
     } = logger;
-    const isDev = mode === AppMode.DEV;
+    const isDev = mode === "dev";
     const level = isDev ? "http" : "error";
 
     return winston.createLogger({
@@ -71,13 +71,13 @@ function configureLogger(): Logger {
                     customFormat
                 )
             }),
-            new WinstonTelegram({
-                token: bot_token,
-                chatId: chat_id,
-                level,
-                messageThreadId: isDev ? dev_thread_id : prod_thread_id,
-                disableNotification: true,
-            }),
+            // new WinstonTelegram({
+            //     token: bot_token,
+            //     chatId: chat_id,
+            //     level,
+            //     messageThreadId: isDev ? dev_thread_id : prod_thread_id,
+            //     disableNotification: true,
+            // }),
             new DailyRotateFile({
                 filename: path.resolve(__dirname, `../../logs_manager/logs_${isDev ? "dev" : "prod"}_%DATE%.log`),
                 datePattern: "YYYY-MM-DD",

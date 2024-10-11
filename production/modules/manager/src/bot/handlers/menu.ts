@@ -1,5 +1,5 @@
 import { getMenuKeyboard, getReplyText } from "../constants";
-import { type CommandContext } from "grammy";
+import type { CommandContext } from "grammy";
 import type { MyContext } from "../index";
 import { logger } from "../../logger";
 

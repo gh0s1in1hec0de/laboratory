@@ -2,25 +2,25 @@ import type { ElysiaSwaggerConfig } from "@elysiajs/swagger/types";
 import { OpenAPIV3 } from "openapi-types";
 
 export enum SwaggerTags {
-  User = "User",
-  TokenLaunch = "Token Launch",
+    User = "User",
+    TokenLaunch = "Token Launch",
 }
 
 type SwaggerTagObject = {
-  name: SwaggerTags,
-  description?: string,
-  externalDocs?: OpenAPIV3.ExternalDocumentationObject,
+    name: SwaggerTags,
+    description?: string,
+    externalDocs?: OpenAPIV3.ExternalDocumentationObject,
 };
 
 type DetailsForEndpoint = {
-  detail: {
-    tags: SwaggerTags[],
-  },
+    detail: {
+        tags: SwaggerTags[],
+    },
 }
 
 type SwaggerDocsConfigProps = {
-  title: string,
-  version: string,
+    title: string,
+    version: string,
 }
 
 const allSwaggerTags: Record<SwaggerTags, SwaggerTagObject> = {

@@ -1,8 +1,8 @@
 import { getCancelCreateTaskConvKeyboard, getReplyText } from "../constants";
 import type { MyContext, MyConversation } from "..";
+import { isReadyTasksToDb } from "./common";
 import { logger } from "../../logger";
 import * as db from "../../db";
-import { isReadyTasksToDb } from "./common";
 
 export async function createTask(conversation: MyConversation, ctx: MyContext): Promise<void> {
     await ctx.reply(getReplyText("createTaskRequest"),

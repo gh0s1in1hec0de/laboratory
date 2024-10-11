@@ -1,6 +1,6 @@
 import type { CallbackQueryContext } from "grammy";
-import type { MyContext } from "..";
 import { logger } from "../../logger";
+import type { MyContext } from "..";
 import * as db from "../../db";
 import {
     getTasksPaginationKeyboard,

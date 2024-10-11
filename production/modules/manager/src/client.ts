@@ -1,5 +1,5 @@
-import { getConfig } from "./config";
 import { BalancedTonClient, Network, } from "starton-periphery";
+import { getConfig } from "./config";
 
 export const balancedTonClient = new BalancedTonClient(
     getConfig().ton.network,

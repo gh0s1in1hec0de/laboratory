@@ -1,4 +1,5 @@
 import { getSwaggerConfig } from "./config";
+import { AppMode } from "starton-periphery";
 import { swagger } from "@elysiajs/swagger";
 import { ok as assert } from "node:assert";
 import { RewardRoutes } from "./routes";
@@ -9,6 +10,7 @@ import Elysia from "elysia";
 
 function createServer() {
     const {
+        mode,
         server: {
             swagger: { title, version },
             port,
@@ -22,7 +24,7 @@ function createServer() {
             version: version
         })))
         .use(cors({ origin: frontend_url }))
-        .use(cors())
+        .use(cors(mode === AppMode.PROD ? { origin: frontend_url } : {}))
         .use(RewardRoutes())
         .onError(err => logger().error("Error in Elysia: ", err))
         .listen(port);

@@ -1,9 +1,9 @@
-import { Address } from "@ton/core";
-import type { MyContext, MyConversation } from "..";
-import * as db from "../../db";
-import { logger } from "../../logger";
 import { getCancelAddWalletsConvKeyboard, getReplyText } from "../constants";
+import type { MyContext, MyConversation } from "..";
 import { isReadyUsersTasksToDb } from "./common";
+import { logger } from "../../logger";
+import { Address } from "@ton/core";
+import * as db from "../../db";
 
 export async function addWalletsToRelations(conversation: MyConversation, ctx: MyContext): Promise<void> {
     await ctx.reply(getReplyText("addressListRequest"),

@@ -1,5 +1,4 @@
 import { type Caller, CommonServerError } from "starton-periphery";
-import { logger } from "../../../logger";
 import { Address } from "@ton/core";
 import * as db from "../../../db";
 

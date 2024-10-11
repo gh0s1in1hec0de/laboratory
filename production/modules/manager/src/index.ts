@@ -1,15 +1,15 @@
+import { startServer } from "./server";
+import { getConfig } from "./config";
 import { logger } from "./logger";
 import { startBot } from "./bot";
 import dotenv from "dotenv";
-import { getConfig } from "./config.ts";
-import { startServer } from "./server";
 
 dotenv.config();
 
 logger().debug(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_USER} | ${process.env.POSTGRES_PASSWORD}`);
 
 async function main() {
-    console.info(`mode: ${getConfig().mode}`);
+    logger().info(`mode: ${getConfig().mode}`);
 
     startServer();
     await startBot();

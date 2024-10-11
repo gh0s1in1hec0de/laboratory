@@ -1,7 +1,7 @@
-import type { MyContext, MyConversation } from "..";
-import * as db from "../../db";
-import { logger } from "../../logger";
 import { getCancelDeleteTaskConvKeyboard, getConfirmDeleteTaskConvKeyboard, getReplyText } from "../constants";
+import type { MyContext, MyConversation } from "..";
+import { logger } from "../../logger";
+import * as db from "../../db";
 
 export async function deleteTask(conversation: MyConversation, ctx: MyContext): Promise<void> {
     await ctx.reply(getReplyText("deleteTaskRequest"),
