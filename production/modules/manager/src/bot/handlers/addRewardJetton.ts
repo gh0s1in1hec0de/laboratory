@@ -2,7 +2,7 @@ import { formatLink, jettonFromNano, parseJettonMetadata } from "starton-periphe
 import { Address, JettonMaster, JettonWallet } from "@ton/ton";
 import type { MyContext, MyConversation } from "..";
 import { balancedTonClient } from "../../client";
-import { getConfig } from "../../config.ts";
+import { getConfig } from "../../config";
 import * as db from "../../db";
 
 
@@ -46,7 +46,8 @@ ${symbol ? `- Symbol: ${symbol}` : ""}
 ${description ? `- Description: ${description}` : ""}
 
 Current balance: ${jettonFromNano(currentBalance, Number(decimals))} (raw ${currentBalance})
-Please enter reward amount (raw)
+
+Please enter reward amount (raw) and make sure you're feeling all right.
     `;
 
     if (image) await ctx.replyWithPhoto(formatLink(image), { caption: message });

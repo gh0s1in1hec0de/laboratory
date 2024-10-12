@@ -31,8 +31,8 @@ export function endParse(slice: Slice) {
 
 export function jettonToNano(amount: number | bigint | string, decimals: number = 6) {
     const nineDecimalsRes = toNano(amount);
-    if (decimals > 9) return nineDecimalsRes * BigInt(9 - decimals);
-    if (decimals < 9) return nineDecimalsRes / BigInt(decimals - 9);
+    if (decimals > 9) return nineDecimalsRes * 10n ** BigInt(decimals - 9);
+    if (decimals < 9) return nineDecimalsRes / 10n ** BigInt(9 - decimals);
     return nineDecimalsRes;
 }
 

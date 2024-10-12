@@ -5,21 +5,19 @@ import { Api, Bot, type Context, session, type SessionFlavor } from "grammy";
 import { getConfig } from "../config";
 import { logger } from "../logger";
 import {
-    // handleLaunchesPaginationCallback,
+    handleCancelConversationCallback,
+    handleEnterConversationCallback,
+    handleTasksPaginationCallback,
+    handleBackToMenuCallback,
+    handleListTasksCallback,
     addWalletsToRelations,
-    // handleListLaunchesCallback,
     handleStartCommand,
     handleMenuCommand,
+    addRewardJetton,
     handleBotError,
-    handleEnterConversationCallback,
-    handleCancelConversationCallback,
-    handleBackToMenuCallback,
     createTask,
-    handleListTasksCallback,
-    handleTasksPaginationCallback,
-    deleteTask
+    deleteTask,
 } from "./handlers";
-import { addRewardJetton } from "./handlers/addRewardJetton.ts";
 
 interface SessionData {
     launchesPage: number,
@@ -73,6 +71,9 @@ export async function createBot(): Promise<Bot<MyContext>> {
 
     maybeBot.callbackQuery("delete_task", (ctx) => handleEnterConversationCallback(ctx, Conversations.deleteTask));
     maybeBot.callbackQuery("cancel_conv_delete_task", (ctx) => handleCancelConversationCallback(ctx, Conversations.deleteTask));
+
+    maybeBot.callbackQuery("add_reward_jettons", (ctx) => handleEnterConversationCallback(ctx, Conversations.addRewardJetton));
+    maybeBot.callbackQuery("cancel_conv_add_reward_jettons", (ctx) => handleCancelConversationCallback(ctx, Conversations.addRewardJetton));
 
     maybeBot.callbackQuery("back", handleBackToMenuCallback);
 

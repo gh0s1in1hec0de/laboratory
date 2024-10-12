@@ -1,7 +1,7 @@
 import { type Coins, type RawAddressString, type RewardJetton } from "starton-periphery";
-import { logger } from "oracle/src/logger.ts";
 import type { SqlClient } from "./types";
 import { globalClient } from "./db";
+import { logger } from "../logger";
 
 export async function getRewardJetton(masterAddress: RawAddressString, client?: SqlClient): Promise<RewardJetton | null> {
     const res = await (client ?? globalClient)<RewardJetton[]>`
@@ -19,7 +19,7 @@ export async function storeRewardJetton(
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
         INSERT INTO reward_jettons (master_address, metadata, our_wallet_address, current_balance, reward_amount)
-        VALUES (${masterAddress}, ${ourWalletAddress}, ${metadata}, ${currentBalance}, ${rewardAmount})
+        VALUES (${masterAddress}, ${metadata}, ${ourWalletAddress}, ${currentBalance}, ${rewardAmount})
         RETURNING 1;
     `;
     if (res.length !== 1) logger().warn(`exactly 1 column must be created, got: ${res}`);

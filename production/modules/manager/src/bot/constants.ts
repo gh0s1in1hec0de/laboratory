@@ -32,6 +32,7 @@ export const initTasksSortData: StoredTasksRequest = {
 
 export enum Conversations {
     addWallets = "addWalletsToRelations",
+    addRewardJetton = "addRewardJetton",
     createTask = "createTask",
     deleteTask = "deleteTask",
 }
@@ -117,8 +118,9 @@ export async function getUnknownMsgReply(ctx: MyContext) {
 export function getMenuKeyboard(): InlineKeyboard {
     return new InlineKeyboard()
         // .text("get token launches", "list_launches").row()
-        .text("users complete tasks", "add_wallets").row()
+        .text("users completed tasks", "add_wallets").row()
         .text("get tasks", "list_tasks").row()
+        .text("add reward jettons", "add_reward_jettons").row()
         .text("create tasks", "create_task")
         .text("delete tasks", "delete_task");
 }

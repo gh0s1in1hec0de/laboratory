@@ -11,8 +11,8 @@ export async function run(provider: NetworkProvider) {
     const newMnemonic = await mnemonicNew(24);
     const keyPair = await mnemonicToWalletKey(newMnemonic);
 
-    console.info("Here is a new mnemonic phrase, write it down before proceeding: ");
-    console.info(newMnemonic.join(" "));
+    ui.write("Here is a new mnemonic phrase, write it down before proceeding: ");
+    ui.write(newMnemonic.join(" "));
     if (!(await promptBool("Continue? ", ["Y", "n"], ui))) return;
 
     const walletInstance = HighloadWalletV3.createFromConfig({

@@ -7,11 +7,11 @@ export async function run(provider: NetworkProvider) {
                 admin: Address.parse("0QBXsUwWZ6K9fXs_zpp0UANP58PO1do2B91Vve7qKCg9GXWw"),
                 supply: 0n,
                 walletCode: await compile("JettonWallet"),
-                jettonContent: { uri: "https://ipfs.io/ipfs/QmVCMdxyudybb9vDefct1qU3DEZBhj3zhg3n9uM6EqGbN6" }
+                jettonContent: { uri: "https://ipfs.io/ipfs/QmZpikVpmEdYvqkGKPbEn2z2BaJTv6MzWjcGf4VvLQpbPH" }
             },
             await compile("JettonMaster"))
     );
 
     console.info(`Expected master address: ${master.address}`);
-    await master.sendDeploy(provider.sender(), toNano("1.5"));
+    await master.sendDeploy(provider.sender(), toNano("1"));
 }

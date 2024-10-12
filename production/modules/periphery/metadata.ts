@@ -63,16 +63,17 @@ async function loadOnChainData(cs: any): Promise<JettonMetadata> {
     return onChainData;
 }
 
-// Helper to merge on-chain and off-chain data
 function buildJettonMetadataFromSource(onChainData: JettonMetadata, offChainData: JettonMetadata): JettonMetadata {
     return defaultJettonKeys.reduce(
         (metadata, key) => {
-            metadata[key as keyof JettonMetadata] = onChainData[key as keyof JettonMetadata] || offChainData[key as keyof JettonMetadata] || "";
+            const value = onChainData[key as keyof JettonMetadata] || offChainData[key as keyof JettonMetadata];
+            if (value) metadata[key as keyof JettonMetadata] = value;
             return metadata;
         },
         {} as JettonMetadata
     );
 }
+
 
 export function formatLink(url: string): string {
     return url.startsWith("ipfs://") ? url.replace("ipfs://", "https://ipfs.io/ipfs/") : url;
