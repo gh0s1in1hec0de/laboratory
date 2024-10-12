@@ -1,3 +1,5 @@
+CREATE DOMAIN coins AS NUMERIC(39, 0) CHECK ( VALUE >= 0 );
+
 CREATE TABLE launch_metadata
 (
     onchain_metadata_link TEXT NOT NULL PRIMARY KEY,

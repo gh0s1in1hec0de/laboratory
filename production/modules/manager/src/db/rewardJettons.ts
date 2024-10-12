@@ -13,7 +13,7 @@ export async function getRewardJetton(masterAddress: RawAddressString, client?: 
 }
 
 export async function storeRewardJetton(
-    { masterAddress, ourWalletAddress, metadata, currentBalance, rewardAmount }: RewardJetton,
+    { masterAddress, ourWalletAddress, metadata, currentBalance, rewardAmount }: Omit<RewardJetton, "lockedForRewards">,
     client?: SqlClient
 ): Promise<void> {
     // @ts-expect-error just postgres typechecking nonsense

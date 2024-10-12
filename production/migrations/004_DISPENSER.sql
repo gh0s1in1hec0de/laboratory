@@ -5,6 +5,7 @@ CREATE TABLE reward_jettons
     metadata           JSONB   NOT NULL,
 
     current_balance    coins   NOT NULL DEFAULT 0,
+    locked_for_rewards coins   NOT NULL DEFAULT 0,
     reward_amount      coins   NOT NULL CHECK ( reward_amount > 0 ),
 
     CHECK (current_balance > reward_amount)
@@ -19,13 +20,13 @@ BEGIN
     SELECT array_agg(master_address) AS master_addresses, array_agg(reward_amount) AS reward_amounts
     INTO reward_total
     FROM reward_jettons
-    WHERE current_balance > reward_amount;
+    WHERE current_balance > locked_for_rewards + reward_amount;
 
     INSERT INTO reward_pools (token_launch, reward_jetton, reward_amount)
     SELECT NEW.address, unnest(reward_total.master_addresses), unnest(reward_total.reward_amounts);
 
     UPDATE reward_jettons
-    SET current_balance = current_balance - reward_amount
+    SET locked_for_rewards = locked_for_rewards + reward_amount
     WHERE master_address = ANY (reward_total.master_addresses);
 
     RETURN NEW;
@@ -71,46 +72,72 @@ CREATE TABLE user_reward_jetton_balances
     PRIMARY KEY ("user", reward_jetton)
 );
 
-CREATE OR REPLACE FUNCTION handle_reward_claim()
+CREATE OR REPLACE FUNCTION handle_reward_claim_and_jetton_update()
     RETURNS TRIGGER AS
 $$
 DECLARE
-    current_balance coins;
+    current_user_balance   coins;
+    current_jetton_balance coins;
+    current_locked_balance coins;
 BEGIN
-    -- Get the current balance for the user and reward jetton
+
     SELECT balance
-    INTO current_balance
+    INTO current_user_balance
     FROM user_reward_jetton_balances
     WHERE "user" = OLD."user"
       AND reward_jetton = OLD.reward_jetton
-        FOR UPDATE; -- Locker
+        FOR UPDATE;
 
-    IF current_balance - OLD.balance = 0 THEN
-        -- Cleaning dead data
+    -- Well, I know - but handling this case super-duper way will bloat the code x3
+    IF current_user_balance - OLD.balance > 0 THEN
+        UPDATE user_reward_jetton_balances
+        SET balance = current_user_balance - OLD.balance
+        WHERE "user" = OLD."user"
+          AND reward_jetton = OLD.reward_jetton;
+    ELSE
         DELETE
         FROM user_reward_jetton_balances
         WHERE "user" = OLD."user"
           AND reward_jetton = OLD.reward_jetton;
-    ELSIF current_balance - OLD.balance > 0 THEN
-        UPDATE user_reward_jetton_balances
-        SET balance = balance - OLD.balance
-        WHERE "user" = OLD."user"
-          AND reward_jetton = OLD.reward_jetton;
+    END IF;
+
+
+    SELECT current_balance, locked_for_rewards
+    INTO current_jetton_balance, current_locked_balance
+    FROM reward_jettons
+    WHERE master_address = OLD.reward_jetton
+        FOR UPDATE;
+
+    IF current_jetton_balance - OLD.balance < 0 THEN
+        UPDATE reward_jettons
+        SET current_balance = 0
+        WHERE master_address = OLD.reward_jetton;
     ELSE
-        RAISE EXCEPTION 'Insufficient balance to claim. Current balance: %, Claim amount: %', current_balance, OLD.balance;
+        UPDATE reward_jettons
+        SET current_balance = current_jetton_balance - OLD.balance
+        WHERE master_address = OLD.reward_jetton;
+    END IF;
+
+    IF current_locked_balance - OLD.balance < 0 THEN
+        UPDATE reward_jettons
+        SET locked_for_rewards = 0
+        WHERE master_address = OLD.reward_jetton;
+    ELSE
+        UPDATE reward_jettons
+        SET locked_for_rewards = current_locked_balance - OLD.balance
+        WHERE master_address = OLD.reward_jetton;
     END IF;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_handle_reward_claim
+CREATE TRIGGER trigger_handle_reward_claim_and_jetton_update
     AFTER UPDATE OF status
     ON user_launch_reward_positions
     FOR EACH ROW
     WHEN (NEW.status = 'claimed')
-EXECUTE FUNCTION handle_reward_claim();
-
+EXECUTE FUNCTION handle_reward_claim_and_jetton_update();
 
 -- ERROR HANDLING
 CREATE TABLE user_launch_reward_errors
@@ -127,40 +154,34 @@ BEGIN
     VALUES (user_claim, details);
 END;
 $$ LANGUAGE plpgsql;
--- ###
 
+-- Calculating rewards per user claim
 CREATE OR REPLACE FUNCTION create_user_launch_reward_for_claim()
     RETURNS TRIGGER AS
 $$
 DECLARE
     reward_jetton_value      address;
-    calculated_balance_value coins;
+    calculated_balance_value NUMERIC(39, 0); -- Final result is a whole number
 BEGIN
-    -- Start a transaction for the trigger's operations
-    BEGIN
-        -- Loop through the reward pools and store the calculated values into variables
-        FOR reward_jetton_value, calculated_balance_value IN
-            SELECT rp.reward_jetton,
-                   rp.reward_amount * NEW.jetton_amount / tl.total_supply
-            FROM reward_pools rp
-                     JOIN token_launches tl ON rp.token_launch = tl.address
-            WHERE rp.token_launch = NEW.token_launch
-            LOOP
-                -- Insert into user_launch_reward
-                INSERT INTO user_launch_reward_positions ("user", token_launch, reward_jetton, user_claim, balance)
-                VALUES (NEW.actor, NEW.token_launch, reward_jetton_value, NEW.id, calculated_balance_value);
+    -- Loop through the reward pools and store the calculated values into variables
+    FOR reward_jetton_value, calculated_balance_value IN
+        SELECT rp.reward_jetton,
+               NEW.jetton_amount::NUMERIC(78, 0) * rp.reward_amount::NUMERIC(78, 0) / tl.total_supply::NUMERIC(39, 0)
+        -- Ensure final result is a whole number
+        FROM reward_pools rp
+                 JOIN token_launches tl ON rp.token_launch = tl.address
+        WHERE rp.token_launch = NEW.token_launch
+        LOOP
+            -- Insert into user_launch_reward
+            INSERT INTO user_launch_reward_positions ("user", token_launch, reward_jetton, user_claim, balance)
+            VALUES (NEW.actor, NEW.token_launch, reward_jetton_value, NEW.id, calculated_balance_value);
 
-                -- Upsert (Insert or Update) the user_reward_jetton_balances
-                INSERT INTO user_reward_jetton_balances ("user", reward_jetton, balance)
-                VALUES (NEW.actor, reward_jetton_value, calculated_balance_value)
-                ON CONFLICT ("user", reward_jetton)
-                    DO UPDATE SET balance = user_reward_jetton_balances.balance + EXCLUDED.balance;
-            END LOOP;
-    EXCEPTION
-        WHEN OTHERS THEN
-            PERFORM log_user_launch_reward_error(NEW.id, SQLERRM);
-    END;
-
+            -- Upsert (Insert or Update) the user_reward_jetton_balances
+            INSERT INTO user_reward_jetton_balances ("user", reward_jetton, balance)
+            VALUES (NEW.actor, reward_jetton_value, calculated_balance_value)
+            ON CONFLICT ("user", reward_jetton)
+                DO UPDATE SET balance = user_reward_jetton_balances.balance + EXCLUDED.balance;
+        END LOOP;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -193,6 +214,3 @@ CREATE TRIGGER after_insert_user_launch_reward_error
     ON user_launch_reward_errors
     FOR EACH ROW
 EXECUTE FUNCTION notify_user_launch_reward_error();
-
-
-

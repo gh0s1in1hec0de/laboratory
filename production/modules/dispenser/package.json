@@ -1,5 +1,5 @@
 {
-  "name": "dispencer",
+  "name": "dispenser",
   "module": "src/index.ts",
   "type": "module",
   "devDependencies": {

@@ -19,7 +19,7 @@ export async function scanForRequests() {
             let currentHeight = await db.getHeight(walletAddress) ?? 0n;
             const newTxs = await retrieveAllUnknownTransactions(walletAddress, currentHeight, logger, balancedTonClient);
             if (!newTxs) {
-                logger().info("updates for chief not found");
+                logger().info("updates for dispenser not found");
                 await delay(15);
                 continue;
             }
@@ -47,6 +47,10 @@ export async function scanForRequests() {
                     logger().warn(`failed to load comment for transfer [${sender.toRawString()}; ${fromNano(attachedValue)} TONs; ${tx.now}]`);
                 }
             }
+            // Setting height before processing to not process requests twice
+            currentHeight = newTxs[newTxs.length - 1].lt;
+            await db.setHeightForAddress(walletAddress, currentHeight, true);
+
             const startTime = Date.now();
             await Promise.allSettled(
                 requests.map((request, index) =>
@@ -56,9 +60,6 @@ export async function scanForRequests() {
             const elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
             logger().debug(`processed ${requests.length} requests in ${elapsedTime} seconds`);
 
-
-            currentHeight = newTxs[newTxs.length - 1].lt;
-            await db.setHeightForAddress(walletAddress, currentHeight, true);
             await delay(Math.max(5 - elapsedTime, 0));
         } catch (e) {
             logger().error("failed to load new requests with error: ", e);

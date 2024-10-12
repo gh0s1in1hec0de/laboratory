@@ -5,7 +5,7 @@
     "modules/periphery",
     "modules/oracle",
     "modules/manager",
-    "modules/dispencer",
+    "modules/dispenser",
     "modules/frontend",
     "modules/onchain"
   ],
@@ -16,6 +16,6 @@
     "migrate": "bun migrate.ts",
     "manager": "bun ./modules/manager/src/index.ts",
     "oracle": "bun ./modules/oracle/src/index.ts",
-    "dispencer": "bun ./modules/dispencer/src/index.ts"
+    "dispenser": "bun modules/dispenser/src/index.ts"
   }
 }

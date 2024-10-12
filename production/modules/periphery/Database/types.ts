@@ -126,6 +126,7 @@ export type RewardJetton = {
     ourWalletAddress: RawAddressString,
     metadata: JettonMetadata,
     currentBalance: Coins,
+    lockedForRewards: Coins,
     rewardAmount: Coins,
 };
 

@@ -1,9 +1,8 @@
-import { getConfig } from "./config";
-import WinstonTelegram from "winston-telegram";
 import winston, { type Logger } from "winston";
+import { AppMode } from "starton-periphery";
+import { getConfig } from "./config";
 import "winston-daily-rotate-file";
 import path from "path";
-import { AppMode } from "starton-periphery";
 
 const {
     printf,
@@ -51,13 +50,7 @@ const format = combine(
 );
 
 function configureLogger(): Logger {
-    const { mode, logger } = getConfig();
-    const {
-        dev_thread_id,
-        prod_thread_id,
-        bot_token,
-        chat_id
-    } = logger;
+    const { mode } = getConfig();
     const isDev = mode === AppMode.DEV;
     const level = isDev ? "http" : "error";
 
@@ -71,13 +64,6 @@ function configureLogger(): Logger {
                     colorize({ all: true, colors }),
                     customFormat
                 )
-            }),
-            new WinstonTelegram({
-                token: bot_token,
-                chatId: chat_id,
-                level,
-                messageThreadId: isDev ? dev_thread_id : prod_thread_id,
-                disableNotification: true,
             }),
             new DailyRotateFile({
                 filename: path.resolve(__dirname, `../../logs_manager/logs_${isDev ? "dev" : "prod"}_%DATE%.log`),

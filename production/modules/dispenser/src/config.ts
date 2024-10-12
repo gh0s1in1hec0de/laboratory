@@ -30,7 +30,7 @@ type Config = {
             testnet: string[],
             mainnet: string[],
         },
-        jetton_transfer_fee: bigint,
+        jetton_transfer_fee: number,
         wallet: {
             address: string,
             mnemonic: string,

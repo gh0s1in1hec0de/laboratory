@@ -68,6 +68,7 @@ Please enter reward amount (raw) and make sure you're feeling all right.
         }
     } catch (e) {
         await ctx.reply(`Failed to store new data with error ${e}`);
+        return;
     }
     await ctx.reply("Done!");
 }
