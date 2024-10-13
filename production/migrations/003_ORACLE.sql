@@ -106,7 +106,7 @@ CREATE TRIGGER trigger_create_launch_balance
 EXECUTE FUNCTION create_launch_balance();
 
 -- We update only public tons via calculations as we are free to update other categories with direct getters' calls
-CREATE OR REPLACE FUNCTION update_launch_balance_public()
+CREATE OR REPLACE FUNCTION update_launch_public_round_balance()
     RETURNS TRIGGER AS
 $$
 BEGIN
@@ -128,7 +128,7 @@ CREATE TRIGGER trigger_update_launch_balance_public
     ON user_actions
     FOR EACH ROW
     WHEN (NEW.action_type IN ('public_buy', 'public_refund', 'total_refund'))
-EXECUTE FUNCTION update_launch_balance_public();
+EXECUTE FUNCTION update_launch_public_round_balance();
 
 CREATE OR REPLACE FUNCTION notify_user_balance_error()
     RETURNS trigger AS

@@ -1,6 +1,5 @@
 import { internal as internal_relaxed } from "@ton/core/dist/types/_helpers";
 import { fromNano, type OutActionSendMsg, SendMode } from "@ton/ton";
-import { chiefWalletData } from "oracle/src/oracle/highload";
 import { Address, beginCell } from "@ton/core";
 import type { ClaimRequest } from "./scanner";
 import { balancedTonClient } from "../client";
@@ -15,6 +14,7 @@ import {
     JettonOps,
     delay,
 } from "starton-periphery";
+import { walletData } from "./highload";
 
 export async function handleMaybeClaimRequest(request: ClaimRequest) {
     const { user, requestType, attachedValue } = request;
@@ -120,7 +120,7 @@ export async function handleMaybeClaimRequest(request: ClaimRequest) {
         }
 
         if (actions.length) {
-            const { keyPair, wallet, queryIdManager } = await chiefWalletData();
+            const { keyPair, wallet, queryIdManager } = await walletData();
             const highloadQueryId = await queryIdManager.getNextCached();
 
             let tryNumber = 0;
@@ -143,7 +143,6 @@ export async function handleMaybeClaimRequest(request: ClaimRequest) {
                 tryNumber++;
             }
             if (requestType === "t") {
-                console.info(user.toRawString());
                 await db.markUserRewardPositionsAsClaimed(user.toRawString());
                 if (await db.getRewardJettonBalances(user.toRawString()))
                     logger().error(`inconsistent state reached: not all the balances zeroed for user ${user.toRawString()}`);
@@ -151,14 +150,13 @@ export async function handleMaybeClaimRequest(request: ClaimRequest) {
         }
     } catch (e) {
         logger().error(`reward handling for [${user}; $[${requestType}] failed with error: `, e);
-        console.error(e);
     }
 }
 
 export async function refund(
     { user, attachedValue }: ClaimRequest
 ) {
-    const { keyPair, wallet, queryIdManager } = await chiefWalletData();
+    const { keyPair, wallet, queryIdManager } = await walletData();
     const highloadQueryId = await queryIdManager.getNextCached();
 
     let tryNumber = 0;

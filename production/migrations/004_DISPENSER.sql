@@ -11,7 +11,7 @@ CREATE TABLE reward_jettons
     CHECK (current_balance > reward_amount)
 );
 
-CREATE OR REPLACE FUNCTION create_reward_pool_for_new_token_launch()
+CREATE OR REPLACE FUNCTION create_reward_pools_for_new_launch()
     RETURNS TRIGGER AS
 $$
 DECLARE
@@ -37,7 +37,37 @@ CREATE TRIGGER trigger_create_reward_pool
     AFTER INSERT
     ON token_launches
     FOR EACH ROW
-EXECUTE FUNCTION create_reward_pool_for_new_token_launch();
+EXECUTE FUNCTION create_reward_pools_for_new_launch();
+
+CREATE OR REPLACE FUNCTION return_reward_pools()
+    RETURNS TRIGGER AS
+$$
+DECLARE
+    reward_info RECORD;
+BEGIN
+    FOR reward_info IN
+        SELECT reward_jetton, reward_amount
+        FROM reward_pools
+        WHERE token_launch = OLD.address
+        LOOP
+            UPDATE reward_jettons
+            SET locked_for_rewards = GREATEST(locked_for_rewards - reward_info.reward_amount, 0)
+            WHERE master_address = reward_info.reward_jetton;
+        END LOOP;
+
+    DELETE FROM reward_pools
+    WHERE token_launch = OLD.address;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_handle_failed_token_launch
+    AFTER UPDATE OF is_successful
+    ON token_launches
+    FOR EACH ROW
+    WHEN (OLD.is_successful IS DISTINCT FROM NEW.is_successful AND NEW.is_successful = FALSE)
+EXECUTE FUNCTION return_reward_pools();
 
 CREATE TABLE reward_pools
 (
@@ -72,7 +102,7 @@ CREATE TABLE user_reward_jetton_balances
     PRIMARY KEY ("user", reward_jetton)
 );
 
-CREATE OR REPLACE FUNCTION handle_reward_claim_and_jetton_update()
+CREATE OR REPLACE FUNCTION update_balances_after_claim()
     RETURNS TRIGGER AS
 $$
 DECLARE
@@ -137,7 +167,7 @@ CREATE TRIGGER trigger_handle_reward_claim_and_jetton_update
     ON user_launch_reward_positions
     FOR EACH ROW
     WHEN (NEW.status = 'claimed')
-EXECUTE FUNCTION handle_reward_claim_and_jetton_update();
+EXECUTE FUNCTION update_balances_after_claim();
 
 -- ERROR HANDLING
 CREATE TABLE user_launch_reward_errors
@@ -156,7 +186,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Calculating rewards per user claim
-CREATE OR REPLACE FUNCTION create_user_launch_reward_for_claim()
+CREATE OR REPLACE FUNCTION calculate_user_rewards_for_claim()
     RETURNS TRIGGER AS
 $$
 DECLARE
@@ -190,7 +220,7 @@ CREATE TRIGGER trigger_create_user_launch_reward
     AFTER INSERT
     ON user_claims
     FOR EACH ROW
-EXECUTE FUNCTION create_user_launch_reward_for_claim();
+EXECUTE FUNCTION calculate_user_rewards_for_claim();
 
 -- Errors tracing to client-
 CREATE OR REPLACE FUNCTION notify_user_launch_reward_error()

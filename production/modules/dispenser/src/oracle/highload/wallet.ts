@@ -9,7 +9,7 @@ let keyPair: KeyPair | null = null;
 let wallet: OpenedContract<HighloadWalletV3> | null = null;
 let queryIdManager: CachedHighloadQueryIdManager | null;
 
-export async function chiefWalletData(): Promise<{
+export async function walletData(): Promise<{
     keyPair: KeyPair,
     wallet: OpenedContract<HighloadWalletV3>,
     queryIdManager: CachedHighloadQueryIdManager,
