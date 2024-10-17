@@ -8,6 +8,7 @@ export function MainBox({
   children,
   bgColor = MainBoxBgColor.Transparent,
   rounded = false,
+  roundedXl = false,
   fullWidth = false,
   ...otherProps
 }: MainBoxProps) {
@@ -17,6 +18,7 @@ export function MainBox({
         styles.mainBox,
         { 
           [styles.rounded]: rounded,
+          [styles.roundedXl]: roundedXl,
           [styles.fullWidth]: fullWidth
         },
         [styles[bgColor], className]

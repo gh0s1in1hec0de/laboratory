@@ -4,7 +4,6 @@ import { TicketBalance } from "./components/TicketBalance";
 import { BgLight } from "@/common/BgLight";
 import { TonProvider } from "@/providers/ton";
 import { CustomConnectButton } from "@/components/CustomConnectButton";
-import { LangSwitcher } from "@/components/LangSwitcher";
 
 export function Header() {
   return (
@@ -16,15 +15,12 @@ export function Header() {
     >
       <BgLight />
 
-      <TonProvider>
-        <LangSwitcher />
-      </TonProvider>
-
       <Info />
 
       <TonProvider>
         <CustomConnectButton 
           successChildren={<TicketBalance />}
+          fullWidth
         />
       </TonProvider>
     </Grid>

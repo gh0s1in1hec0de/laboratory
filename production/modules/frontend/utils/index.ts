@@ -7,3 +7,4 @@ export * from "./removeLocaleFromPath";
 export * from "./getErrorText";
 export * from "./toCamelCase";
 export * from "./toSnakeCase";
+export * from "./getShowBanner";

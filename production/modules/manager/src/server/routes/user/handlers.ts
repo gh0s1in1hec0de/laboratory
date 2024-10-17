@@ -5,13 +5,12 @@ import * as db from "../../../db";
 export async function connectCallerWallet({
     address,
     referral,
-}: db.ConnectedWalletRequest): Promise<Caller> {
+}: db.ConnectedWalletRequest): Promise<Caller | string> {
     const res = await db.connectWallet(
         Address.parse(address).toRawString(),
         referral && Address.parse(referral).toRawString(),
     );
-    if (!res) throw new CommonServerError(400, "user already exists");
-    return res;
+    return res ?? "user already exists";
 }
 
 export async function getCallerTicketBalance({

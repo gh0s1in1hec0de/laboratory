@@ -12,6 +12,7 @@ import { DropdownButton } from "./components/DropdownButton";
 
 export function CustomConnectButton({ 
   successChildren, 
+  fullWidth,
 }: CustomConnectButtonProps) {
   const {
     isPending,
@@ -33,14 +34,16 @@ export function CustomConnectButton({
   return (
     <LoadingWrapper 
       isLoading={isPending || !connectionRestored}
-      skeleton={<ConnectButtonSkeleton />}
+      skeleton={<ConnectButtonSkeleton fullWidth={fullWidth} />}
     >
       {tonWalletAddress ? (
         <>
           <CustomDropdown 
+            fullWidth={fullWidth}
             Button={
               <DropdownButton 
                 smallAddress={formatAddress(tonWalletAddress)} 
+                fullWidth={fullWidth}
               />
             }
             items={[
@@ -65,8 +68,8 @@ export function CustomConnectButton({
         <CustomButton
           background="orange"
           onClick={handleClickConnectButton}
-          padding="10px 0"
-          fullWidth
+          padding={fullWidth ? "10px" : "6px 10px"}
+          fullWidth={fullWidth}
         >
           <Label label={t("connectWallet")} variantSize="medium14" />
         </CustomButton>
