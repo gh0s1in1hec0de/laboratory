@@ -27,7 +27,7 @@ export async function getSortedTokenLaunches(
         LIMIT ${limit + 1} OFFSET ${offset}
     `;
     return !res.length ? null : {
-        storedTokenLaunch: res.slice(0, limit),
+        storedTokenLaunches: res.slice(0, limit),
         hasMore: res.length > limit
     };
 }

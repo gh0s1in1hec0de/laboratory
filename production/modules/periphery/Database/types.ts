@@ -1,4 +1,4 @@
-import { BalanceUpdateMode, Coins, GlobalVersions, LamportTime, RawAddressString, TokenMetadata } from "../standards";
+import { BalanceUpdateMode, Coins, GlobalVersions, LamportTime, RawAddressString } from "../standards";
 import type { TokenLaunchTimings } from "../types";
 import type { UnixTimeSeconds } from "../utils";
 import { JettonMetadata } from "../metadata";
@@ -44,13 +44,12 @@ export type LaunchMetadata = {
 
 export type StoredTokenLaunch = {
     id: number,
-    identifier: string,
 
     address: RawAddressString,
     creator: RawAddressString,
     version: GlobalVersions,
 
-    metadata: TokenMetadata,
+    metadata: JettonMetadata,
     timings: TokenLaunchTimings,
     totalSupply: Coins,
     createdAt: UnixTimeSeconds,

@@ -13,9 +13,8 @@ CREATE TYPE launch_version AS ENUM ('V1', 'V2A');
 CREATE TABLE token_launches
 (
     id                           SERIAL            NOT NULL,
-    identifier                   TEXT              NOT NULL,
-
     address                      address           NOT NULL PRIMARY KEY,
+
     creator                      address           NOT NULL,
     version                      launch_version    NOT NULL,
     -- Original json, not one with url field only

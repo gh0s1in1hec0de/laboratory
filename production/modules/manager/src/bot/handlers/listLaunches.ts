@@ -16,19 +16,19 @@ async function handleListLaunches(
     sortData: StoredTokenLaunchRequest,
 ): Promise<void> {
     try {
-        const data = await db.getSortedTokenLaunches(sortData);
-        
-        if (!data) {
+        const launches = await db.getSortedTokenLaunches(sortData);
+
+        if (!launches) {
             await ctx.callbackQuery.message!.editText(
                 getReplyText("noLaunches"),
                 { reply_markup: getResetLaunchesKeyboard() }
             );
             return;
         }
-      
+
         await ctx.callbackQuery.message!.editText(
-            getLaunchesReply(data.storedTokenLaunch),
-            { reply_markup: getLaunchesPaginationKeyboard(data.hasMore, sortData.page) }
+            getLaunchesReply(launches.storedTokenLaunches),
+            { reply_markup: getLaunchesPaginationKeyboard(launches.hasMore, sortData.page) }
         );
     } catch (error) {
         await ctx.callbackQuery.message!.editText(
@@ -51,7 +51,7 @@ export async function handleListLaunchesCallback(ctx: CallbackQueryContext<MyCon
     });
 }
 
-export async function handleLaunchesPaginationCallback(ctx: CallbackQueryContext<MyContext>){
+export async function handleLaunchesPaginationCallback(ctx: CallbackQueryContext<MyContext>) {
     await ctx.answerCallbackQuery();
     const newPage = ctx.callbackQuery.data == "next_launches"
         ? ctx.session.launchesPage += 1

@@ -24,7 +24,7 @@ export interface StoredTasksRequest {
 }
 
 export interface StoredTokenLaunchResponse {
-    storedTokenLaunch: StoredTokenLaunch[],
+    storedTokenLaunches: StoredTokenLaunch[],
     hasMore: boolean,
 }
 

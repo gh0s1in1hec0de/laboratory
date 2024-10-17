@@ -12,7 +12,7 @@ import {
     loadOpAndQueryId,
     TokensLaunchOps,
     GlobalVersions,
-    delay,
+    delay, parseJettonMetadata,
 } from "starton-periphery";
 
 export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersion: GlobalVersions) {
@@ -47,15 +47,12 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
                     const parsedStateInit = coreVersion === GlobalVersions.V1 ?
                         parseTokenLaunchV1Storage(newLaunchStateInit) :
                         parseTokenLaunchV2AStorage(newLaunchStateInit);
-                    /* TODO
-                        Fetch metadata by url inside
-                        Build name from ticker + token */
+
                     await db.storeTokenLaunch({
-                        identifier: `dummy${Date.now()}`,
                         address,
                         creator: parsedStateInit.creatorAddress.toRawString(),
                         version: coreVersion,
-                        metadata: parseMetadataCell(parsedStateInit.tools.metadata),
+                        metadata: await parseJettonMetadata(parsedStateInit.tools.metadata),
                         // An error may occur here
                         timings: parseTokenLaunchTimings(parsedStateInit),
                         totalSupply: parsedStateInit.saleConfig.futJetTotalSupply,

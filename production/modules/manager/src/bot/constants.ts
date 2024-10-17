@@ -74,24 +74,27 @@ export function getReplyText(key: keyof typeof replies): string {
 }
 
 export function getLaunchesReply(storedTokenLaunch: StoredTokenLaunch[]): string {
-    return storedTokenLaunch.map((tokenLaunch) => {
-        const { identifier, id, createdAt } = tokenLaunch;
-        const date = new Date(Number(createdAt) * 1000);
-
-        const formattedDate = date.toLocaleDateString("ru-RU", {
+    return storedTokenLaunch.map(({ metadata, id, createdAt }) => {
+        const date = new Date(Number(createdAt) * 1000).toLocaleDateString("ru-RU", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
         });
 
-        return `${id}. ${identifier} - ${formattedDate}`;
+        const description = metadata.description
+            ? metadata.description.length > 15
+                ? `${metadata.description.slice(0, 15)}...`
+                : metadata.description
+            : "not provided";
+
+        return `${id}. ${metadata.name ?? "unnamed"} - ${description} (${date})`;
     }).join("\n");
 }
 
 export function getTasksReply(storedTasks: StoredTasks[]): string {
     const oneWeekInSeconds = 7 * 24 * 60 * 60;
     const currentTime = Math.floor(Date.now() / 1000);
-    
+
     return storedTasks.map((task) => {
         const { taskId, name, createdAt } = task;
         const date = new Date(Number(createdAt) * 1000);
@@ -127,21 +130,21 @@ export function getMenuKeyboard(): InlineKeyboard {
 
 export function getLaunchesPaginationKeyboard(hasMore: boolean, page: number): InlineKeyboard {
     const keyboard = new InlineKeyboard();
-  
+
     page > 1 ? keyboard.text("< prev", "prev_launches") : keyboard.text(".", "nothing");
     keyboard.text(`· ${page} ·`, "nothing");
     hasMore ? keyboard.text("next >", "next_launches").row() : keyboard.text(".", "nothing").row();
-  
+
     return keyboard.text("« back to menu", "back");
 }
 
 export function getTasksPaginationKeyboard(hasMore: boolean, page: number): InlineKeyboard {
     const keyboard = new InlineKeyboard();
-  
+
     page > 1 ? keyboard.text("< prev", "prev_tasks") : keyboard.text(".", "nothing");
     keyboard.text(`· ${page} ·`, "nothing");
     hasMore ? keyboard.text("next >", "next_tasks").row() : keyboard.text(".", "nothing").row();
-  
+
     return keyboard.text("« back to menu", "back");
 }
 

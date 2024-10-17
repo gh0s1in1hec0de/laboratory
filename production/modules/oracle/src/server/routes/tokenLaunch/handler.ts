@@ -1,5 +1,4 @@
-import { logger } from "../../../logger";
-import { ok as assert } from "assert";
+import { CommonServerError } from "starton-periphery";
 import * as db from "../../../db";
 
 export async function getTokenLaunches({
@@ -9,17 +8,13 @@ export async function getTokenLaunches({
     search = "",
     limit
 }: db.StoredTokenLaunchRequest): Promise<db.StoredTokenLaunchResponse | undefined> {
-    try {
-        const res = await db.getSortedTokenLaunches({
-            page,
-            limit,
-            orderBy,
-            order,
-            search: search.replace(/\+/g, " ")
-        });
-        assert(res, "token launches not found");
-        return res;
-    } catch (e){
-        logger().error(`error in http request 'getTokenLaunches': ${e}`);
-    }
+    const res = await db.getSortedTokenLaunches({
+        page,
+        limit,
+        orderBy,
+        order,
+        search: search.replace(/\+/g, " ")
+    });
+    if (!res) throw new CommonServerError(500, "Launches not found");
+    return res;
 }

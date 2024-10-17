@@ -4,8 +4,8 @@ import { swagger } from "@elysiajs/swagger";
 import { ok as assert } from "node:assert";
 import { getConfig } from "../config";
 import { logger } from "../logger";
-import Elysia from "elysia";
 import cors from "@elysiajs/cors";
+import Elysia from "elysia";
 
 function createServer() {
     const {

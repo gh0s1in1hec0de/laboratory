@@ -14,3 +14,12 @@ export async function createLaunchMetadata(
     `;
     if (res.length !== 1) logger().warn(`exactly 1 column must be created, got: ${res}`);
 }
+
+export async function getLaunchesMetadata(onchainMetadataLinks: string[], client?: SqlClient): Promise<LaunchMetadata[] | null> {
+    const res = await (client ?? globalClient)<LaunchMetadata[]>`
+        SELECT *
+        FROM launch_metadata
+        WHERE onchain_metadata_link = ANY (${onchainMetadataLinks});
+    `;
+    return res.length ? res : null;
+}

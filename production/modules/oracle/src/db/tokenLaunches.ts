@@ -46,7 +46,7 @@ export async function getTokenLaunchById(id: number, client?: SqlClient): Promis
 }
 
 export async function storeTokenLaunch(
-    { identifier, address, creator, version, metadata, timings, totalSupply, createdAt }:
+    { address, creator, version, metadata, timings, totalSupply, createdAt }:
         Omit<
             StoredTokenLaunch,
             "id" | "isSuccessful" | "postDeployEnrollmentStats" | "dexData"
@@ -55,8 +55,8 @@ export async function storeTokenLaunch(
 ): Promise<void> {
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
-        INSERT INTO token_launches (identifier, address, creator, version, metadata, timings, total_supply, created_at)
-        VALUES (${identifier}, ${address}, ${creator}, ${version}, ${metadata}, ${timings}, ${totalSupply},
+        INSERT INTO token_launches (address, creator, version, metadata, timings, total_supply, created_at)
+        VALUES (${address}, ${creator}, ${version}, ${metadata}, ${timings}, ${totalSupply},
                 ${createdAt})
         RETURNING 1;
     `;
