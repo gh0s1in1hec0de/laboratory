@@ -66,7 +66,6 @@ export function CustomConnectButton({
         </>
       ) : (
         <CustomButton
-          background="orange"
           onClick={handleClickConnectButton}
           padding={fullWidth ? "10px" : "6px 10px"}
           fullWidth={fullWidth}

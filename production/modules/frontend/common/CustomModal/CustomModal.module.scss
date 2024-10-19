@@ -1,0 +1,10 @@
+.root {
+  &.fullScreen {
+    transition: none;
+  }
+}
+
+.paper {
+  background-color: var(--navbar-bg);
+  align-items: center;
+}

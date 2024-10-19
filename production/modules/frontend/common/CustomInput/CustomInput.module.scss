@@ -1,0 +1,35 @@
+@import "@/styles/mixins";
+
+.formControl {
+  &.fullWidth {
+    width: 100%;
+  }
+}
+
+.root {
+  background: transparent;
+  padding: 8px;
+  border: 1px solid var(--gray-dark);
+  background-color: transparent !important;
+  border-radius: 10px;
+  outline: none;
+  font-family: var(--font-manrope);
+  @include regular16;
+
+  &::before, &::after {
+    border-bottom: none !important;
+  }
+}
+
+.input {
+  color: var(--gray-light);
+  padding-left: 4px;
+
+  &:-webkit-autofill {
+    transition: all 5000s ease-in-out 0s;
+  }
+}
+
+.disabled {
+  -webkit-text-fill-color: var(--gray-regular) !important;
+}

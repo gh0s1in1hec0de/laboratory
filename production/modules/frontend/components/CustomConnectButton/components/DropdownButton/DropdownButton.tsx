@@ -3,7 +3,7 @@ import { Label } from "@/common/Label";
 import { DropdownButtonProps } from "./types";
 import Grid from "@mui/material/Grid2";
 import styles from "./DropdownButton.module.scss";
-import { ArrowDownIcon } from "@/icons/quests";
+import { ArrowDownIcon } from "@/icons";
 
 export function DropdownButton({
   smallAddress,

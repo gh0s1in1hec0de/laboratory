@@ -12,6 +12,7 @@ export type LabelVariants =
   | "bold18"
   | "medium16"
   | "semiBold18"
+  | "bold24"
   | "semiBold24";
 
 export enum LabelColors {

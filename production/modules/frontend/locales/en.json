@@ -7,6 +7,31 @@
 		"fifth": "profile",
 		"soon": "soon"
 	},
+	"Banners": {
+		"greeting": {
+			"closeButton": "Got it!",
+			"firstSlide": {
+				"title": "Start on Ton",
+				"description": "Launch your token effortlessly"
+			},
+			"secondSlide": {
+				"title": "Join Next Wave",
+				"description": "Try new Wavelaunch IDO method by yourself!"
+			},
+			"thirdSlide": {
+				"title": "The first rule of Star Club: talk much about Star Club",
+				"description": "Join the Star Club to get profits easier!"
+			},
+			"fourthSlide": {
+				"title": "Refund up to 100% of your contribution",
+				"description": "It’s okay to change your mind and get your money back safely!"
+			},
+			"fifthSlide": {
+				"title": "Get tons of rewards for participating!",
+				"description": "Contribute to Wavelaunches to get $START and many other tokens!"
+			}
+		}
+	},
 	"Tasks": {
 		"header": {
 			"subtitle": "season",
