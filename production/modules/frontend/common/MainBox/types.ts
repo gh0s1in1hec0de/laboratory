@@ -12,6 +12,7 @@ export interface MainBoxProps extends Grid2Props {
   bgColor?: `${MainBoxBgColor}`;
   className?: string;
   rounded?: boolean;
+  roundedXl?: boolean;
   fullWidth?: boolean;
 }
 

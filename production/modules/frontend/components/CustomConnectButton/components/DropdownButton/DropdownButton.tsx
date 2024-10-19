@@ -7,14 +7,15 @@ import { ArrowDownIcon } from "@/icons/quests";
 
 export function DropdownButton({
   smallAddress,
+  fullWidth,
 }: DropdownButtonProps) {
   
   return (
     <CustomButton 
       as="div"
       onClick={() => {}}
-      padding="10px 0"
-      fullWidth
+      padding={fullWidth ? "10px" : "6px 30px 6px 10px"}
+      fullWidth={fullWidth}
     >
       <Grid 
         container 

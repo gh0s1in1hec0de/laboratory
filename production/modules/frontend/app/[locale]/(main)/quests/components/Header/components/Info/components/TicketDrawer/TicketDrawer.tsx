@@ -16,6 +16,7 @@ import { QuestionIcon } from "@/icons";
 import Grid from "@mui/material/Grid2";
 import { useTranslations } from "next-intl";
 import { DrawerParagraph } from "./components/DrawerParagraph";
+import { InfoBlock } from "@/components/InfoBlock";
 
 export function TicketDrawer() {
   const t = useTranslations("Tasks.header");
@@ -23,23 +24,13 @@ export function TicketDrawer() {
 
   return (
     <>
-      <MainBox
-        style={{ marginLeft: "auto", cursor: "pointer" }}
-        container
-        padding="4px 12px"
-        alignItems="center"
-        gap="2px"
-        bgColor="gray"
-        rounded
+      <InfoBlock
         onClick={toggleOpenDrawer}
-      >
-        <Label
-          label={t("tooltip")}
-          variantSize="regular14"
-          offUserSelect
-        />
-        <QuestionIcon />
-      </MainBox>
+        label={t("tooltip")}
+        padding="4px 12px"
+        style={{ marginLeft: "auto", cursor: "pointer" }}
+        rounded
+      />
 
       <CustomDrawer
         closeButtonLabel={t("closeButton")}

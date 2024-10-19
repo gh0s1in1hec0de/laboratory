@@ -7,18 +7,20 @@ import { Label } from "../Label";
 import styles from "./CustomDropdown.module.scss";
 import { useTranslations } from "next-intl";
 import { Box } from "@mui/material";
+import { classNames } from "@/utils/classNames";
 
 export function CustomDropdown({ 
   Button, 
-  items 
+  items,
+  fullWidth = false,
 }: CustomDropdownProps) {
   const t = useTranslations("");
-  
+
   return (
     <Menu>
       {({ open }) => (
         <>
-          <MenuButton className={styles.button}>
+          <MenuButton className={classNames(styles.button, { [styles.fullWidth]: fullWidth })}>
             {Button}
           </MenuButton>
 
@@ -40,7 +42,7 @@ export function CustomDropdown({
                         background="transparent"
                         onClick={item.onClick}
                         padding="8px"
-                        fullWidth
+                        fullWidth={fullWidth}
                       >
                         <Label
                           label={t(item.label)}

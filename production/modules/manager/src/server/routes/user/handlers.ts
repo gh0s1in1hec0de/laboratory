@@ -9,7 +9,7 @@ import * as db from "../../../db";
 export async function connectCallerWallet({
     address,
     referral,
-}: ConnectedWalletRequest): Promise<Caller> {
+}: ConnectedWalletRequest): Promise<Caller | string> {
     let maybeParsedReferral: RawAddressString | undefined = undefined;
     if (referral) {
         try {
@@ -21,8 +21,7 @@ export async function connectCallerWallet({
     const res = await db.connectWallet(
         Address.parse(address).toRawString(), maybeParsedReferral,
     );
-    if (!res) throw new CommonServerError(400, "user already exists");
-    return res;
+    return res ?? "user already exists";
 }
 
 export async function getCallerTicketBalance({
