@@ -1,12 +1,10 @@
-import { CommonServerError } from "starton-periphery";
+import { type StoredTokenLaunchRequest, type StoredTokenLaunchResponse } from "starton-periphery";
 import * as db from "../../../db";
 
 export async function getTokenLaunches(
-    { orderBy, page, order, search = "", limit }: db.StoredTokenLaunchRequest
-): Promise<db.StoredTokenLaunchResponse> {
-    const res = await db.getSortedTokenLaunches(
+    { orderBy, page, order, search = "", limit }: StoredTokenLaunchRequest
+): Promise<StoredTokenLaunchResponse> {
+    return await db.getSortedTokenLaunches(
         { page, limit, orderBy, order, search: search.replace(/\+/g, " ") }
-    );
-    if (!res) throw new CommonServerError(500, "Launches not found");
-    return res;
+    ) ?? { launchesChunk: [], hasMore: false };
 }

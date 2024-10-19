@@ -1,4 +1,4 @@
-import type { JettonMetadata } from "starton-periphery";
+import type { JettonMetadata, RawAddressString } from "starton-periphery";
 import { uploadAndPinFileToIPFS } from "../../../ipfs";
 import * as db from "../../../db";
 
@@ -25,4 +25,10 @@ export async function uploadMetadataToIpfs(
         website: links.website,
     });
     return metadataJsonCID;
+}
+
+export async function buyWhitelist(
+    { userAddress, launchAddress }: { userAddress: RawAddressString, launchAddress: RawAddressString },
+): Promise<void> {
+    return await db.buyWhitelist(userAddress, launchAddress);
 }

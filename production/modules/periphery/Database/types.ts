@@ -19,6 +19,19 @@ export type Caller = {
     ticket_balance: number,
 }
 
+export type SortedTasks = {
+    storedTasks: StoredTasks[],
+    hasMore: boolean,
+}
+
+export type StoredTasks = {
+    taskId: number,
+    name: string,
+    description: string,
+    rewardTickets: number,
+    createdAt: UnixTimeSeconds,
+}
+
 export type StringifiedCoins = string;
 export type PostDeployEnrollmentStats = {
     deployedJetton: { masterAddress: RawAddressString, ourWalletAddress: RawAddressString },

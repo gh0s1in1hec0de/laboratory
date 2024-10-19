@@ -14,3 +14,8 @@ export const UploadMetaSchema = t.Object({
         decimals: t.Optional(t.String()),
     }),
 });
+
+export const BuyWhitelist = t.Object({
+    userAddress: t.String(),
+    launchAddress: t.String(),
+});

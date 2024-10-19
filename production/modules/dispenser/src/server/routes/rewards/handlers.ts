@@ -22,12 +22,12 @@ export async function getAmount(
         );
         if (!launchRewardPositions) throw new CommonServerError(400, `No rewards found for [${userAddress}, ${tokenLaunch}]`);
 
-        return (BigInt(launchRewardPositions.length) * getConfig().ton.jetton_transfer_fee).toString();
+        return (BigInt(launchRewardPositions.length) * BigInt(getConfig().ton.jetton_transfer_fee)).toString();
     } else {
         const rewardJettonBalances = await db.getRewardJettonBalances(parsedUserAddress.toRawString());
         if (!rewardJettonBalances) throw new CommonServerError(400, `No rewards found for ${userAddress}`);
 
-        return (BigInt(rewardJettonBalances.length) * getConfig().ton.jetton_transfer_fee).toString();
+        return (BigInt(rewardJettonBalances.length) * BigInt(getConfig().ton.jetton_transfer_fee)).toString();
     }
 }
 

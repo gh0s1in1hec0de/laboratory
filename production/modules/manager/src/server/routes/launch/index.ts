@@ -1,9 +1,8 @@
 import { createDetailsForEndpoint, SwaggerTags } from "../../config";
+import { buyWhitelist, uploadMetadataToIpfs } from "./handlers";
+import { BuyWhitelist, UploadMetaSchema } from "./types";
 import { CommonServerError } from "starton-periphery";
-import { uploadMetadataToIpfs } from "./handlers";
-import { UploadMetaSchema } from "./types";
 import { authMiddleware } from "../auth";
-import { logger } from "../../../logger";
 import Elysia from "elysia";
 
 export function LaunchRoutes() {
@@ -15,8 +14,6 @@ export function LaunchRoutes() {
                 try {
                     return await uploadMetadataToIpfs(body);
                 } catch (e) {
-                    logger().error("error occured in upload-metadata route call: ", e);
-                    console.error(e);
                     if (e instanceof CommonServerError) return error(e.code, e.message);
                     else return error(500, e);
                 }
@@ -25,5 +22,21 @@ export function LaunchRoutes() {
                 body: UploadMetaSchema,
                 ...createDetailsForEndpoint(SwaggerTags.TokenLaunch)
             }
+        )
+        .post(
+            "/buy-wl",
+            async ({ body, error }) => {
+                try {
+                    return await buyWhitelist(body);
+                } catch (e) {
+                    if (e instanceof CommonServerError) return error(e.code, e.message);
+                    else return error(500, e);
+                }
+            },
+            {
+                body: BuyWhitelist,
+                ...createDetailsForEndpoint(SwaggerTags.TokenLaunch)
+            }
         );
+
 }

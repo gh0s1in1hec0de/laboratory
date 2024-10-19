@@ -1,5 +1,5 @@
-import type { SortedTasks, SqlClient, StoredTasks, StoredUsersTasksRelations } from "./types";
-import type { RawAddressString } from "starton-periphery";
+import type { RawAddressString, SortedTasks, StoredTasks, StoredUsersTasksRelations } from "starton-periphery";
+import type { SqlClient, } from "./types";
 import { globalClient } from "./db";
 
 export async function getTasks(

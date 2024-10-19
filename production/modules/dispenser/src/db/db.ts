@@ -15,7 +15,7 @@ export async function createPostgresClient(): Promise<SqlClient> {
             password: process.env.POSTGRES_PASSWORD,
             types: { bigint: postgres.BigInt },
             transform: postgres.camel,
-            max: 10
+            max: 10000
         });
         await cachedGlobalClient.listen("user_launch_reward_error", async (payload) => {
             const { id, user_claim, details } = JSON.parse(payload);
