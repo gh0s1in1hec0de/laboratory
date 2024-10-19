@@ -1,7 +1,7 @@
 import {
     type Caller, type TasksResponse, type TasksRequest, type Subtask,
     type ConnectedWalletRequest, type TicketBalanceRequest,
-    CommonServerError,
+    CommonServerError, type RawAddressString,
 } from "starton-periphery";
 import { Address } from "@ton/core";
 import * as db from "../../../db";
@@ -10,9 +10,16 @@ export async function connectCallerWallet({
     address,
     referral,
 }: ConnectedWalletRequest): Promise<Caller> {
+    let maybeParsedReferral: RawAddressString | undefined = undefined;
+    if (referral) {
+        try {
+            maybeParsedReferral = Address.parse(referral).toRawString();
+        } catch (e) {
+            throw new CommonServerError(400, `invalid referral ${referral}`);
+        }
+    }
     const res = await db.connectWallet(
-        Address.parse(address).toRawString(),
-        referral && Address.parse(referral).toRawString(),
+        Address.parse(address).toRawString(), maybeParsedReferral,
     );
     if (!res) throw new CommonServerError(400, "user already exists");
     return res;

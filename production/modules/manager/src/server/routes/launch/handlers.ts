@@ -10,7 +10,7 @@ export async function uploadMetadataToIpfs(
     }
 ): Promise<string> {
     const base64Image = image.split(",")[1];  // remove `data:image/...;base64,` if present
-    const imageBuffer = Buffer.from(base64Image, "base64"); // decode base64 to buffer
+    const imageBuffer = Buffer.from(base64Image, "base64");
 
     const imageCID = await uploadAndPinFileToIPFS(imageBuffer);
     metadata.image = `https://ipfs.io/ipfs/${imageCID}`;

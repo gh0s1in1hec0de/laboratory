@@ -21,10 +21,7 @@ export async function connectWallet(
 ): Promise<Caller | null> {
     const res = await (client ?? globalClient)<Caller[]>`
         INSERT INTO callers (address, invited_by)
-        VALUES (
-            ${callerAddress},
-            ${referral ? referral : null}
-        )
+        VALUES (${callerAddress}, ${referral ?? null})
         ON CONFLICT DO NOTHING
         RETURNING *;
     `;
