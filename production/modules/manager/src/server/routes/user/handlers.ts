@@ -1,11 +1,15 @@
-import { type Caller, CommonServerError } from "starton-periphery";
+import {
+    type Caller, type TasksResponse, type TasksRequest, type Subtask,
+    type ConnectedWalletRequest, type TicketBalanceRequest,
+    CommonServerError,
+} from "starton-periphery";
 import { Address } from "@ton/core";
 import * as db from "../../../db";
 
 export async function connectCallerWallet({
     address,
     referral,
-}: db.ConnectedWalletRequest): Promise<Caller> {
+}: ConnectedWalletRequest): Promise<Caller> {
     const res = await db.connectWallet(
         Address.parse(address).toRawString(),
         referral && Address.parse(referral).toRawString(),
@@ -16,13 +20,13 @@ export async function connectCallerWallet({
 
 export async function getCallerTicketBalance({
     address,
-}: db.TicketBalanceRequest): Promise<number | string> {
+}: TicketBalanceRequest): Promise<number | string> {
     const res = await db.getTicketBalance(Address.parse(address).toRawString());
     if (res === null) throw new CommonServerError(400, `user with address not found: ${address}`);
     return res;
 }
 
-function parseSubtasks(description: string): db.Subtask[] {
+function parseSubtasks(description: string): Subtask[] {
     const subtasks = description.split("&");
     const result = [];
 
@@ -39,7 +43,7 @@ function parseSubtasks(description: string): db.Subtask[] {
 export async function getCallerTasks({
     staged,
     address,
-}: db.TasksRequest): Promise<db.TasksResponse[] | string> {
+}: TasksRequest): Promise<TasksResponse[] | string> {
     const tasksDb = await db.getTasks(staged);
     if (!tasksDb) return [];
 

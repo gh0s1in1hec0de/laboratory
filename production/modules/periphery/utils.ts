@@ -73,13 +73,14 @@ export enum AppMode {
 }
 
 // Server requests
-export enum SortOrder {
-    ASC = "ASC",
-    DESC = "DESC"
+export enum SortingOrder {
+    LOW_TO_HIGH = "ASC",
+    HIGH_TO_LOW = "DESC"
 }
 
-export enum TokenLaunchFields {
-    CREATED_AT = "created_at"
+export enum LaunchSortParameters {
+    CREATED_AT = "created_at",
+    TOTAL_TONS_COLLECTED = "total_tons_collected",
 }
 
 export class CommonServerError extends Error {

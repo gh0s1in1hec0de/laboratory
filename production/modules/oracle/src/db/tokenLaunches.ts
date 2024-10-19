@@ -1,15 +1,13 @@
-import type { StoredTokenLaunchResponse, StoredTokenLaunchRequest, SqlClient, } from "./types";
+import type { SqlClient } from "./types";
 import { ok as assert } from "assert";
-import { logger } from "../logger.ts";
 import { globalClient } from "./db";
+import { logger } from "../logger";
 import postgres from "postgres";
-import type {
-    PostDeployEnrollmentStats,
-    TokenLaunchTimings,
-    StoredTokenLaunch,
-    RawAddressString,
-    UnixTimeSeconds,
-    Coins, DexData,
+import {
+    type TokenLaunchTimings, type StoredTokenLaunch, type UnixTimeSeconds,
+    type PostDeployEnrollmentStats, type RawAddressString,
+    type Coins, type DexData, type LaunchBalance,
+    LaunchSortParameters, type StoredTokenLaunchRequest, type StoredTokenLaunchResponse,
 } from "starton-periphery";
 
 // Warning! In runtime, when `StoredTokenLaunch` is returned - `TokenLaunchTimings`' fields are strings.
@@ -64,27 +62,35 @@ export async function storeTokenLaunch(
 }
 
 export async function getSortedTokenLaunches(
-    { page, limit, orderBy, order, search = "", }: StoredTokenLaunchRequest,
+    { page, limit, orderBy, order, succeed, search }: StoredTokenLaunchRequest,
     client?: SqlClient
 ): Promise<StoredTokenLaunchResponse | null> {
     const offset = (page - 1) * limit;
     const c = client ?? globalClient;
+    const orderByExpression = {
+        [LaunchSortParameters.CREATED_AT]: c.unsafe(`tl.${orderBy} ${order}`),
+        [LaunchSortParameters.TOTAL_TONS_COLLECTED]: c.unsafe(`lb.${orderBy} ${order}`),
+    }[orderBy];
 
-    const res = await c<StoredTokenLaunch[]>`
-        SELECT *
-        FROM token_launches
-        WHERE identifier ILIKE ${`%${search}%`}
-        ORDER BY ${c.unsafe(orderBy)} ${c.unsafe(order)}
-        LIMIT ${limit + 1} OFFSET ${offset}
+    const res = await c<(StoredTokenLaunch & LaunchBalance)[]>`
+        SELECT tl.*, lb.*
+        FROM token_launches tl
+                 JOIN launch_balances lb
+                      ON tl.address = lb.token_launch
+        WHERE tl.identifier ILIKE ${`%${search ?? ""}%`}
+            ${succeed ? c`AND tl.is_successful = ${succeed}` : c``}
+        ORDER BY tl.platform_share DESC, ${orderByExpression}
+        LIMIT ${limit + 1} OFFSET ${offset};
     `;
+
     return !res.length ? null : {
-        storedTokenLaunch: res.slice(0, limit),
+        launchesChunk: res.slice(0, limit),
         hasMore: res.length > limit
     };
 }
 
-// Queries related to oracles
 
+// Queries related to oracles
 export enum EndedLaunchesCategories {
     Pending = "pending",
     WaitingForJetton = "waiting_for_jetton",

@@ -3,8 +3,8 @@ import { CommonServerError } from "starton-periphery";
 import { uploadMetadataToIpfs } from "./handlers";
 import { UploadMetaSchema } from "./types";
 import { authMiddleware } from "../auth";
+import { logger } from "../../../logger";
 import Elysia from "elysia";
-import { logger } from "../../../logger.ts";
 
 export function LaunchRoutes() {
     return new Elysia({ prefix: "/launch" })

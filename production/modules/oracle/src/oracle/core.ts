@@ -8,11 +8,11 @@ import {
     parseTokenLaunchV1Storage,
     parseTokenLaunchTimings,
     type RawAddressString,
-    parseMetadataCell,
+    parseJettonMetadata,
     loadOpAndQueryId,
     TokensLaunchOps,
     GlobalVersions,
-    delay, parseJettonMetadata,
+    delay,
 } from "starton-periphery";
 
 export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersion: GlobalVersions) {
@@ -48,11 +48,20 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
                         parseTokenLaunchV1Storage(newLaunchStateInit) :
                         parseTokenLaunchV2AStorage(newLaunchStateInit);
 
+                    // We may guarantee that futJetPlatformAmount can't be 10000x times bigger than futJetTotalSupply
+                    const percentage =
+                        (parsedStateInit.saleConfig.futJetPlatformAmount * BigInt(10000) * BigInt(100))
+                        / parsedStateInit.saleConfig.futJetTotalSupply;
+                    const platformShare = Number(percentage) / 10000;
+                    const metadata = await parseJettonMetadata(parsedStateInit.tools.metadata);
+
                     await db.storeTokenLaunch({
                         address,
+                        identifier: metadata.name! + metadata.description ? " " + metadata.description : "",
                         creator: parsedStateInit.creatorAddress.toRawString(),
                         version: coreVersion,
-                        metadata: await parseJettonMetadata(parsedStateInit.tools.metadata),
+                        metadata,
+                        platformShare,
                         // An error may occur here
                         timings: parseTokenLaunchTimings(parsedStateInit),
                         totalSupply: parsedStateInit.saleConfig.futJetTotalSupply,

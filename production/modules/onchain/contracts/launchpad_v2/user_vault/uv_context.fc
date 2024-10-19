@@ -1,0 +1,6 @@
+global slice this::owner;
+global slice this::token_launch;
+
+global int this::wl_ton_balance;
+global int this::public_ton_balance;
+global int this::jetton_balance;

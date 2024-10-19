@@ -1,5 +1,6 @@
 export * from "./HighloadWalletV3";
 export * from "./calculations";
+export * from "./serverApi";
 export * from "./TonClient";
 export * from "./standards";
 export * from "./Database";

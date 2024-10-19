@@ -1,0 +1,103 @@
+#include "../../stdlib.fc";
+#include "../op-codes.fc";
+#include "../utils.fc";
+#include "../gas.fc";
+
+#include "core_storage.fc";
+#include "core_context.fc";
+#include "operations.fc";
+
+() recv_internal(int contract_balance, int attached_value, cell in_msg_full, slice in_msg_body) impure {
+    if (in_msg_body.slice_empty?() | in_msg_body.slice_bits() < 32) {
+        ;; Logic for simple transfers
+        return ();
+    }
+    (int msg_flags, slice sender_address, int attached_value, int fwd_fee_from_in_msg) = extract_full_msg_data(in_msg_full);
+    (int op, int query_id) = in_msg_body~load_op_and_query_id();
+
+    cell launch_conf = load_data(); ;; Now we have our contract data available in globals
+
+    if (msg_flags & 1) {
+        return ();
+    }
+    if (op == op::excesses) {
+        return ();
+    }
+
+    if (op == op::core::init) {
+        load_launch_config(launch_conf);
+        save_data();
+        return ();
+    }
+
+    if (op == op::core::create_launch) {
+        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE | RESERVE_BOUNCE_ON_ACTION_FAIL);
+        cell custom_conf = in_msg_body~load_maybe_ref();
+        ifnot (cell_null?(custom_conf)) {
+            load_launch_config(custom_conf);
+        } else {
+            load_launch_config(launch_conf);
+        }
+        int total_cost = launch_conf::penny + calculate_core_min_storage_fee(10 * ONE_DAY) + get_amount_for_token_launch_deploy();
+        throw_if(error::not_enough_gas, attached_value < total_cost);
+        create_launch(
+            query_id,
+            sender_address,
+            in_msg_body~load_coins(),
+            in_msg_body~load_uint(16),
+            in_msg_body~load_ref(),
+            in_msg_body~load_int(32)
+        );
+        cell msg = begin_cell()
+            .store_msg_flags_and_address_none(NON_BOUNCEABLE)
+            .store_slice(sender_address)
+            .store_coins(attached_value - total_cost)
+            .store_prefix_only_body()
+            .store_op(op::excesses)
+            .store_query_id(query_id)
+            .end_cell();
+        send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_IGNORE_ERRORS);
+        return ();
+    }
+
+    if (op == op::core::update_config) {
+        throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::chief));
+        ;; Loading new launch config in global variables and save it into state
+        load_launch_config(in_msg_body~load_ref());
+        save_data();
+        return ();
+    }
+
+    if (op == op::upgrade) {
+        throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::chief));
+        (cell new_data, cell new_code) = (in_msg_body~load_ref(), in_msg_body~load_ref());
+        in_msg_body.end_parse();
+        set_data(new_data);
+        set_code(new_code);
+        return ();
+    }
+
+    throw(error::wrong_op);
+}
+
+(int, int, int, slice, int, int, int, int, int, int, int, int) get_launch_config() method_id {
+    cell launch_conf = load_data();
+    load_launch_config(launch_conf);
+    return (
+        launch_conf::min_ton_for_sale_success,
+        launch_conf::ton_limit_for_wl_round,
+        launch_conf::penny,
+
+        launch_conf::util_jet_master_address,
+        launch_conf::util_jet_wl_pass_amount,
+        launch_conf::util_jet_wl_pass_one_time_price,
+
+        launch_conf::fut_jet_wl_limit_pct,
+        launch_conf::fut_jet_pub_limit_pct,
+        launch_conf::fut_jet_dex_share_pct,
+
+        launch_conf::creator_round_duration_ms,
+        launch_conf::wl_round_duration_ms,
+        launch_conf::pub_round_duration_ms
+    );
+}

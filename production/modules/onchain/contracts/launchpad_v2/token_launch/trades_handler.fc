@@ -1,0 +1,234 @@
+#include "../../workchain.fc";
+#include "../../stdlib.fc";
+
+#include "../op-codes.fc";
+#include "../utils.fc";
+#include "../gas.fc";
+
+#include "tl_context.fc";
+#include "tl_storage.fc";
+
+() handle_creator_buyout(int msg_value) impure inline {
+    throw_unless(error::wrong_time, now() < creator_round::const::end_time);
+    (int accessible_user_value, int opn) = check_amount_is_enough_for_creator_buyout(msg_value);
+
+    int jettons_amount = muldiv(accessible_user_value, creator_round::const::fut_jet_price_reversed, MAX_WL_ROUND_TON_LIMIT);
+    throw_unless(error::meowreachable, jettons_amount > 0);
+
+    throw_if(error::balance_overlimit, jettons_amount > creator_round::fut_jet_left);
+    creator_round::fut_jet_balance += jettons_amount;
+    creator_round::fut_jet_left -= jettons_amount;
+
+    general_state::total_tons_collected += accessible_user_value;
+    general_state::fut_jet_inner_balance -= jettons_amount;
+    this::operational_needs += opn;
+}
+
+() handle_creator_refund() impure inline {
+    throw_if(error::wrong_time, now() < public_round::const::end_time);
+    throw_if(error::bad_request, (general_state::fut_jet_deployed_balance > 0));
+    throw_if(error::bad_request, general_state::total_tons_collected > config::const::min_ton_for_sale_success);
+
+    int creators_tons = creator_round::fut_jet_balance * MAX_WL_ROUND_TON_LIMIT / creator_round::const::fut_jet_price_reversed;
+    general_state::total_tons_collected -= creators_tons;
+    creator_round::fut_jet_balance = 0;
+
+    (int pur_val, int opn) = validate_value(creators_tons, 0);
+    this::operational_needs += opn;
+
+    cell refund_transfer = simple_transfer(this::const::creator_address, pur_val, "crr");
+    send_raw_message(refund_transfer, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+}
+
+() handle_wl_purchase(int query_id, int attached_value, slice initiator) impure inline {
+    throw_if(error::wrong_time, (now() < creator_round::const::end_time) | (now() > wl_round::const::end_time));
+
+    ;; smart-wl-constraint-inator (you can find more of my invertions here https://phineasandferb.fandom.com/wiki/List_of_Doofenshmirtz%27s_schemes_and_inventions/Season_1)
+    throw_if(error::bad_request, (((query_id / 1000) % 17) != 0) | (query_id < 1000000));
+    (int accessible_user_value, int opn) = check_amount_is_enough_for_wl_purchase(attached_value);
+    (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
+
+    int remainings = 0;
+    if ((accessible_user_value + wl_round::ton_invested_total) > wl_round::const::ton_limit) {
+        int accessible_amount = wl_round::const::ton_limit - wl_round::ton_invested_total;
+        remainings = accessible_user_value - accessible_amount;
+        accessible_user_value = accessible_amount;
+
+        int timeshift = wl_round::const::end_time - now();
+        if (timeshift > 120) {
+            wl_round::const::end_time -= timeshift;
+            public_round::const::end_time -= timeshift;
+        }
+    }
+
+    general_state::total_tons_collected += accessible_user_value;
+    wl_round::ton_invested_total += accessible_user_value;
+    this::operational_needs += opn;
+    {-
+       As out WL phase is fairlaunch - we have static amount of jettons to distribute
+       and dynamic value of TON, that can be invested in this round (due to our guarantees to WL investors).
+       So, we need to start public sale price from last WL price, than we need to be aware about
+       WL round stats changes every time. Then synthetic reserves will continue to change in public round and
+       this is the reason, why we don't use `ton_invested_total` for that purposes.
+    -}
+    public_round::synthetic_ton_reserve += accessible_user_value;
+
+    ;; We attach value only for routong messages
+    cell msg = build_balance_update_message(
+        user_vault_code,
+        query_id,
+        get_balance_update_gas_cost(),
+        initiator,
+        BALANCE_UPD_DEPOSIT_WL,
+        accessible_user_value,
+        0
+    );
+    send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    if (remainings > 0) {
+        ;; We use simple transfer here, as it also solves a problem of unique sign to oracle to refresh timings
+        cell excesses = simple_transfer(initiator, remainings, "shift!");
+        send_raw_message(excesses, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    }
+}
+
+() handle_public_purchase(int query_id, int attached_value, slice sender_address) impure inline {
+    throw_if(error::wrong_time, (now() < wl_round::const::end_time) | (now() >= public_round::const::end_time));
+    ;; creator's round remainings flows into public round here once :)
+    if (creator_round::fut_jet_left > 0) {
+        public_round::const::fut_jet_limit += creator_round::fut_jet_left;
+        creator_round::fut_jet_left = 0;
+    }
+    if (public_round::synthetic_ton_reserve == 0) {
+        public_round::synthetic_ton_reserve = 10 * ONE_TON;
+    }
+    ;; `user_value_after_fee` is always more than 0
+    (int accessible_user_value, int opn) = check_amount_is_enough_for_public_purchase(attached_value);
+    int res_jettons = get_amount_out(accessible_user_value, public_round::synthetic_ton_reserve, public_round::synthetic_jet_reserve);
+
+    throw_unless(error::unreachable, res_jettons >= 0);
+    throw_unless(error::balance_overlimit, public_round::const::fut_jet_limit >= public_round::fut_jet_sold + res_jettons);
+    (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
+
+    ;; Taking care of our synthetic price controllers
+    public_round::synthetic_ton_reserve += accessible_user_value;
+    public_round::synthetic_jet_reserve -= res_jettons;
+
+    general_state::fut_jet_inner_balance -= res_jettons;
+    public_round::fut_jet_sold += res_jettons;
+
+    general_state::total_tons_collected += accessible_user_value;
+    this::operational_needs += opn;
+
+    ;; Here we attach precise amount of money - as all the remainings gone on ivenstment
+    cell msg = build_balance_update_message(
+        user_vault_code,
+        query_id,
+        get_balance_update_gas_cost(),
+        sender_address,
+        BALANCE_UPD_DEPOSIT_PUB,
+        accessible_user_value,
+        res_jettons
+    );
+    send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+}
+
+() handle_refund_request(int query_id, int attached_value, slice sender_address, int mode) impure inline {
+    ;; If jetton is deployed - than pool is already created and there is no refund option
+    throw_if(error::wrong_time, general_state::fut_jet_deployed_balance > 0);
+    throw_if(error::wrong_time, now() < creator_round::const::end_time);
+
+    throw_unless(error::bad_request, (mode == 3) | (mode == 4) | (mode == 5));
+    ;; We don't actually care about leftovers
+    check_amount_is_enough_for_refund(attached_value);
+    (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
+
+    cell msg = build_balance_update_message(
+        user_vault_code,
+        query_id,
+        0,
+        sender_address,
+        mode,
+        0,
+        0
+    );
+    send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+}
+
+() handle_refund_confirmation(int query_id, int _attached_value, slice sender_address, int wl_tons, int pub_tons, int jettons_to_charge_back, slice recipient) impure inline {
+    (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
+    verify_user_vault(user_vault_code, sender_address, recipient);
+    int tons_to_refund = wl_tons + pub_tons;
+
+    if (wl_tons > 0) {
+        wl_round::ton_invested_total -= wl_tons;
+        ;; If it is still WhiteList round
+        if (now() < wl_round::const::end_time) {
+            public_round::synthetic_ton_reserve -= wl_tons;
+        }
+    }
+    if (jettons_to_charge_back > 0) {
+        general_state::fut_jet_inner_balance += jettons_to_charge_back;
+        public_round::fut_jet_sold -= jettons_to_charge_back;
+    }
+
+    general_state::total_tons_collected -= tons_to_refund;
+    (int pur_val, int opn) = validate_value(tons_to_refund, 0);
+    this::operational_needs += opn;
+
+    ;; Here we reserve all the contract's money
+    raw_reserve(pur_val, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
+
+    cell refund_transfer = simple_transfer(recipient, 0, null());
+    send_raw_message(refund_transfer, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+}
+
+() handle_jetton_claim_request(int query_id, int attached_value, slice sender_address) impure inline {
+    (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
+    ;; Don't need stateinit as if user vault doesn't exist - there is nothing to claim
+    (_, slice user_vault_address) = calculate_user_vault_data(user_vault_code, sender_address);
+    ;; We don't care about extra value as final operation (claimed jetton transfer) will take care about excesses
+    check_amount_is_enough_for_jetton_claim(attached_value);
+    cell msg_body = begin_cell()
+        .store_op(op::uv::claim)
+        .store_query_id(query_id)
+        .end_cell();
+    cell msg = begin_cell()
+    ;; Figure out about fee chargeback in case of bounce
+        .store_msg_flags_and_address_none(BOUNCEABLE)
+        .store_slice(user_vault_address)
+        .store_coins(0)
+        .store_only_body_ref(msg_body)
+        .end_cell();
+    send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+}
+
+() handle_jetton_claim_confirmation(int query_id, slice sender_address, int wl_tons, int jettons_to_send, slice recipient) impure inline {
+    (_, slice fut_jet_wallet_address, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
+    verify_user_vault(user_vault_code, sender_address, recipient);
+    int fut_jet_recipient_total_amount = jettons_to_send;
+
+    if (wl_tons > 0) {
+        ;; public_round::const::fut_jet_limit already includes creator's remainings
+        int public_remainings = public_round::const::fut_jet_limit - public_round::fut_jet_sold;
+        int wl_round_fut_jet_final_amount = wl_round::const::fut_jet_limit + public_remainings;
+
+        int jetton_wl_share = muldiv(wl_round_fut_jet_final_amount, wl_tons, wl_round::ton_invested_total);
+        fut_jet_recipient_total_amount += jetton_wl_share;
+    }
+    if (equal_slices_bits(recipient, this::const::creator_address)) {
+        fut_jet_recipient_total_amount += creator_round::fut_jet_balance;
+        creator_round::fut_jet_balance = 0;
+    }
+
+    general_state::fut_jet_deployed_balance -= fut_jet_recipient_total_amount;
+    cell transfer_msg = build_jetton_transfer_msg(
+        query_id,
+        0,
+        fut_jet_recipient_total_amount,
+        fut_jet_wallet_address,
+        recipient,
+        get_compute_fee(MY_WORKCHAIN, 350),
+        begin_cell().store_slice("claim").end_cell()
+    );
+    send_raw_message(transfer_msg, SEND_MODE_CARRY_ALL_BALANCE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+}

@@ -1,4 +1,4 @@
-import { SortOrder, type StoredTokenLaunch, TokenLaunchFields } from "starton-periphery";
+import { SortingOrder, type StoredTokenLaunch, LaunchSortParameters } from "starton-periphery";
 import type { StoredTasks, StoredTasksRequest, StoredTokenLaunchRequest } from "../db";
 import { type HearsContext, InlineKeyboard } from "grammy";
 import type { MyContext } from "./index";
@@ -20,8 +20,8 @@ export const commands: ICommand[] = [
 export const initLaunchesSortData: StoredTokenLaunchRequest = {
     page: 1,
     limit: 10,
-    orderBy: TokenLaunchFields.CREATED_AT,
-    order: SortOrder.ASC,
+    orderBy: LaunchSortParameters.CREATED_AT,
+    order: SortingOrder.LOW_TO_HIGH,
     search: ""
 };
 

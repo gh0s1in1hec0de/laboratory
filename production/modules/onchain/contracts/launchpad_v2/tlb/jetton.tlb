@@ -1,0 +1,29 @@
+// Schemas, that are necessary in the implementation of contract mechanics
+// 32 + 64 + 124 + 267 + 267 + 124 = 878
+internal_transfer#178d4519
+  query_id:uint64
+  amount:Coins
+  from:MsgAddress
+  response_address:MsgAddress
+  forward_ton_amount:Coins
+  forward_payload:(Either Cell ^Cell)
+  = JettonInternalTransfer;
+
+// 32 + 64 + 124 + 267 = 487
+transfer_notification#7362d09c
+  query_id:uint64
+  amount:Coins
+  sender:MsgAddress
+  forward_payload:(Either Cell ^Cell)
+  = JettonOutMsg;
+
+// 32 + 64 + 124 + 267 x 2 = 754
+burn_notification#7bdd97de
+  query_id:uint64
+  amount:Coins
+  sender:MsgAddress
+  response_destination:MsgAddress
+  = JettonMinterMsg;
+
+// 32 + 64 = 96
+excesses#d53276db query_id:uint64 = InternalMsgBody;

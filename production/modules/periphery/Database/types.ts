@@ -46,12 +46,14 @@ export type StoredTokenLaunch = {
     id: number,
 
     address: RawAddressString,
+    identifier: string,
     creator: RawAddressString,
     version: GlobalVersions,
 
     metadata: JettonMetadata,
     timings: TokenLaunchTimings,
     totalSupply: Coins,
+    platformShare: number,
     createdAt: UnixTimeSeconds,
 
     isSuccessful: boolean | null,
@@ -59,7 +61,7 @@ export type StoredTokenLaunch = {
     dexData: DexData | null,
 };
 
-export type LaunchBalances = {
+export type LaunchBalance = {
     tokenLaunch: RawAddressString,
     creatorTonsCollected: Coins,
     wlTonsCollected: Coins,

@@ -9,11 +9,12 @@ CREATE TABLE launch_metadata
     extra                 TEXT
 );
 
-CREATE TYPE launch_version AS ENUM ('V1', 'V2A');
+CREATE TYPE launch_version AS ENUM ('V1', 'V2A', 'V2');
 CREATE TABLE token_launches
 (
     id                           SERIAL            NOT NULL,
     address                      address           NOT NULL PRIMARY KEY,
+    identifier                   TEXT              NOT NULL,
 
     creator                      address           NOT NULL,
     version                      launch_version    NOT NULL,
@@ -21,6 +22,8 @@ CREATE TABLE token_launches
     metadata                     JSONB             NOT NULL,
     timings                      JSONB             NOT NULL,
     total_supply                 coins             NOT NULL,
+    platform_share               FLOAT             NOT NULL CHECK (platform_share >= 0 AND platform_share <= 100),
+
     -- Time of transaction, where actual launch was created
     created_at                   unix_time_seconds NOT NULL,
     -- All null by default
