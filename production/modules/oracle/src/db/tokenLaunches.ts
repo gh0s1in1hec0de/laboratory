@@ -1,9 +1,11 @@
-import { LaunchSortParameters, } from "starton-periphery";
+import { LaunchSortParameters } from "starton-periphery";
+import { getLaunchesMetadata } from "./periphery";
 import type {
     TokenLaunchTimings, StoredTokenLaunch, UnixTimeSeconds,
     StoredTokenLaunchRequest, StoredTokenLaunchResponse,
-    PostDeployEnrollmentStats, RawAddressString,
-    Coins, DexData, LaunchBalance,
+    CertainLaunchResponse, CertainLaunchRequest,
+    Coins, DexData, PostDeployEnrollmentStats,
+    RawAddressString, LaunchBalance,
 } from "starton-periphery";
 import type { SqlClient } from "./types";
 import { ok as assert } from "assert";
@@ -33,7 +35,6 @@ export async function getActiveTokenLaunches(createdAt?: UnixTimeSeconds, client
     `;
     return res.length ? res : null;
 }
-
 
 export async function getTokenLaunchById(id: number, client?: SqlClient): Promise<StoredTokenLaunch | null> {
     const res = await (client ?? globalClient)<StoredTokenLaunch[]>`
@@ -83,7 +84,7 @@ async function getActiveHoldersForLaunches(
 }
 
 export async function getSortedTokenLaunches(
-    { page, limit, orderBy, order, succeed, search }: StoredTokenLaunchRequest,
+    { page, limit, orderBy, order, succeed, createdBy, search }: StoredTokenLaunchRequest,
     client?: SqlClient
 ): Promise<StoredTokenLaunchResponse | null> {
     const offset = (page - 1) * limit;
@@ -100,13 +101,13 @@ export async function getSortedTokenLaunches(
                       ON tl.address = lb.token_launch
         WHERE tl.identifier ILIKE ${`%${search ?? ""}%`}
             ${succeed ? c`AND tl.is_successful = ${succeed}` : c``}
+            ${createdBy ? c`AND tl.creator = ${createdBy}` : c``}
         ORDER BY tl.platform_share DESC, ${orderByExpression}
         LIMIT ${limit + 1} OFFSET ${offset};
     `;
     const activeHolders = await getActiveHoldersForLaunches(
         res.map(l => l.address)
     );
-    console.log(activeHolders);
     const launchesChunk = res.map(l =>
         ({ ...l, activeHolders: activeHolders.get(l.address) ?? 0 })
     ).slice(0, limit);
@@ -115,6 +116,31 @@ export async function getSortedTokenLaunches(
         launchesChunk,
         hasMore: res.length > limit
     };
+}
+
+export async function getLaunch({
+    address,
+    metadataUri
+}: CertainLaunchRequest, client?: SqlClient): Promise<CertainLaunchResponse> {
+    const c = client ?? globalClient;
+    const condition = address ?
+        c`tl.address = ${address}` :
+        c`(tl.metadata ->> uri)::TEXT = ${metadataUri!}`;
+
+    const res = await c<(StoredTokenLaunch & LaunchBalance)[]>`
+        SELECT tl.*, lb.*
+        FROM token_launches tl
+                 JOIN launch_balances lb
+                      ON tl.address = lb.token_launch
+        WHERE ${condition}
+    `;
+    if (res.length !== 1) throw new Error("can't get more than 1 launch");
+    const launch = res[0];
+    const activeHolders = await getActiveHoldersForLaunches([launch.address]);
+    const offchainMetadata = await getLaunchesMetadata([launch.metadata.uri!]);
+    if (!offchainMetadata || offchainMetadata.length !== 1) throw new Error("offchain metadata must exist for launch");
+
+    return { ...launch, activeHolders: activeHolders.get(launch.address)!, offchainMetadata: offchainMetadata[0] };
 }
 
 

@@ -1,4 +1,4 @@
-import type { LamportTime, RawAddressString } from "starton-periphery";
+import type { LamportTime, LaunchMetadata, RawAddressString } from "starton-periphery";
 import type { SqlClient } from "./types";
 import { globalClient } from "./db";
 
@@ -40,4 +40,13 @@ export async function getLaunchWithTopActivity(client?: SqlClient) {
         res.map(({ tokenLaunch, actionCount }) =>
             ({ tokenLaunch, actionCount })
         )[0] : null;
+}
+
+export async function getLaunchesMetadata(onchainMetadataLinks: string[], client?: SqlClient): Promise<LaunchMetadata[] | null> {
+    const res = await (client ?? globalClient)<LaunchMetadata[]>`
+        SELECT *
+        FROM launch_metadata
+        WHERE onchain_metadata_link = ANY (${onchainMetadataLinks});
+    `;
+    return res.length ? res : null;
 }

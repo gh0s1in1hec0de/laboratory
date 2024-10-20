@@ -1,6 +1,7 @@
-import type { LaunchBalance, StoredTokenLaunch } from "./Database";
-import { LaunchSortParameters, SortingOrder, type UnixTimeSeconds } from "./utils";
+import type { LaunchBalance, LaunchMetadata, StoredTokenLaunch } from "./Database";
+import { LaunchSortParameters, SortingOrder, } from "./utils";
 import type { RawAddressString } from "./standards";
+import { t } from "elysia";
 
 export type StoredTokenLaunchRequest = {
     page: number,
@@ -8,19 +9,26 @@ export type StoredTokenLaunchRequest = {
     orderBy: LaunchSortParameters,
     order: SortingOrder,
     succeed?: boolean,
+    createdBy?: RawAddressString,
     search?: string,
 }
 
+export type ExtendedLaunch = StoredTokenLaunch & LaunchBalance & { activeHolders: number };
 export type StoredTokenLaunchResponse = {
-    launchesChunk: (StoredTokenLaunch & LaunchBalance & { activeHolders: number })[],
+    launchesChunk: ExtendedLaunch[],
     hasMore: boolean,
 }
+
+export type CertainLaunchRequest = {
+    address?: RawAddressString,
+    metadataUri?: string
+}
+export type CertainLaunchResponse = ExtendedLaunch & { offchainMetadata: LaunchMetadata }
 
 export type ConnectedWalletRequest = {
     address: RawAddressString,
     referral?: string,
 }
-
 
 export type StoredTasksRequest = {
     page: number,
