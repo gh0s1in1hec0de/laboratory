@@ -61,7 +61,7 @@ export async function storeTokenLaunch(
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
         INSERT INTO token_launches
-        (address, identifier, creator, version, metadata, timings, total_supply, platform_share, min_treshold,
+        (address, identifier, creator, version, metadata, timings, total_supply, platform_share, min_ton_treshold,
          created_at)
         VALUES (${address}, ${identifier}, ${creator}, ${version}, ${metadata}, ${timings}, ${totalSupply},
                 ${platformShare}, ${minTonTreshold}, ${createdAt})
