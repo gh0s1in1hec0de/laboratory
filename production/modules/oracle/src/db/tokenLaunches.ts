@@ -50,7 +50,7 @@ export async function storeTokenLaunch(
         address, identifier, creator,
         version, metadata, timings,
         totalSupply, platformShare,
-        minTreshold, createdAt
+        minTonTreshold, createdAt
     }:
         Omit<
             StoredTokenLaunch,
@@ -64,7 +64,7 @@ export async function storeTokenLaunch(
         (address, identifier, creator, version, metadata, timings, total_supply, platform_share, min_treshold,
          created_at)
         VALUES (${address}, ${identifier}, ${creator}, ${version}, ${metadata}, ${timings}, ${totalSupply},
-                ${platformShare}, ${minTreshold}, ${createdAt})
+                ${platformShare}, ${minTonTreshold}, ${createdAt})
         RETURNING 1;
     `;
     if (res.length !== 1) logger().warn(`exactly 1 column must be created, got: ${res}`);
