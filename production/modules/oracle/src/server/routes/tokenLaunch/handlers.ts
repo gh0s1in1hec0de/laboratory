@@ -17,3 +17,9 @@ export async function getCertainLaunch({ address, metadataUri }: CertainLaunchRe
     if (!address && !metadataUri) throw new CommonServerError(400, "at least one of parameters must be provided");
     return await db.getLaunch({ address, metadataUri });
 }
+
+export async function getRisingStar(): Promise<CertainLaunchResponse> {
+    const res = await db.getLaunchWithTopActivity();
+    if (!res) throw new CommonServerError(500, "unreachable");
+    return await db.getLaunch({ address: res.tokenLaunch });
+}
