@@ -10,7 +10,6 @@ import { ok as assert } from "assert";
 import { globalClient } from "./db";
 import { logger } from "../logger";
 import postgres from "postgres";
-import * as db from "./index.ts";
 
 // Warning! In runtime, when `StoredTokenLaunch` is returned - `TokenLaunchTimings`' fields are strings.
 // So - be careful, when using it - its better convert it via `new Date()`.
@@ -70,6 +69,19 @@ export async function storeTokenLaunch(
     if (res.length !== 1) logger().warn(`exactly 1 column must be created, got: ${res}`);
 }
 
+async function getActiveHoldersForLaunches(
+    addresses: RawAddressString[],
+    client?: SqlClient
+): Promise<Map<RawAddressString, number>> {
+    const res = await (client ?? globalClient)<{ tokenLaunch: RawAddressString, activeHolders: number }[]>`
+        SELECT token_launch, COUNT(*) AS active_holders
+        FROM user_balances
+        WHERE token_launch = ANY (${addresses})
+        GROUP BY token_launch;
+    `;
+    return new Map<RawAddressString, number>(res.map(r => [r.tokenLaunch, r.activeHolders]));
+}
+
 export async function getSortedTokenLaunches(
     { page, limit, orderBy, order, succeed, search }: StoredTokenLaunchRequest,
     client?: SqlClient
@@ -91,7 +103,7 @@ export async function getSortedTokenLaunches(
         ORDER BY tl.platform_share DESC, ${orderByExpression}
         LIMIT ${limit + 1} OFFSET ${offset};
     `;
-    const activeHolders = await db.getActiveHoldersForLaunches(
+    const activeHolders = await getActiveHoldersForLaunches(
         res.map(l => l.address)
     );
     console.log(activeHolders);
@@ -210,17 +222,4 @@ export async function updateLaunchBalance(tokenLaunchAddress: RawAddressString, 
         const res = await updateWith(c`total_tons_collected = ${totalTonsCollected}`);
         if (res.length !== 1) logger().error(`total_tons_collected for launch address ${tokenLaunchAddress} wasn't updated`);
     }
-}
-
-export async function getActiveHoldersForLaunches(
-    addresses: RawAddressString[],
-    client?: SqlClient
-): Promise<Map<RawAddressString, number>> {
-    const res = await (client ?? globalClient)<{ tokenLaunch: RawAddressString, activeHolders: number }[]>`
-        SELECT token_launch, COUNT(*) AS active_holders
-        FROM user_balances
-        WHERE token_launch = ANY (${addresses})
-        GROUP BY token_launch;
-    `;
-    return new Map<RawAddressString, number>(res.map(r => [r.tokenLaunch, r.activeHolders]));
 }

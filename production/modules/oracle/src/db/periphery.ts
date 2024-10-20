@@ -30,3 +30,14 @@ export async function getLaunchHeight(address: RawAddressString, client?: SqlCli
     `;
     return res.length ? res[0].lt : null;
 }
+
+export async function getLaunchWithTopActivity(client?: SqlClient) {
+    const res = await (client ?? globalClient)<{ tokenLaunch: RawAddressString, actionCount: number }[]>`
+        SELECT token_launch, action_count
+        FROM top_token_launch_by_actions
+    `;
+    return res.length ?
+        res.map(({ tokenLaunch, actionCount }) =>
+            ({ tokenLaunch, actionCount })
+        )[0] : null;
+}

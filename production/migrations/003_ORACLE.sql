@@ -152,18 +152,21 @@ CREATE TRIGGER after_insert_user_balance_error
     FOR EACH ROW
 EXECUTE FUNCTION notify_user_balance_error();
 
+-- Active launch that has the biggest amount of user actions per today
 CREATE MATERIALIZED VIEW top_token_launch_by_actions AS
 SELECT token_launch, COUNT(*) AS action_count
 FROM user_actions
-WHERE timestamp >= date_trunc('day', NOW())
-  AND timestamp < date_trunc('day', NOW() + interval '1 day')
+         JOIN token_launches tl ON user_actions.token_launch = tl.address
+WHERE timestamp >= EXTRACT(EPOCH FROM date_trunc('day', NOW()))
+  AND timestamp < EXTRACT(EPOCH FROM date_trunc('day', NOW() + interval '1 day'))
+  AND EXTRACT(EPOCH FROM NOW()) < (tl.timings ->> 'publicRoundEndTime')::BIGINT
 GROUP BY token_launch
 ORDER BY action_count DESC
 LIMIT 1;
 
 SELECT cron.schedule(
                'refresh_materialized_view',
-               '0 * * * *', -- TODO Replace with '0 * * * *'
+               '* * * * *', -- TODO Replace with '0 * * * *'
                'REFRESH MATERIALIZED VIEW top_token_launch_by_actions'
        );
 

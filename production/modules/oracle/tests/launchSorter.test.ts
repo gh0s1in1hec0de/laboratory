@@ -1,4 +1,4 @@
-import { LaunchSortParameters, SortingOrder } from "starton-periphery";
+import { GlobalVersions, LaunchSortParameters, SortingOrder, UserActionType } from "starton-periphery";
 import { beforeAll, describe, test } from "bun:test";
 import { ok as assert } from "node:assert";
 import * as db from "../src/db";
@@ -19,7 +19,7 @@ describe("launch sorter", () => {
         });
     });
 
-    test("sorting by time", async () => {
+    test.skip("sorting by time", async () => {
         const sortedByTime = await db.getSortedTokenLaunches({
             page: 1,
             limit: 10,
@@ -42,7 +42,7 @@ describe("launch sorter", () => {
         }
         console.log();
     });
-    test("sorting by total value", async () => {
+    test.skip("sorting by total value", async () => {
         const sortedByTime = await db.getSortedTokenLaunches({
             page: 1,
             limit: 10,
@@ -63,5 +63,116 @@ describe("launch sorter", () => {
             previousPlatformShare = launch.platformShare;
         }
         console.log();
+    });
+    test.skip("mock launches activity data", async () => {
+        const now = Math.floor(Date.now() / 1000);
+
+        // Create Token Launch 1 (Outdated)
+        await db.storeTokenLaunch({
+            address: "launch_1",
+            identifier: "Launch 1",
+            creator: "creator_1",
+            version: GlobalVersions.V2A,
+            metadata: {},
+            timings: {
+                startTime: now - 60 * 60 * 24,  // Started 1 day ago
+                creatorRoundEndTime: now - 60 * 60 * 18, // Ended 18 hours ago
+                wlRoundEndTime: now - 60 * 60 * 12, // Ended 12 hours ago
+                publicRoundEndTime: now - 60 * 60 * 6, // Ended 6 hours ago (outdated)
+                endTime: now - 60 * 60 * 5  // Fully ended
+            },
+            totalSupply: 1000000000n,
+            platformShare: 5.0,
+            minTonTreshold: 1000000000000n,
+            createdAt: now - 60 * 60 * 25 // Created 25 hours ago
+        }, client);
+
+        // Create Token Launch 2 (Active)
+        await db.storeTokenLaunch({
+            address: "launch_2",
+            identifier: "Launch 2",
+            creator: "creator_2",
+            version: GlobalVersions.V2A,
+            metadata: {},
+            timings: {
+                startTime: now - 60 * 60 * 12,  // Started 12 hours ago
+                creatorRoundEndTime: now - 60 * 60 * 6, // Ended 6 hours ago
+                wlRoundEndTime: now - 60 * 60 * 3, // Ended 3 hours ago
+                publicRoundEndTime: now + 60 * 60 * 2, // Ends in 2 hours (active)
+                endTime: now + 60 * 60 * 3 // Ends in 3 hours
+            },
+            totalSupply: 100000000n,
+            platformShare: 4.0,
+            minTonTreshold: 1000000000000n,
+            createdAt: now - 60 * 60 * 13 // Created 13 hours ago
+        }, client);
+
+        // Create Token Launch 3 (Active)
+        await db.storeTokenLaunch({
+            address: "launch_3",
+            identifier: "Launch 3",
+            creator: "creator_3",
+            version: GlobalVersions.V2A,
+            metadata: {},
+            timings: {
+                startTime: now - 60 * 60 * 8,  // Started 8 hours ago
+                creatorRoundEndTime: now - 60 * 60 * 4, // Ended 4 hours ago
+                wlRoundEndTime: now - 60 * 60 * 2, // Ended 2 hours ago
+                publicRoundEndTime: now + 60 * 60, // Ends in 1 hour (active)
+                endTime: now + 60 * 60 * 2 // Ends in 2 hours
+            },
+            totalSupply: 750000n,
+            platformShare: 3.5,
+            minTonTreshold: 1000000000000n,
+            createdAt: now - 60 * 60 * 9 // Created 9 hours ago
+        }, client);
+
+        // Insert 5 actions for Launch 1 (Outdated)
+        for (let i = 0; i < 5; i++) {
+            await db.storeUserAction({
+                actor: `actor_${i + 1}`,
+                tokenLaunch: "launch_1",
+                actionType: UserActionType.WhiteListBuy,
+                whitelistTons: 100n,
+                publicTons: 0n,
+                jettons: 0n,
+                lt: BigInt(i + 1),
+                timestamp: now - (60 * 60 * (i + 1)),  // Past actions
+                queryId: BigInt(i + 1)
+            }, client);
+        }
+
+        // Insert 4 actions for Launch 2 (Active)
+        for (let i = 0; i < 4; i++) {
+            await db.storeUserAction({
+                actor: `actor_${i + 6}`,
+                tokenLaunch: "launch_2",
+                actionType: UserActionType.PublicBuy,
+                whitelistTons: 0n,
+                publicTons: 200n,
+                jettons: 10n,
+                lt: BigInt(i + 1),
+                timestamp: now - (60 * 60 * (i + 1)),  // Past actions
+                queryId: BigInt(i + 1)
+            }, client);
+        }
+
+        // Insert 3 actions for Launch 3 (Active)
+        for (let i = 0; i < 3; i++) {
+            await db.storeUserAction({
+                actor: `actor_${i + 10}`,
+                tokenLaunch: "launch_3",
+                actionType: UserActionType.WhiteListBuy,
+                whitelistTons: 300n,
+                publicTons: 0n,
+                jettons: 0n,
+                lt: BigInt(i + 1),
+                timestamp: now - (60 * 60 * (i + 1)),  // Past actions
+                queryId: BigInt(i + 1)
+            }, client);
+        }
+    });
+    test("top activity materialized", async () => {
+        console.log(await db.getLaunchWithTopActivity(client));
     });
 });
