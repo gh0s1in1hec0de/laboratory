@@ -8,4 +8,5 @@ export interface CustomDropdownItem {
 export interface CustomDropdownProps {
   Button: ReactNode;
   items: CustomDropdownItem[];
+  fullWidth?: boolean;
 }

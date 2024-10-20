@@ -1,18 +1,23 @@
+import { Container } from "@/common/Container";
 import { RootContainer } from "@/common/RootContainer";
 import { Navbar } from "@/components/Navbar";
-import { Container } from "@/common/Container";
-import { PropsWithChildren } from "react";
+import { unstable_setRequestLocale } from "next-intl/server";
+import { AppLayoutProps } from "./types";
+import { GreetingModal } from "./components/GreetingModal";
 
 export default async function AppLayout({
   children,
-}: PropsWithChildren) {
+  params: { locale },
+}: AppLayoutProps) {
+  unstable_setRequestLocale(locale);
 
   return (
     <RootContainer>
-      <Navbar/>
+      <Navbar />
       <Container as="main">
         {children}
       </Container>
+      <GreetingModal />
     </RootContainer>
   );
 }

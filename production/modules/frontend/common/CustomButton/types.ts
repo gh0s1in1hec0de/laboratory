@@ -14,7 +14,7 @@ export enum ButtonBorderColor {
   BorderTransparent = "borderTransparent",
 }
 
-export interface CustomButtonProps {
+export interface CustomButtonProps  {
 	children: ReactNode;
   onClick: () => void;
 	className?: string;

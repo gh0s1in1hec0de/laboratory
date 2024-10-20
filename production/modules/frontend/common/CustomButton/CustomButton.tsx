@@ -9,7 +9,7 @@ export const CustomButton = forwardRef<HTMLButtonElement, CustomButtonProps>(
     disabled,
     onClick,
     children,
-    fullWidth,
+    fullWidth = false,
     background = ButtonBackground.Orange,
     as = "button",
     className,

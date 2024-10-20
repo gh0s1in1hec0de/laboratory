@@ -1,0 +1,2 @@
+export { CustomModal } from "./CustomModal";
+

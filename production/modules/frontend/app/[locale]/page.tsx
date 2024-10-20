@@ -1,17 +1,18 @@
 import Grid from "@mui/material/Grid2";
 import { Header } from "./components/Header";
-import { Tasks } from "./components/Tasks";
+import { DayToken } from "./components/DayToken";
+import { TokensSection } from "./components/TokensSection";
 
-export default function Quests() {
+export default function Home() {
   return (
-    <Grid 
+    <Grid
       container
       gap={2}
-      paddingTop={2}
-      position="relative"
+      paddingTop={1}
     >
       <Header />
-      <Tasks />
+      <DayToken />
+      <TokensSection />
     </Grid>
   );
 }

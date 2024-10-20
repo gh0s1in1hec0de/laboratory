@@ -1,2 +1,4 @@
 export * from "./navbar";
-export * from "./quests";
+export * from "./banner";
+export * from "./common";
+

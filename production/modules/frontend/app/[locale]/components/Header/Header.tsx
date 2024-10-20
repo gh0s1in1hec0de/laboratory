@@ -1,31 +1,23 @@
-import Grid from "@mui/material/Grid2";
-import { Info } from "./components/Info";
-import { TicketBalance } from "./components/TicketBalance";
-import { BgLight } from "@/common/BgLight";
-import { TonProvider } from "@/providers/ton";
+import { Label } from "@/common/Label";
 import { CustomConnectButton } from "@/components/CustomConnectButton";
-import { LangSwitcher } from "@/components/LangSwitcher";
+import { TonProvider } from "@/providers/ton";
+import Grid from "@mui/material/Grid2";
 
 export function Header() {
   return (
-    <Grid 
-      container 
-      position="relative" 
-      gap={2}
+    <Grid
+      container
+      justifyContent="space-between"
+      alignItems="center"
       width="100%"
     >
-      <BgLight />
-
+      <Label
+        variantSize="semiBold24"
+        label="Hello 👋"
+      />
+      
       <TonProvider>
-        <LangSwitcher />
-      </TonProvider>
-
-      <Info />
-
-      <TonProvider>
-        <CustomConnectButton 
-          successChildren={<TicketBalance />}
-        />
+        <CustomConnectButton />
       </TonProvider>
     </Grid>
   );

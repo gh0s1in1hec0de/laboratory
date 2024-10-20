@@ -1,4 +1,4 @@
-import { baseService } from "@/api";
+import { managerService } from "@/api";
 import { CALLER_ADDRESS } from "@/constants";
 import { USER_ERROR } from "@/errors";
 import { USER_ROUTES } from "@/routes";
@@ -7,7 +7,7 @@ import { localStorageWrapper } from "@/utils";
 
 async function postConnectWallet(address: string, referral?: string): Promise<void> {
   try {
-    await baseService.post(USER_ROUTES.ConnectWallet, {
+    await managerService.post(USER_ROUTES.ConnectWallet, {
       address,
       ...(referral ? { referral } : {})
     });
@@ -19,7 +19,7 @@ async function postConnectWallet(address: string, referral?: string): Promise<vo
 
 async function getTicketBalance(): Promise<number> {
   try {
-    const response = await baseService.get<number>(USER_ROUTES.GetTicketBalance, {
+    const response = await managerService.get<number>(USER_ROUTES.GetTicketBalance, {
       params: {
         address: localStorageWrapper.get(CALLER_ADDRESS),
       },
@@ -34,7 +34,7 @@ async function getTicketBalance(): Promise<number> {
 
 async function getTasks(staged: boolean): Promise<Task[]> {
   try {
-    const response = await baseService.get<Task[]>(USER_ROUTES.GetTasks, {
+    const response = await managerService.get<Task[]>(USER_ROUTES.GetTasks, {
       params: {
         address: localStorageWrapper.get(CALLER_ADDRESS),
         staged,

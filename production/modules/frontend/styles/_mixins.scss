@@ -8,6 +8,16 @@
   font-weight: 500;
 }
 
+@mixin bold24 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+@mixin semiBold24 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
 @mixin semiBold18 {
   font-size: 18px;
   font-weight: 600;
