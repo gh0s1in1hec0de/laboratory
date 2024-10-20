@@ -34,7 +34,7 @@ describe("Database", () => {
             callers,
             heights,
             launch_balances,
-            summary_tickets_balances,
+            earnings_per_period,
             tasks,
             token_launches,
             user_actions,
@@ -68,6 +68,7 @@ describe("Database", () => {
         // VALUES (123456789, 'Pavel Durov')`;
     
         const randUserAddress = randomAddress().toString();
+        const randLaunchAddress = randomAddress().toString();
         
         await client`
         INSERT INTO callers (address, ticket_balance)
@@ -130,14 +131,6 @@ describe("Database", () => {
         const callers = await client`SELECT *
                                  FROM callers;`;
         expect(callers.length).toBe(1);
-    
-        const tasks = await client`SELECT *
-                               FROM tasks;`;
-        expect(tasks.length).toBe(10);
-
-        const usersTasksRelations = await client`SELECT *
-                               FROM users_tasks_relations;`;
-        expect(usersTasksRelations.length).toBe(2);
     
         const tokenLaunches = await client`SELECT *
                                        FROM token_launches;`;

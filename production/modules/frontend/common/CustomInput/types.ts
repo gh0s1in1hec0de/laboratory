@@ -12,7 +12,7 @@ export interface CustomInputProps {
   name?: string;
   startAdornment?: `${AdornmentVariant}`;
   endAdornment?: `${AdornmentVariant}`;
-  helperText?: string;
+  errorText?: string;
   disabled?: boolean;
   fullWidth?: boolean;
 }

@@ -22,8 +22,9 @@
 }
 
 .input {
-  color: var(--gray-light);
+  color: var(--white-regular);
   padding-left: 4px;
+
 
   &:-webkit-autofill {
     transition: all 5000s ease-in-out 0s;
@@ -31,5 +32,9 @@
 }
 
 .disabled {
-  -webkit-text-fill-color: var(--gray-regular) !important;
+  -webkit-text-fill-color: var(--gray-light) !important;
+}
+
+.errorText {
+  color: var(--red-regular);
 }

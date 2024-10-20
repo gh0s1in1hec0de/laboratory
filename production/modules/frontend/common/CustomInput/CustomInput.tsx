@@ -1,10 +1,11 @@
 "use client";
 
-import { FormControl, Input, InputAdornment } from "@mui/material";
+import { FormControl, FormHelperText, Input, InputAdornment } from "@mui/material";
 import styles from "./CustomInput.module.scss";
 import { CustomInputProps, AdornmentVariant } from "./types";
 import { LoupeIcon } from "@/icons";
 import { classNames } from "@/utils";
+import { Label } from "../Label";
 
 export function CustomInput({ 
   placeholder, 
@@ -14,7 +15,7 @@ export function CustomInput({
   onChange,
   startAdornment,
   endAdornment,
-  helperText,
+  errorText,
   disabled,
   fullWidth = true,
 }: CustomInputProps) {
@@ -35,14 +36,14 @@ export function CustomInput({
       className={classNames(styles.formControl, {
         [styles.fullWidth]: fullWidth,
       })}
-      error={!!helperText}
-      disabled={disabled}
+      error={!!errorText}
     >
       <Input
         placeholder={placeholder}
         type={type} 
         name={name}
         value={value}
+        disabled={disabled}
         onChange={onChange}
         startAdornment={renderAdornment(startAdornment, "start")}
         endAdornment={renderAdornment(endAdornment, "end")}
@@ -52,6 +53,15 @@ export function CustomInput({
           disabled: styles.disabled,
         }}
       />
+      
+      <FormHelperText>
+        <Label
+          label={errorText || ""}
+          variantSize="medium10"
+          variantColor="red"
+          disabled={disabled}
+        />
+      </FormHelperText>
     </FormControl>
   );
 }

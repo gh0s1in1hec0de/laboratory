@@ -1,4 +1,4 @@
-import { TokenLaunchRoutes, UserRoutes } from "./routes";
+import { TokenLaunchRoutes } from "./routes";
 import { getSwaggerConfig, WebSocket } from "./config";
 import { swagger } from "@elysiajs/swagger";
 import { ok as assert } from "node:assert";
@@ -22,7 +22,6 @@ function createServer() {
         })))
         .use(cors())
         .use(WebSocket())
-        .use(UserRoutes())
         .use(TokenLaunchRoutes())
         .onError((err) => {
             logger().error(err);

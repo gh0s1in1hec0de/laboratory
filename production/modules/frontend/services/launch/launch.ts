@@ -48,8 +48,5 @@ async function getTasks(staged: boolean): Promise<Task[]> {
   }
 }
 
-export const userService = {
-  postConnectWallet,
-  getTicketBalance,
-  getTasks,
+export const launchService = {
 };

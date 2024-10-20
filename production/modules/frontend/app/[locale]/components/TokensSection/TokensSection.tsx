@@ -1,5 +1,3 @@
-"use client";
-
 import { Label } from "@/common/Label";
 import Grid from "@mui/material/Grid2";
 import { WaveLaunchDrawer } from "./components/WaveLaunchDrawer";
