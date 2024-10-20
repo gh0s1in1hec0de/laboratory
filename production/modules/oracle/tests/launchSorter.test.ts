@@ -32,7 +32,7 @@ describe("launch sorter", () => {
         let previousPlatformShare = sortedByTime.launchesChunk[0].platformShare;
 
         for (const [index, launch] of sortedByTime.launchesChunk.entries()) {
-            console.log(`#${index + 1} launch ${launch.address} | ${launch.createdAt} | ${launch.platformShare}`);
+            console.log(`#${index + 1} launch ${launch.address} | ${launch.createdAt} | ${launch.platformShare} | holders: ${launch.activeHolders}`);
 
             if (launch.createdAt > previousCreatedAt) console.error(`#${index + 1}: ${launch.createdAt} > ${previousCreatedAt}`);
             if (launch.platformShare > previousPlatformShare) console.error(`#${index + 1}: ${launch.platformShare} > ${previousPlatformShare}`);
@@ -55,8 +55,7 @@ describe("launch sorter", () => {
         let previousPlatformShare = sortedByTime.launchesChunk[0].platformShare;
 
         for (const [index, launch] of sortedByTime.launchesChunk.entries()) {
-            console.log(`#${index + 1} launch ${launch.address} | ${launch.totalTonsCollected} | ${launch.platformShare}`);
-
+            console.log(`#${index + 1} launch ${launch.address} | ${launch.totalTonsCollected} | ${launch.platformShare} | holders: ${launch.activeHolders}`);
             if (launch.totalTonsCollected > previousTotalTonsCollected) console.error(`#${index + 1}: ${launch.totalTonsCollected} > ${previousTotalTonsCollected}`);
             if (launch.platformShare > previousPlatformShare) console.error(`#${index + 1}: ${launch.platformShare} > ${previousPlatformShare}`);
 

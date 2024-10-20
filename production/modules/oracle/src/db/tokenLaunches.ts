@@ -1,14 +1,16 @@
+import { LaunchSortParameters, } from "starton-periphery";
+import type {
+    TokenLaunchTimings, StoredTokenLaunch, UnixTimeSeconds,
+    StoredTokenLaunchRequest, StoredTokenLaunchResponse,
+    PostDeployEnrollmentStats, RawAddressString,
+    Coins, DexData, LaunchBalance,
+} from "starton-periphery";
 import type { SqlClient } from "./types";
 import { ok as assert } from "assert";
 import { globalClient } from "./db";
 import { logger } from "../logger";
 import postgres from "postgres";
-import {
-    type TokenLaunchTimings, type StoredTokenLaunch, type UnixTimeSeconds,
-    type PostDeployEnrollmentStats, type RawAddressString,
-    type Coins, type DexData, type LaunchBalance,
-    LaunchSortParameters, type StoredTokenLaunchRequest, type StoredTokenLaunchResponse,
-} from "starton-periphery";
+import * as db from "./index.ts";
 
 // Warning! In runtime, when `StoredTokenLaunch` is returned - `TokenLaunchTimings`' fields are strings.
 // So - be careful, when using it - its better convert it via `new Date()`.
@@ -44,7 +46,12 @@ export async function getTokenLaunchById(id: number, client?: SqlClient): Promis
 }
 
 export async function storeTokenLaunch(
-    { address, creator, version, metadata, timings, totalSupply, createdAt }:
+    {
+        address, identifier, creator,
+        version, metadata, timings,
+        totalSupply, platformShare,
+        minTreshold, createdAt
+    }:
         Omit<
             StoredTokenLaunch,
             "id" | "isSuccessful" | "postDeployEnrollmentStats" | "dexData"
@@ -53,9 +60,11 @@ export async function storeTokenLaunch(
 ): Promise<void> {
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
-        INSERT INTO token_launches (address, creator, version, metadata, timings, total_supply, created_at)
-        VALUES (${address}, ${creator}, ${version}, ${metadata}, ${timings}, ${totalSupply},
-                ${createdAt})
+        INSERT INTO token_launches
+        (address, identifier, creator, version, metadata, timings, total_supply, platform_share, min_treshold,
+         created_at)
+        VALUES (${address}, ${identifier}, ${creator}, ${version}, ${metadata}, ${timings}, ${totalSupply},
+                ${platformShare}, ${minTreshold}, ${createdAt})
         RETURNING 1;
     `;
     if (res.length !== 1) logger().warn(`exactly 1 column must be created, got: ${res}`);
@@ -82,9 +91,16 @@ export async function getSortedTokenLaunches(
         ORDER BY tl.platform_share DESC, ${orderByExpression}
         LIMIT ${limit + 1} OFFSET ${offset};
     `;
+    const activeHolders = await db.getActiveHoldersForLaunches(
+        res.map(l => l.address)
+    );
+    console.log(activeHolders);
+    const launchesChunk = res.map(l =>
+        ({ ...l, activeHolders: activeHolders.get(l.address) ?? 0 })
+    ).slice(0, limit);
 
     return !res.length ? null : {
-        launchesChunk: res.slice(0, limit),
+        launchesChunk,
         hasMore: res.length > limit
     };
 }
@@ -194,4 +210,17 @@ export async function updateLaunchBalance(tokenLaunchAddress: RawAddressString, 
         const res = await updateWith(c`total_tons_collected = ${totalTonsCollected}`);
         if (res.length !== 1) logger().error(`total_tons_collected for launch address ${tokenLaunchAddress} wasn't updated`);
     }
+}
+
+export async function getActiveHoldersForLaunches(
+    addresses: RawAddressString[],
+    client?: SqlClient
+): Promise<Map<RawAddressString, number>> {
+    const res = await (client ?? globalClient)<{ tokenLaunch: RawAddressString, activeHolders: number }[]>`
+        SELECT token_launch, COUNT(*) AS active_holders
+        FROM user_balances
+        WHERE token_launch = ANY (${addresses})
+        GROUP BY token_launch;
+    `;
+    return new Map<RawAddressString, number>(res.map(r => [r.tokenLaunch, r.activeHolders]));
 }

@@ -12,7 +12,7 @@ export type StoredTokenLaunchRequest = {
 }
 
 export type StoredTokenLaunchResponse = {
-    launchesChunk: (StoredTokenLaunch & LaunchBalance)[],
+    launchesChunk: (StoredTokenLaunch & LaunchBalance & { activeHolders: number })[],
     hasMore: boolean,
 }
 

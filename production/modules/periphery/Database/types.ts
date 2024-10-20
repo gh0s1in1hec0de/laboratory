@@ -67,6 +67,7 @@ export type StoredTokenLaunch = {
     timings: TokenLaunchTimings,
     totalSupply: Coins,
     platformShare: number,
+    minTonTreshold: Coins,
     createdAt: UnixTimeSeconds,
 
     isSuccessful: boolean | null,

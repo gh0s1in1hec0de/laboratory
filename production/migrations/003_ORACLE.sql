@@ -152,3 +152,19 @@ CREATE TRIGGER after_insert_user_balance_error
     FOR EACH ROW
 EXECUTE FUNCTION notify_user_balance_error();
 
+CREATE MATERIALIZED VIEW top_token_launch_by_actions AS
+SELECT token_launch, COUNT(*) AS action_count
+FROM user_actions
+WHERE timestamp >= date_trunc('day', NOW())
+  AND timestamp < date_trunc('day', NOW() + interval '1 day')
+GROUP BY token_launch
+ORDER BY action_count DESC
+LIMIT 1;
+
+SELECT cron.schedule(
+               'refresh_materialized_view',
+               '0 * * * *', -- TODO Replace with '0 * * * *'
+               'REFRESH MATERIALIZED VIEW top_token_launch_by_actions'
+       );
+
+

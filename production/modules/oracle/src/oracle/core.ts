@@ -62,7 +62,7 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
                         version: coreVersion,
                         metadata,
                         platformShare,
-                        // An error may occur here
+                        minTonTreshold: parsedStateInit.saleConfig.minTonForSaleSuccess,
                         timings: parseTokenLaunchTimings(parsedStateInit),
                         totalSupply: parsedStateInit.saleConfig.futJetTotalSupply,
                         createdAt: msg.info.createdAt

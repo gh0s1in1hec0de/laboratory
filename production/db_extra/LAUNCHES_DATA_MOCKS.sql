@@ -59,3 +59,12 @@ UPDATE launch_balances SET total_tons_collected = 4200 WHERE token_launch = 'add
 UPDATE launch_balances SET total_tons_collected = 2500 WHERE token_launch = 'addr_28';
 UPDATE launch_balances SET total_tons_collected = 1500 WHERE token_launch = 'addr_29';
 
+INSERT INTO callers (address)
+VALUES ('meow'), ('meow1'),('meow2');
+
+INSERT INTO user_balances (caller, token_launch)
+VALUES
+    ('meow', 'addr_30'),
+    ('meow1', 'addr_30'),
+    ('meow2', 'addr_18');
+

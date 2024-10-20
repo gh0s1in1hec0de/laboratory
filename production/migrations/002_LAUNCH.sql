@@ -23,6 +23,7 @@ CREATE TABLE token_launches
     timings                      JSONB             NOT NULL,
     total_supply                 coins             NOT NULL,
     platform_share               FLOAT             NOT NULL CHECK (platform_share >= 0 AND platform_share <= 100),
+    min_ton_treshold             coins             NOT NULL,
 
     -- Time of transaction, where actual launch was created
     created_at                   unix_time_seconds NOT NULL,
