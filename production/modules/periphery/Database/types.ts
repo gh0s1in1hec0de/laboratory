@@ -52,7 +52,7 @@ export type LaunchMetadata = {
     telegramLink?: string,
     xLink?: string,
     website?: string,
-    extra?: string,
+    influencerSupport?: boolean,
 };
 
 export type StoredTokenLaunch = {

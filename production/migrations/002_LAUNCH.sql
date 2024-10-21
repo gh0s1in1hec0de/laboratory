@@ -2,11 +2,11 @@ CREATE DOMAIN coins AS NUMERIC(39, 0) CHECK ( VALUE >= 0 );
 
 CREATE TABLE launch_metadata
 (
-    onchain_metadata_link TEXT NOT NULL PRIMARY KEY,
+    onchain_metadata_link TEXT    NOT NULL PRIMARY KEY,
     telegram_link         TEXT,
     x_link                TEXT,
     website               TEXT,
-    extra                 TEXT
+    influencer_support    BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TYPE launch_version AS ENUM ('V1', 'V2A', 'V2');

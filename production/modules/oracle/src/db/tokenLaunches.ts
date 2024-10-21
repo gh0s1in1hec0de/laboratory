@@ -3,7 +3,7 @@ import { getLaunchesMetadata } from "./periphery";
 import type {
     TokenLaunchTimings, StoredTokenLaunch, UnixTimeSeconds,
     StoredTokenLaunchRequest, StoredTokenLaunchResponse,
-    CertainLaunchResponse, CertainLaunchRequest,
+    ExtendedLaunchWithMetadata, CertainLaunchRequest,
     Coins, DexData, PostDeployEnrollmentStats,
     RawAddressString, LaunchBalance,
 } from "starton-periphery";
@@ -100,7 +100,7 @@ export async function getSortedTokenLaunches(
                  JOIN launch_balances lb
                       ON tl.address = lb.token_launch
         WHERE tl.identifier ILIKE ${`%${search ?? ""}%`}
-            ${succeed ? c`AND tl.is_successful = ${succeed}` : c``}
+            ${succeed !== undefined ? c`AND tl.is_successful = ${succeed}` : c``}
             ${createdBy ? c`AND tl.creator = ${createdBy}` : c``}
         ORDER BY tl.platform_share DESC, ${orderByExpression}
         LIMIT ${limit + 1} OFFSET ${offset};
@@ -121,11 +121,11 @@ export async function getSortedTokenLaunches(
 export async function getLaunch({
     address,
     metadataUri
-}: CertainLaunchRequest, client?: SqlClient): Promise<CertainLaunchResponse> {
+}: CertainLaunchRequest, client?: SqlClient): Promise<ExtendedLaunchWithMetadata | null> {
     const c = client ?? globalClient;
     const condition = address ?
         c`tl.address = ${address}` :
-        c`(tl.metadata ->> uri)::TEXT = ${metadataUri!}`;
+        c`(tl.metadata ->> 'uri')::TEXT = ${metadataUri!}`;
 
     const res = await c<(StoredTokenLaunch & LaunchBalance)[]>`
         SELECT tl.*, lb.*
@@ -134,13 +134,15 @@ export async function getLaunch({
                       ON tl.address = lb.token_launch
         WHERE ${condition}
     `;
-    if (res.length !== 1) throw new Error("can't get more than 1 launch");
+    if (!res.length) return null;
+    if (res.length > 1) logger().error(`unreachable: found more than 1 launches for ${address ? address : metadataUri}`);
+
     const launch = res[0];
-    const activeHolders = await getActiveHoldersForLaunches([launch.address]);
+    const activeHolders = (await getActiveHoldersForLaunches([launch.address])).get(launch.address) ?? 0;
     const offchainMetadata = await getLaunchesMetadata([launch.metadata.uri!]);
     if (!offchainMetadata || offchainMetadata.length !== 1) throw new Error("offchain metadata must exist for launch");
 
-    return { ...launch, activeHolders: activeHolders.get(launch.address)!, offchainMetadata: offchainMetadata[0] };
+    return { ...launch, activeHolders, offchainMetadata: offchainMetadata[0] };
 }
 
 

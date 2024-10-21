@@ -3,10 +3,11 @@ import { uploadAndPinFileToIPFS } from "../../../ipfs";
 import * as db from "../../../db";
 
 export async function uploadMetadataToIpfs(
-    { links, metadata, image }: {
+    { links, metadata, image, influencerSupport }: {
         links: { x?: string, telegram?: string, website?: string },
         metadata: JettonMetadata,
         image: string,
+        influencerSupport?: boolean,
     }
 ): Promise<string> {
     const base64Image = image.split(",")[1];  // remove `data:image/...;base64,` if present
@@ -18,11 +19,12 @@ export async function uploadMetadataToIpfs(
     const metadataJsonCID = await uploadAndPinFileToIPFS(
         Buffer.from(JSON.stringify(metadata))
     );
-    await db.createLaunchMetadata({
+    await db.storeLaunchMetadata({
         onchainMetadataLink: `https://ipfs.io/ipfs/${metadataJsonCID}`,
         xLink: links.x,
         telegramLink: links.telegram,
         website: links.website,
+        influencerSupport
     });
     return metadataJsonCID;
 }

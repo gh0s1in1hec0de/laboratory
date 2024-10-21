@@ -23,7 +23,7 @@ export type CertainLaunchRequest = {
     address?: RawAddressString,
     metadataUri?: string
 }
-export type CertainLaunchResponse = ExtendedLaunch & { offchainMetadata: LaunchMetadata }
+export type ExtendedLaunchWithMetadata = ExtendedLaunch & { offchainMetadata: LaunchMetadata }
 
 export type ConnectedWalletRequest = {
     address: RawAddressString,

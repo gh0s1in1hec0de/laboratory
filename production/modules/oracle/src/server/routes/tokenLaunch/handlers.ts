@@ -3,7 +3,7 @@ import {
     type StoredTokenLaunchResponse,
     type StoredTokenLaunchRequest,
     type CertainLaunchRequest,
-    type CertainLaunchResponse,
+    type ExtendedLaunchWithMetadata,
     CommonServerError,
 } from "starton-periphery";
 
@@ -13,13 +13,13 @@ export async function getLaunchesChunk(req: StoredTokenLaunchRequest): Promise<S
     }) ?? { launchesChunk: [], hasMore: false };
 }
 
-export async function getCertainLaunch({ address, metadataUri }: CertainLaunchRequest): Promise<CertainLaunchResponse> {
+export async function getCertainLaunch({ address, metadataUri }: CertainLaunchRequest): Promise<ExtendedLaunchWithMetadata | null> {
     if (!address && !metadataUri) throw new CommonServerError(400, "at least one of parameters must be provided");
     return await db.getLaunch({ address, metadataUri });
 }
 
-export async function getRisingStar(): Promise<CertainLaunchResponse> {
+export async function getRisingStar(): Promise<ExtendedLaunchWithMetadata | null> {
     const res = await db.getLaunchWithTopActivity();
-    if (!res) throw new CommonServerError(500, "unreachable");
+    if (!res) throw new CommonServerError(500, "unreachable: top activity launch not found");
     return await db.getLaunch({ address: res.tokenLaunch });
 }
