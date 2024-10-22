@@ -40,21 +40,22 @@ VALUES ('onchain_metadata_link_1', 'https://t.me/launch_3', 'https://x.com/launc
 INSERT INTO token_launches (address, identifier, creator, version, metadata, timings, total_supply, platform_share,
                             min_ton_treshold,
                             created_at, is_successful)
-VALUES ('addr_1', 'Launch 1', 'creator_1', 'V1', '{
-  "uri": "onchain_metadata_link_1"
-}', '{}', 1000000, 1.5, 1000000000, 1697731200, TRUE),
+VALUES
+        ('addr_1', 'Launch 1', 'creator_1', 'V1', '{
+          "uri": "onchain_metadata_link_1"
+        }', '{"endTime": 1697904000}', 1000000, 1.5, 1000000000, 1697731200, TRUE),
        ('addr_2', 'Launch 2', 'creator_2', 'V2A', '{
          "uri": "onchain_metadata_link_2"
-       }', '{}', 2000000, 1.5, 1000000000, 1697817600, TRUE),
+       }', '{"endTime": 1697904000}', 2000000, 1.5, 1000000000, 1697817600, TRUE),
        ('addr_3', 'Launch 3', 'creator_3', 'V1', '{
          "uri": "onchain_metadata_link_3"
-       }', '{}', 1500000, 1.5, 1000000000, 1697904000, TRUE),
+       }', '{"endTime": 1697904000}', 1500000, 1.5, 1000000000, 1697904000, TRUE),
        ('addr_4', 'Launch 4', 'creator_4', 'V2A', '{
          "uri": "onchain_metadata_link_4"
-       }', '{}', 1800000, 1.5, 1000000000, 1697990400, TRUE),
+       }', '{"endTime": 1697904000}', 1800000, 1.5, 1000000000, 1697990400, TRUE),
        ('addr_5', 'Launch 5', 'creator_5', 'V1', '{
          "uri": "onchain_metadata_link_5"
-       }', '{}', 2500000, 1.5, 1000000000, 1698076800, TRUE),
+       }', '{"endTime": 1697904000}', 2500000, 1.5, 1000000000, 1698076800, TRUE),
        ('addr_6', 'Launch 6', 'creator_6', 'V2A', '{
          "uri": "onchain_metadata_link_6"
        }', '{}', 3000000, 1.5, 1000000000, 1698163200, TRUE),

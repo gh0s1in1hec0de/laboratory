@@ -32,6 +32,11 @@ export type StoredTasks = {
     createdAt: UnixTimeSeconds,
 }
 
+export type UsersTasksRelations = {
+    callerAddress: RawAddressString,
+    taskId: number,
+}
+
 export type StringifiedCoins = string;
 export type PostDeployEnrollmentStats = {
     deployedJetton: { masterAddress: RawAddressString, ourWalletAddress: RawAddressString },
@@ -130,7 +135,7 @@ export const balanceUpdateModeToUserActionType: { [key in BalanceUpdateMode]: Us
     [BalanceUpdateMode.TotalWithdrawal]: UserActionType.TotalRefund,
 };
 
-export type StoredWhitelistRelations = {
+export type WhitelistRelations = {
     tokenLaunchAddress: string,
     callerAddress: string,
 }

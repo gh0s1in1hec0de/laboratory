@@ -96,13 +96,17 @@ describe("launch sorter", () => {
         }
         console.log();
     });
-    test("certain launch", async () => {
+    test.skip("certain launch", async () => {
         const l = await db.getLaunch({
             // address: "addr_14",
             // metadataUri: "onchain_metadata_link_1"
         });
         assert(l);
         console.log(l);
+    });
+    test("certain launch", async () => {
+        const balances = await db.getCallerBalances("meow");
+        assert(balances); console.log(balances);
     });
     test.skip("mock launches activity data", async () => {
         const now = Math.floor(Date.now() / 1000);

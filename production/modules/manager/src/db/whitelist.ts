@@ -1,4 +1,4 @@
-import type { RawAddressString, StoredWhitelistRelations } from "starton-periphery";
+import type { RawAddressString, WhitelistRelations } from "starton-periphery";
 import { decrementTicketBalance } from "./users";
 import type { SqlClient } from "./types";
 import { globalClient } from "./db";
@@ -7,8 +7,8 @@ export async function storeWhitelistRelation(
     tokenLaunchAddress: RawAddressString,
     callerAddress: RawAddressString,
     client?: SqlClient
-): Promise<StoredWhitelistRelations | null> {
-    const res = await (client ?? globalClient)<StoredWhitelistRelations[]>`
+): Promise<WhitelistRelations | null> {
+    const res = await (client ?? globalClient)<WhitelistRelations[]>`
         INSERT INTO whitelist_relations (token_launch_address, caller_address)
         VALUES (${tokenLaunchAddress}, ${callerAddress})
         RETURNING 1

@@ -4,11 +4,7 @@ export const ConnectWalletSchema = t.Object({
     address: t.String(),
 });
 
-export const GetTicketBalanceSchema = t.Object({
-    address: t.String(),
-});
-
-export const GetTasksSchema = t.Object({
-    address: t.String(),
-    staged: t.String(),
+export const getBalancesSchema = t.Object({
+    user: t.String(),
+    launch: t.Optional(t.String())
 });

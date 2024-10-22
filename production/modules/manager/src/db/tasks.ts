@@ -1,4 +1,4 @@
-import type { RawAddressString, SortedTasks, StoredTasks, StoredUsersTasksRelations } from "starton-periphery";
+import type { RawAddressString, SortedTasks, StoredTasks, UsersTasksRelations } from "starton-periphery";
 import type { SqlClient, } from "./types";
 import { globalClient } from "./db";
 
@@ -72,10 +72,10 @@ export async function getSortedTasks(
 export async function getUsersTasksRelations(
     address: RawAddressString,
     client?: SqlClient
-): Promise<Omit<StoredUsersTasksRelations, "callerAddress">[] | null> {
+): Promise<Omit<UsersTasksRelations, "callerAddress">[] | null> {
     const c = client ?? globalClient;
 
-    const res = await c<Omit<StoredUsersTasksRelations, "callerAddress">[]>`
+    const res = await c<Omit<UsersTasksRelations, "callerAddress">[]>`
         SELECT task_id
         FROM users_tasks_relations
         WHERE caller_address = ${address}
@@ -87,8 +87,8 @@ export async function storeUserTaskRelations(
     callerAddress: RawAddressString,
     taskId: string,
     client?: SqlClient
-): Promise<StoredUsersTasksRelations | null> {
-    const res = await (client ?? globalClient)<StoredUsersTasksRelations[]>`
+): Promise<UsersTasksRelations | null> {
+    const res = await (client ?? globalClient)<UsersTasksRelations[]>`
         INSERT INTO users_tasks_relations (caller_address, task_id)
         VALUES (${callerAddress}, ${taskId})
         ON CONFLICT DO NOTHING
