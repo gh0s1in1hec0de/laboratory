@@ -37,6 +37,7 @@ export type GetConfigResponse = {
     creatorFutJetLeft: Coins,
     creatorFutJetPriceReversed: Coins,
     wlRoundFutJetLimit: Coins,
+    wlRoundTonLimit: Coins,
     pubRoundFutJetLimit: Coins,
     futJetDexAmount: Coins,
     futJetPlatformAmount: Coins,

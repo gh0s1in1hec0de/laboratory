@@ -4,7 +4,7 @@ import {
     FullFees, GasPrices, computeFwdFeesVerbose, getMsgPrices, computeStorageFee,
 } from "./utils";
 import {
-    TokensLaunchOps, getAmountOut, jettonFromNano, validateValue, getQueryId,
+    TokensLaunchOps, getAmountOut, jettonFromNano, validateValueMock, getQueryId,
     BASECHAIN, BalanceUpdateMode, LaunchConfigV2A, getApproximateClaimAmount,
     PERCENTAGE_DENOMINATOR, getCreatorAmountOut, UserVaultOps, CoreOps,
     MAX_WL_ROUND_TON_LIMIT,
@@ -526,7 +526,7 @@ describe("V2A", () => {
                 success: true,
             });
             const contractBalanceAfter = tokenLaunchContractInstance.balance;
-            const { purified } = validateValue(creatorTonsCollected, 0n);
+            const { purified } = validateValueMock(creatorTonsCollected, 0n);
             const balanceDiff = (contractBalanceBefore - contractBalanceAfter) - purified;
             if (balanceDiff > 0) {
                 console.warn(`Balance diff after creator's refund: onchain ${fromNano(contractBalanceBefore - contractBalanceAfter)}; offchain ${fromNano(purified)}`);
@@ -620,7 +620,7 @@ describe("V2A", () => {
                 success: true
             });
             const totalFee = wlPurchaseRequestComputeFee + balanceUpdateCost;
-            const { purified } = validateValue(totalPurchaseValue, totalFee);
+            const { purified } = validateValueMock(totalPurchaseValue, totalFee);
             console.log(`Precomputed wl buy total fee is equal to ${totalFee} (${fromNano(totalFee)} TON)`);
 
             const contractBalanceAfter = launchContractInstance.balance;
@@ -737,7 +737,7 @@ describe("V2A", () => {
             const [firstPublicBuyerVaultData, secondPublicBuyerVaultData] = await Promise.all(
                 [firstPublicBuyerVault, secondPublicBuyerVault].map((buyer) => buyer.getVaultData())
             );
-            const { purified } = validateValue(totalPurchaseValue, publicBuyFee);
+            const { purified } = validateValueMock(totalPurchaseValue, publicBuyFee);
             const amountOut = getAmountOut(
                 purified,
                 saleMoneyFlowAfterFirstPublicBuy.syntheticTonReserve,
@@ -829,7 +829,7 @@ describe("V2A", () => {
             const [consumerVaultStateAfterWlRef, saleMoneyFlowAfterWlRef, tokenLaunchInnerDataAfterWlRef] = await Promise.all([
                 consumerVault.getVaultData(), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData()
             ]);
-            const { purified, opn } = validateValue(valueToWithdraw, 0n);
+            const { purified, opn } = validateValueMock(valueToWithdraw, 0n);
 
             const refundGasConsumption = refundCost(
                 refundRequestComputeFee,

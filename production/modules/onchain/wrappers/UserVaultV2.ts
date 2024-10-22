@@ -10,17 +10,17 @@ export type VaultState = {
     jettonBalance?: Coins,
 }
 
-export class UserVaultV2A implements Contract {
+export class UserVaultV2 implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {}
 
     static createFromAddress(address: Address) {
-        return new UserVaultV2A(address);
+        return new UserVaultV2(address);
     }
 
     static createFromState(state: { owner: Address, tokenLaunch: Address }, code: Cell, workchain = BASECHAIN) {
         const data = this.buildState(state);
         const init = { code, data };
-        return new UserVaultV2A(contractAddress(workchain, init), init);
+        return new UserVaultV2(contractAddress(workchain, init), init);
     }
 
     async getVaultData(provider: ContractProvider): Promise<VaultState> {

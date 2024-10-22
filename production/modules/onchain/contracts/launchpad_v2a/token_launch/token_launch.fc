@@ -218,7 +218,7 @@ slice get_user_vault_address(slice user_address) method_id {
     );
 }
 
-(int, int, int, int, int, int, int, int) get_config() method_id {
+(int, int, int, int, int, int, int, int, int) get_config() method_id {
     load_data();
     return (
         ;; Due to new creator's mechanics, we are able to creators round data only by calculating it on receiver's side
@@ -227,6 +227,7 @@ slice get_user_vault_address(slice user_address) method_id {
         creator_round::const::fut_jet_price_reversed,
 
         wl_round::const::fut_jet_limit,
+        wl_round::const::ton_limit,
         public_round::const::fut_jet_limit,
 
         config::const::fut_jet_dex_amount,

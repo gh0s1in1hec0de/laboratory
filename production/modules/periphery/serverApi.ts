@@ -1,7 +1,7 @@
 import type { LaunchBalance, LaunchMetadata, StoredTokenLaunch, StoredUserBalance } from "./Database";
 import { LaunchSortParameters, SortingOrder, } from "./utils";
 import type { RawAddressString } from "./standards";
-import { JettonMetadata } from "./metadata";
+import { JettonMetadata } from "./jettonMetadata";
 
 // Manager API
 
@@ -68,3 +68,5 @@ export type UserBalancesRequest = {
 }
 
 export type ExtendedUserBalance = StoredUserBalance & JettonMetadata & { activeUntil: number };
+
+// TODO extend with dispenser routes types

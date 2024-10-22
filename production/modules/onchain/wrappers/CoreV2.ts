@@ -15,18 +15,18 @@ import {
     CoreOps,
 } from "starton-periphery";
 
-export class CoreV2A implements Contract {
+export class CoreV2 implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
     }
 
     static createFromAddress(address: Address) {
-        return new CoreV2A(address);
+        return new CoreV2(address);
     }
 
     static createFromState(state: CoreStateV2A, code: Cell, workchain = BASECHAIN) {
         const data = this.buildState(state);
         const init = { code, data };
-        return new CoreV2A(contractAddress(workchain, init), init);
+        return new CoreV2(contractAddress(workchain, init), init);
     }
 
     async sendDeploy(provider: ContractProvider, sendMessageParams: Omit<SendMessageParams, "queryId">) {

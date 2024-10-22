@@ -1,14 +1,12 @@
 import { GetConfigResponse, MoneyFlows, TokenLaunchTimings } from "./types";
-import { Cell, type Slice, TupleReader } from "@ton/core";
+import { type Slice, TupleReader } from "@ton/core";
 import {
-    BalanceUpdateMessage,
-    OP_LENGTH,
-    QUERY_ID_LENGTH,
-    TokenMetadata,
-    TokensLaunchOps,
     WithdrawConfirmationMessage,
+    BalanceUpdateMessage,
+    TokensLaunchOps,
+    QUERY_ID_LENGTH,
+    OP_LENGTH,
 } from "./standards";
-import { UnixTimeSeconds } from "./utils";
 
 // === Message parsers ===
 
@@ -41,14 +39,7 @@ export function parseRefundOrClaim(op: TokensLaunchOps, purifiedMessageBody: Sli
     return { whitelistTons, publicTons, futureJettons, recipient, mode };
 }
 
-export function parseMetadataCell(metadataCell: Cell): TokenMetadata {
-    const cs = metadataCell.beginParse();
-    const uri = cs.loadStringTail();
-    cs.endParse();
-    return { uri };
-}
-
-// Getters
+// Contract getters
 export function parseMoneyFlows(stack: TupleReader): MoneyFlows {
     return {
         totalTonsCollected: stack.readBigNumber(),
@@ -67,6 +58,7 @@ export function parseGetConfigResponse(stack: TupleReader): GetConfigResponse {
         creatorFutJetPriceReversed: stack.readBigNumber(),
 
         wlRoundFutJetLimit: stack.readBigNumber(),
+        wlRoundTonLimit: stack.readBigNumber(),
         pubRoundFutJetLimit: stack.readBigNumber(),
 
         futJetDexAmount: stack.readBigNumber(),

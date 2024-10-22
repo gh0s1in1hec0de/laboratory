@@ -1,7 +1,7 @@
 import { BalanceUpdateMode, Coins, GlobalVersions, LamportTime, RawAddressString } from "../standards";
 import type { TokenLaunchTimings } from "../types";
+import { JettonMetadata } from "../jettonMetadata";
 import type { UnixTimeSeconds } from "../utils";
-import { JettonMetadata } from "../metadata";
 
 export type StoredHeight = {
     contractAddress: RawAddressString,

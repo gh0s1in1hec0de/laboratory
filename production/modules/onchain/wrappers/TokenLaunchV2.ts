@@ -33,18 +33,18 @@ export type StateParams = {
     launchConfig: LaunchConfigV2A,
 };
 
-export class TokenLaunchV2A implements Contract {
+export class TokenLaunchV2 implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
     }
 
     static createFromAddress(address: Address) {
-        return new TokenLaunchV2A(address);
+        return new TokenLaunchV2(address);
     }
 
     static createFromState(state: StateParams | Cell, code: Cell, workchain = BASECHAIN) {
         const data = state instanceof Cell ? state : this.buildState(state);
         const init = { code, data };
-        return new TokenLaunchV2A(contractAddress(workchain, init), init);
+        return new TokenLaunchV2(contractAddress(workchain, init), init);
     }
 
     async sendCreatorBuyout(provider: ContractProvider, sendMessageParams: SendMessageParams) {
@@ -197,12 +197,12 @@ export class TokenLaunchV2A implements Contract {
         const { startTime, totalSupply, platformSharePct, metadata } = launchParams;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
 
-        const wlJetLimit = BigInt(launchConfig.jetWlLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
+        const wlRoundFutJetLimit = BigInt(launchConfig.jetWlLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
         const pubJetLimit = BigInt(launchConfig.jetPubLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
         const dexJetShare = BigInt(launchConfig.jetDexSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
         const platformShare = BigInt(platformSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
-        const creatorBuybackJetLimit = totalSupply - (wlJetLimit + pubJetLimit + dexJetShare + platformShare);
-        const creatorJetPrice = getCreatorJettonPrice(wlJetLimit, launchConfig.tonLimitForWlRound);
+        const creatorBuybackJetLimit = totalSupply - (wlRoundFutJetLimit + pubJetLimit + dexJetShare + platformShare);
+        const creatorJetPrice = getCreatorJettonPrice({ wlRoundFutJetLimit, wlRoundTonLimit: launchConfig.tonLimitForWlRound });
 
         const generalState = beginCell()
             .storeInt(loadAtMax ? ThirtyTwoIntMaxValue : startTime, 32)
@@ -221,7 +221,7 @@ export class TokenLaunchV2A implements Contract {
             )
             .endCell();
         const wlRoundState = beginCell()
-            .storeCoins(loadAtMax ? CoinsMaxValue : wlJetLimit)
+            .storeCoins(loadAtMax ? CoinsMaxValue : wlRoundFutJetLimit)
             .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.tonLimitForWlRound)
             .storeCoins(0)
             .storeInt(
@@ -234,7 +234,7 @@ export class TokenLaunchV2A implements Contract {
         const pubRoundState = beginCell()
             .storeCoins(loadAtMax ? CoinsMaxValue : pubJetLimit)
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
-            .storeCoins(loadAtMax ? CoinsMaxValue : wlJetLimit)
+            .storeCoins(loadAtMax ? CoinsMaxValue : wlRoundFutJetLimit)
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
             .storeInt(
                 loadAtMax ? ThirtyTwoIntMaxValue : startTime

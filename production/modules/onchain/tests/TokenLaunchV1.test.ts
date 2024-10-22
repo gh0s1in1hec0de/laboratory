@@ -9,7 +9,7 @@ import { TokenLaunchV1 } from "../wrappers/TokenLaunchV1";
 import { UserVaultV1 } from "../wrappers/UserVaultV1";
 import {
     UTIL_JET_SEND_MODE_SIZE, UtilJettonsEnrollmentMode, TokensLaunchOps,
-    BASECHAIN, CoreOps, LaunchConfigV1, UserVaultOps, validateValue,
+    BASECHAIN, CoreOps, LaunchConfigV1, UserVaultOps, validateValueMock,
     PERCENTAGE_DENOMINATOR, getCreatorAmountOut, Coins,
     getAmountOut, jettonFromNano, BalanceUpdateMode,
 } from "starton-periphery";
@@ -634,7 +634,7 @@ describe.skip("V1", () => {
                 wlCallbackComputeFee
             );
             // Check operational needs on token launch contract
-            const { purified, opn } = validateValue(wlPurchaseAmount, wlPurchaseTotalGasCost);
+            const { purified, opn } = validateValueMock(wlPurchaseAmount, wlPurchaseTotalGasCost);
             const consumerVaultData = await consumerVault.getVaultData();
 
             const opnAfter: Coins = (await sampleTokenLaunch.getInnerData()).operationalNeeds;
@@ -721,7 +721,7 @@ describe.skip("V1", () => {
             });
             printTxGasStats("Balance update (public buy) transaction: ", balanceUpdatePub);
             const publicBuyFee = publicBuyRequestComputeFees + balanceUpdateCost;
-            const { purified, opn } = validateValue(totalPurchaseValue, publicBuyFee);
+            const { purified, opn } = validateValueMock(totalPurchaseValue, publicBuyFee);
             const amountOut = getAmountOut(
                 purified,
                 moneyFlowAfterFirstPublicBuy.syntheticTonReserve,
@@ -793,7 +793,7 @@ describe.skip("V1", () => {
             const consumerVaultStateAfterWlRef = await consumerVault.getVaultData();
             const saleMoneyFlowAfterWlRef = await sampleTokenLaunch.getSaleMoneyFlow();
             const tokenLaunchInnerDataAfterWlRef = await sampleTokenLaunch.getInnerData();
-            const { purified, opn } = validateValue(valueToWithdraw, 0n);
+            const { purified, opn } = validateValueMock(valueToWithdraw, 0n);
 
             const refundGasConsumption = refundCost(
                 refundRequestComputeFee,
