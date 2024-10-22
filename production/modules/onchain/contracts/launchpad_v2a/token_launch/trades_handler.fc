@@ -8,9 +8,16 @@
 #include "tl_context.fc";
 #include "tl_storage.fc";
 
-() handle_creator_buyout(int msg_value) impure inline {
+() handle_creator_buyout(int query_id, int msg_value) impure inline {
     throw_unless(error::wrong_time, now() < creator_round::const::end_time);
     (int accessible_user_value, int opn) = check_amount_is_enough_for_creator_buyout(msg_value);
+
+    int cretor_value_limit = muldiv(creator_round::fut_jet_left, MAX_WL_ROUND_TON_LIMIT, creator_round::const::fut_jet_price_reversed);
+    int maybe_creator_remainings = 0;
+    if (accessible_user_value > cretor_value_limit) {
+        maybe_creator_remainings = accessible_user_value - cretor_value_limit;
+        accessible_user_value = cretor_value_limit;
+    }
 
     int jettons_amount = muldiv(accessible_user_value, creator_round::const::fut_jet_price_reversed, MAX_WL_ROUND_TON_LIMIT);
     throw_unless(error::meowreachable, jettons_amount > 0);
@@ -22,6 +29,11 @@
     general_state::total_tons_collected += accessible_user_value;
     general_state::fut_jet_inner_balance -= jettons_amount;
     this::operational_needs += opn;
+
+    if (maybe_creator_remainings > 0) {
+        cell excesses = excesses_msg(query_id, this::const::creator_address, maybe_creator_remainings);
+        send_raw_message(excesses, SEND_MODE_IGNORE_ERRORS);
+    }
 }
 
 () handle_creator_refund() impure inline {

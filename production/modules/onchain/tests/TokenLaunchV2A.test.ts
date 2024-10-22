@@ -453,11 +453,13 @@ describe("V2A", () => {
             blockchain.now = sampleLaunchStartTime + 1;
             const launchContractInstance = await blockchain.getContract(sampleTokenLaunch.address);
             const contractBalanceBefore = launchContractInstance.balance;
+            const tokenLaunchConfigBefore = await sampleTokenLaunch.getConfig();
+            const valueLimitForCreator = tokenLaunchConfigBefore.creatorFutJetLeft * MAX_WL_ROUND_TON_LIMIT / tokenLaunchConfigBefore.creatorFutJetPriceReversed;
+            console.log(`Creator round limits: ${jettonFromNano(tokenLaunchConfigBefore.creatorFutJetLeft)} jettons; ${fromNano(valueLimitForCreator)} TONs`);
 
             const value = toNano("10");
             const gasPrices = getGasPrices(blockchain.config, BASECHAIN);
-            const expectedFee = computeGasFee(gasPrices, 13493n); // Computed by printTxGasStats later
-            const tokenLaunchConfigBefore = await sampleTokenLaunch.getConfig();
+            const expectedFee = computeGasFee(gasPrices, 13938n); // Computed by printTxGasStats later
 
             const buyoutTransactionResult = await sampleTokenLaunch.sendCreatorBuyout({
                 via: creator.getSender(), value, queryId: 0n
@@ -491,7 +493,7 @@ describe("V2A", () => {
                 },
                 expectedFee
             );
-            assert(expectedCreatorBalance === tokenLaunchState.creatorFutJetBalance, `${expectedCreatorBalance} vs ${tokenLaunchState.creatorFutJetBalance}`);
+            assert(expectedCreatorBalance === tokenLaunchState.creatorFutJetBalance, `${jettonFromNano(expectedCreatorBalance)} vs ${jettonFromNano(tokenLaunchState.creatorFutJetBalance)}`);
             assert(tokenLaunchConfigBefore.creatorFutJetLeft === tokenLaunchState.creatorFutJetBalance + tokenLaunchConfigAfter.creatorFutJetLeft);
 
             /* You may think, that I forgot about `expect`s here, and it would be better to use it for checks
@@ -501,6 +503,34 @@ describe("V2A", () => {
             I'll gently leave it here especially for the particularly sophisticated masochist:
 
             expect(expectedCreatorBalance).toEqual(tokenLaunchState.creatorFutJetBalance + 1n); */
+        }, 20000);
+        test("creator corner buy", async () => {
+            const tokenLaunchConfigBefore = await sampleTokenLaunch.getConfig();
+            const jettonsLeftForCreator = tokenLaunchConfigBefore.creatorFutJetLeft;
+            const valueLeftForCreator = jettonsLeftForCreator * MAX_WL_ROUND_TON_LIMIT / tokenLaunchConfigBefore.creatorFutJetPriceReversed;
+            console.log(`Left for creator after 1st buyout ${jettonFromNano(jettonsLeftForCreator)} jettons; ${fromNano(valueLeftForCreator)} TONs`);
+
+
+            const value = valueLeftForCreator * 2n;
+            const buyoutTransactionResult = await sampleTokenLaunch.sendCreatorBuyout({
+                via: creator.getSender(), value, queryId: 0n
+            });
+
+            expect(buyoutTransactionResult.transactions).toHaveTransaction({
+                from: creator.address,
+                on: sampleTokenLaunch.address,
+                op: TokensLaunchOps.CreatorBuyout,
+                success: true,
+            });
+            expect(buyoutTransactionResult.transactions).toHaveTransaction({
+                from: sampleTokenLaunch.address,
+                on: creator.address,
+                op: JettonOps.Excesses,
+                success: true,
+                value: x => x! > valueLeftForCreator * 9n / 10n
+            });
+            const tokenLaunchConfigAfter = await sampleTokenLaunch.getConfig();
+            assert(tokenLaunchConfigAfter.creatorFutJetLeft === 0n);
         }, 20000);
         test("creator can refund his share", async () => {
             const stateBeforeCreatorRefund = blockchain.snapshot();
@@ -636,7 +666,7 @@ describe("V2A", () => {
             const divergence = totalDifferenceAccounted - totalActualDifference;
 
             if (divergence) console.warn(`\"dead\" tons (wl buy): ${fromNano(divergence)} (${divergence})`);
-            assert(purified <= consumerVaultDataAfter.wlTonBalance!, "expected precomputed value to be equal to actual one/bit less than it");
+            assert(purified <= consumerVaultDataAfter.wlTonBalance!, `${purified} vs ${consumerVaultDataAfter.wlTonBalance}`);
             assert(totalTonsIncrease === consumerVaultDataAfter.wlTonBalance!, "inconsistent state");
         }, 20000);
         test("wl limit cutoff works the proper way", async () => {

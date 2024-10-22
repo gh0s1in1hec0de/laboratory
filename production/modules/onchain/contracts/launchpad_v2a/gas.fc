@@ -100,7 +100,7 @@ int get_balance_update_gas_cost() inline_ref {
 }
 
 ;; As we don't have any external calls, we accounting only code execution fees
-const CREATOR_BUYOUT_GAS_CONSUMPTION = 13493;
+const CREATOR_BUYOUT_GAS_CONSUMPTION = 13938;
 (int, int) check_amount_is_enough_for_creator_buyout(int msg_value) impure inline {
     return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_BUYOUT_GAS_CONSUMPTION));
 }
@@ -111,7 +111,7 @@ const CREATOR_REFUND_GAS_CONSUMPTION = 15117;
 }
 
 ;; === Whitelist Purchase ===
-const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 20860;
+const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 20778;
 (int, int) check_amount_is_enough_for_wl_purchase(int msg_value) impure inline {
     return validate_value(
         msg_value,

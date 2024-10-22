@@ -32,15 +32,20 @@ export type WlPhaseLimits = {
     wlRoundTonLimit: Coins
 }
 
+// === CREATOR ===
 export function getCreatorJettonPrice({ wlRoundFutJetLimit, wlRoundTonLimit }: WlPhaseLimits): Coins {
     return wlRoundFutJetLimit * 2n * MAX_WL_ROUND_TON_LIMIT / wlRoundTonLimit;
 }
 
 // Call get config to get the last two values`get_config`
-export function getCreatorAmountOut(value: Coins, WlPhaseLimits: WlPhaseLimits, expectedFee: Coins = 5397200n): Coins {
+export function getCreatorAmountOut(value: Coins, WlPhaseLimits: WlPhaseLimits, expectedFee: Coins = 5575200n): Coins {
     const { purified } = validateValueMock(value, expectedFee);
     const creatorJettonPrice = getCreatorJettonPrice(WlPhaseLimits);
     return purified * creatorJettonPrice / MAX_WL_ROUND_TON_LIMIT;
+}
+
+export function getCreatorValueLimit({ creatorFutJetLeft, creatorFutJetPriceReversed }: { creatorFutJetLeft: Coins, creatorFutJetPriceReversed: Coins }) {
+    return creatorFutJetLeft * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
 }
 
 export function getExpectedWlValueShare(value: Coins, expectedFee: Coins = 17000000n): Coins {

@@ -90,7 +90,7 @@
     if (op == op::tl::creator_buyout) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::creator_address));
         raw_reserve(attached_value, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
-        handle_creator_buyout(attached_value);
+        handle_creator_buyout(query_id, attached_value);
         save_data();
         return ();
     }
