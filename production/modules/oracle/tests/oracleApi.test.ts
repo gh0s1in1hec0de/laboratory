@@ -1,5 +1,5 @@
 import { GlobalVersions, LaunchSortParameters, SortingOrder, UserActionType } from "starton-periphery";
-import { beforeAll, describe, test } from "bun:test";
+import { test, describe, beforeAll, afterAll, beforeEach } from "bun:test";
 import { ok as assert } from "node:assert";
 import * as db from "../src/db";
 import postgres from "postgres";
@@ -18,6 +18,29 @@ describe("launch sorter", () => {
             transform: postgres.camel,
             max: 10
         });
+    });
+
+    afterAll(async () => {
+        await client.end();
+    });
+  
+    beforeEach(async () => {
+        await client`
+        TRUNCATE
+            callers,
+            heights,
+            launch_balances,
+            launch_metadata,
+            earnings_per_period,
+            tasks,
+            token_launches,
+            user_actions,
+            user_balance_errors,
+            user_balances,
+            users_tasks_relations,
+            whitelist_relations
+        RESTART IDENTITY CASCADE;
+    `;
     });
 
     test.skip("sorting by time", async () => {
@@ -104,11 +127,11 @@ describe("launch sorter", () => {
         assert(l);
         console.log(l);
     });
-    test("certain launch", async () => {
+    test.skip("certain launch", async () => {
         const balances = await db.getCallerBalances("meow");
         assert(balances); console.log(balances);
     });
-    test.skip("mock launches activity data", async () => {
+    test("mock launches activity data", async () => {
         const now = Math.floor(Date.now() / 1000);
 
         await db.storeLaunchMetadata({
