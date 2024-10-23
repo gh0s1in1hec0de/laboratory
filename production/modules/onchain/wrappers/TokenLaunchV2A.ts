@@ -75,7 +75,7 @@ export class TokenLaunchV2A implements Contract {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
-            .storeUint(TokensLaunchOps.WlPurchase, OP_LENGTH)
+            .storeUint(TokensLaunchOps.WhitelistPurchase, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
             .endCell();
         await provider.internal(via, {
@@ -106,7 +106,6 @@ export class TokenLaunchV2A implements Contract {
             .storeUint(TokensLaunchOps.RefundRequest, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
             .storeUint(mode, 4)
-            .storeCoins(666n)
             .endCell();
         await provider.internal(via, {
             value, sendMode: SendMode.PAY_GAS_SEPARATELY, body

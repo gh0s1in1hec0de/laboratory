@@ -8,7 +8,7 @@ export async function getCallerBalances(address: RawAddressString, launch?: RawA
     const res = await c<ExtendedUserBalance[]>`
         SELECT ub.*,
                tl.is_successful,
-               (tl.timings ->> 'endTime')::INTEGER AS active_until,
+               tl.timings,
                tl.metadata
         FROM user_balances ub
                  JOIN token_launches tl ON ub.token_launch = tl.address

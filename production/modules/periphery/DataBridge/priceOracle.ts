@@ -1,4 +1,5 @@
 import { GetConfigResponse, MoneyFlows } from "../types";
+import { CREATOR_BUYOUT_COMPUTE_FEE, PURCHASE_TX_COST_V2A } from "../fees";
 import { Coins } from "../standards";
 import { ok as assert } from "assert";
 import { toNano } from "@ton/core";
@@ -38,17 +39,20 @@ export function getCreatorJettonPrice({ wlRoundFutJetLimit, wlRoundTonLimit }: W
 }
 
 // Call get config to get the last two values`get_config`
-export function getCreatorAmountOut(value: Coins, WlPhaseLimits: WlPhaseLimits, expectedFee: Coins = 5575200n): Coins {
+export function getCreatorAmountOut(value: Coins, WlPhaseLimits: WlPhaseLimits, expectedFee: Coins = CREATOR_BUYOUT_COMPUTE_FEE): Coins {
     const { purified } = validateValueMock(value, expectedFee);
     const creatorJettonPrice = getCreatorJettonPrice(WlPhaseLimits);
     return purified * creatorJettonPrice / MAX_WL_ROUND_TON_LIMIT;
 }
 
-export function getCreatorValueLimit({ creatorFutJetLeft, creatorFutJetPriceReversed }: { creatorFutJetLeft: Coins, creatorFutJetPriceReversed: Coins }) {
+export function getCreatorValueLimit({ creatorFutJetLeft, creatorFutJetPriceReversed }: {
+    creatorFutJetLeft: Coins,
+    creatorFutJetPriceReversed: Coins
+}) {
     return creatorFutJetLeft * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
 }
 
-export function getExpectedWlValueShare(value: Coins, expectedFee: Coins = 17000000n): Coins {
+export function getExpectedWlValueShare(value: Coins, expectedFee: Coins = PURCHASE_TX_COST_V2A): Coins {
     return validateValueMock(value, expectedFee).purified;
 }
 
@@ -69,7 +73,7 @@ export type SyntheticReserves = {
 export function getPublicAmountOut(
     reserves: SyntheticReserves,
     value: Coins = toNano("10"),
-    expectedFee: Coins = 17000000n
+    expectedFee: Coins = PURCHASE_TX_COST_V2A
 ): Coins {
     const { purified } = validateValueMock(value, expectedFee);
     return getAmountOutMock(

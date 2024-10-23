@@ -75,7 +75,7 @@ export class TokenLaunchV2 implements Contract {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
-            .storeUint(TokensLaunchOps.WlPurchase, OP_LENGTH)
+            .storeUint(TokensLaunchOps.WhitelistPurchase, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
             .endCell();
         await provider.internal(via, {

@@ -588,7 +588,7 @@ describe("V2A", () => {
                 via: consumer.getSender()
             });
             expect(strangerWlPurchaseTry.transactions).toHaveTransaction({
-                op: TokensLaunchOps.WlPurchase,
+                op: TokensLaunchOps.WhitelistPurchase,
                 success: false,
                 exitCode: 400
             });
@@ -641,7 +641,7 @@ describe("V2A", () => {
                 via: consumer.getSender()
             });
             const wlPurchaseTx = findTransactionRequired(wlPurchaseResult.transactions, {
-                op: TokensLaunchOps.WlPurchase,
+                op: TokensLaunchOps.WhitelistPurchase,
                 success: true
             });
             const wlPurchaseRequestComputeFee = printTxGasStats("Whitelist purchase request transaction: ", wlPurchaseTx);
@@ -678,7 +678,7 @@ describe("V2A", () => {
                 via: consumer.getSender()
             });
             expect(wlPurchaseResult.transactions).toHaveTransaction({
-                op: TokensLaunchOps.WlPurchase,
+                op: TokensLaunchOps.WhitelistPurchase,
                 success: true
             });
             expect(wlPurchaseResult.transactions).toHaveTransaction({
@@ -778,6 +778,7 @@ describe("V2A", () => {
             console.log(`jettons in vault: ${jettonFromNano(secondPublicBuyerVaultData.jettonBalance!)}, expected: ${jettonFromNano(amountOut)}`);
             expect(secondPublicBuyerVaultData.jettonBalance!).toBeGreaterThanOrEqual(amountOut);
             expect(firstPublicBuyerVaultData.jettonBalance!).toBeGreaterThan(secondPublicBuyerVaultData.jettonBalance!);
+            console.log(`1st public buy out: ${jettonFromNano(firstPublicBuyerVaultData.jettonBalance!)}, second one ${jettonFromNano(secondPublicBuyerVaultData.jettonBalance!)}`);
         }, 20000);
         test("high public purchase pressure", async () => {
             const value = toNano("10");

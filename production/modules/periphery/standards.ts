@@ -35,7 +35,7 @@ export enum TokensLaunchOps {
     CreatorBuyout = 0x0a535100,
     CreatorRefund = 0x4d542b8a,
     PublicPurchase = 0x32626062,
-    WlPurchase = 0x4eb1e316,
+    WhitelistPurchase = 0x4eb1e316,
     WlCallback = 0x390f7cfd,
     RefundRequest = 0x7b4587a1,
     RefundConfirmation = 0x6f7dbcd0,

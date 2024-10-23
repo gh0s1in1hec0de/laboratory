@@ -1,14 +1,9 @@
-import type { JettonMetadata, RawAddressString } from "starton-periphery";
+import type { BuyWhitelistRequest, UploadMetadataToIpfsRequest } from "starton-periphery";
 import { uploadAndPinFileToIPFS } from "../../../ipfs";
 import * as db from "../../../db";
 
 export async function uploadMetadataToIpfs(
-    { links, metadata, image, influencerSupport }: {
-        links: { x?: string, telegram?: string, website?: string },
-        metadata: JettonMetadata,
-        image: string,
-        influencerSupport?: boolean,
-    }
+    { links, metadata, image, influencerSupport }: UploadMetadataToIpfsRequest
 ): Promise<string> {
     const base64Image = image.split(",")[1];  // remove `data:image/...;base64,` if present
     const imageBuffer = Buffer.from(base64Image, "base64");
@@ -29,8 +24,6 @@ export async function uploadMetadataToIpfs(
     return metadataJsonCID;
 }
 
-export async function buyWhitelist(
-    { userAddress, launchAddress }: { userAddress: RawAddressString, launchAddress: RawAddressString },
-): Promise<void> {
+export async function buyWhitelist({ userAddress, launchAddress }: BuyWhitelistRequest,): Promise<void> {
     return await db.buyWhitelist(userAddress, launchAddress);
 }

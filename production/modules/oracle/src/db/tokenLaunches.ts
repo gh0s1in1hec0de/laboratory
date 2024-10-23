@@ -2,8 +2,8 @@ import { LaunchSortParameters } from "starton-periphery";
 import { getLaunchesMetadata } from "./periphery";
 import type {
     TokenLaunchTimings, StoredTokenLaunch, UnixTimeSeconds,
-    StoredTokenLaunchRequest, StoredTokenLaunchResponse,
-    ExtendedLaunchWithMetadata, CertainLaunchRequest,
+    GetLaunchesChunkRequest, GetLaunchesChunkResponse,
+    ExtendedLaunchWithOffchainMetadata, GetCertainLaunchRequest,
     Coins, DexData, PostDeployEnrollmentStats,
     RawAddressString, LaunchBalance,
 } from "starton-periphery";
@@ -84,9 +84,9 @@ async function getActiveHoldersForLaunches(
 }
 
 export async function getSortedTokenLaunches(
-    { page, limit, orderBy, order, succeed, createdBy, search }: StoredTokenLaunchRequest,
+    { page, limit, orderBy, order, succeed, createdBy, search }: GetLaunchesChunkRequest,
     client?: SqlClient
-): Promise<StoredTokenLaunchResponse | null> {
+): Promise<GetLaunchesChunkResponse | null> {
     const offset = (page - 1) * limit;
     const c = client ?? globalClient;
     const orderByExpression = {
@@ -121,7 +121,7 @@ export async function getSortedTokenLaunches(
 export async function getLaunch({
     address,
     metadataUri
-}: CertainLaunchRequest, client?: SqlClient): Promise<ExtendedLaunchWithMetadata | null> {
+}: GetCertainLaunchRequest, client?: SqlClient): Promise<ExtendedLaunchWithOffchainMetadata | null> {
     const c = client ?? globalClient;
     const condition = address ?
         c`tl.address = ${address}` :

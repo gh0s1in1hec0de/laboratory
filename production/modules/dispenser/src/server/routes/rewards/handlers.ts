@@ -3,16 +3,19 @@ import { getConfig } from "../../../config";
 import { Address } from "@ton/core";
 import * as db from "../../../db";
 import type {
-    UserLaunchRewardPosition,
-    UserRewardJettonBalance,
-    RawAddressString,
-    JettonMetadata,
-    Coins,
+    GetRewardJettonBalancesResponse,
+    GetRewardJettonBalancesRequest,
+    GetRewardPositionsResponse,
+    GetRewardPositionsRequest,
+    GetRewardPoolsResponse,
+    MappedRewardPositions,
+    GetRewardPoolsRequest,
+    GetAmountRequest,
 } from "starton-periphery";
 
 // Returned stringified nano-tons user needs to attach to claim application
 export async function getAmount(
-    { userAddress, tokenLaunch, }: { userAddress: RawAddressString, tokenLaunch?: RawAddressString },
+    { userAddress, tokenLaunch, }: GetAmountRequest,
 ): Promise<string> {
     const parsedUserAddress = Address.parse(userAddress);
     if (tokenLaunch) {
@@ -31,45 +34,15 @@ export async function getAmount(
     }
 }
 
-export type RewardJettonResponse = {
-    [rewardJetton: string]: {
-        rewardAmount: Coins,
-        metadata: JettonMetadata,
-    },
-};
-
 export async function getLaunchRewardPools(
-    { tokenLaunch }: { tokenLaunch: RawAddressString }
-): Promise<RewardJettonResponse | null> {
-    const rewardPools = await db.getRewardPools(Address.parse(tokenLaunch).toRawString());
-    if (!rewardPools) return null;
-
-    const rewardJettons = await db.getRewardJettons(
-        rewardPools.map(pool => pool.rewardJetton)
-    );
-    if (!rewardJettons || rewardJettons.length !== rewardPools.length)
-        throw new CommonServerError(500, "Internal data has been corrupted");
-
-    return rewardPools.reduce<RewardJettonResponse>((acc, pool) => {
-        const jetton = rewardJettons.find(j => j.masterAddress === pool.rewardJetton);
-        if (jetton) {
-            acc[pool.rewardJetton] = {
-                rewardAmount: pool.rewardAmount,
-                metadata: jetton.metadata,
-            };
-        }
-        return acc;
-    }, {});
+    { tokenLaunch }: GetRewardPoolsRequest
+): Promise<GetRewardPoolsResponse> {
+    return await db.getRewardPools(Address.parse(tokenLaunch).toRawString());
 }
 
-
-export type MappedUserLaunchRewardPositions = {
-    [tokenLaunch: RawAddressString]: UserLaunchRewardPosition[],
-};
-
 export async function getRewardPositions(
-    { userAddress, tokenLaunch }: { userAddress: RawAddressString, tokenLaunch?: RawAddressString },
-): Promise<MappedUserLaunchRewardPositions | null> {
+    { userAddress, tokenLaunch }: GetRewardPositionsRequest,
+): Promise<GetRewardPositionsResponse> {
     const rewardPositions = await db.getRewardPositions(
         Address.parse(userAddress).toRawString(), tokenLaunch ? Address.parse(tokenLaunch).toRawString() : undefined
     );
@@ -80,12 +53,12 @@ export async function getRewardPositions(
             acc[tokenLaunch].push(position);
             return acc;
         },
-        {} as MappedUserLaunchRewardPositions
+        {} as MappedRewardPositions
     ) : null;
 }
 
 export async function getRewardBalances(
-    { userAddress }: { userAddress: RawAddressString },
-): Promise<UserRewardJettonBalance[] | null> {
+    { userAddress }: GetRewardJettonBalancesRequest,
+): Promise<GetRewardJettonBalancesResponse> {
     return await db.getRewardJettonBalances(Address.parse(userAddress).toRawString());
 }

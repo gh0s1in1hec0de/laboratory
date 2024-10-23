@@ -164,12 +164,12 @@ export class TokenLaunchV1 implements Contract {
         const { startTime, totalSupply, platformSharePct, metadata } = launchParams;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
 
-        const wlJetLimit = BigInt(launchConfig.jetWlLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
+        const wlRoundFutJetLimit = BigInt(launchConfig.jetWlLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
         const pubJetLimit = BigInt(launchConfig.jetPubLimitPct) * totalSupply / PERCENTAGE_DENOMINATOR;
         const dexJetShare = BigInt(launchConfig.jetDexSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
         const platformShare = BigInt(platformSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
-        const creatorBuybackJetLimit = totalSupply - (wlJetLimit + pubJetLimit + dexJetShare + platformShare);
-        const creatorJetPrice = getCreatorJettonPrice(wlJetLimit, launchConfig.tonLimitForWlRound);
+        const creatorBuybackJetLimit = totalSupply - (wlRoundFutJetLimit + pubJetLimit + dexJetShare + platformShare);
+        const creatorJetPrice = getCreatorJettonPrice({ wlRoundFutJetLimit, wlRoundTonLimit: launchConfig.tonLimitForWlRound });
 
         const generalState = beginCell()
             .storeInt(loadAtMax ? ThirtyTwoIntMaxValue : startTime, 32)
@@ -189,7 +189,7 @@ export class TokenLaunchV1 implements Contract {
             )
             .endCell();
         const wlRoundState = beginCell()
-            .storeCoins(loadAtMax ? CoinsMaxValue : wlJetLimit)
+            .storeCoins(loadAtMax ? CoinsMaxValue : wlRoundFutJetLimit)
             .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.tonLimitForWlRound)
             .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.utilJetWlPassAmount)
             .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.utilJetBurnPerWlPassAmount)
@@ -204,7 +204,7 @@ export class TokenLaunchV1 implements Contract {
         const pubRoundState = beginCell()
             .storeCoins(loadAtMax ? CoinsMaxValue : pubJetLimit)
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
-            .storeCoins(loadAtMax ? CoinsMaxValue : wlJetLimit)
+            .storeCoins(loadAtMax ? CoinsMaxValue : wlRoundFutJetLimit)
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
             .storeInt(
                 loadAtMax ? ThirtyTwoIntMaxValue : startTime

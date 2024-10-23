@@ -1,35 +1,35 @@
-import type { LaunchBalance, LaunchMetadata, StoredTokenLaunch, StoredUserBalance } from "./Database";
 import { LaunchSortParameters, SortingOrder, } from "./utils";
 import type { RawAddressString } from "./standards";
 import { JettonMetadata } from "./jettonMetadata";
+import { TokenLaunchTimings } from "./types";
+import type {
+    UserLaunchRewardPosition,
+    UserRewardJettonBalance,
+    StoredTokenLaunch,
+    StoredUserBalance,
+    LaunchMetadata,
+    LaunchBalance,
+    RewardPool,
+} from "./Database";
 
 // Manager API
 
-export type ConnectedWalletRequest = {
-    address: RawAddressString,
-    referral?: string,
-}
+export type UploadMetadataToIpfsRequest = {
+    links: { x?: string, telegram?: string, website?: string },
+    metadata: JettonMetadata,
+    image: string,
+    influencerSupport?: boolean,
+};
 
-export type StoredTasksRequest = {
-    page: number,
-    limit: number,
-}
+export type BuyWhitelistRequest = { userAddress: RawAddressString, launchAddress: RawAddressString };
 
-export type TicketBalanceRequest = {
-    address: RawAddressString,
-}
+export type ConnectCallerWalletRequest = { address: RawAddressString, referral?: string, }
 
-export type TasksRequest = {
-    address?: RawAddressString,
-    staged: string,
-}
+export type GetCallerTicketBalanceRequest = { address: RawAddressString };
 
-export type Subtask = {
-    name: string,
-    description: string,
-}
-
-export type TasksResponse = {
+export type Subtask = { name: string, description: string };
+export type GetCallerTasksRequest = { address?: RawAddressString, staged: string };
+export type GetCallerTasksResponse = {
     taskId: number,
     name: string,
     description: Subtask[],
@@ -40,7 +40,10 @@ export type TasksResponse = {
 
 // Oracle API
 
-export type StoredTokenLaunchRequest = {
+export type ExtendedLaunch = StoredTokenLaunch & LaunchBalance & { activeHolders: number };
+export type ExtendedLaunchWithOffchainMetadata = ExtendedLaunch & { offchainMetadata: LaunchMetadata }
+
+export type GetLaunchesChunkRequest = {
     page: number,
     limit: number,
     orderBy: LaunchSortParameters,
@@ -49,24 +52,27 @@ export type StoredTokenLaunchRequest = {
     createdBy?: RawAddressString,
     search?: string,
 }
+export type GetLaunchesChunkResponse = { launchesChunk: ExtendedLaunch[], hasMore: boolean, }
 
-export type ExtendedLaunch = StoredTokenLaunch & LaunchBalance & { activeHolders: number };
-export type StoredTokenLaunchResponse = {
-    launchesChunk: ExtendedLaunch[],
-    hasMore: boolean,
-}
+export type GetCertainLaunchRequest = { address?: RawAddressString, metadataUri?: string }
+export type GetCertainLaunchResponse = ExtendedLaunchWithOffchainMetadata | null;
 
-export type CertainLaunchRequest = {
-    address?: RawAddressString,
-    metadataUri?: string
-}
-export type ExtendedLaunchWithMetadata = ExtendedLaunch & { offchainMetadata: LaunchMetadata }
+export type GetUserBalancesRequest = { user: RawAddressString, launch?: RawAddressString }
+export type GetUserBalancesResponse = (StoredUserBalance & JettonMetadata & TokenLaunchTimings)[] | null;
 
-export type UserBalancesRequest = {
-    user: RawAddressString,
-    launch?: RawAddressString
-}
+export type GetRisingStarResponse = ExtendedLaunchWithOffchainMetadata | null;
 
-export type ExtendedUserBalance = StoredUserBalance & JettonMetadata & { activeUntil: number };
+// Dispenser API
+export type GetAmountRequest = { userAddress: RawAddressString, tokenLaunch?: RawAddressString };
 
-// TODO extend with dispenser routes types
+export type GetRewardPoolsRequest = { tokenLaunch: RawAddressString };
+export type GetRewardPoolsResponse = (RewardPool & { metadata: JettonMetadata })[] | null;
+
+export type GetRewardPositionsRequest = { userAddress: RawAddressString, tokenLaunch?: RawAddressString };
+export type MappedRewardPositions = {
+    [tokenLaunch: RawAddressString]: (UserLaunchRewardPosition & { metadata: JettonMetadata })[],
+};
+export type GetRewardPositionsResponse = MappedRewardPositions | null;
+
+export type GetRewardJettonBalancesRequest = { userAddress: RawAddressString };
+export type GetRewardJettonBalancesResponse = (UserRewardJettonBalance & { metadata: JettonMetadata })[] | null;

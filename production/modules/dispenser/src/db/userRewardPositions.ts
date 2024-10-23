@@ -1,15 +1,16 @@
-import type { RawAddressString, UserLaunchRewardPosition } from "starton-periphery";
+import type { JettonMetadata, RawAddressString, UserLaunchRewardPosition } from "starton-periphery";
 import type { SqlClient } from "./types";
 import { globalClient } from "./db";
 import { logger } from "../logger";
 
-export async function getRewardPositions(userAddress: RawAddressString, tokenLaunch?: RawAddressString, client?: SqlClient): Promise<UserLaunchRewardPosition[] | null> {
+export async function getRewardPositions(userAddress: RawAddressString, tokenLaunch?: RawAddressString, client?: SqlClient): Promise<(UserLaunchRewardPosition & { metadata: JettonMetadata })[] | null> {
     const c = client ?? globalClient;
-    const res = await c<UserLaunchRewardPosition[]>`
-        SELECT *
-        FROM user_launch_reward_positions
-        WHERE "user" = ${userAddress}
-            ${tokenLaunch ? c`AND token_launch = ${tokenLaunch}` : c``}
+    const res = await c<(UserLaunchRewardPosition & { metadata: JettonMetadata })[]>`
+        SELECT ulrp.*, rj.metadata
+        FROM user_launch_reward_positions ulrp
+                 JOIN reward_jettons rj ON ulrp.reward_jetton = rj.master_address
+        WHERE ulrp."user" = ${userAddress}
+            ${tokenLaunch ? c`AND ulrp.token_launch = ${tokenLaunch}` : c``}
     `;
     return res.length ? res : null;
 }
