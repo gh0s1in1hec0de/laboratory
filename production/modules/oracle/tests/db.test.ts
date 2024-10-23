@@ -34,7 +34,7 @@ describe("Database", () => {
             callers,
             heights,
             launch_balances,
-            summary_tickets_balances,
+            earnings_per_period,
             tasks,
             token_launches,
             user_actions,
