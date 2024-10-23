@@ -17,18 +17,30 @@ export enum SalePhase {
     ENDED = "ENDED"
 }
 
-export function getCurrentSalePhase(timings: TokenLaunchTimings, currentTime: UnixTimeSeconds = Math.floor(Date.now() / 1000)): SalePhase {
+export function getCurrentSalePhase(
+    timings: TokenLaunchTimings, 
+    currentTime: UnixTimeSeconds = Math.floor(Date.now() / 1000)
+): { phase: SalePhase; nextPhaseIn: UnixTimeSeconds | null } {
     const { startTime, creatorRoundEndTime, wlRoundEndTime, publicRoundEndTime, endTime } = timings;
 
-    if (currentTime < startTime) return SalePhase.NOT_STARTED;
-    else if (currentTime >= startTime && currentTime < creatorRoundEndTime) return SalePhase.CREATOR;
-    else if (currentTime >= creatorRoundEndTime && currentTime < wlRoundEndTime) return SalePhase.WHITELIST;
-    else if (currentTime >= wlRoundEndTime && currentTime < publicRoundEndTime) return SalePhase.PUBLIC;
-    else if (currentTime >= publicRoundEndTime && currentTime <= endTime) return SalePhase.PUBLIC;  // Public phase continues until the end
-    else if (currentTime > endTime) return SalePhase.ENDED;
+    if (currentTime < startTime)
+        return { phase: SalePhase.NOT_STARTED, nextPhaseIn: startTime - currentTime };
 
-    throw new Error("meowreachable");
+    if (currentTime < creatorRoundEndTime)
+        return { phase: SalePhase.CREATOR, nextPhaseIn: creatorRoundEndTime - currentTime };
+
+    if (currentTime < wlRoundEndTime)
+        return { phase: SalePhase.WHITELIST, nextPhaseIn: wlRoundEndTime - currentTime };
+
+    if (currentTime < publicRoundEndTime)
+        return { phase: SalePhase.PUBLIC, nextPhaseIn: publicRoundEndTime - currentTime };
+
+    if (currentTime < endTime)
+        return { phase: SalePhase.PUBLIC, nextPhaseIn: endTime - currentTime };
+
+    return { phase: SalePhase.ENDED, nextPhaseIn: null };
 }
+
 
 // Returns an estimated value a participant will receive for their investment
 export function getAmountOut(
