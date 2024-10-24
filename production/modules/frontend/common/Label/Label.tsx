@@ -12,7 +12,7 @@ export function Label({
   disabled = false,
   isBold = false,
   isCursive = false,
-  component = "span",
+  component = "p",
   ...props
 }: LabelProps) {
   return (

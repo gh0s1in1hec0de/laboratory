@@ -1,7 +1,7 @@
 import Grid from "@mui/material/Grid2";
 import { Header } from "./components/Header";
-import { DayToken } from "./components/DayToken";
-import { TokensSection } from "./components/TokensSection";
+import { RisingStarToken } from "./components/RisingStarToken";
+import { MainContent } from "./components/MainContent";
 
 export default function Home() {
   return (
@@ -11,8 +11,8 @@ export default function Home() {
       paddingTop={1}
     >
       <Header />
-      <DayToken />
-      <TokensSection />
+      <RisingStarToken />
+      <MainContent />
     </Grid>
   );
 }

@@ -1,4 +1,4 @@
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, ReactNode } from "react";
 
 export interface CustomDrawerProps extends PropsWithChildren {
   isOpen: boolean;
@@ -7,4 +7,5 @@ export interface CustomDrawerProps extends PropsWithChildren {
   anchor?: "bottom" | "left" | "top" | "right";
   autoFocus?: boolean;
   closeButtonLabel?: string;
+  customCloseButton?: ReactNode;
 }

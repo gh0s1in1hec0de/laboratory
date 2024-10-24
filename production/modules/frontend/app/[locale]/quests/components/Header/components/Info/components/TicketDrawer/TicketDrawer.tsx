@@ -8,11 +8,10 @@ import {
   DRAWER_SIXTH_TEXT_DATA, 
   DRAWER_THIRD_TEXT_DATA 
 } from "./constants";
-import { CustomDrawer } from "@/common/CustomDrawer";
+import { CustomDrawer, DrawerParagraph } from "@/common/CustomDrawer";
 import { useToggle } from "@/hooks";
 import Grid from "@mui/material/Grid2";
 import { useTranslations } from "next-intl";
-import { DrawerParagraph } from "./components/DrawerParagraph";
 import { InfoBlock } from "@/components/InfoBlock";
 
 export function TicketDrawer() {
@@ -43,7 +42,12 @@ export function TicketDrawer() {
           <DrawerParagraph data={DRAWER_FIRST_TEXT_DATA} />
           <DrawerParagraph data={DRAWER_SECOND_TEXT_DATA} />
           <DrawerParagraph data={DRAWER_THIRD_TEXT_DATA} />
-          <DrawerParagraph data={DRAWER_FOURTH_TEXT_DATA} inBox />
+          <DrawerParagraph 
+            data={DRAWER_FOURTH_TEXT_DATA} 
+            inBox 
+            paddingTop={1} 
+            paddingBottom={1}
+          />
           <DrawerParagraph data={DRAWER_FIFTH_TEXT_DATA} />
           <DrawerParagraph data={DRAWER_SIXTH_TEXT_DATA} highlightColor="gray" />
         </Grid>

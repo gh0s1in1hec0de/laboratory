@@ -32,6 +32,97 @@
 			}
 		}
 	},
+	"SupportButton": {
+		"title": "Still have questions? Ask us directly!",
+		"buttonLabel": "Support chat"
+	},
+	"Top": {
+		"title": "Hello 👋",
+		"risingStarTitle": "⭐️ Rising Star",
+		"starClubButton": "Star Club",
+		"holdersTitle": "holders",
+		"collectedTitle": "TON collected",
+		"topTokensTitle": "Top Tokens",
+		"waveLaunchButton": "Wave Launch",
+		"waveLaunchCloseButton": "Got it!",
+		"searchPlaceholder": "Search",
+		"starClubDrawer": {
+			"firstParagraph": {
+				"text1": "Star club"
+			},
+			"secondParagraph": {
+				"text1": "Join the club of people ",
+				"text2": "who know the drill!"
+			},
+			"thirdParagraph": {
+				"text1": "Wavelaunch’s ",
+				"text2": "demand-based algo",
+				"text3": " of calculating price is designed to ensure that club members ",
+				"text4": "make profits ",
+				"text5": "from ",
+				"text6": "any successful launch."
+			},
+			"fourthParagraph": {
+				"text1": "With Star club you can:"
+			},
+			"firstListParagraph": {
+				"text1": "Participate in any ",
+				"text2": "Wavelaunch ",
+				"text3": "among first!"
+			},
+			"secondListParagraph": {
+				"text1": "Chat with other club members ",
+				"text2": "privately"
+			},
+			"thirdListParagraph": {
+				"text1": "Make profits easier and faster than anyone else!"
+			}
+		},
+		"waveLaunchDrawer": {
+			"firstParagraph": {
+				"text1": "Wave Launch"
+			},
+			"secondParagraph": {
+				"text1": "Wavelaunch ",
+				"text2": "– is a new method to launch tokens in 3 stages."
+			},
+			"firstListParagraph": {
+				"text1": "First stage: for you as founder",
+				"description1": "Token is purchased by the token founder, up to 25% of the total supply."
+			},
+			"secondListParagraph": {
+				"text1": "Second stage: for Star club members only",
+				"description1": "Demand-based pricing algorithm designed to ensure that club members profit from any successful launch."
+			},
+			"thirdListParagraph": {
+				"text1": "Third stage: public sale",
+				"description1": "Everyone is able to purchase the token for a limited amount of time."
+			},
+			"thirdParagraph": {
+				"text1": "Additionally:"
+			},
+			"fourthListParagraph": {
+				"text1": "Users can refund their invested TON if they change their mind, and get rewards for participating in Wavelaunch"
+			},
+			"fifthListParagraph": {
+				"text1": "StartON provides marketing assistance for 0.5% and 1.5% of your token's saplay"
+			},
+			"sixthListParagraph": {
+				"text1": "Standard tokenomics of your token for Wavelaunch:",
+				"description1": "– 25% - for Founder",
+				"description2": "– 17.5% - for WL Club",
+				"description3": "– 37.5% - for Public Stage",
+				"description4": "– 20% - for listing on DEX"
+			},
+			"seventhListParagraph": {
+				"text1": "Distribution of collected funds in TON:",
+				"description1": "– 52% goes to DEX",
+				"description2": "– 38% goes to funders",
+				"description3": "– 8% to provide referral system",
+				"description4": "– 2% StartON commission."
+			}
+		}
+	},
 	"Tasks": {
 		"header": {
 			"subtitle": "season",

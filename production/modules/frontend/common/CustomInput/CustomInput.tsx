@@ -56,6 +56,7 @@ export function CustomInput({
       
       <FormHelperText>
         <Label
+          component="span"
           label={errorText || ""}
           variantSize="medium10"
           variantColor="red"

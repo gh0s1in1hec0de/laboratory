@@ -7,3 +7,4 @@ export { StarIcon } from "./StarIcon/StarIcon";
 export { TicketIcon } from "./TicketIcon/TicketIcon";
 export { TicketsIcon } from "./TicketsIcon/TicketsIcon";
 export { LoupeIcon } from "./LoupeIcon/LoupeIcon";
+export { ArrowUpRightIcon } from "./ArrowUpRightIcon/ArrowUpRightIcon";

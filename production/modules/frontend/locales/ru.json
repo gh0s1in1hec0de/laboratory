@@ -11,24 +11,24 @@
 		"greeting": {
 			"closeButton": "Всё понятно!",
 			"firstSlide": {
-				"title": "Start on Ton",
-				"description": "Launch your token effortlessly"
+				"title": "Стартуй на TON",
+				"description": "Запусти свой токен без лишних усилий!"
 			},
 			"secondSlide": {
-				"title": "Join Next Wave",
-				"description": "Try new Wavelaunch IDO method by yourself!"
+				"title": "Будь на волне",
+				"description": "Залетай первым в Wavelaunch новых токенов!"
 			},
 			"thirdSlide": {
-				"title": "The first rule of Star Club: talk much about Star Club",
-				"description": "Join the Star Club to get profits easier!"
+				"title": "Первое правило Star Club: рассказывай всем о Star Club",
+				"description": "Вступай в закрытое сообщество тех, кто знает, как делать профиты быстрее остальных!"
 			},
 			"fourthSlide": {
-				"title": "Refund up to 100% of your contribution",
-				"description": "It’s okay to change your mind and get your money back safely!"
+				"title": "Возврат средств до 100%",
+				"description": "Если передумаешь участвовать — вернем деньги, без проблем!"
 			},
 			"fifthSlide": {
-				"title": "Get tons of rewards for participating!",
-				"description": "Contribute to Wavelaunches to get $START and many other tokens!"
+				"title": "Получай награды за участие!",
+				"description": "Забирай награды в токенах-партнерах и $START за участие в любом Wavelaunch!"
 			}
 		}
 	},

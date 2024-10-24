@@ -16,6 +16,7 @@ export function CustomDrawer({
   anchor = "bottom",
   autoFocus = true,
   closeButtonLabel,
+  customCloseButton,
 }: CustomDrawerProps) {
 
   return (
@@ -51,7 +52,7 @@ export function CustomDrawer({
               {children}
             </Grid>
 
-            {closeButtonLabel && (
+            {closeButtonLabel ? (
               <CustomButton 
                 onClick={onClose}
                 padding="10px 0"
@@ -63,7 +64,7 @@ export function CustomDrawer({
                   offUserSelect
                 />
               </CustomButton>
-            )}
+            ) : customCloseButton}
           </Container>
         </Grid>
       </SwipeableDrawer>
