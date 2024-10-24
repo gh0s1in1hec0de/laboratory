@@ -3,5 +3,5 @@ GET http://localhost:3000/api/user
 Accept: application/json
 
 ### Get first 10 token launches
-GET http://localhost:3000/api/tokenLaunches?page=1&limit=10&sort=created_at&order=ASC&search=
+GET http://localhost:5002/api/tokenLaunches/get-chunk?page=1&limit=10&orderBy=created_at&order=ASC&search=
 Accept: application/json

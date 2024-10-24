@@ -24,24 +24,24 @@ describe("launch sorter", () => {
         await client.end();
     });
   
-    beforeEach(async () => {
-        await client`
-        TRUNCATE
-            callers,
-            heights,
-            launch_balances,
-            launch_metadata,
-            earnings_per_period,
-            tasks,
-            token_launches,
-            user_actions,
-            user_balance_errors,
-            user_balances,
-            users_tasks_relations,
-            whitelist_relations
-        RESTART IDENTITY CASCADE;
-    `;
-    });
+    // beforeEach(async () => {
+    //     await client`
+    //     TRUNCATE
+    //         callers,
+    //         heights,
+    //         launch_balances,
+    //         launch_metadata,
+    //         earnings_per_period,
+    //         tasks,
+    //         token_launches,
+    //         user_actions,
+    //         user_balance_errors,
+    //         user_balances,
+    //         users_tasks_relations,
+    //         whitelist_relations
+    //     RESTART IDENTITY CASCADE;
+    // `;
+    // });
 
     test.skip("sorting by time", async () => {
         const sortedByTime = await db.getSortedTokenLaunches({

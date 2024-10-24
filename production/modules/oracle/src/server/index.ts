@@ -6,12 +6,15 @@ import { getConfig } from "../config";
 import { logger } from "../logger";
 import cors from "@elysiajs/cors";
 import Elysia from "elysia";
+import { AppMode } from "starton-periphery";
 
 function createServer() {
     const {
+        mode,
         server: {
             swagger: { title, version },
-            port
+            port,
+            frontend_url
         }
     } = getConfig();
 
@@ -20,7 +23,7 @@ function createServer() {
             title: title,
             version: version
         })))
-        .use(cors())
+        .use(cors(mode === AppMode.PROD ? { origin: frontend_url } : {}))
         .use(WebSocket())
         .use(UserRoutes())
         .use(TokenLaunchRoutes())

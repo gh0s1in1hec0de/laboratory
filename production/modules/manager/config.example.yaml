@@ -5,7 +5,7 @@ server:
   swagger:
     title: "Starton API Documentation"
     version: "1.0.0"
-  frontend_url: https://quick-hagfish-curious.ngrok-free.app
+  frontend_url: https://starton.mom
 
 bot:
   token: ""
