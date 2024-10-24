@@ -1,4 +1,4 @@
-import type { StoredTokenLaunchRequest } from "../../db";
+import type { GetLaunchesChunkRequest } from "starton-periphery";
 import { type CallbackQueryContext } from "grammy";
 import type { MyContext } from "../index";
 import { logger } from "../../logger";
@@ -13,11 +13,10 @@ import {
 
 async function handleListLaunches(
     ctx: CallbackQueryContext<MyContext>,
-    sortData: StoredTokenLaunchRequest,
+    sortData: GetLaunchesChunkRequest,
 ): Promise<void> {
     try {
         const launches = await db.getSortedTokenLaunches(sortData);
-
         if (!launches) {
             await ctx.callbackQuery.message!.editText(
                 getReplyText("noLaunches"),
@@ -27,7 +26,7 @@ async function handleListLaunches(
         }
 
         await ctx.callbackQuery.message!.editText(
-            getLaunchesReply(launches.storedTokenLaunches),
+            getLaunchesReply(launches.launchesChunk),
             { reply_markup: getLaunchesPaginationKeyboard(launches.hasMore, sortData.page) }
         );
     } catch (error) {

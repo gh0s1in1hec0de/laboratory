@@ -12,7 +12,7 @@ import {
 
 async function handleListTasks(
     ctx: CallbackQueryContext<MyContext>,
-    sortData: db.StoredTasksRequest,
+    sortData: {page: number, limit: number},
 ): Promise<void> {
     try {
         const data = await db.getSortedTasks(sortData.page, sortData.limit);

@@ -1,8 +1,13 @@
-import { SortingOrder, type StoredTokenLaunch, LaunchSortParameters } from "starton-periphery";
-import type { StoredTasks, StoredTasksRequest, StoredTokenLaunchRequest } from "../db";
 import { type HearsContext, InlineKeyboard } from "grammy";
 import type { MyContext } from "./index";
 import { getConfig } from "../config";
+import {
+    type StoredTokenLaunch,
+    LaunchSortParameters,
+    type LaunchMetadata,
+    type StoredTasks,
+    SortingOrder, type GetLaunchesChunkRequest
+} from "starton-periphery";
 
 /**
  * COMMON
@@ -17,15 +22,15 @@ export const commands: ICommand[] = [
     { command: "menu", description: "go to hell" }
 ];
 
-export const initLaunchesSortData: StoredTokenLaunchRequest = {
+export const initLaunchesSortData: GetLaunchesChunkRequest = {
     page: 1,
     limit: 10,
     orderBy: LaunchSortParameters.CREATED_AT,
-    order: SortingOrder.LOW_TO_HIGH,
+    order: SortingOrder.HIGH_TO_LOW,
     search: ""
 };
 
-export const initTasksSortData: StoredTasksRequest = {
+export const initTasksSortData: { page: number, limit: number } = {
     page: 1,
     limit: 10,
 };
@@ -73,8 +78,8 @@ export function getReplyText(key: keyof typeof replies): string {
     return replies[key];
 }
 
-export function getLaunchesReply(storedTokenLaunch: StoredTokenLaunch[]): string {
-    return storedTokenLaunch.map(({ metadata, id, createdAt }) => {
+export function getLaunchesReply(storedTokenLaunch: (StoredTokenLaunch & Partial<LaunchMetadata>)[]): string {
+    return storedTokenLaunch.map(({ creator, metadata, id, createdAt, influencerSupport }) => {
         const date = new Date(Number(createdAt) * 1000).toLocaleDateString("ru-RU", {
             day: "2-digit",
             month: "2-digit",
@@ -87,7 +92,7 @@ export function getLaunchesReply(storedTokenLaunch: StoredTokenLaunch[]): string
                 : metadata.description
             : "not provided";
 
-        return `${id}. ${metadata.name ?? "unnamed"} - ${description} (${date})`;
+        return `${id}. ${metadata.name ?? "unnamed"} - ${description} (${date}) created by ${creator}; influencers' support: ${influencerSupport}`;
     }).join("\n");
 }
 

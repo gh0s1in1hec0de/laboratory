@@ -1,9 +1,8 @@
 import { GlobalVersions, LaunchSortParameters, SortingOrder, UserActionType } from "starton-periphery";
-import { test, describe, beforeAll, afterAll, beforeEach } from "bun:test";
+import { test, describe, beforeAll, afterAll } from "bun:test";
 import { ok as assert } from "node:assert";
 import * as db from "../src/db";
 import postgres from "postgres";
-import { getLaunch } from "../src/db";
 
 describe("launch sorter", () => {
     let client: db.SqlClient;
@@ -23,25 +22,6 @@ describe("launch sorter", () => {
     afterAll(async () => {
         await client.end();
     });
-  
-    // beforeEach(async () => {
-    //     await client`
-    //     TRUNCATE
-    //         callers,
-    //         heights,
-    //         launch_balances,
-    //         launch_metadata,
-    //         earnings_per_period,
-    //         tasks,
-    //         token_launches,
-    //         user_actions,
-    //         user_balance_errors,
-    //         user_balances,
-    //         users_tasks_relations,
-    //         whitelist_relations
-    //     RESTART IDENTITY CASCADE;
-    // `;
-    // });
 
     test.skip("sorting by time", async () => {
         const sortedByTime = await db.getSortedTokenLaunches({
@@ -119,9 +99,9 @@ describe("launch sorter", () => {
         }
         console.log();
     });
-    test.skip("certain launch", async () => {
+    test("certain launch", async () => {
         const l = await db.getLaunch({
-            // address: "addr_14",
+            address: "addr_1",
             // metadataUri: "onchain_metadata_link_1"
         });
         assert(l);
@@ -129,9 +109,10 @@ describe("launch sorter", () => {
     });
     test.skip("certain launch", async () => {
         const balances = await db.getCallerBalances("meow");
-        assert(balances); console.log(balances);
+        assert(balances);
+        console.log(balances);
     });
-    test("mock launches activity data", async () => {
+    test.skip("mock launches activity data", async () => {
         const now = Math.floor(Date.now() / 1000);
 
         await db.storeLaunchMetadata({

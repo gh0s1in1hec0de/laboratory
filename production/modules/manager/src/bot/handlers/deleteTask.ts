@@ -1,4 +1,5 @@
 import { getCancelDeleteTaskConvKeyboard, getConfirmDeleteTaskConvKeyboard, getReplyText } from "../constants";
+import type { StoredTasks } from "starton-periphery";
 import type { MyContext, MyConversation } from "..";
 import { logger } from "../../logger";
 import * as db from "../../db";
@@ -14,7 +15,7 @@ export async function deleteTask(conversation: MyConversation, ctx: MyContext): 
         const { msg: { text } } = await conversation.waitFor("message:text");
 
         const errors: string[] = [];
-        const tasks: db.StoredTasks[] = [];
+        const tasks: StoredTasks[] = [];
 
         try {
             for (const taskId of text.split(",")) {

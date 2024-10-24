@@ -1,9 +1,11 @@
-import { CommonServerError, type GetRisingStarResponse, 
-    ExtendedLaunchWithOffchainMetadata,
+import type {
     GetLaunchesChunkResponse,
     GetCertainLaunchResponse,
     GetLaunchesChunkRequest,
-    GetCertainLaunchRequest } from "starton-periphery";
+    GetCertainLaunchRequest,
+    GetRisingStarResponse
+} from "starton-periphery";
+import { CommonServerError } from "starton-periphery";
 import * as db from "../../../db";
 
 export async function getLaunchesChunk(req: GetLaunchesChunkRequest): Promise<GetLaunchesChunkResponse> {

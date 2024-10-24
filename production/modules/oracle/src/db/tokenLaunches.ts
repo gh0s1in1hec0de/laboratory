@@ -1,12 +1,10 @@
-import { LaunchSortParameters } from "starton-periphery";
-import { getLaunchesMetadata } from "./periphery";
 import type {
+    GetLaunchesChunkRequest, GetLaunchesChunkResponse, ExtendedLaunch,
+    Coins, DexData, PostDeployEnrollmentStats, LaunchMetadata,
+    RawAddressString, LaunchBalance, GetCertainLaunchRequest,
     TokenLaunchTimings, StoredTokenLaunch, UnixTimeSeconds,
-    GetLaunchesChunkRequest, GetLaunchesChunkResponse,
-    ExtendedLaunchWithOffchainMetadata, GetCertainLaunchRequest,
-    Coins, DexData, PostDeployEnrollmentStats,
-    RawAddressString, LaunchBalance,
 } from "starton-periphery";
+import { LaunchSortParameters } from "starton-periphery";
 import type { SqlClient } from "./types";
 import { ok as assert } from "assert";
 import { globalClient } from "./db";
@@ -83,6 +81,31 @@ async function getActiveHoldersForLaunches(
     return new Map<RawAddressString, number>(res.map(r => [r.tokenLaunch, r.activeHolders]));
 }
 
+export async function getLaunch({
+    address,
+    metadataUri
+}: GetCertainLaunchRequest, client?: SqlClient): Promise<ExtendedLaunch | null> {
+    const c = client ?? globalClient;
+    const condition = address ?
+        c`tl.address = ${address}` :
+        c`(tl.metadata ->> 'uri')::TEXT = ${metadataUri!}`;
+
+    const res = await c<(StoredTokenLaunch & LaunchBalance & Partial<LaunchMetadata>)[]>`
+        SELECT tl.*, lb.*, lm.*
+        FROM token_launches tl
+                 JOIN launch_balances lb ON tl.address = lb.token_launch
+                 LEFT JOIN launch_metadata lm ON (tl.metadata ->> 'uri')::TEXT = lm.onchain_metadata_link
+        WHERE ${condition}
+    `;
+    if (!res.length) return null;
+    if (res.length > 1) logger().error(`unreachable: found more than 1 launches for ${address ? address : metadataUri}`);
+
+    const launch = res[0];
+    const activeHolders = (await getActiveHoldersForLaunches([launch.address])).get(launch.address) ?? 0;
+
+    return { ...launch, activeHolders };
+}
+
 export async function getSortedTokenLaunches(
     { page, limit, orderBy, order, succeed, createdBy, search }: GetLaunchesChunkRequest,
     client?: SqlClient
@@ -116,33 +139,6 @@ export async function getSortedTokenLaunches(
         launchesChunk,
         hasMore: res.length > limit
     };
-}
-
-export async function getLaunch({
-    address,
-    metadataUri
-}: GetCertainLaunchRequest, client?: SqlClient): Promise<ExtendedLaunchWithOffchainMetadata | null> {
-    const c = client ?? globalClient;
-    const condition = address ?
-        c`tl.address = ${address}` :
-        c`(tl.metadata ->> 'uri')::TEXT = ${metadataUri!}`;
-
-    const res = await c<(StoredTokenLaunch & LaunchBalance)[]>`
-        SELECT tl.*, lb.*
-        FROM token_launches tl
-                 JOIN launch_balances lb
-                      ON tl.address = lb.token_launch
-        WHERE ${condition}
-    `;
-    if (!res.length) return null;
-    if (res.length > 1) logger().error(`unreachable: found more than 1 launches for ${address ? address : metadataUri}`);
-
-    const launch = res[0];
-    const activeHolders = (await getActiveHoldersForLaunches([launch.address])).get(launch.address) ?? 0;
-    const offchainMetadata = await getLaunchesMetadata([launch.metadata.uri!]);
-    if (!offchainMetadata || offchainMetadata.length !== 1) throw new Error("offchain metadata must exist for launch");
-
-    return { ...launch, activeHolders, offchainMetadata: offchainMetadata[0] };
 }
 
 

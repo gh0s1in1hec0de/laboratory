@@ -40,8 +40,7 @@ export type GetCallerTasksResponse = {
 
 // Oracle API
 
-export type ExtendedLaunch = StoredTokenLaunch & LaunchBalance & { activeHolders: number };
-export type ExtendedLaunchWithOffchainMetadata = ExtendedLaunch & { offchainMetadata: LaunchMetadata }
+export type ExtendedLaunch = StoredTokenLaunch & LaunchBalance & Partial<LaunchMetadata> & { activeHolders: number };
 
 export type GetLaunchesChunkRequest = {
     page: number,
@@ -55,12 +54,12 @@ export type GetLaunchesChunkRequest = {
 export type GetLaunchesChunkResponse = { launchesChunk: ExtendedLaunch[], hasMore: boolean, }
 
 export type GetCertainLaunchRequest = { address?: RawAddressString, metadataUri?: string }
-export type GetCertainLaunchResponse = ExtendedLaunchWithOffchainMetadata | null;
+export type GetCertainLaunchResponse = ExtendedLaunch | null;
 
 export type GetUserBalancesRequest = { user: RawAddressString, launch?: RawAddressString }
 export type GetUserBalancesResponse = (StoredUserBalance & JettonMetadata & TokenLaunchTimings)[] | null;
 
-export type GetRisingStarResponse = ExtendedLaunchWithOffchainMetadata | null;
+export type GetRisingStarResponse = ExtendedLaunch | null;
 
 // Dispenser API
 export type GetAmountRequest = { userAddress: RawAddressString, tokenLaunch?: RawAddressString };
