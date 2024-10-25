@@ -113,10 +113,17 @@ const CREATOR_REFUND_GAS_CONSUMPTION = 15117;
 ;; === Whitelist Purchase ===
 const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 20860;
 (int, int) check_amount_is_enough_for_wl_purchase(int msg_value) impure inline {
-    return validate_value(
-        msg_value,
-        get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION) + get_balance_update_gas_cost()
-    );
+    (int, int)(purified, opn) = (0, 0);
+
+    try {
+        (purified, opn) = validate_value(
+            msg_value,
+            get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION) + get_balance_update_gas_cost()
+        );
+    } catch (_, _) {
+        ;; Do not actually need it
+    }
+    return (purified, opn);
 }
 
 ;; === Public Purchase ===

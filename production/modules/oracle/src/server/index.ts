@@ -1,12 +1,12 @@
 import { TokenLaunchRoutes, UserRoutes } from "./routes";
 import { getSwaggerConfig, WebSocket } from "./config";
 import { swagger } from "@elysiajs/swagger";
+import { AppMode } from "starton-periphery";
 import { ok as assert } from "node:assert";
 import { getConfig } from "../config";
 import { logger } from "../logger";
 import cors from "@elysiajs/cors";
 import Elysia from "elysia";
-import { AppMode } from "starton-periphery";
 
 function createServer() {
     const {
@@ -30,6 +30,15 @@ function createServer() {
         .onError((err) => {
             logger().error(err);
         })
+        // .mapResponse(({ response }) => {
+        //     console.log("Logging response: ");
+        //     console.log(response);
+        //     if (typeof response === "object") {
+        //         return JSON.stringify(response, (key, val) =>
+        //             typeof val === "bigint" ? val.toString() : val
+        //         );
+        //     }
+        // })
         .listen(port);
     assert(res.server, "caught dat bitch");
     return res;

@@ -7,6 +7,12 @@ import { logger } from "./logger";
 import dotenv from "dotenv";
 import * as db from "./db";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error Prototype modification works at runtime, typescript doesn't like it
+BigInt.prototype.toJSON = function () {
+    return this.toString();
+};
+
 dotenv.config();
 greeting();
 const { oracle } = getConfig();

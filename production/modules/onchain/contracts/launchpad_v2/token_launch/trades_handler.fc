@@ -43,10 +43,34 @@
 () handle_wl_purchase(int query_id, int attached_value, slice initiator) impure inline {
     throw_if(error::wrong_time, (now() < creator_round::const::end_time) | (now() > wl_round::const::end_time));
 
-    ;; smart-wl-constraint-inator (you can find more of my invertions here https://phineasandferb.fandom.com/wiki/List_of_Doofenshmirtz%27s_schemes_and_inventions/Season_1)
-    throw_if(error::bad_request, (((query_id / 1000) % 17) != 0) | (query_id < 1000000));
+    ;; May be 0 by design
     (int accessible_user_value, int opn) = check_amount_is_enough_for_wl_purchase(attached_value);
-    (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
+    (_, _, _, slice util_jet_wallet_address, _, _, cell user_vault_code) = unpack_tools(this::tools);
+
+    if (accessible_user_value == 0) {
+        cell chargeback_msg = build_jetton_transfer_msg(
+            query_id,
+            0,
+            wl_round::const::util_jet_wl_pass_amount,
+            util_jet_wallet_address,
+            initiator,
+            get_compute_fee(MY_WORKCHAIN, 350),
+            begin_cell().store_op(0).store_slice("not enough ton forwarded").end_cell()
+        );
+        send_raw_message(chargeback_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
+        return ();
+    }
+    cell return_jettons_msg = build_jetton_transfer_msg(
+        query_id,
+        JETTON_MIN_TRANSFER_FEE,
+        wl_round::const::util_jet_wl_pass_amount - wl_round::const::util_jet_wl_pass_one_time_price,
+        util_jet_wallet_address,
+        initiator,
+        get_compute_fee(MY_WORKCHAIN, 350),
+        begin_cell().store_op(0).store_slice("return of the pass").end_cell()
+    );
+    send_raw_message(return_jettons_msg, SEND_MODE_IGNORE_ERRORS);
+
 
     int remainings = 0;
     if ((accessible_user_value + wl_round::ton_invested_total) > wl_round::const::ton_limit) {

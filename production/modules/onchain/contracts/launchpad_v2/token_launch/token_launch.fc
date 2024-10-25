@@ -81,14 +81,6 @@
     throw_unless(error::wrong_time, now() > general_state::const::start_time);
     throw_unless(error::uninitialized, this::const::is_initialized?);
 
-    ;; if (this::operational_needs > (ONE_TON / 4)) {
-    ;;     cell msg = simple_transfer(this::const::chief_address, this::operational_needs * 90 / 100, "meow");
-    ;;     send_raw_message(msg, SEND_MODE_REGULAR);
-    ;;     this::operational_needs = 0;
-    ;; }
-
-    ;; - CN: can be sent by anyone
-    ;; if there is a commission balance, returns it back to the user
     if (op == op::tl::creator_buyout) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::creator_address));
         raw_reserve(attached_value, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);

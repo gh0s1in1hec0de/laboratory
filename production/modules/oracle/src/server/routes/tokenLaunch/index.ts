@@ -10,7 +10,10 @@ export function TokenLaunchRoutes() {
             "/get-chunk",
             async ({ query, error }) => {
                 try {
-                    return await getLaunchesChunk(query);
+                    return await getLaunchesChunk({
+                        ...query,
+                        succeed: query.succeed === "true" ? true : query.succeed === "false" ? false : undefined
+                    });
                 } catch (e) {
                     if (e instanceof CommonServerError) return error(e.code, e.message);
                     else return error(500, e);

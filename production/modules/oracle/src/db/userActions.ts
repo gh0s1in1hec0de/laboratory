@@ -47,11 +47,7 @@ export async function getCallerActions(
 }
 
 export async function storeUserClaim(
-    {
-        tokenLaunch,
-        actor,
-        jettonAmount
-    }: Omit<UserClaim, "id">,
+    { tokenLaunch, actor, jettonAmount }: Omit<UserClaim, "id">,
     client?: SqlClient
 ): Promise<void> {
     const res = await (client ?? globalClient)`
@@ -62,4 +58,19 @@ export async function storeUserClaim(
         RETURNING 1;
     `;
     if (res.length === 0) logger().error(`looks like claim for [actor ${actor}; launch ${tokenLaunch}] already exists`);
+}
+
+export async function getLastActionsForLaunch(
+    launchAddress: RawAddressString, from?: UnixTimeSeconds,
+    client?: SqlClient
+): Promise<UserAction[] | null> {
+    const c = client ?? globalClient;
+    const res = await c<UserAction[]>`
+        SELECT *
+        FROM user_actions
+        WHERE token_launch = ${launchAddress} ${from ? c`AND timestamp > ${from}` : c``}
+        ORDER BY timestamp DESC
+        LIMIT 50;
+    `;
+    return res.length ? res : null;
 }

@@ -9,38 +9,6 @@ CREATE TABLE launch_metadata
     influencer_support    BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TYPE launch_version AS ENUM ('V1', 'V2A', 'V2');
-CREATE TABLE token_launches
-(
-    id                           SERIAL            NOT NULL,
-    address                      address           NOT NULL PRIMARY KEY,
-    identifier                   TEXT              NOT NULL,
-
-    creator                      address           NOT NULL,
-    version                      launch_version    NOT NULL,
-    -- Original json, not one with url field only
-    metadata                     JSONB             NOT NULL,
-    timings                      JSONB             NOT NULL,
-    total_supply                 coins             NOT NULL,
-    platform_share               FLOAT             NOT NULL CHECK (platform_share >= 0 AND platform_share <= 100),
-    min_ton_treshold             coins             NOT NULL,
-
-    -- Time of transaction, where actual launch was created
-    created_at                   unix_time_seconds NOT NULL,
-    -- All null by default
-    is_successful                BOOLEAN,
-    post_deploy_enrollment_stats JSONB,
-    dex_data                     JSONB
-);
-
-CREATE TABLE whitelist_relations
-(
-    token_launch_address address REFERENCES token_launches (address),
-    caller_address       address REFERENCES callers (address),
-    PRIMARY KEY (token_launch_address, caller_address)
-);
-
-CREATE TYPE user_action_type AS ENUM ('whitelist_buy', 'public_buy', 'whitelist_refund', 'public_refund', 'total_refund', 'claim');
 CREATE TABLE user_actions
 (
     id             BIGSERIAL PRIMARY KEY,
@@ -74,6 +42,40 @@ CREATE TABLE user_actions
             OR (action_type != 'public_refund')
         )
 );
+
+CREATE INDEX idx_user_actions_token_launch ON user_actions (token_launch);
+
+CREATE TYPE launch_version AS ENUM ('V1', 'V2A', 'V2');
+CREATE TABLE token_launches
+(
+    id                           SERIAL            NOT NULL,
+    address                      address           NOT NULL PRIMARY KEY,
+    identifier                   TEXT              NOT NULL,
+
+    creator                      address           NOT NULL,
+    version                      launch_version    NOT NULL,
+    -- Original json, not one with url field only
+    metadata                     JSONB             NOT NULL,
+    timings                      JSONB             NOT NULL,
+    total_supply                 coins             NOT NULL,
+    platform_share               FLOAT             NOT NULL CHECK (platform_share >= 0 AND platform_share <= 100),
+    min_ton_treshold             coins             NOT NULL,
+
+    -- Time of transaction, where actual launch was created
+    created_at                   unix_time_seconds NOT NULL,
+    -- All null by default
+    is_successful                BOOLEAN,
+    post_deploy_enrollment_stats JSONB,
+    dex_data                     JSONB
+);
+
+CREATE TABLE whitelist_relations
+(
+    token_launch_address address REFERENCES token_launches (address),
+    caller_address       address REFERENCES callers (address),
+    PRIMARY KEY (token_launch_address, caller_address)
+);
+CREATE TYPE user_action_type AS ENUM ('whitelist_buy', 'public_buy', 'whitelist_refund', 'public_refund', 'total_refund', 'claim');
 
 -- Separate table for claims with actual claimed jettons value
 -- It is user by dispenser to count reward after

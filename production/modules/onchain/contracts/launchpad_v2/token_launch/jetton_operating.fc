@@ -49,40 +49,56 @@
 
 
 () route_incoming_transfer(int query_id, int attached_value, slice sender_address, int jetton_amount, slice initiator, slice maybe_payload) impure inline {
-    (slice fut_jet_master_address, slice fut_jet_wallet_address, _, _, _, _) = unpack_tools(this::tools);
-    ;; `ifs` oreder defined this way for reasons of efficiency
-    ifnot (jetton_amount == config::const::fut_jet_total_supply) {
-        return ();
+    (slice fut_jet_master_address, slice fut_jet_wallet_address, slice util_jet_wallet_address, _, _, _, _) = unpack_tools(this::tools);
+
+    ;; We got new util jetton enrollment
+    if (equal_slices_bits(sender_address, util_jet_wallet_address)) {
+        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE);
+        if (jetton_amount == wl_round::const::util_jet_wl_pass_amount) {
+            handle_wl_purchase(query_id, attached_value, initiator);
+        } else {
+            cell chargeback_msg = build_jetton_transfer_msg(
+                query_id,
+                0,
+                jetton_amount,
+                util_jet_wallet_address,
+                initiator,
+                get_compute_fee(MY_WORKCHAIN, 350),
+                begin_cell().store_op(0).store_slice("wrong amount").end_cell()
+            );
+            send_raw_message(chargeback_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
+            return ();
+        }
+    } elseif (equal_slices_bits(sender_address, fut_jet_wallet_address)) {
+        ifnot (jetton_amount == config::const::fut_jet_total_supply) {
+            return ();
+        }
+        general_state::fut_jet_deployed_balance =
+        config::const::fut_jet_total_supply
+        - (config::const::fut_jet_dex_amount + config::const::fut_jet_platform_amount);
+        ;; We send one jetton transfer with all the
+        cell transfer_msg = build_jetton_transfer_msg(
+            query_id,
+            JETTON_MIN_TRANSFER_FEE + general_state::total_tons_collected
+            + get_forward_fee(MY_WORKCHAIN, JETTON_TRANSFER_TO_CHIEF_FORWARD_PAYLOAD_BITS, JETTON_TRANSFER_TO_CHIEF_FORWARD_PAYLOAD_CELLS),
+            config::const::fut_jet_dex_amount + config::const::fut_jet_platform_amount,
+            fut_jet_wallet_address,
+            this::const::chief_address,
+            general_state::total_tons_collected,
+            begin_cell().store_coins(config::const::fut_jet_dex_amount).store_coins(config::const::fut_jet_platform_amount).end_cell()
+        );
+        cell claim_admin_msg = begin_cell()
+            .store_msg_flags_and_address_none(NON_BOUNCEABLE)
+            .store_slice(fut_jet_master_address)
+            .store_coins(
+                get_forward_fee(MY_WORKCHAIN, REVOKE_ADMIN_MSG_BITS, REVOKE_ADMIN_MSG_CELLS)
+                + get_compute_fee(MY_WORKCHAIN, REVOKE_ADMIN_GAS_CONSUMPTION)
+            )
+            .store_prefix_only_body()
+            .store_op(op::revoke_admin)
+            .store_query_id(query_id)
+            .end_cell();
+        send_raw_message(claim_admin_msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+        send_raw_message(transfer_msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     }
-    ifnot (equal_slices_bits(sender_address, fut_jet_wallet_address)) {
-        ;; It does mean we just got random tokens on equal amount
-        return ();
-    }
-    general_state::fut_jet_deployed_balance =
-    config::const::fut_jet_total_supply
-    - (config::const::fut_jet_dex_amount + config::const::fut_jet_platform_amount);
-    ;; We send one jetton transfer with all the
-    cell transfer_msg = build_jetton_transfer_msg(
-        query_id,
-        JETTON_MIN_TRANSFER_FEE + general_state::total_tons_collected
-        + get_forward_fee(MY_WORKCHAIN, JETTON_TRANSFER_TO_CHIEF_FORWARD_PAYLOAD_BITS, JETTON_TRANSFER_TO_CHIEF_FORWARD_PAYLOAD_CELLS),
-        config::const::fut_jet_dex_amount + config::const::fut_jet_platform_amount,
-        fut_jet_wallet_address,
-        this::const::chief_address,
-        general_state::total_tons_collected,
-        begin_cell().store_coins(config::const::fut_jet_dex_amount).store_coins(config::const::fut_jet_platform_amount).end_cell()
-    );
-    cell claim_admin_msg = begin_cell()
-        .store_msg_flags_and_address_none(NON_BOUNCEABLE)
-        .store_slice(fut_jet_master_address)
-        .store_coins(
-            get_forward_fee(MY_WORKCHAIN, REVOKE_ADMIN_MSG_BITS, REVOKE_ADMIN_MSG_CELLS)
-            + get_compute_fee(MY_WORKCHAIN, REVOKE_ADMIN_GAS_CONSUMPTION)
-        )
-        .store_prefix_only_body()
-        .store_op(op::revoke_admin)
-        .store_query_id(query_id)
-        .end_cell();
-    send_raw_message(claim_admin_msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
-    send_raw_message(transfer_msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }

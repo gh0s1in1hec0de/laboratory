@@ -6,7 +6,7 @@ export const GetTokenLaunchesSchema = t.Object({
     limit: t.Numeric(),
     orderBy: t.Enum(LaunchSortParameters),
     order: t.Enum(SortingOrder),
-    succeed: t.Optional(t.Boolean()),
+    succeed: t.Optional(t.String()),
     createdBy: t.Optional(t.String()),
     search: t.Optional(t.String())
 });
