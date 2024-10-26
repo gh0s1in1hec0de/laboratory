@@ -36,8 +36,6 @@
             return ();
         }
         handle_refund_confirmation(
-            query_id,
-            attached_value,
             sender_address,
             in_msg_body~load_coins(),
             in_msg_body~load_coins(),
@@ -84,14 +82,20 @@
     if (op == op::tl::creator_buyout) {
         throw_unless(error::unauthorized_access, equal_slices_bits(sender_address, this::const::creator_address));
         raw_reserve(attached_value, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
-        handle_creator_buyout(attached_value);
+        handle_creator_buyout(query_id, attached_value);
         save_data();
         return ();
     }
-    if (op == op::tl::wl_purchase) {
-        raw_reserve(attached_value, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
-        handle_wl_purchase(query_id, attached_value, sender_address);
+    if (op == op::transfer_notification) {
+        ;; Verify, that sender is our utility token wallet and no one other
+        route_incoming_transfer(query_id, attached_value, sender_address, in_msg_body~load_coins(), in_msg_body~load_msg_addr(), in_msg_body);
         save_data();
+        return ();
+    }
+    if (op == op::tl::wl_callback) {
+        raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE);
+        handle_wl_callback(query_id, sender_address, in_msg_body~load_bool(), in_msg_body~load_msg_addr());
+        ;; Nothing to save as no changes to state were done
         return ();
     }
     if (op == op::tl::public_purchase) {
@@ -113,8 +117,6 @@
     }
     if (op == op::tl::refund_confirmation) {
         handle_refund_confirmation(
-            query_id,
-            attached_value,
             sender_address,
             in_msg_body~load_coins(),
             in_msg_body~load_coins(),
@@ -139,12 +141,6 @@
             cell excesses = excesses_msg(query_id, sender_address, contract_balance - launch_success_treshold);
             send_raw_message(excesses, SEND_MODE_IGNORE_ERRORS);
         }
-        return ();
-    }
-    if (op == op::transfer_notification) {
-        ;; Verify, that sender is our utility token wallet and no one other
-        route_incoming_transfer(query_id, attached_value, sender_address, in_msg_body~load_coins(), in_msg_body~load_msg_addr(), in_msg_body);
-        save_data();
         return ();
     }
     if (op == op::tl::jetton_claim_request) {

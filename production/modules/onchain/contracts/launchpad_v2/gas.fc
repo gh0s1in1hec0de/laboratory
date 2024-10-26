@@ -21,7 +21,7 @@ const TWO_MONTHS = 60 * ONE_DAY;
 
 ;; Minimal fees
 ;; https://github.com/ton-blockchain/stablecoin-contract/blob/62f661d79012a259c0110dce611dafc31359be78/contracts/gas.fc#L14 (Actuallly 28627415, but rounded)
-const JETTON_MIN_TRANSFER_FEE = 31000000;
+const JETTON_MIN_TRANSFER_FEE = 50000000;
 ;; https://docs.ton.org/develop/smart-contracts/fees#fees-for-sending-ton
 const SIMPLE_TRANSFER_FEE = 6000000;
 
@@ -112,13 +112,25 @@ const CREATOR_REFUND_GAS_CONSUMPTION = 15117;
 
 ;; === Whitelist Purchase ===
 const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 20860;
+const WL_CALLBACK_MSG_BITS = 364; ;;
+const WL_CALLBACK_MSG_CELLS = 1; ;; body always in ref
+const WL_CALLBACK_GAS_CONSUMPTION = 13558;
+int get_wl_purchase_gas_consumption() inline_ref {
+    return get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION)
+    + JETTON_MIN_TRANSFER_FEE ;; Return main chunk of tokens immidiatly
+    + get_balance_update_gas_cost()
+    + get_forward_fee(MY_WORKCHAIN, WL_CALLBACK_MSG_BITS, WL_CALLBACK_MSG_CELLS)
+    + get_compute_fee(MY_WORKCHAIN, WL_CALLBACK_GAS_CONSUMPTION)
+    + JETTON_MIN_TRANSFER_FEE; ;; Refund / burn
+}
+
 (int, int) check_amount_is_enough_for_wl_purchase(int msg_value) impure inline {
     (int, int)(purified, opn) = (0, 0);
 
     try {
         (purified, opn) = validate_value(
             msg_value,
-            get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION) + get_balance_update_gas_cost()
+            get_wl_purchase_gas_consumption()
         );
     } catch (_, _) {
         ;; Do not actually need it

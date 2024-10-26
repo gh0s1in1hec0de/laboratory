@@ -4,8 +4,8 @@ import { logger } from "../logger";
 import * as db from "../db";
 import {
     retrieveAllUnknownTransactions,
-    parseTokenLaunchV2AStorage,
     parseTokenLaunchV1Storage,
+    parseDeprecatedTokenLaunchStorage,
     parseTokenLaunchTimings,
     type RawAddressString,
     parseJettonMetadata,
@@ -44,9 +44,8 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
                     logger().info(`found new launch with address: ${address} created at ${new Date(msg.info.createdAt * 1000)}`);
 
                     const newLaunchStateInit = msg.init!.data!; // As we can guarantee our contract behaviour
-                    const parsedStateInit = coreVersion === GlobalVersions.V1 ?
-                        parseTokenLaunchV1Storage(newLaunchStateInit) :
-                        parseTokenLaunchV2AStorage(newLaunchStateInit);
+                    // TODO Dynamic parsing
+                    const parsedStateInit = parseTokenLaunchV1Storage(newLaunchStateInit);
 
                     // We may guarantee that futJetPlatformAmount can't be 10000x times bigger than futJetTotalSupply
                     const percentage =

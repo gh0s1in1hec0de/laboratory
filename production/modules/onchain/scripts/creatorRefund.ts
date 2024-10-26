@@ -1,5 +1,5 @@
 import { NetworkProvider } from "@ton/blueprint";
-import { TokenLaunchV2A } from "../wrappers/TokenLaunchV2A";
+import { TokenLaunchV1 } from "../wrappers/TokenLaunchV1";
 import { Address, toNano } from "@ton/core";
 
 export async function run(provider: NetworkProvider) {
@@ -7,7 +7,7 @@ export async function run(provider: NetworkProvider) {
 
     try {
         const tokenLaunch = provider.open(
-            TokenLaunchV2A.createFromAddress(
+            TokenLaunchV1.createFromAddress(
                 Address.parse("kQDjycaYALIhm9jgUI6BkrkJ419TsOWxYntMN9dKJ50yu6gW")
             )
         );

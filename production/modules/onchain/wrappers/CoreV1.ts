@@ -1,5 +1,5 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
-import { SendMessageParams, tokenMetadataToCell } from "./utils";
+import { SendMessageParams, tokenMetadataToCell, packLaunchConfigToCellV1 } from "./utils";
 import { LaunchParams, UpgradeParams } from "./types";
 import { TokenLaunchV1 } from "./TokenLaunchV1";
 import { JettonMaster } from "./JettonMaster";
@@ -13,7 +13,6 @@ import {
     OP_LENGTH,
     Contracts,
     CoreOps,
-    Coins,
 } from "starton-periphery";
 
 export class CoreV1 implements Contract {
@@ -39,14 +38,16 @@ export class CoreV1 implements Contract {
         });
     }
 
-    async sendCreateLaunch(provider: ContractProvider, sendMessageParams: SendMessageParams, params: LaunchParams) {
+    async sendCreateLaunch(provider: ContractProvider, sendMessageParams: SendMessageParams, params: LaunchParams, customConfig?: LaunchConfigV1 | Cell) {
         const { startTime, totalSupply, platformSharePct, metadata } = params;
         const { queryId, via, value } = sendMessageParams;
         const packagedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
+        const maybePackedConfig = customConfig ? (customConfig instanceof Cell ? customConfig : packLaunchConfigToCellV1(customConfig)) : null;
 
         const body = beginCell()
             .storeUint(CoreOps.CreateLaunch, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
+            .storeMaybeRef(maybePackedConfig)
             .storeCoins(totalSupply)
             .storeUint(platformSharePct, 16)
             .storeRef(packagedMetadata)
@@ -72,18 +73,17 @@ export class CoreV1 implements Contract {
         });
     }
 
-    // possibly unnecessarily
-    async getState(provider: ContractProvider): Promise<{
-        notFundedLaunches: Cell | null,
-        notFundedLaunchesAmount: number,
-        utilJetCurBalance: Coins,
-    }> {
-        let { stack } = await provider.get("get_state", []);
-        return {
-            notFundedLaunches: stack.readCellOpt(),
-            notFundedLaunchesAmount: stack.readNumber(),
-            utilJetCurBalance: stack.readBigNumber()
-        };
+    async sendUpdateConfig(provider: ContractProvider, sendMessageParams: SendMessageParams, newConfig: Cell) {
+        const { queryId, via, value } = sendMessageParams;
+
+        const body = beginCell()
+            .storeUint(CoreOps.UpdateConfig, OP_LENGTH)
+            .storeUint(queryId, QUERY_ID_LENGTH)
+            .storeRef(newConfig)
+            .endCell();
+        await provider.internal(via, {
+            value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
+        });
     }
 
     async getLaunchConfig(provider: ContractProvider): Promise<LaunchConfigV1> {
@@ -91,12 +91,12 @@ export class CoreV1 implements Contract {
         return {
             minTonForSaleSuccess: stack.readBigNumber(),
             tonLimitForWlRound: stack.readBigNumber(),
-            utilJetRewardAmount: stack.readBigNumber(),
-            utilJetWlPassAmount: stack.readBigNumber(),
-            utilJetBurnPerWlPassAmount: stack.readBigNumber(),
+            penny: stack.readBigNumber(),
+
             jetWlLimitPct: stack.readNumber(),
             jetPubLimitPct: stack.readNumber(),
             jetDexSharePct: stack.readNumber(),
+
             creatorRoundDurationMs: stack.readNumber(),
             wlRoundDurationMs: stack.readNumber(),
             pubRoundDurationMs: stack.readNumber(),
@@ -106,7 +106,6 @@ export class CoreV1 implements Contract {
     // `../contracts/launchpad/core.operations.fc#L17`
     static tokenCreationMessage(
         creator: Address, chief: Address,
-        utilJettonMasterAddress: Address,
         createLaunchParams: LaunchParams,
         code: Contracts,
         staticLaunchParameters: LaunchConfigV1
@@ -140,10 +139,7 @@ export class CoreV1 implements Contract {
             ownerAddress: tokenLaunch.address,
             jettonMasterAddress: futJetMaster.address
         }, code.jettonWallet);
-        const utilJetWalletAddress = JettonWallet.createFromConfig({
-            ownerAddress: tokenLaunch.address,
-            jettonMasterAddress: utilJettonMasterAddress
-        }, code.jettonWallet);
+
         return {
             tokenLaunchStateInit: data,
             stateInitCell: tokenLaunchStateInit,
@@ -151,7 +147,6 @@ export class CoreV1 implements Contract {
                 .storeUint(TokensLaunchOps.Init, 32)
                 .storeUint(0, 64)
                 .storeAddress(tokenLaunchFutJetWalletAddress.address)
-                .storeAddress(utilJetWalletAddress.address)
                 .storeAddress(futJetMaster.address)
                 .endCell()
         };
@@ -164,27 +159,9 @@ export class CoreV1 implements Contract {
             .storeRef(state.contracts.jettonMaster)
             .storeRef(state.contracts.jettonWallet)
             .endCell();
-        const launchConfigCell = beginCell()
-            .storeCoins(state.launchConfig.minTonForSaleSuccess)
-            .storeCoins(state.launchConfig.tonLimitForWlRound)
-            .storeCoins(state.launchConfig.utilJetRewardAmount)
-            .storeCoins(state.launchConfig.utilJetWlPassAmount)
-            .storeCoins(state.launchConfig.utilJetBurnPerWlPassAmount)
-            .storeUint(state.launchConfig.jetWlLimitPct, 16)
-            .storeUint(state.launchConfig.jetPubLimitPct, 16)
-            .storeUint(state.launchConfig.jetDexSharePct, 16)
-            .storeInt(state.launchConfig.creatorRoundDurationMs, 32)
-            .storeInt(state.launchConfig.wlRoundDurationMs, 32)
-            .storeInt(state.launchConfig.pubRoundDurationMs, 32)
-            .endCell();
         return beginCell()
             .storeAddress(state.chief)
-            .storeAddress(state.utilJettonMasterAddress)
-            .storeAddress(state.utilJettonWalletAddress)
-            .storeCoins(state.utilJetCurBalance)
-            .storeDict(state.notFundedLaunches)
-            .storeUint(state.notFundedLaunchesAmount, 8)
-            .storeRef(launchConfigCell)
+            .storeRef(packLaunchConfigToCellV1(state.launchConfig))
             .storeRef(contractsCell)
             .endCell();
     }

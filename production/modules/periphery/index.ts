@@ -9,5 +9,7 @@ export * from "./standards";
 export * from "./Database";
 export * from "./utils";
 export * from "./types";
-export * from "./V2A";
+export * from "./fees";
 export * from "./V1";
+export * from "./V2";
+export * from "./D";

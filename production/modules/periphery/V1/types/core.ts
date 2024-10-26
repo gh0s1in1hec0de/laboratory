@@ -1,13 +1,11 @@
-import { Address, Dictionary, type Slice } from "@ton/core";
-import { Maybe } from "@ton/ton/dist/utils/maybe";
 import { Contracts } from "../../types";
+import { Coins } from "../../standards";
+import { Address } from "@ton/core";
 
 export type LaunchConfigV1 = {
-    minTonForSaleSuccess: bigint,
-    tonLimitForWlRound: bigint,
-    utilJetRewardAmount: bigint,
-    utilJetWlPassAmount: bigint,
-    utilJetBurnPerWlPassAmount: bigint,
+    minTonForSaleSuccess: Coins,
+    tonLimitForWlRound: Coins,
+    penny: Coins,
 
     jetWlLimitPct: number,
     jetPubLimitPct: number,
@@ -20,11 +18,6 @@ export type LaunchConfigV1 = {
 
 export type CoreStateV1 = {
     chief: Address,
-    utilJettonMasterAddress: Address,
-    utilJettonWalletAddress: Maybe<Address>,
-    utilJetCurBalance: bigint,
-    notFundedLaunches: Maybe<Dictionary<Address, Slice>>,
-    notFundedLaunchesAmount: number,
     launchConfig: LaunchConfigV1,
     contracts: Contracts,
 };

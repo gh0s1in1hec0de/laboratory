@@ -8,9 +8,16 @@
 #include "tl_context.fc";
 #include "tl_storage.fc";
 
-() handle_creator_buyout(int msg_value) impure inline {
+() handle_creator_buyout(int query_id, int msg_value) impure inline {
     throw_unless(error::wrong_time, now() < creator_round::const::end_time);
     (int accessible_user_value, int opn) = check_amount_is_enough_for_creator_buyout(msg_value);
+
+    int cretor_value_limit = muldiv(creator_round::fut_jet_left, MAX_WL_ROUND_TON_LIMIT, creator_round::const::fut_jet_price_reversed);
+    int maybe_creator_remainings = 0;
+    if (accessible_user_value > cretor_value_limit) {
+        maybe_creator_remainings = accessible_user_value - cretor_value_limit;
+        accessible_user_value = cretor_value_limit;
+    }
 
     int jettons_amount = muldiv(accessible_user_value, creator_round::const::fut_jet_price_reversed, MAX_WL_ROUND_TON_LIMIT);
     throw_unless(error::meowreachable, jettons_amount > 0);
@@ -22,6 +29,11 @@
     general_state::total_tons_collected += accessible_user_value;
     general_state::fut_jet_inner_balance -= jettons_amount;
     this::operational_needs += opn;
+
+    if (maybe_creator_remainings > 0) {
+        cell excesses = excesses_msg(query_id, this::const::creator_address, maybe_creator_remainings);
+        send_raw_message(excesses, SEND_MODE_IGNORE_ERRORS);
+    }
 }
 
 () handle_creator_refund() impure inline {
@@ -40,14 +52,13 @@
     send_raw_message(refund_transfer, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
+;; We don't use error's here as we must not to stay with extra user's jettons after operation
 () handle_wl_purchase(int query_id, int attached_value, slice initiator) impure inline {
-    throw_if(error::wrong_time, (now() < creator_round::const::end_time) | (now() > wl_round::const::end_time));
-
     ;; May be 0 by design
     (int accessible_user_value, int opn) = check_amount_is_enough_for_wl_purchase(attached_value);
     (_, _, _, slice util_jet_wallet_address, _, _, cell user_vault_code) = unpack_tools(this::tools);
 
-    if (accessible_user_value == 0) {
+    if ((accessible_user_value == 0) | (now() < creator_round::const::end_time) | (now() > wl_round::const::end_time)) {
         cell chargeback_msg = build_jetton_transfer_msg(
             query_id,
             0,
@@ -55,7 +66,7 @@
             util_jet_wallet_address,
             initiator,
             get_compute_fee(MY_WORKCHAIN, 350),
-            begin_cell().store_op(0).store_slice("not enough ton forwarded").end_cell()
+            begin_cell().store_op(0).store_slice("not enough ton forwarded/wrong time").end_cell()
         );
         send_raw_message(chargeback_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
         return ();
@@ -113,6 +124,21 @@
         cell excesses = simple_transfer(initiator, remainings, "shift!");
         send_raw_message(excesses, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     }
+}
+
+() handle_wl_callback(int query_id, slice sender_address, int should_burn?, slice initiator) impure inline {
+    (_, _, _, slice util_jet_wallet_address, _, _, cell user_vault_code) = unpack_tools(this::tools);
+    verify_user_vault(user_vault_code, sender_address, initiator);
+    cell msg = build_jetton_transfer_msg(
+        query_id,
+        0,
+        wl_round::const::util_jet_wl_pass_one_time_price,
+        util_jet_wallet_address,
+        should_burn? ? "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c"a : initiator,
+        get_compute_fee(MY_WORKCHAIN, 350),
+        null()
+    );
+    send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
 }
 
 () handle_public_purchase(int query_id, int attached_value, slice sender_address) impure inline {
@@ -178,7 +204,7 @@
     send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }
 
-() handle_refund_confirmation(int query_id, int _attached_value, slice sender_address, int wl_tons, int pub_tons, int jettons_to_charge_back, slice recipient) impure inline {
+() handle_refund_confirmation(slice sender_address, int wl_tons, int pub_tons, int jettons_to_charge_back, slice recipient) impure inline {
     (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
     verify_user_vault(user_vault_code, sender_address, recipient);
     int tons_to_refund = wl_tons + pub_tons;

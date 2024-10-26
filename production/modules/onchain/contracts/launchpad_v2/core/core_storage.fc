@@ -23,10 +23,7 @@
     launch_config_slice.end_parse();
 }
 
-;; TODO Extend with:
-;; TODO - util_jetton_master_address
-;; TODO - util_jet_wl_pass_amount
-;; TODO - util_jet_wl_pass_price
+
 cell load_data() impure inline_ref {
     slice ds = get_data().begin_parse();
     this::chief = ds~load_msg_addr();

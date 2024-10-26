@@ -1,14 +1,15 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
-import { SendMessageParams, tokenMetadataToCell, packLaunchConfigToCellV2A } from "./utils";
+import { SendMessageParams, tokenMetadataToCell } from "./utils";
 import { LaunchParams, UpgradeParams } from "./types";
-import { TokenLaunchV2A } from "./TokenLaunchV2A";
+import { TokenLaunchV2 } from "./TokenLaunchV2";
 import { JettonMaster } from "./JettonMaster";
 import { JettonWallet } from "./JettonWallet";
 import {
+    packLaunchConfigV2ToCell,
     TokensLaunchOps,
     QUERY_ID_LENGTH,
-    LaunchConfigV2A,
-    CoreStateV2A,
+    LaunchConfigV2,
+    CoreStateV2,
     BASECHAIN,
     OP_LENGTH,
     Contracts,
@@ -23,7 +24,7 @@ export class CoreV2 implements Contract {
         return new CoreV2(address);
     }
 
-    static createFromState(state: CoreStateV2A, code: Cell, workchain = BASECHAIN) {
+    static createFromState(state: CoreStateV2, code: Cell, workchain = BASECHAIN) {
         const data = this.buildState(state);
         const init = { code, data };
         return new CoreV2(contractAddress(workchain, init), init);
@@ -38,11 +39,11 @@ export class CoreV2 implements Contract {
         });
     }
 
-    async sendCreateLaunch(provider: ContractProvider, sendMessageParams: SendMessageParams, params: LaunchParams, customConfig?: LaunchConfigV2A | Cell) {
+    async sendCreateLaunch(provider: ContractProvider, sendMessageParams: SendMessageParams, params: LaunchParams, customConfig?: LaunchConfigV2 | Cell) {
         const { startTime, totalSupply, platformSharePct, metadata } = params;
         const { queryId, via, value } = sendMessageParams;
         const packagedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
-        const maybePackedConfig = customConfig ? (customConfig instanceof Cell ? customConfig : packLaunchConfigToCellV2A(customConfig)) : null;
+        const maybePackedConfig = customConfig ? (customConfig instanceof Cell ? customConfig : packLaunchConfigV2ToCell(customConfig)) : null;
 
         const body = beginCell()
             .storeUint(CoreOps.CreateLaunch, OP_LENGTH)
@@ -86,12 +87,16 @@ export class CoreV2 implements Contract {
         });
     }
 
-    async getLaunchConfig(provider: ContractProvider): Promise<LaunchConfigV2A> {
+    async getLaunchConfig(provider: ContractProvider): Promise<LaunchConfigV2> {
         let { stack } = await provider.get("get_launch_config", []);
         return {
             minTonForSaleSuccess: stack.readBigNumber(),
             tonLimitForWlRound: stack.readBigNumber(),
             penny: stack.readBigNumber(),
+
+            utilJetMasterAddress: stack.readAddress(),
+            utilJetWlPassAmount: stack.readBigNumber(),
+            utilJetWlPassOneTimePriceAmount: stack.readBigNumber(),
 
             jetWlLimitPct: stack.readNumber(),
             jetPubLimitPct: stack.readNumber(),
@@ -108,11 +113,11 @@ export class CoreV2 implements Contract {
         creator: Address, chief: Address,
         createLaunchParams: LaunchParams,
         code: Contracts,
-        staticLaunchParameters: LaunchConfigV2A
+        staticLaunchParameters: LaunchConfigV2
     ): { tokenLaunchStateInit: Cell, stateInitCell: Cell, bodyCell: Cell, } {
         const { metadata } = createLaunchParams;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
-        const data = TokenLaunchV2A.buildState({
+        const data = TokenLaunchV2.buildState({
             creator,
             chief,
             launchParams: createLaunchParams,
@@ -126,7 +131,7 @@ export class CoreV2 implements Contract {
             .storeMaybeRef(data)
             .storeUint(0, 1)
             .endCell();
-        const tokenLaunch = TokenLaunchV2A.createFromState(data, code.tokenLaunch);
+        const tokenLaunch = TokenLaunchV2.createFromState(data, code.tokenLaunch);
         const futJetMaster = JettonMaster.createFromConfig({
                 admin: tokenLaunch.address,
                 jettonContent: packedMetadata,
@@ -152,7 +157,7 @@ export class CoreV2 implements Contract {
         };
     }
 
-    static buildState(state: CoreStateV2A): Cell {
+    static buildState(state: CoreStateV2): Cell {
         const contractsCell = beginCell()
             .storeRef(state.contracts.tokenLaunch)
             .storeRef(state.contracts.userVault)
@@ -161,7 +166,7 @@ export class CoreV2 implements Contract {
             .endCell();
         return beginCell()
             .storeAddress(state.chief)
-            .storeRef(packLaunchConfigToCellV2A(state.launchConfig))
+            .storeRef(packLaunchConfigV2ToCell(state.launchConfig))
             .storeRef(contractsCell)
             .endCell();
     }

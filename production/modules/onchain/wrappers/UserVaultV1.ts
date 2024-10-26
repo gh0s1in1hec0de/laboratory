@@ -1,11 +1,10 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider } from "@ton/core";
-import { BASECHAIN, Coins, FALSE, TRUE } from "starton-periphery";
+import { BASECHAIN, Coins } from "starton-periphery";
 import { CoinsMaxValue } from "./utils";
 
 export type VaultState = {
     owner: Address,
     tokenLaunch: Address,
-    hasWhitelist?: boolean,
     wlTonBalance?: Coins,
     publicTonBalance?: Coins,
     jettonBalance?: Coins,
@@ -29,7 +28,6 @@ export class UserVaultV1 implements Contract {
         return {
             owner: stack.readAddress(),
             tokenLaunch: stack.readAddress(),
-            hasWhitelist: stack.readBoolean(),
             wlTonBalance: stack.readBigNumber(),
             publicTonBalance: stack.readBigNumber(),
             jettonBalance: stack.readBigNumber(),
@@ -39,7 +37,6 @@ export class UserVaultV1 implements Contract {
     static buildState({
         owner,
         tokenLaunch,
-        hasWhitelist,
         wlTonBalance,
         publicTonBalance,
         jettonBalance
@@ -47,7 +44,6 @@ export class UserVaultV1 implements Contract {
         return beginCell()
             .storeAddress(owner)
             .storeAddress(tokenLaunch)
-            .storeInt(hasWhitelist === undefined ? FALSE : (hasWhitelist ? TRUE : FALSE), 1)
             .storeCoins(loadAtMax ? CoinsMaxValue : wlTonBalance ?? 0)
             .storeCoins(loadAtMax ? CoinsMaxValue : publicTonBalance ?? 0)
             .storeCoins(loadAtMax ? CoinsMaxValue : jettonBalance ?? 0)

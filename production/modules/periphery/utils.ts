@@ -1,13 +1,13 @@
 import { beginCell, fromNano, type Slice, toNano } from "@ton/core";
-import { TokenLaunchStorageV2A } from "./V2A";
+import { TokenLaunchStorageV1 } from "./V1";
 import { TokenLaunchTimings } from "./types";
 import { TokenMetadata } from "./standards";
-import { TokenLaunchStorageV1 } from "./V1";
+import { DeprecatedTokenLaunchStorage } from "./D";
 import { ok as assert } from "node:assert";
 
 export type UnixTimeSeconds = number;
 
-export function parseTokenLaunchTimings(tokenLaunchStorage: TokenLaunchStorageV1 | TokenLaunchStorageV2A, pollingDuration: number = 2 * 86400): TokenLaunchTimings {
+export function parseTokenLaunchTimings(tokenLaunchStorage: DeprecatedTokenLaunchStorage | TokenLaunchStorageV1, pollingDuration: number = 2 * 86400): TokenLaunchTimings {
     return {
         startTime: tokenLaunchStorage.saleState.general.startTime,
         creatorRoundEndTime: tokenLaunchStorage.saleState.creatorRound.endTime,

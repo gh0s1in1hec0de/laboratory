@@ -10,6 +10,7 @@
     slice ds = get_data().begin_parse();
     this::owner = ds~load_msg_addr();
     this::token_launch = ds~load_msg_addr();
+    this::has_whitelist? = ds~load_bool();
     this::wl_ton_balance = ds~load_coins();
     this::public_ton_balance = ds~load_coins();
     this::jetton_balance = ds~load_coins();
@@ -21,6 +22,7 @@
         begin_cell()
             .store_slice(this::owner)
             .store_slice(this::token_launch)
+            .store_bool(this::has_whitelist?)
             .store_coins(this::wl_ton_balance)
             .store_coins(this::public_ton_balance)
             .store_coins(this::jetton_balance)
@@ -70,11 +72,12 @@
     throw(error::wrong_op);
 }
 
-(slice, slice, int, int, int) get_vault_data() method_id {
+(slice, slice, int, int, int, int) get_vault_data() method_id {
     load_data();
     return (
         this::owner,
         this::token_launch,
+        this::has_whitelist?,
         this::wl_ton_balance,
         this::public_ton_balance,
         this::jetton_balance

@@ -1,3 +1,4 @@
+import { Maybe } from "@ton/ton/dist/utils/maybe";
 import { Address, Cell } from "@ton/core";
 import { Coins } from "../../standards";
 
@@ -7,7 +8,6 @@ export type GeneralStateV1 = {
     futJetInnerBalance: Coins,
     futJetDeployedBalance: Coins,
     totalTonsCollected: Coins,
-    rewardUtilJetsBalance: Coins,
 };
 
 export type CreatorRoundStateV1 = {
@@ -20,8 +20,6 @@ export type CreatorRoundStateV1 = {
 export type WhitelistRoundStateV1 = {
     futJetLimit: Coins,
     tonLimit: Coins,
-    wlPassUtilJetAmount: Coins,
-    wlBurnUtilJetAmount: Coins,
     tonInvestedTotal: Coins,
     endTime: number,
 };
@@ -42,9 +40,8 @@ export type SaleStateV1 = {
 };
 
 export type ToolsV1 = {
-    utilJetWalletAddress: Address,
-    futJetMasterAddress: Address,
-    futJetWalletAddress: Address,
+    futJetMasterAddress: Maybe<Address>,
+    futJetWalletAddress: Maybe<Address>,
     metadata: Cell,
     futJetMasterCode: Cell,
     walletCode: Cell,
@@ -56,7 +53,6 @@ export type SaleConfigV1 = {
     minTonForSaleSuccess: Coins,
     futJetDexAmount: Coins,
     futJetPlatformAmount: Coins,
-    rewardUtilJetsTotalAmount: Coins,
 };
 
 export type TokenLaunchStorageV1 = {

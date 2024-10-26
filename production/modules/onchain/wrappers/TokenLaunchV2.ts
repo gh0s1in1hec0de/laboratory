@@ -1,23 +1,12 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
+import {
+    getCreatorJettonPrice, parseGetConfigResponse, parseMoneyFlows,
+    PERCENTAGE_DENOMINATOR, BASECHAIN, QUERY_ID_LENGTH, OP_LENGTH,
+    LaunchConfigV2, Contracts, GetConfigResponse, MoneyFlows,
+    TokensLaunchOps, BalanceUpdateMode, LaunchData, Coins,
+} from "starton-periphery";
 import { randomAddress } from "@ton/test-utils";
 import { LaunchParams } from "./types";
-import {
-    PERCENTAGE_DENOMINATOR,
-    BASECHAIN,
-    Contracts,
-    LaunchConfigV2A,
-    GetConfigResponse,
-    getCreatorJettonPrice,
-    QUERY_ID_LENGTH,
-    OP_LENGTH,
-    MoneyFlows,
-    TokensLaunchOps,
-    BalanceUpdateMode,
-    LaunchData,
-    Coins,
-    parseMoneyFlows,
-    parseGetConfigResponse,
-} from "starton-periphery";
 import {
     ThirtyTwoIntMaxValue,
     tokenMetadataToCell,
@@ -30,7 +19,7 @@ export type StateParams = {
     chief: Address,
     launchParams: LaunchParams,
     code: Contracts,
-    launchConfig: LaunchConfigV2A,
+    launchConfig: LaunchConfigV2,
 };
 
 export class TokenLaunchV2 implements Contract {
@@ -187,6 +176,7 @@ export class TokenLaunchV2 implements Contract {
         };
     }
 
+    // TODO fix
     static buildState({
         creator,
         chief,
@@ -202,7 +192,10 @@ export class TokenLaunchV2 implements Contract {
         const dexJetShare = BigInt(launchConfig.jetDexSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
         const platformShare = BigInt(platformSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
         const creatorBuybackJetLimit = totalSupply - (wlRoundFutJetLimit + pubJetLimit + dexJetShare + platformShare);
-        const creatorJetPrice = getCreatorJettonPrice({ wlRoundFutJetLimit, wlRoundTonLimit: launchConfig.tonLimitForWlRound });
+        const creatorJetPrice = getCreatorJettonPrice({
+            wlRoundFutJetLimit,
+            wlRoundTonLimit: launchConfig.tonLimitForWlRound
+        });
 
         const generalState = beginCell()
             .storeInt(loadAtMax ? ThirtyTwoIntMaxValue : startTime, 32)
