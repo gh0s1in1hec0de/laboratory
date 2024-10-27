@@ -1,6 +1,6 @@
 CREATE DOMAIN coins AS NUMERIC(39, 0) CHECK ( VALUE >= 0 );
 
-CREATE TYPE launch_version AS ENUM ('V1', 'V2A', 'V2');
+CREATE TYPE launch_version AS ENUM ('V1', 'V2');
 CREATE TYPE user_action_type AS ENUM ('whitelist_buy', 'public_buy', 'whitelist_refund', 'public_refund', 'total_refund', 'claim');
 
 CREATE TABLE launch_metadata

@@ -60,18 +60,6 @@ export class TokenLaunchV2 implements Contract {
         });
     }
 
-    async sendWhitelistPurchase(provider: ContractProvider, sendMessageParams: SendMessageParams) {
-        const { queryId, via, value } = sendMessageParams;
-
-        const body = beginCell()
-            .storeUint(TokensLaunchOps.WhitelistPurchase, OP_LENGTH)
-            .storeUint(queryId, QUERY_ID_LENGTH)
-            .endCell();
-        await provider.internal(via, {
-            value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
-        });
-    }
-
     async sendPublicPurchase(provider: ContractProvider, sendMessageParams: SendMessageParams) {
         const { queryId, via, value } = sendMessageParams;
 
@@ -216,6 +204,8 @@ export class TokenLaunchV2 implements Contract {
         const wlRoundState = beginCell()
             .storeCoins(loadAtMax ? CoinsMaxValue : wlRoundFutJetLimit)
             .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.tonLimitForWlRound)
+            .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.utilJetWlPassAmount)
+            .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.utilJetWlPassAmount)
             .storeCoins(0)
             .storeInt(
                 loadAtMax ? ThirtyTwoIntMaxValue : startTime
@@ -250,6 +240,7 @@ export class TokenLaunchV2 implements Contract {
             .storeCoins(loadAtMax ? CoinsMaxValue : platformShare)
             .endCell();
         const tools = beginCell()
+            .storeAddress(loadAtMax ? randomAddress() : null)
             .storeAddress(loadAtMax ? randomAddress() : null)
             .storeAddress(loadAtMax ? randomAddress() : null)
             .storeRef(packedMetadata)

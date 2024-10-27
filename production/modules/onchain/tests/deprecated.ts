@@ -187,7 +187,8 @@ describe.skip("V1", () => {
                     jettonContent: { uri: "https://juicy_bitches.org/meta.json" }
                 },
                 jettonMasterCode
-            ));
+            )
+        );
 
         const ONE_HOUR_MS = 3600 * 1000;
         utilJetRewardAmount = utilityJettonSupply * 33n / 10000n;

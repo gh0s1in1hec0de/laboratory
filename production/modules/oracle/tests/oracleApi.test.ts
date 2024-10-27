@@ -82,7 +82,7 @@ describe("launch sorter", () => {
             address: "launch_1",
             identifier: "Launch 1",
             creator: "creator_1",
-            version: GlobalVersions.V2A,
+            version: GlobalVersions.V1,
             metadata: { uri: "link_1" },
             timings: {
                 startTime: now - 60 * 60 * 24,  // Started 1 day ago
@@ -102,7 +102,7 @@ describe("launch sorter", () => {
             address: "launch_2",
             identifier: "Launch 2",
             creator: "creator_2",
-            version: GlobalVersions.V2A,
+            version: GlobalVersions.V1,
             metadata: { uri: "link_2" },
             timings: {
                 startTime: now - 60 * 60 * 12,  // Started 12 hours ago
@@ -122,7 +122,7 @@ describe("launch sorter", () => {
             address: "launch_3",
             identifier: "Launch 3",
             creator: "creator_3",
-            version: GlobalVersions.V2A,
+            version: GlobalVersions.V1,
             metadata: { uri: "link_3" },
             timings: {
                 startTime: now - 60 * 60 * 8,  // Started 8 hours ago

@@ -9,9 +9,9 @@
     launch_conf::ton_limit_for_wl_round = launch_config_slice~load_coins();
     launch_conf::penny = launch_config_slice~load_coins();
 
-    launch_conf::util_jet_master_address = launch_config_slice.load_msg_addr();
-    launch_conf::util_jet_wl_pass_amount = launch_config_slice.load_coins();
-    launch_conf::util_jet_wl_pass_one_time_price = launch_config_slice.load_coins();
+    launch_conf::util_jet_master_address = launch_config_slice~load_msg_addr();
+    launch_conf::util_jet_wl_pass_amount = launch_config_slice~load_coins();
+    launch_conf::util_jet_wl_pass_one_time_price = launch_config_slice~load_coins();
 
     launch_conf::fut_jet_wl_limit_pct = launch_config_slice~load_uint(16);
     launch_conf::fut_jet_pub_limit_pct = launch_config_slice~load_uint(16);

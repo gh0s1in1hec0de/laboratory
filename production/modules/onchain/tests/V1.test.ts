@@ -4,13 +4,12 @@ import {
     FullFees, GasPrices, computeFwdFeesVerbose, getMsgPrices, computeStorageFee,
 } from "./utils";
 import {
+    BASECHAIN, getPublicAmountOut, getApproximateClaimAmount, packLaunchConfigV1ToCell,
     JETTON_MIN_TRANSFER_FEE, TokensLaunchOps, jettonFromNano, validateValueMock,
     MAX_WL_ROUND_TON_LIMIT, BalanceUpdateMode, LaunchConfigV1, getQueryId,
-    PERCENTAGE_DENOMINATOR, getCreatorAmountOut, UserVaultOps, CoreOps,
-    BASECHAIN, getPublicAmountOut, getApproximateClaimAmount
+    PERCENTAGE_DENOMINATOR, getCreatorAmountOut, UserVaultOps, CoreOps
 } from "starton-periphery";
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
-import { packLaunchConfigToCellV1 } from "../wrappers/utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import { TokenLaunchV1 } from "../wrappers/TokenLaunchV1";
 import { JettonMaster } from "../wrappers/JettonMaster";
@@ -402,7 +401,7 @@ describe("V1", () => {
                 queryId: 0n,
                 value: toNano("0.2"),
                 via: chief.getSender()
-            }, packLaunchConfigToCellV1(newConfig));
+            }, packLaunchConfigV1ToCell(newConfig));
             expect(configUpdateResult.transactions).toHaveTransaction({
                 op: CoreOps.UpdateConfig,
                 on: core.address,

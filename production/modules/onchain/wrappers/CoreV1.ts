@@ -1,10 +1,11 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
-import { SendMessageParams, tokenMetadataToCell, packLaunchConfigToCellV1 } from "./utils";
+import { SendMessageParams, tokenMetadataToCell } from "./utils";
 import { LaunchParams, UpgradeParams } from "./types";
 import { TokenLaunchV1 } from "./TokenLaunchV1";
 import { JettonMaster } from "./JettonMaster";
 import { JettonWallet } from "./JettonWallet";
 import {
+    packLaunchConfigV1ToCell,
     TokensLaunchOps,
     QUERY_ID_LENGTH,
     LaunchConfigV1,
@@ -42,7 +43,7 @@ export class CoreV1 implements Contract {
         const { startTime, totalSupply, platformSharePct, metadata } = params;
         const { queryId, via, value } = sendMessageParams;
         const packagedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
-        const maybePackedConfig = customConfig ? (customConfig instanceof Cell ? customConfig : packLaunchConfigToCellV1(customConfig)) : null;
+        const maybePackedConfig = customConfig ? (customConfig instanceof Cell ? customConfig : packLaunchConfigV1ToCell(customConfig)) : null;
 
         const body = beginCell()
             .storeUint(CoreOps.CreateLaunch, OP_LENGTH)
@@ -161,7 +162,7 @@ export class CoreV1 implements Contract {
             .endCell();
         return beginCell()
             .storeAddress(state.chief)
-            .storeRef(packLaunchConfigToCellV1(state.launchConfig))
+            .storeRef(packLaunchConfigV1ToCell(state.launchConfig))
             .storeRef(contractsCell)
             .endCell();
     }

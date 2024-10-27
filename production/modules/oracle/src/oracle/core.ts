@@ -1,19 +1,12 @@
+import {
+    type TokenLaunchStorageV1, type TokenLaunchStorageV2, type RawAddressString, GlobalVersions, TokensLaunchOps,
+    retrieveAllUnknownTransactions, parseTokenLaunchV1Storage, parseTokenLaunchV2Storage,
+    parseTokenLaunchTimings, parseJettonMetadata, loadOpAndQueryId, delay,
+} from "starton-periphery";
 import { balancedTonClient } from "./client";
 import type { Address } from "@ton/ton";
 import { logger } from "../logger";
 import * as db from "../db";
-import {
-    retrieveAllUnknownTransactions,
-    parseTokenLaunchV1Storage,
-    parseDeprecatedTokenLaunchStorage,
-    parseTokenLaunchTimings,
-    type RawAddressString,
-    parseJettonMetadata,
-    loadOpAndQueryId,
-    TokensLaunchOps,
-    GlobalVersions,
-    delay,
-} from "starton-periphery";
 
 export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersion: GlobalVersions) {
     let currentHeight = await db.getHeight(coreAddress) ?? 0n;
@@ -44,8 +37,10 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
                     logger().info(`found new launch with address: ${address} created at ${new Date(msg.info.createdAt * 1000)}`);
 
                     const newLaunchStateInit = msg.init!.data!; // As we can guarantee our contract behaviour
-                    // TODO Dynamic parsing
-                    const parsedStateInit = parseTokenLaunchV1Storage(newLaunchStateInit);
+                    const parsedStateInit: TokenLaunchStorageV1 | TokenLaunchStorageV2 =
+                        coreVersion === GlobalVersions.V1 ?
+                            parseTokenLaunchV1Storage(newLaunchStateInit) :
+                            parseTokenLaunchV2Storage(newLaunchStateInit);
 
                     // We may guarantee that futJetPlatformAmount can't be 10000x times bigger than futJetTotalSupply
                     const percentage =

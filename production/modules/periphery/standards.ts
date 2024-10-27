@@ -15,9 +15,10 @@ export const OP_LENGTH = 32;
 export const QUERY_ID_LENGTH = 64;
 
 export enum GlobalVersions {
+    // Ticket-based
     V1 = "V1",
-    V2A = "V2A",
-    // V2 = "V2"
+    // Utility jetton-based
+    V2 = "V2"
 }
 
 export enum CoreOps {
