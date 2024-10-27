@@ -8,6 +8,7 @@ import {
     SyntheticReserves,
     WlPhaseLimits
 } from "./priceOracle";
+import { GlobalVersions } from "../standards";
 
 export enum SalePhase {
     NOT_STARTED = "NOT_STARTED",
@@ -18,7 +19,7 @@ export enum SalePhase {
 }
 
 export function getCurrentSalePhase(
-    timings: TokenLaunchTimings, 
+    timings: TokenLaunchTimings,
     currentTime: UnixTimeSeconds = Math.floor(Date.now() / 1000)
 ): { phase: SalePhase; nextPhaseIn: UnixTimeSeconds | null } {
     const { startTime, creatorRoundEndTime, wlRoundEndTime, publicRoundEndTime, endTime } = timings;
@@ -44,14 +45,16 @@ export function getCurrentSalePhase(
 
 // Returns an estimated value a participant will receive for their investment
 export function getAmountOut(
+    version: GlobalVersions,
     phase: SalePhase.CREATOR | SalePhase.WHITELIST | SalePhase.PUBLIC,
-    data: WlPhaseLimits | SyntheticReserves, value = toNano("10")
+    data: WlPhaseLimits | SyntheticReserves,
+    value = toNano("10")
 ) {
     if (phase === SalePhase.CREATOR && (data as WlPhaseLimits).wlRoundFutJetLimit !== undefined)
         return getCreatorJettonPrice(data as WlPhaseLimits);
 
     if (phase === SalePhase.CREATOR && (data as WlPhaseLimits).wlRoundFutJetLimit !== undefined)
-        return getApproximateWlAmountOut(data as WlPhaseLimits, value);
+        return getApproximateWlAmountOut(data as WlPhaseLimits, version, value);
 
     if (phase === SalePhase.PUBLIC && (data as SyntheticReserves).syntheticTonReserve !== undefined)
         return getPublicAmountOut(data as SyntheticReserves, value);

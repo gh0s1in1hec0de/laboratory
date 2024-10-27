@@ -96,7 +96,7 @@ export class CoreV2 implements Contract {
 
             utilJetMasterAddress: stack.readAddress(),
             utilJetWlPassAmount: stack.readBigNumber(),
-            utilJetWlPassOneTimePriceAmount: stack.readBigNumber(),
+            utilJetWlPassOneTimePrice: stack.readBigNumber(),
 
             jetWlLimitPct: stack.readNumber(),
             jetPubLimitPct: stack.readNumber(),

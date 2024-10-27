@@ -413,14 +413,15 @@ describe("V1", () => {
         });
         test("token launch creation with custom config", async () => {
             const stateBefore = blockchain.snapshot();
-            const customConfig = launchConfig;
-            customConfig.minTonForSaleSuccess = toNano("666.666");
+            const minTonForSaleSuccessBefore = launchConfig.minTonForSaleSuccess;
 
             const launchCreationResult = await core.sendCreateLaunch({
-                queryId: 0n,
-                value: toNano("5"),
-                via: creator.getSender()
-            }, sampleLaunchParams, customConfig);
+                    queryId: 0n,
+                    value: toNano("5"),
+                    via: creator.getSender()
+                }, sampleLaunchParams,
+                { ...launchConfig, minTonForSaleSuccess: toNano("666.666") }
+            );
             expect(launchCreationResult.transactions).toHaveTransaction({
                 op: TokensLaunchOps.Init,
                 deploy: true,
@@ -437,12 +438,15 @@ describe("V1", () => {
                             jettonMaster: jettonMasterCode,
                             jettonWallet: jettonWalletCode,
 
-                        }, launchConfig
+                        },
+                        launchConfig: { ...launchConfig, minTonForSaleSuccess: toNano("666.666") }
                     },
                     tokenLaunchCode)
             );
+            launchConfig.minTonForSaleSuccess = minTonForSaleSuccessBefore;
+
             const configInsideLaunch = await customizedTokenLaunch.getConfig();
-            assert(configInsideLaunch.minTonForSaleSuccess === customConfig.minTonForSaleSuccess);
+            assert(configInsideLaunch.minTonForSaleSuccess === toNano("666.666"));
             await blockchain.loadFrom(stateBefore);
         });
     });

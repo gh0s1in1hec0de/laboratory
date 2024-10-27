@@ -125,6 +125,7 @@ cell pack_user_vault_data(slice owner_address, slice launch_contract_address, in
     return begin_cell()
         .store_slice(owner_address)
         .store_slice(launch_contract_address)
+        .store_bool(FALSE)
         .store_coins(wl_invested)
         .store_coins(public_invested)
         .store_coins(jetton_balance)

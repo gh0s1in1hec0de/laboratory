@@ -164,14 +164,9 @@ export class TokenLaunchV2 implements Contract {
         };
     }
 
-    // TODO fix
-    static buildState({
-        creator,
-        chief,
-        launchConfig,
-        launchParams,
-        code
-    }: StateParams, loadAtMax: boolean = false): Cell {
+    static buildState(
+        { creator, chief, launchConfig, launchParams, code }: StateParams, loadAtMax: boolean = false
+    ): Cell {
         const { startTime, totalSupply, platformSharePct, metadata } = launchParams;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
 
@@ -205,7 +200,7 @@ export class TokenLaunchV2 implements Contract {
             .storeCoins(loadAtMax ? CoinsMaxValue : wlRoundFutJetLimit)
             .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.tonLimitForWlRound)
             .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.utilJetWlPassAmount)
-            .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.utilJetWlPassAmount)
+            .storeCoins(loadAtMax ? CoinsMaxValue : launchConfig.utilJetWlPassOneTimePrice)
             .storeCoins(0)
             .storeInt(
                 loadAtMax ? ThirtyTwoIntMaxValue : startTime

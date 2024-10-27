@@ -73,6 +73,7 @@
     cell tools = begin_cell()
         .store_address_none()
         .store_address_none()
+        .store_address_none()
         .store_ref(metadata_cell)
         .store_ref(code::jetton_master)
         .store_ref(code::jetton_wallet)

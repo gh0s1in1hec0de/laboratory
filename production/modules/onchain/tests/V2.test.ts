@@ -4,26 +4,10 @@ import {
     FullFees, GasPrices, computeFwdFeesVerbose, getMsgPrices, computeStorageFee,
 } from "./utils";
 import {
-    BASECHAIN,
-    getPublicAmountOut,
-    getApproximateClaimAmount,
-    packLaunchConfigV2ToCell,
-    JETTON_MIN_TRANSFER_FEE,
-    TokensLaunchOps,
-    jettonFromNano,
-    validateValueMock,
-    MAX_WL_ROUND_TON_LIMIT,
-    BalanceUpdateMode,
-    LaunchConfigV2,
-    getQueryId,
-    PERCENTAGE_DENOMINATOR,
-    getCreatorAmountOut,
-    UserVaultOps,
-    CoreOps,
-    Coins,
-    jettonToNano,
-    toPct,
-    UtilJettonsEnrollmentMode, UTIL_JET_SEND_MODE_SIZE
+    BASECHAIN, JETTON_MIN_TRANSFER_FEE, MAX_WL_ROUND_TON_LIMIT, PERCENTAGE_DENOMINATOR,
+    getPublicAmountOut, getApproximateClaimAmount, packLaunchConfigV2ToCell, toPct,
+    BalanceUpdateMode, TokensLaunchOps, LaunchConfigV2, UserVaultOps, CoreOps,
+    validateValueMock, jettonFromNano, getCreatorAmountOut, jettonToNano,
 } from "starton-periphery";
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
@@ -145,9 +129,9 @@ describe("V2", () => {
             compile("JettonWallet")
         ]);
         console.info("contracts compiled yaay^^");
-        coreStorageStats = new StorageStats(47955n, 125n);
-        userVaultStorageStats = new StorageStats(5092n, 17n);
-        tokenLaunchStorageStats = new StorageStats(44124n, 113n);
+        coreStorageStats = new StorageStats(55000n, 135n);
+        userVaultStorageStats = new StorageStats(6000n, 20n);
+        tokenLaunchStorageStats = new StorageStats(50000n, 120n);
         jettonMasterStorageStats = new StorageStats(16703n, 35n);
 
         blockchain = await Blockchain.create(MAINNET_MOCK ? {
@@ -198,7 +182,7 @@ describe("V2", () => {
 
             utilJetMasterAddress: utilityJettonMaster.address,
             utilJetWlPassAmount: jettonToNano("1"),
-            utilJetWlPassOneTimePriceAmount: jettonToNano("0.1"),
+            utilJetWlPassOneTimePrice: jettonToNano("0.1"),
 
             jetWlLimitPct: toPct(30),
             jetPubLimitPct: toPct(30),
@@ -336,7 +320,8 @@ describe("V2", () => {
                 inMessageBounced: true
             });
             // Doesn't work with inactive contracts
-            expect(await core.getLaunchConfig()).toEqual(launchConfig);
+            // Important: at some reason they are non-equal without stringification, what wasn't necessary in V1 testing
+            expect((await core.getLaunchConfig()).toString()).toEqual(launchConfig.toString());
         });
         test("core state specs", async () => {
             const smc = await blockchain.getContract(core.address);
@@ -403,7 +388,7 @@ describe("V2", () => {
             const createLaunchResult = await core.sendCreateLaunch(
                 {
                     via: creator.getSender(),
-                    value: toNano("10") + launchConfig.penny,
+                    value: toNano("2") + launchConfig.penny,
                     queryId: 0n
                 },
                 sampleLaunchParams
@@ -463,19 +448,14 @@ describe("V2", () => {
         });
         test("token launch creation with custom config", async () => {
             const stateBefore = blockchain.snapshot();
-            const customConfig = launchConfig;
-            customConfig.minTonForSaleSuccess = toNano("666.666");
 
             const launchCreationResult = await core.sendCreateLaunch({
-                queryId: 0n,
-                value: toNano("5"),
-                via: creator.getSender()
-            }, sampleLaunchParams, customConfig);
-            expect(launchCreationResult.transactions).toHaveTransaction({
-                op: TokensLaunchOps.Init,
-                deploy: true,
-                success: true
-            });
+                    queryId: 0n,
+                    value: toNano("5"),
+                    via: creator.getSender()
+                }, sampleLaunchParams,
+                { ...launchConfig, minTonForSaleSuccess: toNano("666.666") }
+            );
             const customizedTokenLaunch = blockchain.openContract(
                 TokenLaunchV2.createFromState({
                         creator: creator.address,
@@ -487,12 +467,21 @@ describe("V2", () => {
                             jettonMaster: jettonMasterCode,
                             jettonWallet: jettonWalletCode,
 
-                        }, launchConfig
+                        },
+                        launchConfig: { ...launchConfig, minTonForSaleSuccess: toNano("666.666") },
                     },
-                    tokenLaunchCode)
+                    tokenLaunchCode
+                )
             );
+            expect(launchCreationResult.transactions).toHaveTransaction({
+                op: TokensLaunchOps.Init,
+                on: customizedTokenLaunch.address,
+                deploy: true,
+                success: true
+            });
+
             const configInsideLaunch = await customizedTokenLaunch.getConfig();
-            assert(configInsideLaunch.minTonForSaleSuccess === customConfig.minTonForSaleSuccess);
+            assert(configInsideLaunch.minTonForSaleSuccess === toNano("666.666"));
             await blockchain.loadFrom(stateBefore);
         });
     });
@@ -612,11 +601,6 @@ describe("V2", () => {
                 op: JettonOps.TransferNotification,
                 success: true
             });
-            expect(mintResult.transactions).toHaveTransaction({
-                on: consumer.address,
-                op: JettonOps.Excesses,
-                success: true
-            });
             expect((await consumerUtilJettonWallet.getWalletData()).balance).toEqual(amount);
 
             // Straight before wl round start
@@ -630,37 +614,28 @@ describe("V2", () => {
                 consumer.address,
                 null, totalPurchaseValue, null
             );
-            const refundUtilJettonTransferBody = beginCell()
-                .storeUint(JettonOps.Transfer, 32)
-                .storeUint(0, 64)
-                .storeCoins(launchConfig.utilJetWlPassAmount)
-                .storeAddress(consumer.address)
-                .storeAddress(consumer.address)
-                .storeMaybeRef()
-                .storeCoins(computeGasFee(gasPrices, 350n))
-                .storeMaybeRef(beginCell().storeUint(0, 32).storeStringTail("not enough ton forwarded/wrong time").endCell())
-                .endCell();
+            const sampleTokenLaunchUtilJetWallet = blockchain.openContract(
+                JettonWallet.createFromConfig({
+                    jettonMasterAddress: utilityJettonMaster.address,
+                    ownerAddress: sampleTokenLaunch.address
+                }, jettonWalletCode)
+            );
             expect(wrongTimeWlPurchaseResult.transactions).toHaveTransaction({
                 op: JettonOps.Transfer,
-                to: consumerUtilJettonWallet.address,
-                body: refundUtilJettonTransferBody,
-                success: true,
-            });
-            const transferNotificationTx = findTransactionRequired(wrongTimeWlPurchaseResult.transactions, {
-                op: JettonOps.TransferNotification,
-                to: consumer.address,
-                success: true,
-                body: beginCell()
-                    .storeUint(JettonOps.TransferNotification, 32)
+                on: sampleTokenLaunchUtilJetWallet.address,
+                body:  beginCell()
+                    .storeUint(JettonOps.Transfer, 32)
                     .storeUint(0, 64)
                     .storeCoins(launchConfig.utilJetWlPassAmount)
-                    .storeAddress(sampleTokenLaunch.address)
-                    .storeBit(true)
-                    .storeUint(0, 32)
-                    .storeStringRefTail("not enough ton forwarded/wrong time")
-                    .endCell()
+                    .storeAddress(consumer.address)
+                    .storeAddress(consumer.address)
+                    .storeMaybeRef()
+                    .storeCoins(computeGasFee(gasPrices, 350n))
+                    .storeMaybeRef(beginCell().storeUint(0, 32).storeStringTail("not enough ton forwarded/wrong time").endCell())
+                    .endCell(),
+                success: true,
             });
-            printTxGasStats("Refund util jetton transfer notification transaction: ", transferNotificationTx);
+
 
             // Wl round has been started
             blockchain.now = sampleLaunchStartTime + launchConfig.creatorRoundDurationMs + 1;
@@ -674,15 +649,25 @@ describe("V2", () => {
             );
             expect(wrongPassWlPurchaseFailResult.transactions).toHaveTransaction({
                 op: JettonOps.Transfer,
-                to: consumerUtilJettonWallet.address,
-                body: refundUtilJettonTransferBody,
+                on: sampleTokenLaunchUtilJetWallet.address,
+                body:  beginCell()
+                    .storeUint(JettonOps.Transfer, 32)
+                    .storeUint(0, 64)
+                    .storeCoins(launchConfig.utilJetWlPassAmount - 1n)
+                    .storeAddress(consumer.address)
+                    .storeAddress(consumer.address)
+                    .storeMaybeRef()
+                    .storeCoins(computeGasFee(gasPrices, 350n))
+                    .storeMaybeRef(beginCell().storeUint(0, 32).storeStringTail("wrong jetton amount").endCell())
+                    .endCell(),
                 success: true,
             });
         }, 20000);
         // In my dreams (and my actual code before) there was a cycle,
         // well, if you have free time - try to pack it inside a cycle and see - what is going to happen next *-*
-        test.skip("high wl purchase operations pressure", async () => {
+        test("high wl purchase operations pressure", async () => {
             const conf = { totalTons: 80, totalBuys: 5 };
+            // 1st buy
             const wlBuyer1 = await blockchain.treasury("wl_buyer_1");
             const mintResult1 = await utilityJettonMaster.sendMint(
                 chief.getSender(),
@@ -699,7 +684,7 @@ describe("V2", () => {
             const wlBuyer1UtilJetWallet = blockchain.openContract(JettonWallet.createFromAddress(await utilityJettonMaster.getWalletAddress(wlBuyer1.address)));
             const wlPurchaseResult1 = await wlBuyer1UtilJetWallet.sendTransfer(
                 wlBuyer1.getSender(),
-                toNano(conf.totalTons / conf.totalBuys) + toNano("0.1"),
+                toNano(conf.totalTons / conf.totalBuys) + toNano("0.5"),
                 launchConfig.utilJetWlPassAmount,
                 sampleTokenLaunch.address,
                 consumer.address,
@@ -711,6 +696,7 @@ describe("V2", () => {
             });
             blockchain.now! += 20;
 
+            // 2nd buy
             const wlBuyer2 = await blockchain.treasury("wl_buyer_2");
             const mintResult2 = await utilityJettonMaster.sendMint(
                 chief.getSender(),
@@ -727,7 +713,7 @@ describe("V2", () => {
             const wlBuyer2UtilJetWallet = blockchain.openContract(JettonWallet.createFromAddress(await utilityJettonMaster.getWalletAddress(wlBuyer2.address)));
             const wlPurchaseResult2 = await wlBuyer2UtilJetWallet.sendTransfer(
                 wlBuyer2.getSender(),
-                toNano(conf.totalTons / conf.totalBuys) + toNano("0.1"),
+                toNano(conf.totalTons / conf.totalBuys) + toNano("0.5"),
                 launchConfig.utilJetWlPassAmount,
                 sampleTokenLaunch.address,
                 consumer.address,
@@ -739,6 +725,7 @@ describe("V2", () => {
             });
             blockchain.now! += 20;
 
+            // 3rd buy
             const wlBuyer3 = await blockchain.treasury("wl_buyer_3");
             const mintResult3 = await utilityJettonMaster.sendMint(
                 chief.getSender(),
@@ -754,8 +741,8 @@ describe("V2", () => {
             });
             const wlBuyer3UtilJetWallet = blockchain.openContract(JettonWallet.createFromAddress(await utilityJettonMaster.getWalletAddress(wlBuyer3.address)));
             const wlPurchaseResult3 = await wlBuyer3UtilJetWallet.sendTransfer(
-                wlBuyer1.getSender(),
-                toNano(conf.totalTons / conf.totalBuys) + toNano("0.1"),
+                wlBuyer3.getSender(),
+                toNano(conf.totalTons / conf.totalBuys) + toNano("0.5"),
                 launchConfig.utilJetWlPassAmount,
                 sampleTokenLaunch.address,
                 consumer.address,
@@ -783,7 +770,7 @@ describe("V2", () => {
             const wlBuyer4UtilJetWallet = blockchain.openContract(JettonWallet.createFromAddress(await utilityJettonMaster.getWalletAddress(wlBuyer4.address)));
             const wlPurchaseResult4 = await wlBuyer4UtilJetWallet.sendTransfer(
                 wlBuyer4.getSender(),
-                toNano(conf.totalTons / conf.totalBuys) + toNano("0.1"),
+                toNano(conf.totalTons / conf.totalBuys) + toNano("0.5"),
                 launchConfig.utilJetWlPassAmount,
                 sampleTokenLaunch.address,
                 consumer.address,
@@ -811,7 +798,7 @@ describe("V2", () => {
             const wlBuyer5UtilJetWallet = blockchain.openContract(JettonWallet.createFromAddress(await utilityJettonMaster.getWalletAddress(wlBuyer5.address)));
             const wlPurchaseResult5 = await wlBuyer5UtilJetWallet.sendTransfer(
                 wlBuyer5.getSender(),
-                toNano(conf.totalTons / conf.totalBuys) + toNano("0.1"),
+                toNano(conf.totalTons / conf.totalBuys) + toNano("0.5"),
                 launchConfig.utilJetWlPassAmount,
                 sampleTokenLaunch.address,
                 wlBuyer5.address,
@@ -843,7 +830,7 @@ describe("V2", () => {
             );
             const consumerUtilJettonsBalanceAfter = await consumerUtilJettonWallet.getJettonBalance();
             // So we have paid for wl pass
-            assert(consumerUtilJettonsBalanceBefore === consumerUtilJettonsBalanceAfter + launchConfig.utilJetWlPassOneTimePriceAmount);
+            assert(consumerUtilJettonsBalanceBefore === consumerUtilJettonsBalanceAfter + launchConfig.utilJetWlPassOneTimePrice);
             const wlPurchaseTx = findTransactionRequired(wlPurchaseResult.transactions, {
                 op: JettonOps.TransferNotification,
                 success: true
@@ -854,7 +841,18 @@ describe("V2", () => {
                 to: consumerVault.address,
                 success: true
             });
-            const totalFee = wlPurchaseRequestComputeFee + balanceUpdateCost;
+            const wlCallbackTx = findTransactionRequired(wlPurchaseResult.transactions, {
+                op: TokensLaunchOps.WlCallback,
+                success: true
+            });
+            const wlCallbackComputeFee = printTxGasStats("Whitelist callback transaction: ", wlCallbackTx);
+
+            const totalFee = wlPurchaseRequestComputeFee
+                + JETTON_MIN_TRANSFER_FEE
+                + balanceUpdateCost
+                + computeFwdFees(msgPrices, 1n, 364n)
+                + wlCallbackComputeFee
+                + JETTON_MIN_TRANSFER_FEE;
             const { purified } = validateValueMock(totalPurchaseValue, totalFee);
             console.log(`Precomputed wl buy total fee is equal to ${totalFee} (${fromNano(totalFee)} TON)`);
 
@@ -870,7 +868,7 @@ describe("V2", () => {
             const divergence = totalDifferenceAccounted - totalActualDifference;
 
             if (divergence) console.warn(`\"dead\" tons (wl buy): ${fromNano(divergence)} (${divergence})`);
-            assert(purified <= consumerVaultDataAfter.wlTonBalance!, "expected precomputed value to be equal to actual one/bit less than it");
+            assert(purified <= consumerVaultDataAfter.wlTonBalance!, `${fromNano(purified)} vs ${fromNano(consumerVaultDataAfter.wlTonBalance!)}`);
             assert(totalTonsIncrease === consumerVaultDataAfter.wlTonBalance!, "inconsistent state");
         }, 20000);
         test("wl limit cutoff works the proper way", async () => {

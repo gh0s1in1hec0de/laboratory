@@ -112,7 +112,7 @@
     cell msg = build_balance_update_message(
         user_vault_code,
         query_id,
-        get_balance_update_gas_cost(),
+        get_wl_purchase_gas_consumption() - JETTON_MIN_TRANSFER_FEE - get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION),
         initiator,
         BALANCE_UPD_DEPOSIT_WL,
         accessible_user_value,

@@ -10,7 +10,7 @@ export type LaunchConfigV2 = {
 
     utilJetMasterAddress: Address,
     utilJetWlPassAmount: Coins,
-    utilJetWlPassOneTimePriceAmount: Coins,
+    utilJetWlPassOneTimePrice: Coins,
 
     jetWlLimitPct: number,
     jetPubLimitPct: number,

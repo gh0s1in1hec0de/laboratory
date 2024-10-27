@@ -64,7 +64,7 @@
                 util_jet_wallet_address,
                 initiator,
                 get_compute_fee(MY_WORKCHAIN, 350),
-                begin_cell().store_op(0).store_slice("wrong amount").end_cell()
+                begin_cell().store_op(0).store_slice("wrong jetton amount").end_cell()
             );
             send_raw_message(chargeback_msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_IGNORE_ERRORS);
             return ();

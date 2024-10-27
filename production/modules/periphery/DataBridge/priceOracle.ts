@@ -1,6 +1,6 @@
-import { CREATOR_BUYOUT_COMPUTE_FEE, PURCHASE_TX_COST_V1 } from "../fees";
+import { CREATOR_BUYOUT_COMPUTE_FEE, NON_CALLBACK_PURCHASE_TX_COST, WL_PURCHASE_V2_COST } from "../fees";
 import { GetConfigResponse, MoneyFlows } from "../types";
-import { Coins } from "../standards";
+import { Coins, GlobalVersions } from "../standards";
 import { ok as assert } from "assert";
 import { toNano } from "@ton/core";
 
@@ -8,7 +8,7 @@ import { toNano } from "@ton/core";
 export const MAX_WL_ROUND_TON_LIMIT = 10000n * toNano("1");
 export const PERCENTAGE_DENOMINATOR = 100000n;
 
-// TODO Just a reminder - all the fee values should be updated before production
+// TODO Change this system to both version clean support
 
 // Mock function, that will help to pre-calculate operations' results on frontend etc
 
@@ -52,15 +52,17 @@ export function getCreatorValueLimit({ creatorFutJetLeft, creatorFutJetPriceReve
     return creatorFutJetLeft * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
 }
 
-export function getExpectedWlValueShare(value: Coins, expectedFee: Coins = PURCHASE_TX_COST_V1): Coins {
+export function getExpectedWlValueShare(value: Coins, expectedFee: Coins): Coins {
     return validateValueMock(value, expectedFee).purified;
 }
 
-export function getApproximateWlAmountOut({
-    wlRoundFutJetLimit,
-    wlRoundTonLimit
-}: WlPhaseLimits, value: Coins = toNano("10")): Coins {
-    const purifiedValue = getExpectedWlValueShare(value);
+export function getApproximateWlAmountOut(
+    { wlRoundFutJetLimit, wlRoundTonLimit }: WlPhaseLimits,
+    version: GlobalVersions,
+    value: Coins = toNano("10")
+): Coins {
+    const purifiedValue = getExpectedWlValueShare(
+        value, version === GlobalVersions.V1 ? NON_CALLBACK_PURCHASE_TX_COST : WL_PURCHASE_V2_COST);
     return purifiedValue * wlRoundFutJetLimit / wlRoundTonLimit;
 }
 
@@ -73,7 +75,7 @@ export type SyntheticReserves = {
 export function getPublicAmountOut(
     reserves: SyntheticReserves,
     value: Coins = toNano("10"),
-    expectedFee: Coins = PURCHASE_TX_COST_V1
+    expectedFee: Coins = NON_CALLBACK_PURCHASE_TX_COST
 ): Coins {
     const { purified } = validateValueMock(value, expectedFee);
     return getAmountOutMock(

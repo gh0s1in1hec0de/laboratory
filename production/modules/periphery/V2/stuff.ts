@@ -19,7 +19,7 @@ export function packLaunchConfigV2ToCell(c: LaunchConfigV2) {
 
         .storeAddress(c.utilJetMasterAddress)
         .storeCoins(c.utilJetWlPassAmount)
-        .storeCoins(c.utilJetWlPassOneTimePriceAmount)
+        .storeCoins(c.utilJetWlPassOneTimePrice)
 
         .storeUint(c.jetWlLimitPct, 16)
         .storeUint(c.jetPubLimitPct, 16)

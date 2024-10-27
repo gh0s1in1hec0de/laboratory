@@ -25,14 +25,14 @@ const JETTON_MIN_TRANSFER_FEE = 50000000;
 ;; https://docs.ton.org/develop/smart-contracts/fees#fees-for-sending-ton
 const SIMPLE_TRANSFER_FEE = 6000000;
 
-const CORE_STATE_BITS  = 47510;
-const CORE_STATE_CELLS = 122;
+const CORE_STATE_BITS  = 55000;
+const CORE_STATE_CELLS = 135;
 ;; Use `loadAtMax` to measure
-const TOKEN_LAUNCH_STATE_BITS  = 44124;
-const TOKEN_LAUNCH_STATE_CELLS = 113;
+const TOKEN_LAUNCH_STATE_BITS  = 50000;
+const TOKEN_LAUNCH_STATE_CELLS = 120;
 
-const USER_VAULT_STATE_BITS  = 5092;
-const USER_VAULT_STATE_CELLS = 17;
+const USER_VAULT_STATE_BITS  = 6000;
+const USER_VAULT_STATE_CELLS = 20;
 
 const JETTON_MASTER_STATE_BITS = 16703;
 const JETTON_MASTER_STATE_CELLS = 35;
@@ -47,6 +47,8 @@ const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
 ;; Gas constants are calculated in the main test suite.
 ;; First the related transaction is found, and then it's
 ;; resulting gas consumption is printed to the console.
+
+;; TODO Validate all the fees change due to global contract operating change
 
 int calculate_core_min_storage_fee(int duration) inline {
     return get_storage_fee(MY_WORKCHAIN, duration, CORE_STATE_BITS, CORE_STATE_CELLS);
@@ -111,7 +113,7 @@ const CREATOR_REFUND_GAS_CONSUMPTION = 15117;
 }
 
 ;; === Whitelist Purchase ===
-const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 20860;
+const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 26506;
 const WL_CALLBACK_MSG_BITS = 364; ;;
 const WL_CALLBACK_MSG_CELLS = 1; ;; body always in ref
 const WL_CALLBACK_GAS_CONSUMPTION = 13558;
@@ -139,7 +141,7 @@ int get_wl_purchase_gas_consumption() inline_ref {
 }
 
 ;; === Public Purchase ===
-const PUB_PURCHASE_GAS_CONSUMPTION = 21402;
+const PUB_PURCHASE_GAS_CONSUMPTION = 21992;
 (int, int) check_amount_is_enough_for_public_purchase(int msg_value) impure inline {
     return validate_value(
         msg_value,
@@ -226,7 +228,7 @@ int check_amount_is_enough_for_jetton_claim(int msg_value) impure inline {
 }
 
 ;; Measured in "new launch creation through core"
-const CREATE_LAUNCH_GAS_CONSUMPTION = 28996;
+const CREATE_LAUNCH_GAS_CONSUMPTION = 32000;
 ;; Manual bits counting from core/operations.fc#L~120
 const INIT_MSG_BITS = 897; ;; 32 + 64 + 3 x (3+8+256)
 const INIT_MSG_CELLS = 2; ;; body in ref + stateinit in ref (I don't know exactly if I should account it here, so be it)

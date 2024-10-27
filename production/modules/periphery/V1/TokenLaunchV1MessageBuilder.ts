@@ -4,8 +4,8 @@ import { beginCell } from "@ton/core";
 import {
     CREATOR_BUYOUT_COMPUTE_FEE,
     CREATOR_REFUND_COMPUTE_FEE,
-    PURCHASE_TX_COST_V1,
-    REFUND_TX_COST_V1
+    NON_CALLBACK_PURCHASE_TX_COST,
+    REFUND_TX_COST
 } from "../fees";
 
 export class TokenLaunchV1MessageBuilder {
@@ -49,7 +49,7 @@ export class TokenLaunchV1MessageBuilder {
             validUntil,
             messages: [
                 {
-                    amount: (pureValue * 100n / 99n + PURCHASE_TX_COST_V1).toString(),
+                    amount: (pureValue * 100n / 99n + NON_CALLBACK_PURCHASE_TX_COST).toString(),
                     address: launchAddress,
                     payload: body.toBoc().toString("base64")
                 }
@@ -97,7 +97,7 @@ export class TokenLaunchV1MessageBuilder {
             .endCell();
         const messages = [
             {
-                amount: REFUND_TX_COST_V1.toString(),
+                amount: REFUND_TX_COST.toString(),
                 address: launchAddress,
                 payload: commonRefundBody.toBoc().toString("base64")
             }

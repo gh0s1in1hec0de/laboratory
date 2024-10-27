@@ -9,7 +9,7 @@
 #include "tl_context.fc";
 #include "tl_storage.fc";
 
-() initialize(int query_id, slice sender_address, slice fut_jet_wallet_address, slice fut_jet_master_address, slice util_jet_wallet_address) impure inline {
+() initialize(slice fut_jet_wallet_address, slice fut_jet_master_address, slice util_jet_wallet_address) impure inline {
     (_, _, _, cell metadata, cell fut_jet_master_code, cell wallet_code, cell user_vault_code) = unpack_tools(this::tools);
     ;; Building new tools with initialized addresses instead of none ones
 
@@ -66,7 +66,7 @@
             calculate_token_launch_min_storage_fee(TWO_MONTHS) + get_jetton_deployment_total_gas_cost(),
             RESERVE_REGULAR | RESERVE_BOUNCE_ON_ACTION_FAIL
         );
-        initialize(query_id, sender_address, in_msg_body~load_msg_addr(), in_msg_body~load_msg_addr(), in_msg_body~load_msg_addr());
+        initialize(in_msg_body~load_msg_addr(), in_msg_body~load_msg_addr(), in_msg_body~load_msg_addr());
         save_data();
         return ();
     }
@@ -208,7 +208,7 @@ slice get_user_vault_address(slice user_address) method_id {
     );
 }
 
-(int, int, int, int, int, int, int, int) get_config() method_id {
+(int, int, int, int, int, int, int, int, int) get_config() method_id {
     load_data();
     return (
         ;; Due to new creator's mechanics, we are able to creators round data only by calculating it on receiver's side
@@ -217,6 +217,7 @@ slice get_user_vault_address(slice user_address) method_id {
         creator_round::const::fut_jet_price_reversed,
 
         wl_round::const::fut_jet_limit,
+        wl_round::const::ton_limit,
         public_round::const::fut_jet_limit,
 
         config::const::fut_jet_dex_amount,
