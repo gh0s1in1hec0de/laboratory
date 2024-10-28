@@ -10,12 +10,16 @@ import { useTokensList } from "./hooks/useTokensList";
 export function TokensSection() {
   const { 
     search, 
-    handleSearch 
+    handleSearch,
+    launchesData,
+    fetchTokenLaunchesNextPage,
+    isLoadingPage,
+    isLoadingNextPage,
   } = useTokensList();
 
   return (
     <LoadingWrapper
-      isLoading={false}
+      isLoading={isLoadingPage}
       skeleton={<TokensSectionSkeleton />}
     >
       <Grid 
@@ -28,7 +32,11 @@ export function TokensSection() {
         />
       </Grid>
 
-      <TokenInfinityList />
+      <TokenInfinityList
+        fetchNextPage={fetchTokenLaunchesNextPage}
+        launchesData={launchesData}
+        isLoadingNextPage={isLoadingNextPage}
+      />
     </LoadingWrapper>
   );
 }

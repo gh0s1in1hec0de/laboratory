@@ -1,0 +1,47 @@
+.containerText {
+  max-width: 140px;
+
+  @media (min-width: 340px) {
+    max-width: 180px;
+  }
+
+  @media (min-width: 380px) {
+    max-width: 220px;
+  }
+
+  @media (min-width: 450px) {
+    max-width: 285px;
+  }
+
+  @media (min-width: 550px) {
+    max-width: 350px;
+  }
+
+  @media (min-width: 600px) {
+    max-width: 200px;
+  }
+
+  @media (min-width: 700px) {
+    max-width: 260px;
+  }
+
+  @media (min-width: 900px) {
+    max-width: 290px;
+  }
+}
+
+.launchTag, .launchName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card {
+  cursor: pointer;
+  border-radius: 10px;
+  transition: background-color 0.3s ease-in-out;
+
+  &:hover {
+    background-color: var(--border);
+  }
+}

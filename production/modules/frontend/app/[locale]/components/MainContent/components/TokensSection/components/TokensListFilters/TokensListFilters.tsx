@@ -10,7 +10,7 @@ export function TokensListFilters({
   const t = useTranslations("Top");
 
   return (
-    <Grid container>
+    <Grid container width="100%">
       <CustomInput 
         placeholder={t("searchPlaceholder")}
         value={search}

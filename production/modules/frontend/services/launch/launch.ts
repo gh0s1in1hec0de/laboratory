@@ -1,52 +1,27 @@
-import { managerService } from "@/api";
-import { CALLER_ADDRESS } from "@/constants";
-import { USER_ERROR } from "@/errors";
-import { USER_ROUTES } from "@/routes";
-import { Task } from "@/types";
-import { localStorageWrapper } from "@/utils";
+import { oracleService } from "@/api";
+import { LAUNCH_ERROR } from "@/errors";
+import { LAUNCH_ROUTES } from "@/routes";
+import type { GetLaunchesChunkRequest, GetLaunchesChunkResponse } from "starton-periphery";
 
-async function postConnectWallet(address: string, referral?: string): Promise<void> {
+async function getTokenLaunches(req: Partial<GetLaunchesChunkRequest>): Promise<GetLaunchesChunkResponse> {
   try {
-    await managerService.post(USER_ROUTES.ConnectWallet, {
-      address,
-      ...(referral ? { referral } : {})
-    });
-  } catch (error) {
-    console.error(USER_ERROR.ConnectWallet, error);
-    throw error;
-  }
-}
+    const filteredParams = Object.fromEntries(
+      Object.entries(req).filter(
+        ([_, value]) => value !== undefined && value !== ""
+      )
+    );
 
-async function getTicketBalance(): Promise<number> {
-  try {
-    const response = await managerService.get<number>(USER_ROUTES.GetTicketBalance, {
-      params: {
-        address: localStorageWrapper.get(CALLER_ADDRESS),
-      },
+    const { data } = await oracleService.get<GetLaunchesChunkResponse>(LAUNCH_ROUTES.GetTokenLaunches, {
+      params: filteredParams,
     });
 
-    return response.data;
+    return data;
   } catch (error) {
-    console.error(USER_ERROR.GetTicketBalance, error);
-    throw error;
-  }
-}
-
-async function getTasks(staged: boolean): Promise<Task[]> {
-  try {
-    const response = await managerService.get<Task[]>(USER_ROUTES.GetTasks, {
-      params: {
-        address: localStorageWrapper.get(CALLER_ADDRESS),
-        staged,
-      },
-    });
-
-    return response.data;
-  } catch (error) {
-    console.error(USER_ERROR.GetTasks, error);
+    console.error(LAUNCH_ERROR.GetTokenLaunches, error);
     throw error;
   }
 }
 
 export const launchService = {
+  getTokenLaunches
 };
