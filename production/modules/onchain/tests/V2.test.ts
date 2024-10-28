@@ -492,8 +492,6 @@ describe("V2", () => {
             const contractBalanceBefore = launchContractInstance.balance;
 
             const value = toNano("10");
-            const gasPrices = getGasPrices(blockchain.config, BASECHAIN);
-            const expectedFee = computeGasFee(gasPrices, 13493n); // Computed by printTxGasStats later
             const tokenLaunchConfigBefore = await sampleTokenLaunch.getConfig();
 
             const buyoutTransactionResult = await sampleTokenLaunch.sendCreatorBuyout({
@@ -506,7 +504,7 @@ describe("V2", () => {
                 op: TokensLaunchOps.CreatorBuyout,
                 success: true,
             });
-            printTxGasStats("Creator buyout transaction:", buyoutTx);
+            const expectedFee = printTxGasStats("Creator buyout transaction:", buyoutTx);
 
             const tokenLaunchConfigAfter = await sampleTokenLaunch.getConfig();
             const tokenLaunchState = await sampleTokenLaunch.getMoneyFlows();
@@ -528,7 +526,7 @@ describe("V2", () => {
                 },
                 expectedFee
             );
-            assert(expectedCreatorBalance === tokenLaunchState.creatorFutJetBalance, `${expectedCreatorBalance} vs ${tokenLaunchState.creatorFutJetBalance}`);
+            assert(expectedCreatorBalance === tokenLaunchState.creatorFutJetBalance, `${jettonFromNano(expectedCreatorBalance)} vs ${jettonFromNano(tokenLaunchState.creatorFutJetBalance)}`);
             assert(tokenLaunchConfigBefore.creatorFutJetLeft === tokenLaunchState.creatorFutJetBalance + tokenLaunchConfigAfter.creatorFutJetLeft);
 
             /* You may think, that I forgot about `expect`s here, and it would be better to use it for checks
@@ -574,7 +572,7 @@ describe("V2", () => {
 
             await blockchain.loadFrom(stateBeforeCreatorRefund);
         });
-        test.skip("loaded user vault state specs", async () => {
+        test("loaded user vault state specs", async () => {
             const loadedUserVaultState = UserVaultV2.buildState({
                 owner: randomAddress(),
                 tokenLaunch: randomAddress()

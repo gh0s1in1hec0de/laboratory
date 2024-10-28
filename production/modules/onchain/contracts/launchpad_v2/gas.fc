@@ -48,7 +48,6 @@ const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
 ;; First the related transaction is found, and then it's
 ;; resulting gas consumption is printed to the console.
 
-;; TODO Validate all the fees change due to global contract operating change
 
 int calculate_core_min_storage_fee(int duration) inline {
     return get_storage_fee(MY_WORKCHAIN, duration, CORE_STATE_BITS, CORE_STATE_CELLS);
@@ -102,21 +101,21 @@ int get_balance_update_gas_cost() inline_ref {
 }
 
 ;; As we don't have any external calls, we accounting only code execution fees
-const CREATOR_BUYOUT_GAS_CONSUMPTION = 13493;
+const CREATOR_BUYOUT_GAS_CONSUMPTION = 14249;
 (int, int) check_amount_is_enough_for_creator_buyout(int msg_value) impure inline {
     return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_BUYOUT_GAS_CONSUMPTION));
 }
 
-const CREATOR_REFUND_GAS_CONSUMPTION = 15117;
+const CREATOR_REFUND_GAS_CONSUMPTION = 15509;
 (int, int) check_amount_is_enough_for_creator_refund(int msg_value) impure inline {
     return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_REFUND_GAS_CONSUMPTION));
 }
 
 ;; === Whitelist Purchase ===
-const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 26506;
+const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 27087;
 const WL_CALLBACK_MSG_BITS = 364; ;;
 const WL_CALLBACK_MSG_CELLS = 1; ;; body always in ref
-const WL_CALLBACK_GAS_CONSUMPTION = 13558;
+const WL_CALLBACK_GAS_CONSUMPTION = 13256;
 int get_wl_purchase_gas_consumption() inline_ref {
     return get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION)
     + JETTON_MIN_TRANSFER_FEE ;; Return main chunk of tokens immidiatly
@@ -151,7 +150,7 @@ const PUB_PURCHASE_GAS_CONSUMPTION = 21992;
 
 ;; === Refund ===
 const REFUND_REQUEST_GAS_CONSUMPTION = 14356;
-const REFUND_CONFIRMATION_GAS_CONSUMPTION = 19305;
+const REFUND_CONFIRMATION_GAS_CONSUMPTION = 19923;
 () check_amount_is_enough_for_refund(int msg_value) impure inline {
     int required_gas =
     get_compute_fee(MY_WORKCHAIN, REFUND_REQUEST_GAS_CONSUMPTION)
@@ -163,7 +162,7 @@ const REFUND_CONFIRMATION_GAS_CONSUMPTION = 19305;
 }
 
 ;; === Jetton Deploy ===
-const DEPLOY_JETTON_REQUEST_GAS_CONSUMPTION = 16000;
+const DEPLOY_JETTON_REQUEST_GAS_CONSUMPTION = 18297;
 const MINT_MSG_BITS = 1366;
 const MINT_MSG_CELLS = 3;
 const MINT_REQUEST_GAS_CONSUMPTION = 8000;
@@ -215,7 +214,7 @@ int get_claim_gas_cost() inline {
     + calculate_user_vault_min_storage_fee(TWO_MONTHS);
 }
 const CLAIM_REQUEST_GAS_CONSUMPTION = 15000;
-const CLAIM_CONFIRMATION_GAS_CONSUMPTION = 20000;
+const CLAIM_CONFIRMATION_GAS_CONSUMPTION = 21149;
 int check_amount_is_enough_for_jetton_claim(int msg_value) impure inline {
     int required_gas =
     get_compute_fee(MY_WORKCHAIN, CLAIM_REQUEST_GAS_CONSUMPTION)
@@ -228,7 +227,7 @@ int check_amount_is_enough_for_jetton_claim(int msg_value) impure inline {
 }
 
 ;; Measured in "new launch creation through core"
-const CREATE_LAUNCH_GAS_CONSUMPTION = 32000;
+const CREATE_LAUNCH_GAS_CONSUMPTION = 32100;
 ;; Manual bits counting from core/operations.fc#L~120
 const INIT_MSG_BITS = 897; ;; 32 + 64 + 3 x (3+8+256)
 const INIT_MSG_CELLS = 2; ;; body in ref + stateinit in ref (I don't know exactly if I should account it here, so be it)

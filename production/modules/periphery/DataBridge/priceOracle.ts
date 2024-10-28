@@ -1,8 +1,8 @@
-import { CREATOR_BUYOUT_COMPUTE_FEE, NON_CALLBACK_PURCHASE_TX_COST, WL_PURCHASE_V2_COST } from "../fees";
 import { GetConfigResponse, MoneyFlows } from "../types";
 import { Coins, GlobalVersions } from "../standards";
 import { ok as assert } from "assert";
 import { toNano } from "@ton/core";
+import { fees } from "../fees";
 
 // 10k TON
 export const MAX_WL_ROUND_TON_LIMIT = 10000n * toNano("1");
@@ -28,10 +28,7 @@ export function getAmountOutMock(amountIn: Coins, reserveIn: Coins, reserveOut: 
     return amountOut;
 }
 
-export type WlPhaseLimits = {
-    wlRoundFutJetLimit: Coins,
-    wlRoundTonLimit: Coins
-}
+export type WlPhaseLimits = { wlRoundFutJetLimit: Coins, wlRoundTonLimit: Coins };
 
 // === CREATOR ===
 export function getCreatorJettonPrice({ wlRoundFutJetLimit, wlRoundTonLimit }: WlPhaseLimits): Coins {
@@ -39,8 +36,8 @@ export function getCreatorJettonPrice({ wlRoundFutJetLimit, wlRoundTonLimit }: W
 }
 
 // Call get config to get the last two values`get_config`
-export function getCreatorAmountOut(value: Coins, WlPhaseLimits: WlPhaseLimits, expectedFee: Coins = CREATOR_BUYOUT_COMPUTE_FEE): Coins {
-    const { purified } = validateValueMock(value, expectedFee);
+export function getCreatorAmountOut(version: GlobalVersions, value: Coins, WlPhaseLimits: WlPhaseLimits): Coins {
+    const { purified } = validateValueMock(value, fees[version].creatorBuyout);
     const creatorJettonPrice = getCreatorJettonPrice(WlPhaseLimits);
     return purified * creatorJettonPrice / MAX_WL_ROUND_TON_LIMIT;
 }
@@ -62,7 +59,7 @@ export function getApproximateWlAmountOut(
     value: Coins = toNano("10")
 ): Coins {
     const purifiedValue = getExpectedWlValueShare(
-        value, version === GlobalVersions.V1 ? NON_CALLBACK_PURCHASE_TX_COST : WL_PURCHASE_V2_COST);
+        value, fees[version].wlPurchase);
     return purifiedValue * wlRoundFutJetLimit / wlRoundTonLimit;
 }
 
@@ -74,10 +71,10 @@ export type SyntheticReserves = {
 
 export function getPublicAmountOut(
     reserves: SyntheticReserves,
+    version: GlobalVersions,
     value: Coins = toNano("10"),
-    expectedFee: Coins = NON_CALLBACK_PURCHASE_TX_COST
 ): Coins {
-    const { purified } = validateValueMock(value, expectedFee);
+    const { purified } = validateValueMock(value, fees[version].pubPurchase);
     return getAmountOutMock(
         purified,
         reserves.syntheticTonReserve,

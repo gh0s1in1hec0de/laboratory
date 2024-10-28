@@ -1,24 +1,20 @@
-import { BalanceUpdateMode, Coins, OP_LENGTH, QUERY_ID_LENGTH, TokensLaunchOps } from "../standards";
+import { OP_LENGTH, QUERY_ID_LENGTH, BalanceUpdateMode, GlobalVersions, TokensLaunchOps } from "./standards";
 import { SendTransactionRequest } from "@tonconnect/sdk";
+import { StringifiedCoins } from "./Database";
 import { beginCell } from "@ton/core";
-import {
-    CREATOR_BUYOUT_COMPUTE_FEE,
-    CREATOR_REFUND_COMPUTE_FEE,
-    NON_CALLBACK_PURCHASE_TX_COST,
-    REFUND_TX_COST
-} from "../fees";
+import { fees } from "./fees";
 
-export class TokenLaunchV1MessageBuilder {
+// TODO
+export class TxRequestBuilder {
     /*
     * - Creator buyout
     * - Wl purchase
     * - Public purchase
     * - Refund
     * - Claim
-    * TODO Looks like we don't actually need ...* 100n / 99n... etc
     */
     public static creatorBuyoutMessage(
-        { launchAddress, queryId, pureValue }: { launchAddress: string, queryId: number, pureValue: Coins },
+        { launchAddress, queryId, amount }: { launchAddress: string, queryId: number, amount: StringifiedCoins },
         validUntil: number = Math.floor(Date.now() / 1000) + 90
     ): SendTransactionRequest {
         const body = beginCell()
@@ -29,7 +25,7 @@ export class TokenLaunchV1MessageBuilder {
             validUntil,
             messages: [
                 {
-                    amount: (pureValue * 100n / 99n + CREATOR_BUYOUT_COMPUTE_FEE).toString(),
+                    amount,
                     address: launchAddress,
                     payload: body.toBoc().toString("base64")
                 }
@@ -38,7 +34,7 @@ export class TokenLaunchV1MessageBuilder {
     }
 
     public static whitelistPurchaseMessage(
-        { launchAddress, queryId, pureValue }: { launchAddress: string, queryId: number, pureValue: Coins },
+        { launchAddress, queryId, amount }: { launchAddress: string, queryId: number, amount: StringifiedCoins },
         validUntil: number = Math.floor(Date.now() / 1000) + 90
     ): SendTransactionRequest {
         const body = beginCell()
@@ -49,7 +45,7 @@ export class TokenLaunchV1MessageBuilder {
             validUntil,
             messages: [
                 {
-                    amount: (pureValue * 100n / 99n + NON_CALLBACK_PURCHASE_TX_COST).toString(),
+                    amount,
                     address: launchAddress,
                     payload: body.toBoc().toString("base64")
                 }
@@ -58,7 +54,7 @@ export class TokenLaunchV1MessageBuilder {
     }
 
     public static publicPurchaseMessage(
-        { launchAddress, queryId, pureValue }: { launchAddress: string, queryId: number, pureValue: Coins },
+        { launchAddress, queryId, amount }: { launchAddress: string, queryId: number, amount: StringifiedCoins },
         validUntil: number = Math.floor(Date.now() / 1000) + 90
     ): SendTransactionRequest {
         const body = beginCell()
@@ -71,7 +67,7 @@ export class TokenLaunchV1MessageBuilder {
                 {
                     // As the system uses AMM, it is better for us just to
                     // precalculate it with all the nuances in getPublicAmountOut
-                    amount: pureValue.toString(),
+                    amount,
                     address: launchAddress,
                     payload: body.toBoc().toString("base64")
                 }
@@ -80,14 +76,13 @@ export class TokenLaunchV1MessageBuilder {
     }
 
     public static refundMessage(
-        { launchAddress, queryId, pureValue, mode = BalanceUpdateMode.TotalWithdrawal, isCreator = false }:
-            {
-                launchAddress: string,
-                queryId: number,
-                pureValue: Coins,
-                mode: BalanceUpdateMode,
-                isCreator?: boolean
-            },
+        version: GlobalVersions,
+        { launchAddress, queryId, mode = BalanceUpdateMode.TotalWithdrawal, isCreator = false }: {
+            launchAddress: string,
+            queryId: number,
+            mode: BalanceUpdateMode,
+            isCreator?: boolean
+        },
         validUntil: number = Math.floor(Date.now() / 1000) + 90
     ): SendTransactionRequest {
         const commonRefundBody = beginCell()
@@ -97,7 +92,7 @@ export class TokenLaunchV1MessageBuilder {
             .endCell();
         const messages = [
             {
-                amount: REFUND_TX_COST.toString(),
+                amount: fees[version].refund.toString(),
                 address: launchAddress,
                 payload: commonRefundBody.toBoc().toString("base64")
             }
@@ -108,7 +103,7 @@ export class TokenLaunchV1MessageBuilder {
                 .storeUint(queryId, QUERY_ID_LENGTH)
                 .endCell();
             messages.push({
-                amount: CREATOR_REFUND_COMPUTE_FEE.toString(),
+                amount: fees[version].refund.toString(),
                 address: launchAddress,
                 payload: creatorRefundBody.toBoc().toString("base64")
             });

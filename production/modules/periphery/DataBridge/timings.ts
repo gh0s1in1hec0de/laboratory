@@ -57,7 +57,7 @@ export function getAmountOut(
         return getApproximateWlAmountOut(data as WlPhaseLimits, version, value);
 
     if (phase === SalePhase.PUBLIC && (data as SyntheticReserves).syntheticTonReserve !== undefined)
-        return getPublicAmountOut(data as SyntheticReserves, value);
+        return getPublicAmountOut(data as SyntheticReserves, version, value);
 
     throw new Error("meowreachable");
 }
