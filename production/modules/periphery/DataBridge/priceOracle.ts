@@ -36,8 +36,8 @@ export function getCreatorJettonPrice({ wlRoundFutJetLimit, wlRoundTonLimit }: W
 }
 
 // Call get config to get the last two values`get_config`
-export function getCreatorAmountOut(version: GlobalVersions, value: Coins, WlPhaseLimits: WlPhaseLimits): Coins {
-    const { purified } = validateValueMock(value, fees[version].creatorBuyout);
+export function getCreatorAmountOut(version: GlobalVersions, value: Coins, WlPhaseLimits: WlPhaseLimits, expectedFee?: Coins): Coins {
+    const { purified } = validateValueMock(value, expectedFee ?? fees[version].creatorBuyout);
     const creatorJettonPrice = getCreatorJettonPrice(WlPhaseLimits);
     return purified * creatorJettonPrice / MAX_WL_ROUND_TON_LIMIT;
 }

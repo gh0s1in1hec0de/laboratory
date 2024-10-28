@@ -7,7 +7,7 @@ import {
     BASECHAIN, getPublicAmountOut, getApproximateClaimAmount, packLaunchConfigV1ToCell,
     JETTON_MIN_TRANSFER_FEE, TokensLaunchOps, jettonFromNano, validateValueMock,
     MAX_WL_ROUND_TON_LIMIT, BalanceUpdateMode, LaunchConfigV1, getQueryId,
-    PERCENTAGE_DENOMINATOR, getCreatorAmountOut, UserVaultOps, CoreOps
+    PERCENTAGE_DENOMINATOR, getCreatorAmountOut, UserVaultOps, CoreOps, GlobalVersions
 } from "starton-periphery";
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
@@ -489,7 +489,7 @@ describe("V1", () => {
                 console.warn(`actual difference: ${fromNano(actualBalanceDifference)} (${actualBalanceDifference}) | expected difference: ${fromNano(precomputedBalanceDifference)} (${precomputedBalanceDifference})`);
             }
 
-            const expectedCreatorBalance = getCreatorAmountOut(value, {
+            const expectedCreatorBalance = getCreatorAmountOut(GlobalVersions.V2, value, {
                     wlRoundFutJetLimit: BigInt(launchConfig.jetWlLimitPct) * sampleLaunchParams.totalSupply / PERCENTAGE_DENOMINATOR,
                     wlRoundTonLimit: launchConfig.tonLimitForWlRound
                 },
@@ -774,8 +774,7 @@ describe("V1", () => {
             const amountOut = getPublicAmountOut({
                     syntheticTonReserve: saleMoneyFlowAfterFirstPublicBuy.syntheticTonReserve,
                     syntheticJetReserve: saleMoneyFlowAfterFirstPublicBuy.syntheticJetReserve
-                },
-                purified
+                }, GlobalVersions.V1, purified
             );
             console.log(`jettons in vault: ${jettonFromNano(secondPublicBuyerVaultData.jettonBalance!)}, expected: ${jettonFromNano(amountOut)}`);
             expect(secondPublicBuyerVaultData.jettonBalance!).toBeGreaterThanOrEqual(amountOut);

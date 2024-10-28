@@ -7,7 +7,7 @@ import {
     BASECHAIN, JETTON_MIN_TRANSFER_FEE, MAX_WL_ROUND_TON_LIMIT, PERCENTAGE_DENOMINATOR,
     getPublicAmountOut, getApproximateClaimAmount, packLaunchConfigV2ToCell, toPct,
     BalanceUpdateMode, TokensLaunchOps, LaunchConfigV2, UserVaultOps, CoreOps,
-    validateValueMock, jettonFromNano, getCreatorAmountOut, jettonToNano,
+    validateValueMock, jettonFromNano, getCreatorAmountOut, jettonToNano, GlobalVersions,
 } from "starton-periphery";
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
@@ -520,7 +520,8 @@ describe("V2", () => {
                 console.warn(`actual difference: ${fromNano(actualBalanceDifference)} (${actualBalanceDifference}) | expected difference: ${fromNano(precomputedBalanceDifference)} (${precomputedBalanceDifference})`);
             }
 
-            const expectedCreatorBalance = getCreatorAmountOut(value, {
+            const expectedCreatorBalance = getCreatorAmountOut(
+                GlobalVersions.V2, value, {
                     wlRoundFutJetLimit: BigInt(launchConfig.jetWlLimitPct) * sampleLaunchParams.totalSupply / PERCENTAGE_DENOMINATOR,
                     wlRoundTonLimit: launchConfig.tonLimitForWlRound
                 },
@@ -621,7 +622,7 @@ describe("V2", () => {
             expect(wrongTimeWlPurchaseResult.transactions).toHaveTransaction({
                 op: JettonOps.Transfer,
                 on: sampleTokenLaunchUtilJetWallet.address,
-                body:  beginCell()
+                body: beginCell()
                     .storeUint(JettonOps.Transfer, 32)
                     .storeUint(0, 64)
                     .storeCoins(launchConfig.utilJetWlPassAmount)
@@ -648,7 +649,7 @@ describe("V2", () => {
             expect(wrongPassWlPurchaseFailResult.transactions).toHaveTransaction({
                 op: JettonOps.Transfer,
                 on: sampleTokenLaunchUtilJetWallet.address,
-                body:  beginCell()
+                body: beginCell()
                     .storeUint(JettonOps.Transfer, 32)
                     .storeUint(0, 64)
                     .storeCoins(launchConfig.utilJetWlPassAmount - 1n)
@@ -977,7 +978,8 @@ describe("V2", () => {
             const amountOut = getPublicAmountOut({
                     syntheticTonReserve: saleMoneyFlowAfterFirstPublicBuy.syntheticTonReserve,
                     syntheticJetReserve: saleMoneyFlowAfterFirstPublicBuy.syntheticJetReserve
-                }, purified
+                },
+                GlobalVersions.V2, purified
             );
             console.log(`jettons in vault: ${jettonFromNano(secondPublicBuyerVaultData.jettonBalance!)}, expected: ${jettonFromNano(amountOut)}`);
             expect(secondPublicBuyerVaultData.jettonBalance!).toBeGreaterThanOrEqual(amountOut);

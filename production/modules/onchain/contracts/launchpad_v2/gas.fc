@@ -205,7 +205,7 @@ int get_jetton_deployment_total_gas_cost() inline_ref {
 
 ;; === Jetton Claim ===
 ;; Don't need stateinit as if vault doesn't exist, then there is nothing to claim
-const RECEIVE_CLAIM_CONSUMPTION = 7294;
+const RECEIVE_CLAIM_CONSUMPTION = 7444;
 const CLAIM_MSG_BITS = 96;
 const CLAIM_MSG_CELLS = 1; ;; not in a ref but im paranoid guy
 int get_claim_gas_cost() inline {

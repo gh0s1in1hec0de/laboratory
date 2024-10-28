@@ -1,18 +1,25 @@
-import { OP_LENGTH, QUERY_ID_LENGTH, BalanceUpdateMode, GlobalVersions, TokensLaunchOps } from "./standards";
+import {
+    OP_LENGTH,
+    QUERY_ID_LENGTH,
+    BalanceUpdateMode,
+    GlobalVersions,
+    TokensLaunchOps,
+    JettonOps,
+    Coins
+} from "./standards";
 import { SendTransactionRequest } from "@tonconnect/sdk";
 import { StringifiedCoins } from "./Database";
-import { beginCell } from "@ton/core";
-import { fees } from "./fees";
+import { Address, beginCell } from "@ton/core";
+import { fees, JETTON_MIN_TRANSFER_FEE } from "./fees";
 
-// TODO
+/*
+* - Creator buyout
+* - Wl purchase
+* - Public purchase
+* - Refund
+* - Claim
+*/
 export class TxRequestBuilder {
-    /*
-    * - Creator buyout
-    * - Wl purchase
-    * - Public purchase
-    * - Refund
-    * - Claim
-    */
     public static creatorBuyoutMessage(
         { launchAddress, queryId, amount }: { launchAddress: string, queryId: number, amount: StringifiedCoins },
         validUntil: number = Math.floor(Date.now() / 1000) + 90
@@ -33,7 +40,7 @@ export class TxRequestBuilder {
         };
     }
 
-    public static whitelistPurchaseMessage(
+    public static whitelistPurchaseV1Message(
         { launchAddress, queryId, amount }: { launchAddress: string, queryId: number, amount: StringifiedCoins },
         validUntil: number = Math.floor(Date.now() / 1000) + 90
     ): SendTransactionRequest {
@@ -47,6 +54,36 @@ export class TxRequestBuilder {
                 {
                     amount,
                     address: launchAddress,
+                    payload: body.toBoc().toString("base64")
+                }
+            ]
+        };
+    }
+
+    // Actually a jetton transfer
+    public static whitelistPurchaseV2Message(
+        { launchAddress, queryId, amount }: { launchAddress: string, queryId: number, amount: Coins },
+        { userAddress, userWalletAddress, jettonAmount }: {
+            userAddress: Address,
+            userWalletAddress: Address,
+            jettonAmount: Coins
+        },
+        validUntil: number = Math.floor(Date.now() / 1000) + 90
+    ): SendTransactionRequest {
+        const body = beginCell().storeUint(JettonOps.Transfer, 32).storeUint(queryId ?? 0, 64)
+            .storeCoins(jettonAmount)
+            .storeAddress(Address.parse(launchAddress))
+            .storeAddress(userAddress)
+            .storeMaybeRef(null)
+            .storeCoins(BigInt(amount))
+            .storeMaybeRef(null)
+            .endCell();
+        return {
+            validUntil,
+            messages: [
+                {
+                    amount: (amount + JETTON_MIN_TRANSFER_FEE).toString(),
+                    address: userWalletAddress.toString(),
                     payload: body.toBoc().toString("base64")
                 }
             ]
@@ -109,5 +146,26 @@ export class TxRequestBuilder {
             });
         }
         return { validUntil, messages };
+    }
+
+    public static claimMessage(
+        version: GlobalVersions,
+        { launchAddress, queryId }: { launchAddress: string, queryId: number, },
+        validUntil: number = Math.floor(Date.now() / 1000) + 90
+    ): SendTransactionRequest {
+        const commonRefundBody = beginCell()
+            .storeUint(TokensLaunchOps.JettonClaimRequest, OP_LENGTH)
+            .storeUint(queryId, QUERY_ID_LENGTH)
+            .endCell();
+        return {
+            validUntil,
+            messages: [
+                {
+                    amount: fees[version].claim.toString(),
+                    address: launchAddress,
+                    payload: commonRefundBody.toBoc().toString("base64")
+                }
+            ]
+        };
     }
 }
