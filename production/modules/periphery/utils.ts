@@ -3,7 +3,7 @@ import { TokenLaunchStorageV1 } from "./V1";
 import { TokenLaunchTimings } from "./types";
 import { TokenMetadata } from "./standards";
 import { DeprecatedTokenLaunchStorage } from "./D";
-import { ok as assert } from "node:assert";
+import { ok as assert } from "assert";
 
 export type UnixTimeSeconds = number;
 

@@ -1,5 +1,5 @@
 import { BIT_NUMBER_SIZE, MAX_BIT_NUMBER, maxShift } from "./const";
-import { ok as assert } from "node:assert";
+import { ok as assert } from "assert";
 
 export type CompositeHighloadQueryId = {
     shift: bigint,
