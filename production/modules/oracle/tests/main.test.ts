@@ -1,4 +1,3 @@
-import { getTransactionsForAccount, retrieveAllUnknownTransactions } from "../src/oracle";
 import { Address, TonClient, TonClient4, type Transaction, JettonMaster } from "@ton/ton";
 import { parseJettonMetadata, type RawAddressString } from "starton-periphery";
 import { test, describe, beforeAll } from "bun:test";

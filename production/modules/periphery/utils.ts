@@ -1,7 +1,7 @@
 import { beginCell, fromNano, type Slice, toNano } from "@ton/core";
 import { TokenLaunchStorageV1 } from "./V1";
 import { TokenLaunchTimings } from "./types";
-import { TokenMetadata } from "./standards";
+import { OnchainMetadataStandard } from "./standards";
 import { DeprecatedTokenLaunchStorage } from "./D";
 import { ok as assert } from "assert";
 
@@ -17,7 +17,7 @@ export function parseTokenLaunchTimings(tokenLaunchStorage: DeprecatedTokenLaunc
     };
 }
 
-export function tokenMetadataToCell(content: TokenMetadata) {
+export function tokenMetadataToCell(content: OnchainMetadataStandard) {
     return beginCell()
         .storeStringRefTail(content.uri) // Snake logic under the hood
         .endCell();

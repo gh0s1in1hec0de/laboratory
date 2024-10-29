@@ -51,7 +51,7 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
 
                     await db.storeTokenLaunch({
                         address,
-                        identifier: metadata.name! + metadata.description ? " " + metadata.description : "",
+                        identifier: `${metadata.symbol} ${metadata.name} ${metadata.description}`.trim(),
                         creator: parsedStateInit.creatorAddress.toRawString(),
                         version: coreVersion,
                         metadata,

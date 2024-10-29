@@ -1,6 +1,6 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
 import {
-    getCreatorJettonPrice, parseGetConfigResponse, parseMoneyFlows,
+    getCreatorJettonPrice, parseGetConfigResponse, parseMoneyFlows, tokenMetadataToCell,
     PERCENTAGE_DENOMINATOR, BASECHAIN, QUERY_ID_LENGTH, OP_LENGTH,
     LaunchConfigV1, Contracts, GetConfigResponse, MoneyFlows,
     TokensLaunchOps, BalanceUpdateMode, LaunchData, Coins,
@@ -9,7 +9,6 @@ import { randomAddress } from "@ton/test-utils";
 import { LaunchParams } from "./types";
 import {
     ThirtyTwoIntMaxValue,
-    tokenMetadataToCell,
     SendMessageParams,
     CoinsMaxValue,
 } from "./utils";
@@ -190,7 +189,10 @@ export class TokenLaunchV1 implements Contract {
         const dexJetShare = BigInt(launchConfig.jetDexSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
         const platformShare = BigInt(platformSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
         const creatorBuybackJetLimit = totalSupply - (wlRoundFutJetLimit + pubJetLimit + dexJetShare + platformShare);
-        const creatorJetPrice = getCreatorJettonPrice({ wlRoundFutJetLimit, wlRoundTonLimit: launchConfig.tonLimitForWlRound });
+        const creatorJetPrice = getCreatorJettonPrice({
+            wlRoundFutJetLimit,
+            wlRoundTonLimit: launchConfig.tonLimitForWlRound
+        });
 
         const generalState = beginCell()
             .storeInt(loadAtMax ? ThirtyTwoIntMaxValue : startTime, 32)

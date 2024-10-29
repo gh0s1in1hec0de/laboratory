@@ -1,5 +1,4 @@
-import { endParse, TokenMetadata } from "starton-periphery";
-import { tokenMetadataToCell } from "./utils";
+import {tokenMetadataToCell, endParse, OnchainMetadataStandard } from "starton-periphery";
 import { JettonWallet } from "./JettonWallet";
 import { JettonOps } from "./JettonConstants";
 import {
@@ -19,7 +18,7 @@ export type JettonMasterConfig = {
     supply: bigint,
     admin: Address,
     walletCode: Cell,
-    jettonContent: Cell | TokenMetadata
+    jettonContent: Cell | OnchainMetadataStandard
 };
 
 export function jettonMasterConfigCellToConfig(config: Cell): JettonMasterConfig {
@@ -202,7 +201,7 @@ export class JettonMaster implements Contract {
         });
     }
 
-    static changeContentMessage(content: Cell | TokenMetadata) {
+    static changeContentMessage(content: Cell | OnchainMetadataStandard) {
         const contentString = content instanceof Cell ? content.beginParse().loadStringTail() : content.uri;
         return beginCell().storeUint(JettonOps.ChangeMetadataUrl, 32).storeUint(0, 64) // op, queryId
             .storeStringTail(contentString)
@@ -221,7 +220,7 @@ export class JettonMaster implements Contract {
         };
     }
 
-    async sendChangeContent(provider: ContractProvider, via: Sender, content: Cell | TokenMetadata) {
+    async sendChangeContent(provider: ContractProvider, via: Sender, content: Cell | OnchainMetadataStandard) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: JettonMaster.changeContentMessage(content),

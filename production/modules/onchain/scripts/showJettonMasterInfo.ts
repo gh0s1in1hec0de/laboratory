@@ -1,6 +1,6 @@
-import { jettonWalletCodeFromLibrary, promptUserFriendlyAddress } from "./ui-utils";
 import { compile, NetworkProvider } from "@ton/blueprint";
 import { checkJettonMinter } from "./JettonMasterChecker";
+import { Address } from "@ton/core";
 
 export async function run(provider: NetworkProvider) {
     const isTestnet = provider.network() !== "mainnet";
@@ -8,13 +8,12 @@ export async function run(provider: NetworkProvider) {
     const ui = provider.ui();
 
     const jettonMinterCode = await compile("JettonMinter");
-    const jettonWalletCodeRaw = await compile("JettonWallet");
-    const jettonWalletCode = jettonWalletCodeFromLibrary(jettonWalletCodeRaw);
+    const jettonWalletCode = await compile("JettonWallet");
 
-    const jettonMinterAddress = await promptUserFriendlyAddress("Enter the address of the jetton minter", ui, isTestnet);
 
+    // TODO
     try {
-        await checkJettonMinter(jettonMinterAddress, jettonMinterCode, jettonWalletCode, provider, ui, isTestnet, false);
+        await checkJettonMinter(Address.parse(""), jettonMinterCode, jettonWalletCode, provider, ui, isTestnet, false);
     } catch (e: any) {
         ui.write(e.message);
         return;

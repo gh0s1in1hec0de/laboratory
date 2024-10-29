@@ -1,4 +1,4 @@
-import { TokenMetadata, Coins, LaunchConfigV1, } from "starton-periphery";
+import { OnchainMetadataStandard, Coins, LaunchConfigV1, } from "starton-periphery";
 import { beginCell, Cell, Sender } from "@ton/core";
 
 export const CoinsMaxValue = 2n ** 120n - 1n;
@@ -8,13 +8,6 @@ export type SendMessageParams = {
     via: Sender,
     value: Coins,
     queryId: bigint
-}
-
-// Duplicate of starton periphery function as blueprint does not work properly with imported one at some reason
-export function tokenMetadataToCell(content: TokenMetadata): Cell {
-    return beginCell()
-        .storeStringRefTail(content.uri) // Snake logic under the hood
-        .endCell();
 }
 
 

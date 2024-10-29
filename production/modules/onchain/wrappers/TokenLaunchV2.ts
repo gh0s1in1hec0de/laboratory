@@ -1,6 +1,6 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
 import {
-    getCreatorJettonPrice, parseGetConfigResponse, parseMoneyFlows,
+    getCreatorJettonPrice, parseGetConfigResponse, parseMoneyFlows, tokenMetadataToCell,
     PERCENTAGE_DENOMINATOR, BASECHAIN, QUERY_ID_LENGTH, OP_LENGTH,
     LaunchConfigV2, Contracts, GetConfigResponse, MoneyFlows,
     TokensLaunchOps, BalanceUpdateMode, LaunchData, Coins,
@@ -9,7 +9,6 @@ import { randomAddress } from "@ton/test-utils";
 import { LaunchParams } from "./types";
 import {
     ThirtyTwoIntMaxValue,
-    tokenMetadataToCell,
     SendMessageParams,
     CoinsMaxValue,
 } from "./utils";

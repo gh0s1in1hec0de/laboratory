@@ -1,10 +1,10 @@
 import { Address, fromNano, internal as internal_relaxed, type OutActionSendMsg, SendMode } from "@ton/ton";
-import { balancedTonClient } from "./client.ts";
-import { chief, getConfig } from "../config.ts";
 import { createPoolForJetton } from "./dedust";
 import { beginCell, toNano } from "@ton/core";
+import { balancedTonClient } from "./client";
+import { chief, getConfig } from "../config";
 import { chiefWalletData } from "./highload";
-import { logger } from "../logger.ts";
+import { logger } from "../logger";
 import * as db from "../db";
 import {
     DEFAULT_TIMEOUT, QUERY_ID_LENGTH,
@@ -135,7 +135,7 @@ async function createPoolsForNewJettons() {
     const poolCreationProcesses: Promise<void>[] = [];
     logger().info("[*] found new waiting for pool launches: ");
     for (const { address, creator, dexData, postDeployEnrollmentStats } of waitingForPoolLaunches) {
-        const { deployedJetton, totalTonsCollected, dexAmount } = postDeployEnrollmentStats!;
+        const { deployedJetton, totalTonsCollected, dexJettonAmount } = postDeployEnrollmentStats!;
         logger().info(` -  ${address}; payed to creator: ${dexData?.payedToCreator}`);
         actions.push({
             type: "sendMsg",
@@ -155,7 +155,7 @@ async function createPoolsForNewJettons() {
                     ourWalletAddress: deployedJetton.ourWalletAddress,
                     masterAddress: deployedJetton.masterAddress,
                 },
-                [BigInt(totalTonsCollected) * BigInt(getConfig().sale.dex_share_pct) / 100n, BigInt(dexAmount)],
+                [BigInt(totalTonsCollected) * BigInt(getConfig().sale.dex_share_pct) / 100n, BigInt(dexJettonAmount)],
                 address
             )
         );
@@ -259,8 +259,8 @@ async function handleChiefUpdates() {
                                 ourWalletAddress: sender.toRawString()
                             },
                             totalTonsCollected: value.toString(),
-                            oursAmount: oursAmount.toString(),
-                            dexAmount: dexAmount.toString()
+                            ourJettonAmount: oursAmount.toString(),
+                            dexJettonAmount: dexAmount.toString()
                         }
                     );
                 } catch (e) {

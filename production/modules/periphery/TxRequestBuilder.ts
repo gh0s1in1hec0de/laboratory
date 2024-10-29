@@ -5,14 +5,17 @@ import {
     GlobalVersions,
     TokensLaunchOps,
     JettonOps,
-    Coins
+    Coins, CoreOps
 } from "./standards";
 import { SendTransactionRequest } from "@tonconnect/sdk";
 import { StringifiedCoins } from "./Database";
-import { Address, beginCell } from "@ton/core";
+import { Address, beginCell, Cell } from "@ton/core";
 import { fees, JETTON_MIN_TRANSFER_FEE } from "./fees";
+import { tokenMetadataToCell } from "./utils";
+import { LaunchParams } from "lauchpad/wrappers/types";
 
 /*
+* - Create launch
 * - Creator buyout
 * - Wl purchase
 * - Public purchase
@@ -20,6 +23,33 @@ import { fees, JETTON_MIN_TRANSFER_FEE } from "./fees";
 * - Claim
 */
 export class TxRequestBuilder {
+    public static createLaunch(
+        { coreAddress, queryId, amount }: { coreAddress: string, queryId: number, amount: StringifiedCoins },
+        { totalSupply, startTime, platformSharePct, metadata, maybePackedConfig = null }:
+            LaunchParams & { maybePackedConfig: Cell | null },
+        validUntil: number = Math.floor(Date.now() / 1000) + 90
+    ): SendTransactionRequest {
+        const body = beginCell()
+            .storeUint(CoreOps.CreateLaunch, OP_LENGTH)
+            .storeUint(queryId, QUERY_ID_LENGTH)
+            .storeMaybeRef(maybePackedConfig)
+            .storeCoins(totalSupply)
+            .storeUint(platformSharePct, 16)
+            .storeRef(metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata))
+            .storeInt(startTime, 32)
+            .endCell();
+        return {
+            validUntil,
+            messages: [
+                {
+                    amount,
+                    address: coreAddress,
+                    payload: body.toBoc().toString("base64")
+                }
+            ]
+        };
+    }
+
     public static creatorBuyoutMessage(
         { launchAddress, queryId, amount }: { launchAddress: string, queryId: number, amount: StringifiedCoins },
         validUntil: number = Math.floor(Date.now() / 1000) + 90

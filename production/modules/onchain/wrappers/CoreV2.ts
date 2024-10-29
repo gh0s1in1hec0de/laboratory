@@ -1,11 +1,12 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
-import { SendMessageParams, tokenMetadataToCell } from "./utils";
 import { LaunchParams, UpgradeParams } from "./types";
 import { TokenLaunchV2 } from "./TokenLaunchV2";
 import { JettonMaster } from "./JettonMaster";
 import { JettonWallet } from "./JettonWallet";
+import { SendMessageParams } from "./utils";
 import {
     packLaunchConfigV2ToCell,
+    tokenMetadataToCell,
     TokensLaunchOps,
     QUERY_ID_LENGTH,
     LaunchConfigV2,
