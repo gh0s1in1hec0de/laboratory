@@ -152,16 +152,43 @@ CREATE TRIGGER after_insert_user_balance_error
     FOR EACH ROW
 EXECUTE FUNCTION notify_user_balance_error();
 
--- Active launch that has the biggest amount of user actions per today
+CREATE TABLE top_token_launch_config
+(
+    id                 SERIAL PRIMARY KEY,
+    mode               VARCHAR(10) NOT NULL CHECK (mode IN ('static', 'dynamic')) DEFAULT 'dynamic',
+    darling_of_fortune address
+);
+INSERT INTO top_token_launch_config (mode)
+VALUES ('dynamic');
+
 CREATE MATERIALIZED VIEW top_token_launch_by_actions AS
-SELECT token_launch, COUNT(*) AS action_count
-FROM user_actions
-         JOIN token_launches tl ON user_actions.token_launch = tl.address
-WHERE timestamp >= EXTRACT(EPOCH FROM date_trunc('day', NOW()))
-  AND timestamp < EXTRACT(EPOCH FROM date_trunc('day', NOW() + interval '1 day'))
-  AND EXTRACT(EPOCH FROM NOW()) < (tl.timings ->> 'publicRoundEndTime')::BIGINT
-GROUP BY token_launch
-ORDER BY action_count DESC
+SELECT CASE
+           WHEN config.mode = 'static' AND config.darling_of_fortune IS NOT NULL
+               THEN config.darling_of_fortune -- Use static token launch if mode is static
+           ELSE user_actions.token_launch -- Use dynamic top launch otherwise
+           END AS token_launch,
+       CASE
+           WHEN config.mode = 'static' AND config.darling_of_fortune IS NOT NULL
+               THEN NULL -- No action count in static mode
+           ELSE COUNT(user_actions.id) -- Count user actions for dynamic mode
+           END AS action_count
+FROM top_token_launch_config AS config
+         LEFT JOIN user_actions
+                   ON config.mode = 'dynamic'
+                       AND
+                      user_actions.timestamp >= EXTRACT(EPOCH FROM date_trunc('day', NOW())) -- Today's actions only
+                       AND user_actions.timestamp < EXTRACT(EPOCH FROM date_trunc('day', NOW() + interval '1 day'))
+         LEFT JOIN token_launches
+                   ON user_actions.token_launch = token_launches.address
+WHERE config.id = 1 -- Ensure we only reference the relevant configuration row
+  AND (config.mode = 'static'
+    OR (config.mode = 'dynamic'
+        AND EXTRACT(EPOCH FROM NOW()) >= (token_launches.timings ->> 'startTime')::BIGINT -- Launch has started
+        AND
+        EXTRACT(EPOCH FROM NOW()) < (token_launches.timings ->> 'publicRoundEndTime')::BIGINT -- Launch is still active
+           ))
+GROUP BY config.mode, config.darling_of_fortune, user_actions.token_launch
+ORDER BY action_count DESC NULLS LAST
 LIMIT 1;
 
 SELECT cron.schedule(

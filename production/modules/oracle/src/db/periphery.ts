@@ -33,7 +33,7 @@ export async function getLaunchHeight(address: RawAddressString, client?: SqlCli
 }
 
 export async function getLaunchWithTopActivity(client?: SqlClient) {
-    const res = await (client ?? globalClient)<{ tokenLaunch: RawAddressString, actionCount: number }[]>`
+    const res = await (client ?? globalClient)<{ tokenLaunch: RawAddressString, actionCount: number | null }[]>`
         SELECT token_launch, action_count
         FROM top_token_launch_by_actions
     `;
@@ -41,14 +41,5 @@ export async function getLaunchWithTopActivity(client?: SqlClient) {
         res.map(({ tokenLaunch, actionCount }) =>
             ({ tokenLaunch, actionCount })
         )[0] : null;
-}
-
-export async function getLaunchesMetadata(onchainMetadataLinks: string[], client?: SqlClient): Promise<LaunchMetadata[] | null> {
-    const res = await (client ?? globalClient)<LaunchMetadata[]>`
-        SELECT *
-        FROM launch_metadata
-        WHERE onchain_metadata_link = ANY (${onchainMetadataLinks});
-    `;
-    return res.length ? res : null;
 }
 

@@ -472,7 +472,7 @@ describe("launch sorter", () => {
         assert(balances);
         console.log(balances);
     });
-    test.skip("top activity materialized", async () => {
+    test("top activity materialized", async () => {
         console.log(await db.getLaunchWithTopActivity(client));
     });
 });
