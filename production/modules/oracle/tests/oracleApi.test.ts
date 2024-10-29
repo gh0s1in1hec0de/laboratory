@@ -1,7 +1,9 @@
 import { afterAll, beforeAll, describe, test } from "bun:test";
+import { storeRewardJetton } from "manager/src/db";
 import { randomAddress } from "@ton/test-utils";
 import { ok as assert } from "node:assert";
 import type { Address } from "@ton/ton";
+import { toNano } from "@ton/core";
 import postgres from "postgres";
 import * as db from "../src/db";
 import {
@@ -10,10 +12,9 @@ import {
     type JettonMetadata,
     UserActionType,
     GlobalVersions,
-    SortingOrder, jettonToNano
+    SortingOrder,
+    jettonToNano
 } from "starton-periphery";
-import { toNano } from "@ton/core";
-import { storeRewardJetton } from "manager/src/db";
 
 async function markLaunchAsSuccessful(address: RawAddressString, client: db.SqlClient): Promise<void> {
     const res = await client`
