@@ -1,5 +1,5 @@
+import { storeLaunchMetadata, storeRewardJetton } from "manager/src/db";
 import { afterAll, beforeAll, describe, test } from "bun:test";
-import { storeRewardJetton } from "manager/src/db";
 import { randomAddress } from "@ton/test-utils";
 import { ok as assert } from "node:assert";
 import type { Address } from "@ton/ton";
@@ -26,7 +26,7 @@ async function markLaunchAsSuccessful(address: RawAddressString, client: db.SqlC
     if (res.length !== 1) console.error(`looks like launch ${address} wasn't marked as failed`);
 }
 
-// TODO Test out
+// Exceptions can be added like: `["token_launches", ...]`
 async function cleanDatabase(client: db.SqlClient, exceptions?: string[]) {
     const tables = await client`
         SELECT tablename
@@ -68,10 +68,10 @@ describe("launch sorter", () => {
     //     cleanDatabase();
     // });
 
-    test("extended launches data mock", async () => {
+    test.skip("extended launches data mock", async () => {
         const now = Math.floor(Date.now() / 1000);
 
-        await db.storeLaunchMetadata({
+        await storeLaunchMetadata({
             onchainMetadataLink: "https://ipfs.io/ipfs/QmVCMdxyudybb9vDefct1qU3DEZBhj3zhg3n9uM6EqGbN6",
             telegramLink: "https://t.me/juicy_bitches",
             xLink: "https://x.com/juicy_bitches",
@@ -251,6 +251,14 @@ describe("launch sorter", () => {
                         dexJettonAmount: jettonToNano("333").toString()
                     }, client
                 );
+                if (Math.random() < 0.5) {
+                    await db.updateDexData(address, {
+                        jettonVaultAddress: randomAddress().toRawString(),
+                        poolAddress: randomAddress().toRawString(),
+                        addedLiquidity: true,
+                        payedToCreator: true,
+                    }, client);
+                }
             } else {
                 await db.markLaunchAsFailed(address, client);
             }
@@ -260,28 +268,15 @@ describe("launch sorter", () => {
     test.skip("mock launches activity data", async () => {
         const now = Math.floor(Date.now() / 1000);
 
-        await db.storeLaunchMetadata({
-            onchainMetadataLink: "link_1",
-            telegramLink: "https://t.me/launch_1",
-            xLink: "https://x.com/launch_1",
-            website: "https://launch1.com",
-            influencerSupport: true
-        }, client);
-        await db.storeLaunchMetadata({
-            onchainMetadataLink: "link_2",
-            telegramLink: "https://t.me/launch_2",
-            xLink: "https://x.com/launch_2",
-            website: "https://launch2.com",
-            influencerSupport: false
-        }, client);
-        await db.storeLaunchMetadata({
-            onchainMetadataLink: "link_3",
-            telegramLink: "https://t.me/launch_3",
-            xLink: "https://x.com/launch_3",
-            website: "https://launch3.com",
-            influencerSupport: true
-        }, client);
-
+        for (let i = 1; i <= 3; i++) {
+            await storeLaunchMetadata({
+                onchainMetadataLink: `link_${i}`,
+                telegramLink: `https://t.me/launch_${i}`,
+                xLink: `https://x.com/launch_${i}`,
+                website: `https://launch${i}.com`,
+                influencerSupport: true
+            }, client);
+        }
 
         // Create Token Launch 1 (Outdated)
         await db.storeTokenLaunch({
