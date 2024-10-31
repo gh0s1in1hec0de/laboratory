@@ -7,8 +7,8 @@ import { BASECHAIN } from "../standards";
 import { sign } from "ton-crypto";
 import { OP } from "./const";
 
-import { hex as CodeHex } from "./build/HighloadWalletV3.compiled.json";
-export const HighloadWalletV3Code: Cell = Cell.fromBoc(Buffer.from(CodeHex, "hex"))[0]
+// import { hex as CodeHex } from "./build/HighloadWalletV3.compiled.json";
+// export const HighloadWalletV3Code: Cell = Cell.fromBoc(Buffer.from(CodeHex, "hex"))[0]
 
 export type HighloadWalletV3Config = {
     publicKey: Buffer,

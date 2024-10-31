@@ -9,9 +9,9 @@ export type JettonMetadata = {
     uri?: string;
     name?: string;
     description?: string;
-    image?: string;
+    image?: string; // ipfs://...
     image_data?: string;
-    symbol?: string;
+    symbol?: string; // $TOKEN
     decimals?: string;
     amount_style?: string;
 };

@@ -6,8 +6,8 @@ export const GetTokenLaunchesSchema = t.Object({
     limit: t.Numeric(),
     orderBy: t.Enum(LaunchSortParameters),
     order: t.Enum(SortingOrder),
-    succeed: t.Optional(t.String()),
-    createdBy: t.Optional(t.String()),
+    succeed: t.Optional(t.String()), // true | false | undefined (succeed / failed) filter
+    createdBy: t.Optional(t.String()), // creator address | undefined (my tokens) filter
     search: t.Optional(t.String())
 });
 
