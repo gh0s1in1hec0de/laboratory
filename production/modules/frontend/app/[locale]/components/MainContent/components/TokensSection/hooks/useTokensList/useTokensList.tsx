@@ -25,26 +25,41 @@ export function useTokensList() {
     })();
   }, []);
 
-  async function fetchTokenLaunches(data: GetLaunchesChunkRequest) {
+  async function fetchTokenLaunches(data: GetLaunchesChunkRequest, isNextPage = false) {
     try {
       const res = await launchService.getTokenLaunches(filterRequestParams(data));
-      setLaunchesData(res);
+      
+      setLaunchesData(prev => isNextPage ? {
+        ...res,
+        launchesChunk: [...prev.launchesChunk, ...res.launchesChunk]
+      } : res);
     } catch (error) {
       console.error(error);
     }
   }
 
   async function fetchTokenLaunchesNextPage() {
-    if (!launchesData?.hasMore) return;
+    if (!launchesData?.hasMore || isLoadingNextPage) return;
 
-    setFilterData((prevData) => {
-      const updatedData = {
-        ...prevData,
-        page: prevData.page + 1,
-      };
-      fetchTokenLaunches(updatedData);
-      return updatedData;
-    });
+    setIsLoadingNextPage(true);
+    const nextPageData = {
+      ...filterData,
+      page: filterData.page + 1,
+    };
+
+    await fetchTokenLaunches(nextPageData, true);
+    setFilterData(nextPageData);
+    setIsLoadingNextPage(false);
+
+    // setFilterData((prevData) => {
+    //   const updatedData = {
+    //     ...prevData,
+    //     page: prevData.page + 1,
+    //   };
+    //   fetchTokenLaunches(updatedData);
+    //   setIsLoadingNextPage(false);
+    //   return updatedData;
+    // });
   }
 
   const debouncedFetch = useDebounce(fetchTokenLaunches, [500]);

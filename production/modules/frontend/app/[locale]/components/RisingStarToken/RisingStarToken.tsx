@@ -13,6 +13,7 @@ export function RisingStarToken() {
       roundedXl
       fullWidth 
       position="relative"
+      minHeight="80px"
       paddingX={2}
       paddingY={1.5}
       gap={2}

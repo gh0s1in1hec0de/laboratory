@@ -6,21 +6,24 @@ import { Box } from "@mui/material";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
 import Grid from "@mui/material/Grid2";
 import { TokenCard } from "./components/TokenCard";
+import { useTranslations } from "next-intl";
+import { getSkeletons } from "./components/TokenCardSkeleton";
 
+// todo: add virtual list
 export function TokenInfinityList({
   fetchNextPage,
   launchesData,
   isLoadingNextPage
 }: TokenInfinityListProps) {
+  const t = useTranslations("Top");
   const triggerRef = useRef() as MutableRefObject<HTMLDivElement>;
 
-  // useInfinityScroll({
-  //   triggerRef,
-  //   callback: fetchNext,
-  // });
+  useInfinityScroll({
+    triggerRef,
+    callback: fetchNextPage,
+  });
 
-  // if (!isLoading && !launchesData.launchesChunk.length) {
-  if (!launchesData.launchesChunk.length) {
+  if (!isLoadingNextPage && !launchesData.launchesChunk.length) {
     return (
       <Box
         display="flex"
@@ -31,17 +34,14 @@ export function TokenInfinityList({
         <Label
           variantColor="gray"
           variantSize="regular16"
-          label="Совпадений не найдено"
+          label={t("launchesNotFound")}
         />
       </Box>
     );
   }
 
   return (
-    <LoadingWrapper
-      isLoading={isLoadingNextPage}
-      skeleton={<Label label="Loading..." />}
-    >
+    <>
       <Grid 
         container 
         size="grow" 
@@ -58,8 +58,8 @@ export function TokenInfinityList({
       {/* {launchesData.launchesChunk.map((launch) => (
         <Label key={launch.address} label={launch.address + " " + launch.totalSupply} />
       ))} */}
-
-      {/* <Box ref={triggerRef} style={{ width: "100%", height: "20px", backgroundColor: "red" }} /> */}
-    </LoadingWrapper>
+      {isLoadingNextPage && getSkeletons()}
+      <Box ref={triggerRef} style={{ width: "100%", height: "20px", backgroundColor: "red" }} />
+    </>
   );
 }

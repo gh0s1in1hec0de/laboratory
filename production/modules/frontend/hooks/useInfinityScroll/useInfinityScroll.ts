@@ -11,8 +11,8 @@ export function useInfinityScroll({ callback, triggerRef }: UseInfinityScrollPro
     if (callback && triggerElement) {
       const options = {
         root: null,
-        rootMargin: "0px",
-        threshold: 1,
+        rootMargin: "50px",
+        threshold: 1.0,
       };
 
       observer = new IntersectionObserver(([entry]) => {

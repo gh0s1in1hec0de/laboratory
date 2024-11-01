@@ -1,7 +1,7 @@
 import { oracleService } from "@/api";
 import { LAUNCH_ERROR } from "@/errors";
 import { LAUNCH_ROUTES } from "@/routes";
-import type { GetLaunchesChunkRequest, GetLaunchesChunkResponse } from "starton-periphery";
+import type { GetLaunchesChunkRequest, GetLaunchesChunkResponse, GetRisingStarResponse } from "starton-periphery";
 
 async function getTokenLaunches(req: Partial<GetLaunchesChunkRequest>): Promise<GetLaunchesChunkResponse> {
   try {
@@ -22,6 +22,18 @@ async function getTokenLaunches(req: Partial<GetLaunchesChunkRequest>): Promise<
   }
 }
 
+async function getRisingStar(): Promise<GetRisingStarResponse> {
+  try {
+    const { data } = await oracleService.get<GetRisingStarResponse>(LAUNCH_ROUTES.GetRisingStar);
+
+    return data;
+  } catch (error) {
+    console.error(LAUNCH_ERROR.GetTokenLaunches, error);
+    throw error;
+  }
+}
+
 export const launchService = {
-  getTokenLaunches
+  getTokenLaunches,
+  getRisingStar
 };

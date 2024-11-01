@@ -28,7 +28,7 @@ export function CustomConnectButton({
   const t = useTranslations("Tasks.header");
 
   if (error) {
-    return <Label label={error} variantSize="medium14" color="red" />;
+    return <Label label={error} variantSize="medium14" variantColor="red" />;
   }
     
   return (

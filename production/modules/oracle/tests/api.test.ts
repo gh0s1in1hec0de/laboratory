@@ -1,5 +1,5 @@
 import { storeLaunchMetadata, storeRewardJetton } from "manager/src/db";
-import { afterAll, beforeAll, describe, test } from "bun:test";
+import { afterAll, beforeAll, describe, test, beforeEach } from "bun:test";
 import { randomAddress } from "@ton/test-utils";
 import { ok as assert } from "node:assert";
 import type { Address } from "@ton/ton";
@@ -65,7 +65,7 @@ describe("launch sorter", () => {
     // gh0s1in1hec0de🗿: TODO Don't call it in beforeAll, call it directly only inside tests, that assume
     // TODO cleaning previous data to increase flexibility
     // beforeEach(async () => {
-    //     cleanDatabase();
+    //     await cleanDatabase(client);
     // });
 
     test("extended launches data mock", async () => {
@@ -472,7 +472,9 @@ describe("launch sorter", () => {
         assert(balances);
         console.log(balances);
     });
-    test.skip("top activity materialized", async () => {
+    // gh0s1in1hec0de🤡: tests are working!!!!!
+    // dondarubin🗿
+    test("top activity materialized", async () => {
         console.log(await db.getLaunchWithTopActivity(client));
     });
 });
