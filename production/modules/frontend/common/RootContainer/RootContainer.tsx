@@ -4,7 +4,7 @@ import Grid from "@mui/material/Grid2";
 export function RootContainer({ children }: RootContainerProps) {
   return (
     <Grid
-      columns={{ xs: 10 }}
+      columns={10}
       container
       flexDirection="column-reverse"
       height="auto"

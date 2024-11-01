@@ -1,18 +1,18 @@
 import Grid from "@mui/material/Grid2";
 import { Header } from "./components/Header";
-import { RisingStarToken } from "./components/RisingStarToken";
-import { MainContent } from "./components/MainContent";
+import { Tasks } from "./components/Tasks";
 
-export default function Home() {
+export default function Quests() {
   return (
-    <Grid
+    <Grid 
       container
       gap={2}
-      paddingTop={1}
+      paddingTop={2}
+      position="relative"
+      width="100%"
     >
       <Header />
-      <RisingStarToken />
-      <MainContent />
+      <Tasks />
     </Grid>
   );
 }

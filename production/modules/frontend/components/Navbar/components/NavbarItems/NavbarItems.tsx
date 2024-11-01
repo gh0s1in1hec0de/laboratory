@@ -15,7 +15,9 @@ export function NavbarItems() {
   const t = useTranslations("");
 
   function handleClick(page: Pick<NavbarItemType, "page">) {
-    router.push(`/${locale}/${page.page}`);
+    if (page.page === "quests"){
+      router.push(`/${locale}/${page.page}`);
+    }
   }
 
   function isActive(page: Pick<NavbarItemType, "page">) {
@@ -32,7 +34,7 @@ export function NavbarItems() {
           alignItems="center"
           flexDirection="column"
           onClick={() => handleClick({ page })}
-          sx={{ cursor: "pointer" }}
+          sx={{ cursor: `${page === "" ? "pointer" : "default"}`, opacity: `${page === "" ? 1 : 0.5}` }}
         >
           <IconButton style={{ padding: 0, cursor: "inherit" }}>
             <IconComponent active={isActive({ page })}/>
