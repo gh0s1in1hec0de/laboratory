@@ -8,10 +8,6 @@ import { fees } from "../fees";
 export const MAX_WL_ROUND_TON_LIMIT = 10000n * toNano("1");
 export const PERCENTAGE_DENOMINATOR = 100000n;
 
-// TODO Change this system to both version clean support
-
-// Mock function, that will help to pre-calculate operations' results on frontend etc
-
 export function validateValueMock(total: Coins, fee: Coins): { purified: Coins, opn: Coins } {
     assert(fee < total, "not enough gas");
     const extra = total - fee;

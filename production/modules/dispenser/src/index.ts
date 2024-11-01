@@ -17,7 +17,7 @@ async function main() {
     console.info(`mode: ${getConfig().mode}`);
 
     startServer();
-    scanForRequests().then();
+    // scanForRequests().then();
 }
 
 main().then();

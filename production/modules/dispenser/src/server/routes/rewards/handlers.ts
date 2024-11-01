@@ -10,6 +10,7 @@ import type {
     GetRewardPoolsResponse,
     MappedRewardPositions,
     GetRewardPoolsRequest,
+    MappedRewardPools,
     GetAmountRequest,
 } from "starton-periphery";
 
@@ -34,10 +35,21 @@ export async function getAmount(
     }
 }
 
-export async function getLaunchRewardPools(
-    { tokenLaunch }: GetRewardPoolsRequest
+export async function getLaunchesRewardPools(
+    { tokenLaunches }: GetRewardPoolsRequest
 ): Promise<GetRewardPoolsResponse> {
-    return await db.getRewardPools(Address.parse(tokenLaunch).toRawString());
+    const rewardPools = await db.getRewardPools(
+        tokenLaunches.map((launch) => Address.parse(launch).toRawString())
+    );
+    return rewardPools ? rewardPools.reduce(
+        (acc, pool) => {
+            const { tokenLaunch } = pool;
+            if (!acc[tokenLaunch]) acc[tokenLaunch] = [];
+            acc[tokenLaunch].push(pool);
+            return acc;
+        },
+        {} as MappedRewardPools
+    ) : null;
 }
 
 export async function getRewardPositions(

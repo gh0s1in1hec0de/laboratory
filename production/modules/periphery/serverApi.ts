@@ -57,15 +57,20 @@ export type GetCertainLaunchRequest = { address?: RawAddressString, metadataUri?
 export type GetCertainLaunchResponse = ExtendedLaunch | null;
 
 export type GetUserBalancesRequest = { user: RawAddressString, launch?: RawAddressString }
-export type GetUserBalancesResponse = (StoredUserBalance & JettonMetadata & TokenLaunchTimings)[] | null;
+export type GetUserBalancesResponse =
+    (StoredUserBalance & JettonMetadata & TokenLaunchTimings & { isSuccessful: boolean, creator: RawAddressString, })[]
+    | null;
 
 export type GetRisingStarResponse = ExtendedLaunch | null;
 
 // Dispenser API
 export type GetAmountRequest = { userAddress: RawAddressString, tokenLaunch?: RawAddressString };
 
-export type GetRewardPoolsRequest = { tokenLaunch: RawAddressString };
-export type GetRewardPoolsResponse = (RewardPool & { metadata: JettonMetadata })[] | null;
+export type GetRewardPoolsRequest = { tokenLaunches: RawAddressString[] };
+export type MappedRewardPools = {
+    [tokenLaunch: RawAddressString]: (RewardPool & { metadata: JettonMetadata })[],
+};
+export type GetRewardPoolsResponse = MappedRewardPools | null;
 
 export type GetRewardPositionsRequest = { userAddress: RawAddressString, tokenLaunch?: RawAddressString };
 export type MappedRewardPositions = {

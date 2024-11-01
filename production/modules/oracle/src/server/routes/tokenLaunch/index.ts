@@ -5,7 +5,7 @@ import { CommonServerError } from "starton-periphery";
 import Elysia from "elysia";
 
 export function TokenLaunchRoutes() {
-    return new Elysia({ prefix: "/tokenLaunches" })
+    return new Elysia({ prefix: "/token-launches" })
         .get(
             "/get-chunk",
             async ({ query, error }) => {

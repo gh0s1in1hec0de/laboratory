@@ -10,5 +10,5 @@ export const GetRewardBalancesSchema = t.Object({
 });
 
 export const GetRewardPoolsSchema = t.Object({
-    tokenLaunch: t.String(),
+    tokenLaunches: t.String(),
 });

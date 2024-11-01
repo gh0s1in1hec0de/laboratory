@@ -68,7 +68,7 @@ describe("launch sorter", () => {
     //     cleanDatabase();
     // });
 
-    test.skip("extended launches data mock", async () => {
+    test("extended launches data mock", async () => {
         const now = Math.floor(Date.now() / 1000);
 
         await storeLaunchMetadata({
@@ -472,7 +472,7 @@ describe("launch sorter", () => {
         assert(balances);
         console.log(balances);
     });
-    test("top activity materialized", async () => {
+    test.skip("top activity materialized", async () => {
         console.log(await db.getLaunchWithTopActivity(client));
     });
 });
