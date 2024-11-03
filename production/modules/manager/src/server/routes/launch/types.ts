@@ -13,7 +13,7 @@ export const UploadMetaSchema = t.Object({
         symbol: t.Optional(t.String()),
         decimals: t.Optional(t.String()),
     }),
-    influencerSupport: t.Optional(t.Boolean())
+    influencerSupport: t.Optional(t.String())
 });
 
 export const BuyWhitelist = t.Object({

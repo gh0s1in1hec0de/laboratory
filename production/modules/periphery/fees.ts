@@ -2,7 +2,7 @@ import { Coins, GlobalVersions } from "./standards";
 
 export const JETTON_MIN_TRANSFER_FEE = 50_000_000n;
 
-type PrecalculatedFees = {
+export type PrecalculatedFees = {
     creatorBuyout: Coins;
     creatorRefund: Coins;
     wlPurchase: Coins;

@@ -12,7 +12,10 @@ export function LaunchRoutes() {
             "/upload-meta",
             async ({ body, error }) => {
                 try {
-                    return await uploadMetadataToIpfs(body);
+                    return await uploadMetadataToIpfs({
+                        ...body,
+                        influencerSupport: body.influencerSupport === "true" ? true : body.influencerSupport === "false" ? false : undefined
+                    });
                 } catch (e) {
                     if (e instanceof CommonServerError) return error(e.code, e.message);
                     else return error(500, e);

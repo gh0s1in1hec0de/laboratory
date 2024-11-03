@@ -6,7 +6,7 @@ import { Address } from "@ton/core";
 export async function run(provider: NetworkProvider) {
     const master = provider.open(
         JettonMaster.createFromAddress(
-            Address.parse("kQBdx_1Vq0E6C80GtivN_Sm5Ee4vVlpfbk1h9vqP-UTZqRCm")
+            Address.parse("kQCRJ_NbvPCMGVIXRVU7KV8sZDmeX99uzumaAr7L5ZOMTIQz")
         )
     );
     await master.sendMint(provider.sender(),

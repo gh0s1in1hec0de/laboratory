@@ -1,26 +1,25 @@
+import { BalanceUpdateMode, GlobalVersions, fees } from "starton-periphery";
+import { Address, OpenedContract } from "@ton/core";
 import { TokenLaunchV1 } from "../wrappers/TokenLaunchV1";
-import { BalanceUpdateMode } from "starton-periphery";
+import { TokenLaunchV2 } from "../wrappers/TokenLaunchV2";
 import { NetworkProvider } from "@ton/blueprint";
-import { Address, toNano } from "@ton/core";
+import { checkVersionMatch } from "./units";
+
+const V: GlobalVersions = GlobalVersions.V1;
 
 export async function run(provider: NetworkProvider) {
     const ui = provider.ui();
 
-    try {
-        const tokenLaunch = provider.open(
-            TokenLaunchV1.createFromAddress(
-                Address.parse("kQA4zG1x8STmEhCBoheEtCavjm-C8_y6wqN_tLf7_Dq5IF-x")
-            )
-        );
+    const tokenLaunchInstance = (V === GlobalVersions.V1 ? TokenLaunchV1 : TokenLaunchV2).createFromAddress(
+        Address.parse("")
+    );
+    checkVersionMatch(V, tokenLaunchInstance);
+    const tokenLaunch: OpenedContract<TokenLaunchV1 | TokenLaunchV2> = provider.open(tokenLaunchInstance);
 
-        await tokenLaunch.sendRefundRequest(
-            { via: provider.sender(), value: toNano("0.1"), queryId: 0n },
-            BalanceUpdateMode.TotalWithdrawal
-        );
+    await tokenLaunch.sendRefundRequest(
+        { via: provider.sender(), value: fees[V].refund, queryId: 0n },
+        BalanceUpdateMode.TotalWithdrawal
+    );
 
-        ui.write("Transaction sent");
-    } catch (e: any) {
-        ui.write(e.message);
-        return;
-    }
+    ui.write("Transaction sent");
 }

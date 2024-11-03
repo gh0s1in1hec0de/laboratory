@@ -19,7 +19,7 @@ export async function uploadMetadataToIpfs(
         xLink: links.x,
         telegramLink: links.telegram,
         website: links.website,
-        influencerSupport
+        influencerSupport: influencerSupport !== undefined ? influencerSupport : false
     });
     return metadataJsonCID;
 }

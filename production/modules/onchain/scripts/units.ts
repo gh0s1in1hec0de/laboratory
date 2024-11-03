@@ -1,3 +1,16 @@
+import { TokenLaunchV1 } from "../wrappers/TokenLaunchV1";
+import { TokenLaunchV2 } from "../wrappers/TokenLaunchV2";
+import { GlobalVersions } from "starton-periphery";
+import { ok as assert } from "node:assert";
+
+export function checkVersionMatch(version: GlobalVersions, tokenLaunchInstance: TokenLaunchV1 | TokenLaunchV2) {
+    assert(
+        (version === GlobalVersions.V1 && !(tokenLaunchInstance instanceof TokenLaunchV1)) ||
+        (version === GlobalVersions.V2 && !(tokenLaunchInstance instanceof TokenLaunchV2)),
+        "version mismatch"
+    );
+}
+
 function getMultiplier(decimals: number): bigint {
     let x = 1n;
     for (let i = 0; i < decimals; i++) {

@@ -2,6 +2,7 @@ import { NetworkProvider } from "@ton/blueprint";
 import { LaunchParams } from "../wrappers/types";
 import { CoreV1 } from "../wrappers/CoreV1";
 import { Address, toNano } from "@ton/core";
+import { CoreV2 } from "../wrappers/CoreV2";
 
 // TODO to add custom config support later
 export async function run(provider: NetworkProvider) {
@@ -10,11 +11,11 @@ export async function run(provider: NetworkProvider) {
     const params: LaunchParams = {
         startTime: Math.round(Date.now() / 1000) + 60,
         totalSupply: toNano("1000000"),
-        metadata: { uri: "https://another_shitcoin.meow" },
+        metadata: { uri: "https://ipfs.io/ipfs/QmSKQmJb4pBTmvtGJgg93tGVH4cfh6wYK6y8h6kwpUnEnZ" },
         platformSharePct: 1500
     };
     const core = provider.open(
-        CoreV1.createFromAddress(
+        CoreV2.createFromAddress(
             Address.parse("kQDJi05w0K6He5sXuyIHVstOTU3P4EVbSKtBWZDTZOQ_348O")
         )
     );

@@ -47,14 +47,14 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
                         (parsedStateInit.saleConfig.futJetPlatformAmount * BigInt(10000) * BigInt(100))
                         / parsedStateInit.saleConfig.futJetTotalSupply;
                     const platformShare = Number(percentage) / 10000;
-                    const metadata = await parseJettonMetadata(parsedStateInit.tools.metadata);
+                    const metadata = await parseJettonMetadata(parsedStateInit.tools.metadata, 1);
 
                     await db.storeTokenLaunch({
                         address,
                         identifier: `${metadata.symbol} ${metadata.name} ${metadata.description}`.trim(),
                         creator: parsedStateInit.creatorAddress.toRawString(),
                         version: coreVersion,
-                        metadata,
+                        metadata: { ...metadata, decimals: metadata.decimals ?? "6" },
                         platformShare,
                         minTonTreshold: parsedStateInit.saleConfig.minTonForSaleSuccess,
                         timings: parseTokenLaunchTimings(parsedStateInit),
@@ -67,7 +67,8 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
             await db.setHeightForAddress(coreAddress, currentHeight, true);
             await delay(60);
         } catch (e) {
-            logger().error(`failed to load new launches for core(${coreAddress}) update with error: ${e}`);
+            logger().error(`failed to load new launches for core(${coreAddress}) with error: ${e}`);
+            console.error(e);
             await delay(30);
         }
     }

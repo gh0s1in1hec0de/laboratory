@@ -114,7 +114,7 @@
         .end_cell();
 
     send_raw_message(
-        simple_transfer(this::chief, launch_conf::penny, "meow^^"),
+        simple_transfer(this::chief, launch_conf::penny, "penny^^"),
         SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL
     );
     send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);

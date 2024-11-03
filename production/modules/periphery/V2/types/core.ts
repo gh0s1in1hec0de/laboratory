@@ -2,7 +2,6 @@ import { Contracts } from "../../types";
 import { Coins } from "../../standards";
 import { Address } from "@ton/core";
 
-// TODO
 export type LaunchConfigV2 = {
     minTonForSaleSuccess: Coins,
     tonLimitForWlRound: Coins,

@@ -1,13 +1,13 @@
-import { LaunchConfigV1, toPct } from "starton-periphery";
+import {  jettonToNano, LaunchConfigV2, toPct } from "starton-periphery";
 import { compile, NetworkProvider } from "@ton/blueprint";
-import { CoreV1 } from "../wrappers/CoreV1";
 import { Address, toNano } from "@ton/core";
+import { CoreV2 } from "../wrappers/CoreV2";
 
 export async function run(provider: NetworkProvider) {
     const ui = provider.ui();
-    const coreCode = await compile("CoreV1");
-    const tokenLaunchCode = await compile("TokenLaunchV1");
-    const userVaultCode = await compile("UserVaultV1");
+    const coreCode = await compile("CoreV2");
+    const tokenLaunchCode = await compile("TokenLaunchV2");
+    const userVaultCode = await compile("UserVaultV2");
     const jettonMasterCode = await compile("JettonMaster");
     const jettonWalletCode = await compile("JettonWallet");
 
@@ -15,10 +15,14 @@ export async function run(provider: NetworkProvider) {
 
     // The app's code is its configuration - shout out to suckless.org folks
     const FIVE_MIN = 300;
-    const launchConfig: LaunchConfigV1 = {
+    const launchConfig: LaunchConfigV2 = {
         minTonForSaleSuccess: toNano("2"),
         tonLimitForWlRound: toNano("2"),
         penny: toNano("0.1"),
+
+        utilJetMasterAddress: Address.parse("kQCRJ_NbvPCMGVIXRVU7KV8sZDmeX99uzumaAr7L5ZOMTIQz"),
+        utilJetWlPassAmount: jettonToNano(10),
+        utilJetWlPassOneTimePrice: jettonToNano(2),
 
         jetWlLimitPct: toPct(25),
         jetPubLimitPct: toPct(25),
@@ -29,7 +33,7 @@ export async function run(provider: NetworkProvider) {
         pubRoundDurationMs: FIVE_MIN,
     };
     const core = provider.open(
-        CoreV1.createFromState(
+        CoreV2.createFromState(
             {
                 chief,
                 launchConfig,

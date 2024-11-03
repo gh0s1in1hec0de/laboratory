@@ -16,9 +16,9 @@ export type JettonMetadata = {
     amount_style?: string;
 };
 
-export async function parseJettonMetadata(content: Cell): Promise<JettonMetadata> {
+export async function parseJettonMetadata(content: Cell, forcedContentType?: 0 | 1): Promise<JettonMetadata> {
     const cs = content.beginParse();
-    const contentType = cs.loadUint(8);
+    const contentType = forcedContentType ?? cs.loadUint(8);
 
     switch (contentType) {
         case 1: // Off-chain content
