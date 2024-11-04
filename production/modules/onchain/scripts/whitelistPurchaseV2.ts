@@ -23,15 +23,14 @@ export async function run(provider: NetworkProvider) {
     // Don't forget to check values twice
     await myWallet.sendTransfer(
         provider.sender(),
-        toNano("1"),
-        jettonToNano(1),
-        Address.parse("launch_address"),
+        toNano("3"),
+        jettonToNano("10"),
+        Address.parse("kQDV-fQ8gH1fhrNNCZ1dn_sPowp3ftorP-VFZtE7cOFzaCj1"),
         callerAddress,
         null,
         toNano("2"),
         null
     );
-
 
     ui.write("Transaction sent");
 }

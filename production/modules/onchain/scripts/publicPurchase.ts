@@ -11,7 +11,7 @@ export async function run(provider: NetworkProvider) {
 
     const tokenLaunchInstance =
         (V === GlobalVersions.V1 ? TokenLaunchV1 : TokenLaunchV2).createFromAddress(
-            Address.parse("") // Check twice
+            Address.parse("kQDV-fQ8gH1fhrNNCZ1dn_sPowp3ftorP-VFZtE7cOFzaCj1") // Check twice
         );
     const tokenLaunch = provider.open(tokenLaunchInstance);
 
@@ -20,5 +20,4 @@ export async function run(provider: NetworkProvider) {
     });
 
     ui.write("Transaction sent");
-
 }

@@ -1,11 +1,11 @@
 import { BalanceUpdateMode, GlobalVersions, fees } from "starton-periphery";
-import { Address, OpenedContract } from "@ton/core";
 import { TokenLaunchV1 } from "../wrappers/TokenLaunchV1";
 import { TokenLaunchV2 } from "../wrappers/TokenLaunchV2";
+import { Address, OpenedContract } from "@ton/core";
 import { NetworkProvider } from "@ton/blueprint";
 import { checkVersionMatch } from "./units";
 
-const V: GlobalVersions = GlobalVersions.V1;
+const V: GlobalVersions = GlobalVersions.V2;
 
 export async function run(provider: NetworkProvider) {
     const ui = provider.ui();

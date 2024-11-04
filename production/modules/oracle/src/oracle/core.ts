@@ -15,7 +15,7 @@ export async function handleCoreUpdates(coreAddress: RawAddressString, coreVersi
             const newTxs = await retrieveAllUnknownTransactions(coreAddress, currentHeight, logger, balancedTonClient);
             if (!newTxs) {
                 const delayTime = 30;
-                logger().info(`no updates for code ${coreAddress}, sleeping for ${delayTime} seconds...`);
+                logger().info(`no updates for core ${coreAddress}, sleeping for ${delayTime} seconds...`);
                 await delay(delayTime);
                 continue;
             }
