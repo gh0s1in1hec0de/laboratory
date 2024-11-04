@@ -1,8 +1,4 @@
-import { ChangeEvent } from "react";
-
-export enum AdornmentVariant {
-  LOUPE = "loupe",
-}
+import { ChangeEvent, ReactNode } from "react";
 
 export interface CustomInputProps {
   placeholder: string;
@@ -10,8 +6,8 @@ export interface CustomInputProps {
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
   type?: "text" | "email" | "password";
   name?: string;
-  startAdornment?: `${AdornmentVariant}`;
-  endAdornment?: `${AdornmentVariant}`;
+  startAdornment?: ReactNode;
+  endAdornment?: ReactNode;
   errorText?: string;
   disabled?: boolean;
   fullWidth?: boolean;

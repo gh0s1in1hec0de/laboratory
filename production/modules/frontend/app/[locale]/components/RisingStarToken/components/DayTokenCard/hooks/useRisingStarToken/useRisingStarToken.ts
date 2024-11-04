@@ -20,7 +20,7 @@ export function useRisingStarToken() {
         if (getErrorStatus(error) === 500) {
           setErrorText(t("risingStarNotReachable"));
         } else {
-          setErrorText(getErrorText(error, t("risingStarError")));
+          setErrorText(getErrorText(error, t("commonError")));
         }
       } finally {
         setIsLoading(false);

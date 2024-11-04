@@ -13,6 +13,7 @@ export function Label({
   isBold = false,
   isCursive = false,
   component = "p",
+  cropped = false,
   ...props
 }: LabelProps) {
   return (
@@ -25,6 +26,7 @@ export function Label({
           [styles.disabled]: disabled,
           [styles.bold]: isBold,
           [styles.cursive]: isCursive,
+          [styles.cropped]: cropped,
         },
         [
           styles[`${variant}`], 

@@ -47,6 +47,7 @@ export function CustomTabs<T>({
                 label={t(tab.label)}
                 variantSize="medium16"
                 variantColor={label.variantColor(isSelected)}
+                cropped
               />
             </CustomButton>
           </Grid>

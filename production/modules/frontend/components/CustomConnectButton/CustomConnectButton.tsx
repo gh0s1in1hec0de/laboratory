@@ -13,6 +13,7 @@ import { DropdownButton } from "./components/DropdownButton";
 export function CustomConnectButton({ 
   successChildren, 
   fullWidth,
+  showDropdown = true,
 }: CustomConnectButtonProps) {
   const {
     isPending,
@@ -38,30 +39,31 @@ export function CustomConnectButton({
     >
       {tonWalletAddress ? (
         <>
-          <CustomDropdown 
-            fullWidth={fullWidth}
-            Button={
-              <DropdownButton 
-                smallAddress={formatAddress(tonWalletAddress)} 
-                fullWidth={fullWidth}
-              />
-            }
-            items={[
-              {
-                label: "Tasks.header.copyAddress",
-                onClick: () => handleCopyAddress(tonWalletAddress),
-              },
-              {
-                label: "Tasks.header.copyReferral",
-                onClick: () => handleCopyReferral(tonWalletAddress),
-              },
-              {
-                label: "Tasks.header.disconnectWallet",
-                onClick: () => handleClickDisconnectButton(),
-              },
-            ]}
-          />
-          
+          {showDropdown && (
+            <CustomDropdown 
+              fullWidth={fullWidth}
+              Button={
+                <DropdownButton 
+                  smallAddress={formatAddress(tonWalletAddress)} 
+                  fullWidth={fullWidth}
+                />
+              }
+              items={[
+                {
+                  label: "Tasks.header.copyAddress",
+                  onClick: () => handleCopyAddress(tonWalletAddress),
+                },
+                {
+                  label: "Tasks.header.copyReferral",
+                  onClick: () => handleCopyReferral(tonWalletAddress),
+                },
+                {
+                  label: "Tasks.header.disconnectWallet",
+                  onClick: () => handleClickDisconnectButton(),
+                },
+              ]}
+            />
+          )}
           {successChildren || null}
         </>
       ) : (

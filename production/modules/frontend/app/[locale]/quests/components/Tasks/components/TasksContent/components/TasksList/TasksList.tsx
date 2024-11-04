@@ -33,6 +33,7 @@ export function TasksList({
         container 
         gap={0.75} 
         justifyContent="center"
+        width="100%"
       >
         {tasks.length === 0 ? (
           <Label

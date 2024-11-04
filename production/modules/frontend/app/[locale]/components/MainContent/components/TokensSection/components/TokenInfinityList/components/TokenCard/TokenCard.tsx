@@ -4,11 +4,12 @@ import { Stats } from "./components/Stats";
 import Grid from "@mui/material/Grid2";
 import styles from "./TokenCard.module.scss";
 import { AdditionalInfo } from "./components/AdditionalInfo";
+import { TokenCardProps } from "./types";
+import { fromNano } from "@ton/core";
 
-export function TokenCard() {
-  const collected = 400;
-  const max = 1000;
-  const holders = 14000;
+export function TokenCard({
+  launch,
+}: TokenCardProps) {
 
   return (
     <Grid
@@ -21,46 +22,51 @@ export function TokenCard() {
     >
       <CustomAvatar
         size="small"
-        src="https://lirp.cdn-website.com/93aa737e/dms3rep/multi/opt/hacker-computer-systems-225f9fa9-1920w.jpg"
+        src={launch.metadata.image || "https://icdn.lenta.ru/images/2024/03/18/12/20240318124428151/square_1280_828947c85a8838d217fe9fcc8b0a17ec.jpg"}
         alt="Token Logo"
       />
 
       <Grid
         container
         size="grow"
-        justifyContent="space-between"
-        // flexDirection="column"
+        flexDirection="column"
         gap={0.5}
       >
         <Grid
           container
-          flexWrap="nowrap"
-          // maxWidth={{ xs: "150px", sm: "200px", md: "285px" }}
-          flexDirection="column"
-          className={styles.containerText}
+          size="grow"
         >
-          <Label
-            label="🤩 $FDSFDSFDSFdsadasfdsfdsdfds"
-            variantSize="medium16"
-            className={styles.launchTag}
-          />
+          <Grid
+            container
+            flex={1}
+          >
+            <Label
+              label={`${launch.platformShare > 0.5 ? "🤩" : ""} $${launch.metadata.symbol || "UNKNWN"}`}
+              variantSize="medium16"
+              cropped
+              offUserSelect
+            />
 
-          <Label
-            label="Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name Name "
-            variantSize="regular16"
-            variantColor="gray"
-            className={styles.launchName}
-          />
-
+            <Label
+              label={launch.metadata.description || ""}
+              variantSize="regular16"
+              variantColor="gray"
+              cropped
+              offUserSelect
+            />
+          </Grid>
         </Grid>
-  
-        <Stats
-          collected={collected}
-          max={max}
-        />
 
-        <AdditionalInfo holders={holders} />
+        <AdditionalInfo 
+          holders={launch.activeHolders || 0} 
+          timings={launch.timings}
+        />
       </Grid>
+
+      <Stats
+        collected={Number(fromNano(launch.totalTonsCollected || 0))}
+        max={Number(fromNano(launch.minTonTreshold || 0))}
+      />
     </Grid>
   );
 }

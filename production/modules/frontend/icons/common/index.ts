@@ -8,3 +8,5 @@ export { TicketIcon } from "./TicketIcon/TicketIcon";
 export { TicketsIcon } from "./TicketsIcon/TicketsIcon";
 export { LoupeIcon } from "./LoupeIcon/LoupeIcon";
 export { ArrowUpRightIcon } from "./ArrowUpRightIcon/ArrowUpRightIcon";
+export { FilterSettingsIcon } from "./FilterSettingsIcon/FilterSettingsIcon";
+export { CheckIcon } from "./CheckIcon/CheckIcon";

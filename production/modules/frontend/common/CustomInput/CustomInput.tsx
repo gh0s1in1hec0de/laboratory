@@ -1,17 +1,16 @@
 "use client";
 
-import { FormControl, FormHelperText, Input, InputAdornment } from "@mui/material";
-import styles from "./CustomInput.module.scss";
-import { CustomInputProps, AdornmentVariant } from "./types";
-import { LoupeIcon } from "@/icons";
 import { classNames } from "@/utils";
+import { FormControl, FormHelperText, Input, InputAdornment, Box } from "@mui/material";
 import { Label } from "../Label";
+import styles from "./CustomInput.module.scss";
+import { CustomInputProps } from "./types";
 
-export function CustomInput({ 
-  placeholder, 
-  type = "text", 
-  name, 
-  value, 
+export function CustomInput({
+  placeholder,
+  type = "text",
+  name,
+  value,
   onChange,
   startAdornment,
   endAdornment,
@@ -19,18 +18,6 @@ export function CustomInput({
   disabled,
   fullWidth = true,
 }: CustomInputProps) {
-
-  function renderAdornment(adornment: `${AdornmentVariant}` | undefined, position: "start" | "end") {
-    if (adornment === AdornmentVariant.LOUPE) {
-      return (
-        <InputAdornment position={position}>
-          <LoupeIcon disabled={disabled} />
-        </InputAdornment>
-      );
-    }
-    return undefined;
-  }
-  
   return (
     <FormControl
       className={classNames(styles.formControl, {
@@ -40,20 +27,29 @@ export function CustomInput({
     >
       <Input
         placeholder={placeholder}
-        type={type} 
+        type={type}
         name={name}
         value={value}
         disabled={disabled}
         onChange={onChange}
-        startAdornment={renderAdornment(startAdornment, "start")}
-        endAdornment={renderAdornment(endAdornment, "end")}
+        startAdornment={(
+          <InputAdornment position="start">
+            {startAdornment}
+          </InputAdornment>
+        )}
+        endAdornment={
+          <InputAdornment position="end" style={{ display: "flex", alignItems: "center" }}>
+            <Box style={{ backgroundColor: "var(--gray-dark)", height: "16px", width: "1px" }} />
+            {endAdornment}
+          </InputAdornment>
+        }
         classes={{
           root: styles.root,
           input: styles.input,
           disabled: styles.disabled,
         }}
       />
-      
+
       <FormHelperText>
         <Label
           component="span"

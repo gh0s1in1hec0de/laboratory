@@ -3,51 +3,107 @@ import { Label } from "@/common/Label";
 import { StarIcon } from "@/icons";
 import Grid from "@mui/material/Grid2";
 import { AdditionalInfoProps } from "./types";
+import { getCurrentSalePhase, SalePhase } from "starton-periphery";
 
-export function AdditionalInfo({ holders }: AdditionalInfoProps) {
+export function AdditionalInfo({ holders, timings }: AdditionalInfoProps) {
+  const { phase } = getCurrentSalePhase(timings);
+
+  function renderPhase() {
+    switch (phase) {
+    case SalePhase.CREATOR:
+      return (
+        <MainBox
+          container
+          alignItems="center"
+          bgColor="green"
+          padding="4px 10px"
+          rounded
+        >
+          <Label
+            label="Creator"
+            variantSize="regular14"
+            offUserSelect
+          />
+        </MainBox>
+      );
+    case SalePhase.WHITELIST:
+      return (
+        <MainBox
+          container
+          alignItems="center"
+          bgColor="gray"
+          padding="4px 10px"
+          rounded
+        >
+          <Label
+            label="Star Club"
+            variantSize="regular14"
+            offUserSelect
+          />
+        </MainBox>
+      );
+    case SalePhase.PUBLIC:
+      return (
+        <MainBox
+          container
+          alignItems="center"
+          gap="2px"
+          bgColor="orange"
+          padding="4px 10px"
+          rounded
+        >
+          <Label
+            label="Public"
+            variantSize="regular14"
+            variantColor="orange"
+          />
+        </MainBox>
+      );
+    case SalePhase.ENDED:
+      return (
+        <MainBox
+          container
+          alignItems="center"
+          bgColor="orange"
+          padding="4px 10px"
+          rounded
+        >
+          <Label
+            label="Ended"
+            variantSize="regular14"
+            variantColor="red"
+            offUserSelect
+          />
+        </MainBox>
+      );
+    default:
+      return null;
+    }
+  }
+
   return (
     <Grid
       container
       gap={0.5}
-      size={{ xs: 12 }}
+      size="grow"
       alignItems="center"
     >
-      {/* <MainBox
+      {renderPhase()}
+      
+      <Grid
         container
         alignItems="center"
-        gap="2px"
-        bgColor="orange"
-        padding="4px 10px"
-        rounded
+        gap={0.5}
       >
+        <StarIcon />
+
         <Label
-          label="Public"
+          label={`${holders} holders`}
           variantSize="regular14"
-          variantColor="orange"
+          variantColor="gray"
+          offUserSelect
         />
-      </MainBox> */}
-
-      <MainBox
-        container
-        alignItems="center"
-        gap="2px"
-        bgColor="gray"
-        padding="4px 10px"
-        rounded
-      >
-        <Label
-          label="Star Club"
-          variantSize="regular14"
-        />
-      </MainBox>
-
-      <StarIcon />
-
-      <Label
-        label={`${holders} holders`}
-        variantSize="regular14"
-        variantColor="gray"
-      />
+      </Grid>
     </Grid>
   );
 }

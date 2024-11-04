@@ -1,9 +1,11 @@
-import { useDebounce } from "@/hooks";
+import { useDebounce, useToggle } from "@/hooks";
 import { launchService } from "@/services";
 import { ChangeEvent, useEffect, useState } from "react";
 import { initialFilterData, initialLaunchesData } from "./initValue";
 import type { GetLaunchesChunkRequest, GetLaunchesChunkResponse } from "starton-periphery";
 import { filterRequestParams } from "./helpers";
+import { getErrorText } from "@/utils";
+import { useTranslations } from "next-intl";
 
 export function useTokensList() {
   const [filterData, setFilterData] = useState<GetLaunchesChunkRequest>(initialFilterData);
@@ -12,6 +14,22 @@ export function useTokensList() {
   const [errorText, setErrorText] = useState<string>("");
   const [isLoadingPage, setIsLoadingPage] = useState<boolean>(true);
   const [isLoadingNextPage, setIsLoadingNextPage] = useState<boolean>(false);
+  const [isOpenDrawer, toggleOpenDrawer] = useToggle(false);
+  const t = useTranslations("Top");
+
+  async function fetchTokenLaunches(data: GetLaunchesChunkRequest, isNextPage = false) {
+    try {
+      const res = await launchService.getTokenLaunches(filterRequestParams(data));
+      
+      setLaunchesData(prev => isNextPage ? {
+        ...res,
+        launchesChunk: [...prev.launchesChunk, ...res.launchesChunk],
+        hasMore: res.hasMore,
+      } : res);
+    } catch (error) {
+      setErrorText(getErrorText(error, t("commonError")));
+    }
+  }
 
   useEffect(() => {
     (async () => {
@@ -25,23 +43,13 @@ export function useTokensList() {
     })();
   }, []);
 
-  async function fetchTokenLaunches(data: GetLaunchesChunkRequest, isNextPage = false) {
-    try {
-      const res = await launchService.getTokenLaunches(filterRequestParams(data));
-      
-      setLaunchesData(prev => isNextPage ? {
-        ...res,
-        launchesChunk: [...prev.launchesChunk, ...res.launchesChunk]
-      } : res);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
   async function fetchTokenLaunchesNextPage() {
     if (!launchesData?.hasMore || isLoadingNextPage) return;
+    //todo: arrow pagination. remove this if dont need
+    // if (!launchesData?.hasMore) return;
 
     setIsLoadingNextPage(true);
+
     const nextPageData = {
       ...filterData,
       page: filterData.page + 1,
@@ -50,16 +58,6 @@ export function useTokensList() {
     await fetchTokenLaunches(nextPageData, true);
     setFilterData(nextPageData);
     setIsLoadingNextPage(false);
-
-    // setFilterData((prevData) => {
-    //   const updatedData = {
-    //     ...prevData,
-    //     page: prevData.page + 1,
-    //   };
-    //   fetchTokenLaunches(updatedData);
-    //   setIsLoadingNextPage(false);
-    //   return updatedData;
-    // });
   }
 
   const debouncedFetch = useDebounce(fetchTokenLaunches, [500]);
@@ -82,10 +80,12 @@ export function useTokensList() {
   return {
     search,
     handleSearch,
-    fetchTokenLaunches,
     launchesData,
     fetchTokenLaunchesNextPage,
     isLoadingPage,
     isLoadingNextPage,
+    errorText,
+    isOpenDrawer,
+    toggleOpenDrawer,
   };
 }

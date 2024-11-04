@@ -9,6 +9,7 @@ export default function Home() {
       container
       gap={2}
       paddingTop={1}
+      width="100%"
     >
       <Header />
       <RisingStarToken />

@@ -33,13 +33,12 @@ export function RisingStarTokenCard() {
       <Grid
         container
         gap={1}
-        size={{ xs: 12 }}
+        size={12}
       >
         <CustomAvatar
           size="medium"
-          src={tokenData?.metadata.image || ""}
-          alt="https://lirp.cdn-website.com/93aa737e/dms3rep/multi/opt/hacker-computer-systems-225f9fa9-1920w.jpg"
-          // alt="Rising Star Token"
+          src={tokenData?.metadata.image || "https://icdn.lenta.ru/images/2024/03/18/12/20240318124428151/square_1280_828947c85a8838d217fe9fcc8b0a17ec.jpg"}
+          alt="Rising Star Token"
         />
 
         <TokenInfo

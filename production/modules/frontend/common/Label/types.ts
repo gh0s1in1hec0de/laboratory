@@ -21,6 +21,7 @@ export enum LabelColors {
   Gray = "gray",
   Red = "red",
   Green = "green",
+  GreenDark = "greenDark",
 }
   
 export interface LabelProps extends TypographyProps {
@@ -32,4 +33,5 @@ export interface LabelProps extends TypographyProps {
   disabled?: boolean;
   isBold?: boolean;
   isCursive?: boolean;
+  cropped?: boolean;
 }

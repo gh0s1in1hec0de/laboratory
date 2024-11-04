@@ -17,6 +17,13 @@
   &.cursive {
     font-style: italic;
   } 
+
+  &.cropped {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+  }
 }
 
 
@@ -56,6 +63,14 @@
 
 .green {
   color: var(--green-regular);
+
+  &.disabled {
+    color: var(--green-dark);
+  }
+}
+
+.greenDark {
+  color: var(--green-dark);
 
   &.disabled {
     color: var(--green-dark);

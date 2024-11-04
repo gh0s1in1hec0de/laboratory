@@ -46,7 +46,11 @@
 		"waveLaunchButton": "Wave Launch",
 		"waveLaunchCloseButton": "Got it!",
 		"searchPlaceholder": "Search",
-		"error": "Oops, something went wrong... Please reload the page or try again later.",
+		"commonError": "Oops, something went wrong... Please reload the page or try again later.",
+		"risingStarNotFound": "Rising Star not found",
+		"risingStarNotReachable": "Rising Star not reachable",
+		"launchesNotFound": "No matches found",
+		"createToken": "Create token",
 		"starClubDrawer": {
 			"firstParagraph": {
 				"text1": "Star club"

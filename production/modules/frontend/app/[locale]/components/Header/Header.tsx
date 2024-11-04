@@ -3,6 +3,7 @@ import { CustomConnectButton } from "@/components/CustomConnectButton";
 import { TonProvider } from "@/providers/ton";
 import Grid from "@mui/material/Grid2";
 import { useTranslations } from "next-intl";
+import { CreateTokenButton } from "./components/CreateTokenButton";
 
 export function Header() {
   const t = useTranslations("Top");
@@ -20,7 +21,10 @@ export function Header() {
       />
 
       <TonProvider>
-        <CustomConnectButton />
+        <CustomConnectButton
+          successChildren={<CreateTokenButton />}
+          showDropdown={false}
+        />
       </TonProvider>
     </Grid>
   );

@@ -5,6 +5,7 @@ export enum MainBoxBgColor {
   Transparent = "transparent",
   Gray = "gray",
   Orange = "orange",
+  Green = "green",
 }
 
 export interface MainBoxProps extends Grid2Props {

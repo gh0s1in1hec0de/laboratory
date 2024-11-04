@@ -27,7 +27,8 @@ export function ProgressInfo({
       >
         <LinearProgress
           variant="determinate"
-          value={collected / max * 100}
+          value={collected > max ? 100 : collected / max * 100}
+          // value={collected / max * 100}
           classes={{
             bar: styles.bar,
             root: styles.root,

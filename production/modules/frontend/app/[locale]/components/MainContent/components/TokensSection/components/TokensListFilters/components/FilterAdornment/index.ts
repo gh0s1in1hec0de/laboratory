@@ -1,0 +1,1 @@
+export { FilterAdornment } from "./FilterAdornment";

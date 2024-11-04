@@ -16,12 +16,18 @@ export function TaskInfo({ title, completed, reward, open, disabled }: TaskInfoP
     >
       <TicketIcon />
 
-      <Grid container flexDirection="column" gap={0.25}>
+      <Grid 
+        container 
+        flexDirection="column" 
+        gap={0.25}
+        flex={1}
+      >
         <Label 
           label={title} 
           variantSize="medium16"
           offUserSelect
           disabled={disabled}
+          cropped
         />
 
         <Grid container gap={1} alignItems="center">
@@ -35,13 +41,16 @@ export function TaskInfo({ title, completed, reward, open, disabled }: TaskInfoP
 
           <StarIcon />
 
-          <Label 
-            label={`${reward} ${t("ticket")}`} 
-            variantSize="regular14" 
-            variantColor="gray"
-            offUserSelect
-            disabled={disabled}
-          />
+          <Grid container flex={1} minWidth="40px">
+            <Label 
+              label={`${reward} ${t("ticket")}`} 
+              variantSize="regular14" 
+              variantColor="gray"
+              offUserSelect
+              disabled={disabled}
+              cropped
+            />
+          </Grid>
         </Grid>
       </Grid>
 

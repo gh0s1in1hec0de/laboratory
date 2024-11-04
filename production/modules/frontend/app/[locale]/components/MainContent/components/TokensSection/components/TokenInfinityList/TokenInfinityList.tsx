@@ -1,13 +1,12 @@
 import { Label } from "@/common/Label";
 import { useInfinityScroll } from "@/hooks";
-import { MutableRefObject, useRef } from "react";
-import { TokenInfinityListProps } from "./types";
 import { Box } from "@mui/material";
-import { LoadingWrapper } from "@/common/LoadingWrapper";
 import Grid from "@mui/material/Grid2";
-import { TokenCard } from "./components/TokenCard";
 import { useTranslations } from "next-intl";
+import { MutableRefObject, useRef } from "react";
+import { TokenCard } from "./components/TokenCard";
 import { getSkeletons } from "./components/TokenCardSkeleton";
+import { TokenInfinityListProps } from "./types";
 
 // todo: add virtual list
 export function TokenInfinityList({
@@ -41,25 +40,42 @@ export function TokenInfinityList({
   }
 
   return (
-    <>
-      <Grid 
-        container 
-        size="grow" 
+    <Grid
+      container
+      size="grow"
+      flexDirection="column"
+    >
+      <Grid
+        container
+        size="grow"
         flexDirection="column"
         gap={0.5}
       >
-        {launchesData.launchesChunk.map((launch) => ( 
-          <TokenCard 
-            key={launch.id} 
+        {launchesData.launchesChunk.map((launch) => (
+          <TokenCard
+            key={launch.id}
+            launch={launch}
           />
         ))}
       </Grid>
-      {/* <Box style={{ width: "100%", height: "100vh", display: "flex", justifyContent: "flex-end", flexDirection: "column" }}> */}
-      {/* {launchesData.launchesChunk.map((launch) => (
-        <Label key={launch.address} label={launch.address + " " + launch.totalSupply} />
-      ))} */}
+
       {isLoadingNextPage && getSkeletons()}
-      <Box ref={triggerRef} style={{ width: "100%", height: "20px", backgroundColor: "red" }} />
-    </>
+
+      <Box ref={triggerRef} style={{ width: "100%", height: "20px" }} />
+
+      {/* {!isLoadingNextPage && launchesData.hasMore && (
+        <Grid
+          container
+          justifyContent="center"
+          alignItems="center"
+        >
+          <IconButton
+            onClick={fetchNextPage}
+          >
+            <ArrowIcon />
+          </IconButton>
+        </Grid>
+      )} */}
+    </Grid>
   );
 }

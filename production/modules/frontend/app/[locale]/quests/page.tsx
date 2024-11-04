@@ -9,6 +9,7 @@ export default function Quests() {
       gap={2}
       paddingTop={2}
       position="relative"
+      width="100%"
     >
       <Header />
       <Tasks />

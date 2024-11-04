@@ -11,7 +11,7 @@ export function useInfinityScroll({ callback, triggerRef }: UseInfinityScrollPro
     if (callback && triggerElement) {
       const options = {
         root: null,
-        rootMargin: "50px",
+        rootMargin: "0px",
         threshold: 1.0,
       };
 

@@ -21,6 +21,7 @@ export function TokenInfo({
       <Label
         label={name}
         variantSize="bold18"
+        cropped
       />
 
       <Grid
@@ -33,13 +34,19 @@ export function TokenInfo({
           variantSize="regular16"
         />
 
-        <StarIcon />
+        <Grid
+          container
+          alignItems="center"
+          gap={0.5}
+        >
+          <StarIcon />
 
-        <Label
-          label={`${holders} ${t("holdersTitle")}`}
-          variantSize="regular14"
-          variantColor="gray"
-        />
+          <Label
+            label={`${holders} ${t("holdersTitle")}`}
+            variantSize="regular14"
+            variantColor="gray"
+          />
+        </Grid>
       </Grid>
     </Grid>
   );

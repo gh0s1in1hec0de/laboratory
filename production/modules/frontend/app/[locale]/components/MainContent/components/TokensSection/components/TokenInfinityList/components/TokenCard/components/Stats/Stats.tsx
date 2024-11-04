@@ -14,6 +14,7 @@ export function Stats({
       container
       flexDirection="column"
       alignItems="center"
+      minWidth="65px"
       gap={0.5}
     >
       <CircularProgress
@@ -32,7 +33,7 @@ export function Stats({
           root: styles.main,
           circle: styles.circle,
         }}
-        value={collected / max * 100}
+        value={collected > max ? 100 : collected / max * 100}
         size={28}
         thickness={6}
       />

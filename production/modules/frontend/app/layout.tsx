@@ -55,7 +55,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <body className={`${manrope.variable} ${manrope.className}`}>
+      <body className={`${manrope.variable} ${manrope.className}`} style={{ overflowAnchor: "none" }}>
         <NextIntlClientProvider messages={messages}>
           <AppRouterCacheProvider options={{ key: "css", enableCssLayer: true }}>
             {children}

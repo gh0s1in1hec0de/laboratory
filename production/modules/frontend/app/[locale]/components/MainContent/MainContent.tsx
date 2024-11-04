@@ -18,10 +18,16 @@ export function MainContent() {
         alignItems="center" 
         gap={1}
       >
-        <Label 
-          label={t("topTokensTitle")} 
-          variantSize="semiBold24" 
-        />
+        <Grid
+          container
+          flex={1}
+        >
+          <Label 
+            label={t("topTokensTitle")} 
+            variantSize="semiBold24" 
+            cropped
+          />
+        </Grid>
 
         <WaveLaunchDrawer />
       </Grid>
