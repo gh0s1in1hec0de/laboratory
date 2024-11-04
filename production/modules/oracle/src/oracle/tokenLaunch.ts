@@ -11,30 +11,27 @@ import { ok as assert } from "node:assert";
 import { logger } from "../logger";
 import * as db from "../db";
 
-export async function spawnNewLaunchesScanners(scanFrom?: number) {
-    let timeUpdate = scanFrom;
+export async function spawnNewLaunchesScanners() {
+    const monitoredLaunches: Set<RawAddressString> = new Set();
     while (true) {
         try {
-            const newLaunches = await db.getActiveTokenLaunches(timeUpdate);
+            // All the active token launches
+            const newLaunches = await db.getActiveTokenLaunches();
             if (!newLaunches) {
                 logger().info(`[*] ${spawnNewLaunchesScanners.name} - no active launches found`); // THIS CODE IS A FUCKING JOKE BTW
                 await delay(30);
                 continue;
             }
-            logger().info(`[*] ${spawnNewLaunchesScanners.name} - found ${newLaunches.length} new launches: `);
-            for (const { address } of newLaunches) {
-                logger().info(` -  ${address}`);
-            }
+            if (newLaunches.length > monitoredLaunches.size) logger().info(`[*] ${spawnNewLaunchesScanners.name} - found ${newLaunches.length} new launches: `);
             for (const launch of newLaunches) {
+                if (monitoredLaunches.has(launch.address)) continue;
+                logger().info(` -  ${launch.address}`);
                 balancedTonClient.incrementActiveLaunchesAmount();
+                monitoredLaunches.add(launch.address);
                 handleTokenLaunchUpdates(launch);
-                await delay(1); // As we don't want all the api requests in the same moment
+                await delay(1.5); // As we don't want all the api requests in the same moment
             }
-            timeUpdate = newLaunches.reduce((latest, launch) => {
-                return launch.createdAt > latest ? launch.createdAt : latest;
-            }, newLaunches[0].createdAt);
-            logger().debug(`[*] ${spawnNewLaunchesScanners.name}: scan from time was set to ${timeUpdate}`);
-            await delay(1);
+            await delay(10);
         } catch (e) {
             logger().error("failed to spawn new launch scanner with error ", e);
         }

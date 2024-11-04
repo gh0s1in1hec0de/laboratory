@@ -15,10 +15,10 @@ export async function getLaunchesChunk(req: GetLaunchesChunkRequest): Promise<Ge
 }
 
 export async function getCertainLaunch(
-    { address, metadataUri }: GetCertainLaunchRequest
+    { creator, address, metadataUri }: GetCertainLaunchRequest
 ): Promise<GetCertainLaunchResponse> {
-    if (!address && !metadataUri) throw new CommonServerError(400, "at least one of parameters must be provided");
-    return await db.getLaunch({ address, metadataUri });
+    if (!creator && !address && !metadataUri) throw new CommonServerError(400, "at least one of parameters must be provided");
+    return await db.getLaunch({ creator, address, metadataUri });
 }
 
 export async function getRisingStar(): Promise<GetRisingStarResponse> {

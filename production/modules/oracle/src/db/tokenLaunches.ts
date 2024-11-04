@@ -23,13 +23,12 @@ export async function getTokenLaunch(address: RawAddressString, client?: SqlClie
 }
 
 // Returns `null` to show that nothing was found the explicit way
-export async function getActiveTokenLaunches(createdAt?: UnixTimeSeconds, client?: SqlClient): Promise<StoredTokenLaunch[] | null> {
+export async function getActiveTokenLaunches(client?: SqlClient): Promise<StoredTokenLaunch[] | null> {
     const c = client ?? globalClient;
     const res = await c<StoredTokenLaunch[]>`
         SELECT *
         FROM token_launches
         WHERE (timings ->> 'endTime')::BIGINT - EXTRACT(EPOCH FROM now()) > 30
-          AND created_at > ${createdAt ? createdAt : 0};
     `;
     return res.length ? res : null;
 }
@@ -69,8 +68,7 @@ export async function storeTokenLaunch(
 }
 
 async function getActiveHoldersForLaunches(
-    addresses: RawAddressString[],
-    client?: SqlClient
+    addresses: RawAddressString[], client?: SqlClient
 ): Promise<Map<RawAddressString, number>> {
     const res = await (client ?? globalClient)<{ tokenLaunch: RawAddressString, activeHolders: number }[]>`
         SELECT token_launch, COUNT(*) AS active_holders
@@ -81,14 +79,15 @@ async function getActiveHoldersForLaunches(
     return new Map<RawAddressString, number>(res.map(r => [r.tokenLaunch, r.activeHolders]));
 }
 
-export async function getLaunch({
-    address,
-    metadataUri
-}: GetCertainLaunchRequest, client?: SqlClient): Promise<ExtendedLaunch | null> {
+export async function getLaunch(
+    { creator, address, metadataUri }: GetCertainLaunchRequest, client?: SqlClient
+): Promise<ExtendedLaunch | null> {
     const c = client ?? globalClient;
-    const condition = address ?
-        c`tl.address = ${address}` :
-        c`(tl.metadata ->> 'uri')::TEXT = ${metadataUri!}`;
+    const condition = {
+        address: c`tl.address = ${address!}`,
+        creator: c`tl.creator = ${creator!} AND (timings ->> 'creatorRoundEndTime')::BIGINT > EXTRACT(EPOCH FROM now())`,
+        metadataUri: c`(tl.metadata ->> 'uri')::TEXT = ${metadataUri!}`
+    }[address ? "address" : creator ? "creator" : "metadataUri"];
 
     const res = await c<(StoredTokenLaunch & LaunchBalance & Partial<LaunchMetadata>)[]>`
         SELECT tl.*, lb.*, lm.*
@@ -150,7 +149,9 @@ export enum EndedLaunchesCategories {
 }
 
 // Returns token launches, that have been already ended, needs to be categorized as "successful and waits for deployment"/"unsuccessful"
-export async function getTokenLaunchesByCategories(category: EndedLaunchesCategories, client?: SqlClient): Promise<StoredTokenLaunch[] | null> {
+export async function getTokenLaunchesByCategories(
+    category: EndedLaunchesCategories, client?: SqlClient
+): Promise<StoredTokenLaunch[] | null> {
     const c = client ?? globalClient;
     const isSuccessful = c`AND is_successful IS TRUE`;
 
@@ -174,7 +175,9 @@ export async function getTokenLaunchesByCategories(category: EndedLaunchesCatego
     return res.length ? res : null;
 }
 
-export async function updateLaunchTimings(tokenLaunchAddress: RawAddressString, newTimings: TokenLaunchTimings, client?: SqlClient): Promise<void> {
+export async function updateLaunchTimings(
+    tokenLaunchAddress: RawAddressString, newTimings: TokenLaunchTimings, client?: SqlClient
+): Promise<void> {
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
         UPDATE token_launches
@@ -195,7 +198,9 @@ export async function markLaunchAsFailed(address: RawAddressString, client?: Sql
     if (res.length !== 1) logger().error(`looks like launch ${address} wasn't marked as failed`);
 }
 
-export async function updatePostDeployEnrollmentStats(tokenLaunchAddress: RawAddressString, stats: PostDeployEnrollmentStats, client?: SqlClient): Promise<void> {
+export async function updatePostDeployEnrollmentStats(
+    tokenLaunchAddress: RawAddressString, stats: PostDeployEnrollmentStats, client?: SqlClient
+): Promise<void> {
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
         UPDATE token_launches
@@ -207,7 +212,9 @@ export async function updatePostDeployEnrollmentStats(tokenLaunchAddress: RawAdd
     if (res.length !== 1) logger().error(`looks like enrollment stats for ${tokenLaunchAddress} wasn't updated`);
 }
 
-export async function updateDexData(tokenLaunchAddress: RawAddressString, dexData: DexData, client?: SqlClient): Promise<void> {
+export async function updateDexData(
+    tokenLaunchAddress: RawAddressString, dexData: DexData, client?: SqlClient
+): Promise<void> {
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
         UPDATE token_launches

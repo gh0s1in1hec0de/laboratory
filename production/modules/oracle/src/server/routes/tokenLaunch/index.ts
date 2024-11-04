@@ -40,7 +40,7 @@ export function TokenLaunchRoutes() {
             }
         )
         .get(
-            "/get-certain",
+            "/get-rising-star",
             async ({ error }) => {
                 try {
                     return await getRisingStar();

@@ -51,9 +51,9 @@ export type GetLaunchesChunkRequest = {
     createdBy?: RawAddressString,
     search?: string,
 }
-export type GetLaunchesChunkResponse = { launchesChunk: ExtendedLaunch[], hasMore: boolean, }
+export type GetLaunchesChunkResponse = { launchesChunk: ExtendedLaunch[], hasMore: boolean, };
 
-export type GetCertainLaunchRequest = { address?: RawAddressString, metadataUri?: string }
+export type GetCertainLaunchRequest = { creator?: RawAddressString, address?: RawAddressString, metadataUri?: string };
 export type GetCertainLaunchResponse = ExtendedLaunch | null;
 
 export type GetUserBalancesRequest = { user: RawAddressString, launch?: RawAddressString }

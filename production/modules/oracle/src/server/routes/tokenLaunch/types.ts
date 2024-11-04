@@ -12,6 +12,7 @@ export const GetTokenLaunchesSchema = t.Object({
 });
 
 export const GetTokenLaunchSchema = t.Object({
+    creator: t.Optional(t.String()),
     address: t.Optional(t.String()),
     metadataUri: t.Optional(t.String())
 });
