@@ -1,5 +1,5 @@
 import { LaunchSortParameters, SortingOrder, } from "./utils";
-import type { RawAddressString } from "./standards";
+import type { Coins, RawAddressString } from "./standards";
 import { JettonMetadata } from "./jettonMetadata";
 import { TokenLaunchTimings } from "./types";
 import type {
@@ -60,6 +60,7 @@ export type GetCertainLaunchResponse = ExtendedLaunch | null;
 export type GetUserBalancesRequest = { user: RawAddressString, launch?: RawAddressString }
 
 export type ExtendedUserBalance = (StoredUserBalance & JettonMetadata & TokenLaunchTimings & {
+    totalSupply: Coins,
     isSuccessful: boolean,
     creator: RawAddressString,
 });

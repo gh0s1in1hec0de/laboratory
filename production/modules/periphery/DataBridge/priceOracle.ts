@@ -95,3 +95,19 @@ export function getApproximateClaimAmount(
     if (isCreator) futJetRecipientTotalAmount += creatorFutJetBalance;
     return futJetRecipientTotalAmount;
 }
+
+/**
+ * Calculates the reward amount a user should receive based on their claim.
+ *
+ * @param userClaimAmount - Can be derived with `getApproximateClaimAmount` and `UserBalance` returned data.
+ * @param launchSupply - The total supply of token launch `UserBalance` belongs to, `ExtendedUserBalance.totalSupply`.
+ * @param rewardPoolSupply - Total amount of reward jettons in the pool.
+ * @returns The calculated reward amount as a bigint.
+ */
+export function calculateUserRewardAmount(
+    userClaimAmount: Coins,
+    launchSupply: Coins,
+    rewardPoolSupply: Coins
+): bigint {
+    return userClaimAmount * rewardPoolSupply / launchSupply;
+}
