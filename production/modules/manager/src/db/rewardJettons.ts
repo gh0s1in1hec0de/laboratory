@@ -1,7 +1,12 @@
-import { type Coins, type RawAddressString, type RewardJetton } from "starton-periphery";
 import type { SqlClient } from "./types";
 import { globalClient } from "./db";
 import { logger } from "../logger";
+import type {
+    SortedRewardJettons,
+    RawAddressString,
+    RewardJetton,
+    Coins,
+} from "starton-periphery";
 
 export async function getRewardJetton(masterAddress: RawAddressString, client?: SqlClient): Promise<RewardJetton | null> {
     const res = await (client ?? globalClient)<RewardJetton[]>`
@@ -13,13 +18,21 @@ export async function getRewardJetton(masterAddress: RawAddressString, client?: 
 }
 
 export async function storeRewardJetton(
-    { masterAddress, ourWalletAddress, metadata, currentBalance, rewardAmount }: Omit<RewardJetton, "lockedForRewards">,
+    {
+        masterAddress,
+        ourWalletAddress,
+        metadata,
+        currentBalance,
+        rewardAmount,
+        isActive
+    }: Omit<RewardJetton, "lockedForRewards">,
     client?: SqlClient
 ): Promise<void> {
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
-        INSERT INTO reward_jettons (master_address, metadata, our_wallet_address, current_balance, reward_amount)
-        VALUES (${masterAddress}, ${metadata}, ${ourWalletAddress}, ${currentBalance}, ${rewardAmount})
+        INSERT INTO reward_jettons (master_address, metadata, our_wallet_address, current_balance, reward_amount,
+                                    is_active)
+        VALUES (${masterAddress}, ${metadata}, ${ourWalletAddress}, ${currentBalance}, ${rewardAmount}, ${isActive})
         RETURNING 1;
     `;
     if (res.length !== 1) logger().warn(`exactly 1 column must be created, got: ${res}`);
@@ -39,4 +52,24 @@ export async function updateRewardJettonNumbers(
         RETURNING 1;
     `;
     if (res.length !== 1) logger().warn(`exactly 1 row must be updated, got: ${res}`);
+}
+
+export async function getSortedRewardJettons(
+    { page, limit }: { page: number, limit: number },
+    client?: SqlClient
+): Promise<SortedRewardJettons | null> {
+    const offset = (page - 1) * limit;
+    const c = client ?? globalClient;
+
+    const res = await c<RewardJetton[]>`
+        SELECT *
+        FROM reward_jettons
+        ORDER BY current_balance DESC
+            ${page && limit ? c`LIMIT ${limit + 1} OFFSET ${offset}` : c``}
+    `;
+
+    return !res.length ? null : {
+        rewardJettons: res.slice(0, limit),
+        hasMore: res.length > limit
+    };
 }

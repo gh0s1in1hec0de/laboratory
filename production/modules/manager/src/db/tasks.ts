@@ -1,18 +1,18 @@
-import type { RawAddressString, SortedTasks, StoredTasks, UsersTasksRelations } from "starton-periphery";
+import type { RawAddressString, SortedTasks, StoredTask, UsersTasksRelations } from "starton-periphery";
 import type { SqlClient, } from "./types";
 import { globalClient } from "./db";
 
 export async function getTasks(
-    staged: string,
+    staged: boolean,
     client?: SqlClient,
     createdAt: number = 7 * 86400
-): Promise<StoredTasks[] | null> {
+): Promise<StoredTask[] | null> {
     const c = client ?? globalClient;
 
-    const res = await c<StoredTasks[]>`
+    const res = await c<StoredTask[]>`
         SELECT *
         FROM tasks
-        ${staged === "true" 
+        ${staged 
         ? c`WHERE EXTRACT(EPOCH FROM now()) - created_at > ${createdAt}`
         : c`WHERE EXTRACT(EPOCH FROM now()) - created_at <= ${createdAt}`}
   `;
@@ -22,10 +22,10 @@ export async function getTasks(
 export async function getTaskById(
     taskId: string,
     client?: SqlClient
-): Promise<StoredTasks | null> {
+): Promise<StoredTask | null> {
     const c = client ?? globalClient;
 
-    const res = await c<StoredTasks[]>`
+    const res = await c<StoredTask[]>`
         SELECT *
         FROM tasks
         WHERE task_id = ${taskId}
@@ -36,15 +36,15 @@ export async function getTaskById(
 export async function deleteTask(
     taskId: string,
     client?: SqlClient
-): Promise<StoredTasks | null> {
+): Promise<StoredTask | null> {
     const c = client ?? globalClient;
 
-    const res = await c<StoredTasks[]>`
+    const res = await c<StoredTask[]>`
         DELETE FROM tasks
         WHERE task_id = ${taskId}
         RETURNING *
     `;
-       
+
     return res.length ? res[0] : null;
 }
 
@@ -56,15 +56,15 @@ export async function getSortedTasks(
     const offset = (page - 1) * limit;
     const c = client ?? globalClient;
 
-    const res = await c<StoredTasks[]>`
+    const res = await c<StoredTask[]>`
         SELECT *
         FROM tasks
         ORDER BY created_at DESC
         ${page && limit ? c`LIMIT ${limit + 1} OFFSET ${offset}` : c``}
     `;
-    
+
     return !res.length ? null : {
-        storedTasks: res.slice(0, limit),
+        tasks: res.slice(0, limit),
         hasMore: res.length > limit
     };
 }
@@ -101,8 +101,8 @@ export async function storeTask(
     taskName: string,
     description: string,
     client?: SqlClient
-): Promise<StoredTasks | null> {
-    const res = await (client ?? globalClient)<StoredTasks[]>`
+): Promise<StoredTask | null> {
+    const res = await (client ?? globalClient)<StoredTask[]>`
         INSERT INTO tasks (name, description)
         VALUES (${taskName}, ${description})
         ON CONFLICT DO NOTHING

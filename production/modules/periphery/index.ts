@@ -1,7 +1,6 @@
 export * from "./chainMessageParsers";
 export * from "./HighloadWalletV3";
 export * from "./jettonMetadata";
-export * from "./calculations";
 export * from "./DataBridge";
 export * from "./serverApi";
 export * from "./TonClient";

@@ -7,7 +7,7 @@ CREATE TABLE reward_jettons
     current_balance    coins   NOT NULL DEFAULT 0,
     locked_for_rewards coins   NOT NULL DEFAULT 0,
     reward_amount      coins   NOT NULL CHECK ( reward_amount > 0 ),
-
+    is_active          BOOLEAN NOT NULL,
     CHECK (current_balance > reward_amount)
 );
 
@@ -20,7 +20,8 @@ BEGIN
     SELECT array_agg(master_address) AS master_addresses, array_agg(reward_amount) AS reward_amounts
     INTO reward_total
     FROM reward_jettons
-    WHERE current_balance > locked_for_rewards + reward_amount;
+    WHERE current_balance > locked_for_rewards + reward_amount
+      AND is_active = TRUE;
 
     INSERT INTO reward_pools (token_launch, reward_jetton, reward_amount)
     SELECT NEW.address, unnest(reward_total.master_addresses), unnest(reward_total.reward_amounts);
@@ -55,7 +56,8 @@ BEGIN
             WHERE master_address = reward_info.reward_jetton;
         END LOOP;
 
-    DELETE FROM reward_pools
+    DELETE
+    FROM reward_pools
     WHERE token_launch = OLD.address;
 
     RETURN NEW;

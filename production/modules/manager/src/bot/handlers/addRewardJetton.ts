@@ -4,6 +4,7 @@ import type { MyContext, MyConversation } from "..";
 import { balancedTonClient } from "../../client";
 import { getConfig } from "../../config";
 import * as db from "../../db";
+import { InlineKeyboard } from "grammy";
 
 
 export async function addRewardJetton(conversation: MyConversation, ctx: MyContext): Promise<void> {
@@ -52,8 +53,17 @@ Please enter reward amount (raw) and make sure you're feeling all right.
 
     if (image) await ctx.replyWithPhoto(formatLink(image), { caption: message });
     else await ctx.reply(message);
-
     const { msg: { text: rewardAmount } } = await conversation.waitFor("message:text");
+
+    let isActive: boolean;
+    while (true) {
+        await ctx.reply("Activate pool? (yes/no)");
+        const { msg: { text: activationResponse } } = await conversation.waitFor("message:text");
+        if (activationResponse !== "yes" && activationResponse !== activationResponse) continue;
+        isActive = activationResponse === "yes";
+        break;
+    }
+
     try {
         if (await db.getRewardJetton(jettonAddressParsed.toRawString())) {
             await db.updateRewardJettonNumbers(jettonAddressParsed.toRawString(), currentBalance, BigInt(rewardAmount));
@@ -63,7 +73,8 @@ Please enter reward amount (raw) and make sure you're feeling all right.
                 ourWalletAddress: ourWalletAddress.toRawString(),
                 metadata,
                 currentBalance,
-                rewardAmount: BigInt(rewardAmount)
+                rewardAmount: BigInt(rewardAmount),
+                isActive
             });
         }
     } catch (e) {

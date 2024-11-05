@@ -3,7 +3,7 @@ export * from "./listLaunches";
 export * from "./addWallets";
 export * from "./createTask";
 export * from "./deleteTask";
-export * from "./getTasks";
+export * from "./listTasks";
 export * from "./common";
 export * from "./errors";
 export * from "./start";

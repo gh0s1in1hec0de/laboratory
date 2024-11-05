@@ -6,8 +6,10 @@ import { getConfig } from "../config";
 import { logger } from "../logger";
 import {
     handleCancelConversationCallback,
+    handleLaunchesPaginationCallback,
     handleEnterConversationCallback,
     handleTasksPaginationCallback,
+    handleListLaunchesCallback,
     handleBackToMenuCallback,
     handleListTasksCallback,
     addWalletsToRelations,
@@ -18,6 +20,10 @@ import {
     createTask,
     deleteTask,
 } from "./handlers";
+import {
+    handleListRewardJettonsCallback,
+    handleRewardJettonsPaginationCallback
+} from "./handlers/listRewardJettons.ts";
 
 interface SessionData {
     launchesPage: number,
@@ -57,11 +63,14 @@ export async function createBot(): Promise<Bot<MyContext>> {
     maybeBot.command("start", handleStartCommand);
     maybeBot.command("menu").filter(getAdminFilter, handleMenuCommand);
 
-    // maybeBot.callbackQuery("list_launches", handleListLaunchesCallback);
-    // maybeBot.callbackQuery(["next_launches", "prev_launches", "reset_launches"], handleLaunchesPaginationCallback);
+    maybeBot.callbackQuery("list_launches", handleListLaunchesCallback);
+    maybeBot.callbackQuery(["next_launches", "prev_launches", "reset_launches"], handleLaunchesPaginationCallback);
 
     maybeBot.callbackQuery("list_tasks", handleListTasksCallback);
     maybeBot.callbackQuery(["next_tasks", "prev_tasks", "reset_tasks"], handleTasksPaginationCallback);
+
+    maybeBot.callbackQuery("list_reward_jettons", handleListRewardJettonsCallback);
+    maybeBot.callbackQuery(["next_reward_jettons", "prev_reward_jettons", "reset_reward_jettons"], handleRewardJettonsPaginationCallback);
 
     maybeBot.callbackQuery("add_wallets", (ctx) => handleEnterConversationCallback(ctx, Conversations.addWallets));
     maybeBot.callbackQuery("cancel_conv_add_wallets", (ctx) => handleCancelConversationCallback(ctx, Conversations.addWallets));

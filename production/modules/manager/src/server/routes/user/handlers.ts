@@ -53,7 +53,8 @@ function parseSubtasks(description: string): Subtask[] {
 export async function getCallerTasks(
     { staged, address }: GetCallerTasksRequest
 ): Promise<GetCallerTasksResponse[]> {
-    const tasksDb = await db.getTasks(staged);
+    // Have mercy on our sinful souls, O Lord
+    const tasksDb = await db.getTasks(staged === "true");
     if (!tasksDb) return [];
 
     const usersTasksRelations = address ? await db.getUsersTasksRelations(Address.parse(address).toRawString()) : null;

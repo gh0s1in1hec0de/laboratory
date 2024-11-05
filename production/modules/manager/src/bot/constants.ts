@@ -1,12 +1,13 @@
 import { type HearsContext, InlineKeyboard } from "grammy";
 import type { MyContext } from "./index";
 import { getConfig } from "../config";
+import { Address } from "@ton/core";
 import {
     type StoredTokenLaunch,
-    LaunchSortParameters,
     type LaunchMetadata,
-    type StoredTasks,
-    SortingOrder, type GetLaunchesChunkRequest
+    type RewardJetton,
+    type StoredTask,
+    jettonFromNano,
 } from "starton-periphery";
 
 /**
@@ -21,18 +22,18 @@ export const commands: ICommand[] = [
     { command: "start", description: "start the bot" },
     { command: "menu", description: "go to hell" }
 ];
-
-export const initLaunchesSortData: GetLaunchesChunkRequest = {
+//
+// export const initLaunchesSortData: GetLaunchesChunkRequest = {
+//     page: 1,
+//     limit: 10,
+//     orderBy: LaunchSortParameters.CREATED_AT,
+//     order: SortingOrder.HIGH_TO_LOW,
+//     search: ""
+// };
+export type PaginationData = { page: number, limit: number };
+export const initSortingData: PaginationData = {
     page: 1,
-    limit: 10,
-    orderBy: LaunchSortParameters.CREATED_AT,
-    order: SortingOrder.HIGH_TO_LOW,
-    search: ""
-};
-
-export const initTasksSortData: { page: number, limit: number } = {
-    page: 1,
-    limit: 10,
+    limit: 6,
 };
 
 export enum Conversations {
@@ -72,6 +73,7 @@ const replies = {
     confirmDeleteTask: "Are you sure you want to delete these tasks? ٩(ఠ益ఠ)۶",
     deleteTasksCanceled: "Task deletion canceled successfully! ＼(￣▽￣)／\n\n<b>Want to continue?</b> Click /menu",
     invalidDeleteTasks: "Invalid <b>data</b> (￣ヘ￣).",
+    noRewardJettons: "No reward jettons available (￣ヘ￣)"
 };
 
 export function getReplyText(key: keyof typeof replies): string {
@@ -92,11 +94,29 @@ export function getLaunchesReply(storedTokenLaunch: (StoredTokenLaunch & Partial
                 : metadata.description
             : "not provided";
 
-        return `${id}. ${metadata.name ?? "unnamed"} - ${description} (${date}) created by ${creator}; influencers' support: ${influencerSupport}`;
+        return `${id}.\n` +
+            `name: ${metadata.name ?? "unnamed"}\n` +
+            `description: ${description}\n` +
+            `date: ${date}\n` +
+            `creator: ${Address.parse(creator)} \n` +
+            `influencers' support: ${influencerSupport}\n`;
     }).join("\n");
 }
 
-export function getTasksReply(storedTasks: StoredTasks[]): string {
+export function getRewardJettonsReply(rewardJettons: RewardJetton[]): string {
+    return rewardJettons.map(
+        ({ masterAddress, metadata, currentBalance, lockedForRewards, rewardAmount, isActive }) => {
+            return `${metadata.symbol}\n` +
+                `${Address.parse(masterAddress)}\n` +
+                `${isActive ? "active" : "not active"}\n` +
+                `balance: ${jettonFromNano(currentBalance, Number(metadata.decimals ?? 6))}\n` +
+                `locked: ${jettonFromNano(lockedForRewards, Number(metadata.decimals ?? 6))}\n` +
+                `reward amount: ${jettonFromNano(rewardAmount, Number(metadata.decimals ?? 6))} \n`;
+        }
+    ).join("\n");
+}
+
+export function getTasksReply(storedTasks: StoredTask[]): string {
     const oneWeekInSeconds = 7 * 24 * 60 * 60;
     const currentTime = Math.floor(Date.now() / 1000);
 
@@ -129,39 +149,31 @@ export function getMenuKeyboard(): InlineKeyboard {
         .text("users completed tasks", "add_wallets").row()
         .text("get tasks", "list_tasks").row()
         .text("add reward jettons", "add_reward_jettons").row()
+        .text("list token launches", "list_launches").row()
+        .text("list reward jettons", "list_reward_jettons").row()
         .text("create tasks", "create_task")
         .text("delete tasks", "delete_task");
 }
 
-export function getLaunchesPaginationKeyboard(hasMore: boolean, page: number): InlineKeyboard {
+export enum ListedObjects {
+    Tasks = "tasks",
+    Launches = "launches",
+    RewardJettons = "reward_jettons"
+}
+
+export function getPaginationKeyboard(listedObject: ListedObjects, hasMore: boolean, page: number): InlineKeyboard {
     const keyboard = new InlineKeyboard();
 
-    page > 1 ? keyboard.text("< prev", "prev_launches") : keyboard.text(".", "nothing");
+    page > 1 ? keyboard.text("< prev", `prev_${listedObject}`) : keyboard.text(".", "nothing");
     keyboard.text(`· ${page} ·`, "nothing");
-    hasMore ? keyboard.text("next >", "next_launches").row() : keyboard.text(".", "nothing").row();
+    hasMore ? keyboard.text("next >", `next_${listedObject}`).row() : keyboard.text(".", "nothing").row();
 
     return keyboard.text("« back to menu", "back");
 }
 
-export function getTasksPaginationKeyboard(hasMore: boolean, page: number): InlineKeyboard {
-    const keyboard = new InlineKeyboard();
-
-    page > 1 ? keyboard.text("< prev", "prev_tasks") : keyboard.text(".", "nothing");
-    keyboard.text(`· ${page} ·`, "nothing");
-    hasMore ? keyboard.text("next >", "next_tasks").row() : keyboard.text(".", "nothing").row();
-
-    return keyboard.text("« back to menu", "back");
-}
-
-export function getResetLaunchesKeyboard(): InlineKeyboard {
+export function getResetKeyboard(listedObject: ListedObjects): InlineKeyboard {
     return new InlineKeyboard()
-        .text("reset", "reset_launches").row()
-        .text("< back to menu", "back");
-}
-
-export function getResetTasksKeyboard(): InlineKeyboard {
-    return new InlineKeyboard()
-        .text("reset", "reset_tasks").row()
+        .text("reset", `reset_${listedObject}`).row()
         .text("< back to menu", "back");
 }
 

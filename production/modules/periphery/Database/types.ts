@@ -19,17 +19,17 @@ export type Caller = {
     ticket_balance: number,
 }
 
-export type SortedTasks = {
-    storedTasks: StoredTasks[],
-    hasMore: boolean,
-}
-
-export type StoredTasks = {
+export type StoredTask = {
     taskId: number,
     name: string,
     description: string,
     rewardTickets: number,
     createdAt: UnixTimeSeconds,
+}
+
+export type SortedTasks = {
+    tasks: StoredTask[],
+    hasMore: boolean,
 }
 
 export type UsersTasksRelations = {
@@ -148,7 +148,13 @@ export type RewardJetton = {
     currentBalance: Coins,
     lockedForRewards: Coins,
     rewardAmount: Coins,
+    isActive: boolean,
 };
+
+export type SortedRewardJettons = {
+    rewardJettons: RewardJetton[],
+    hasMore: boolean,
+}
 
 export type RewardPool = {
     tokenLaunch: RawAddressString,

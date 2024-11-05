@@ -96,7 +96,8 @@ describe("launch sorter", () => {
                 ourWalletAddress: randomAddress().toRawString(),
                 metadata,
                 currentBalance: jettonToNano((i + 1) * 1000_000),
-                rewardAmount: jettonToNano((i + 1) * 10_000)
+                rewardAmount: jettonToNano((i + 1) * 10_000),
+                isActive: i % 2 === 0
             }, client);
         }
 
