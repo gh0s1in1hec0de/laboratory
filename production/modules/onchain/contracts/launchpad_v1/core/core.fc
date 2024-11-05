@@ -35,9 +35,13 @@
         cell custom_conf = in_msg_body~load_maybe_ref();
         ifnot (cell_null?(custom_conf)) {
             load_launch_config(custom_conf);
+            ;; To add in ptoduction, when fast launches will be added
+            ;; throw_if(error::bad_request, launch_conf::min_ton_for_sale_success < 100000000000);
+            ;; throw_if(error::bad_request, launch_conf::wl_round_duration_sec < 1800);
         } else {
             load_launch_config(launch_conf);
         }
+
         int total_cost = launch_conf::penny + calculate_core_min_storage_fee(10 * ONE_DAY) + get_amount_for_token_launch_deploy();
         throw_if(error::not_enough_gas, attached_value < total_cost);
         create_launch(
@@ -92,8 +96,8 @@
         launch_conf::jet_pub_limit_pct,
         launch_conf::jet_dex_share_pct,
 
-        launch_conf::creator_round_duration_ms,
-        launch_conf::wl_round_duration_ms,
-        launch_conf::pub_round_duration_ms
+        launch_conf::creator_round_duration_sec,
+        launch_conf::wl_round_duration_sec,
+        launch_conf::pub_round_duration_sec
     );
 }

@@ -17,9 +17,9 @@ global int launch_conf::fut_jet_wl_limit_pct;
 global int launch_conf::fut_jet_pub_limit_pct;
 global int launch_conf::fut_jet_dex_share_pct;
 
-global int launch_conf::creator_round_duration_ms;
-global int launch_conf::wl_round_duration_ms;
-global int launch_conf::pub_round_duration_ms;
+global int launch_conf::creator_round_duration_sec;
+global int launch_conf::wl_round_duration_sec;
+global int launch_conf::pub_round_duration_sec;
 
 ;; === CONTRACTS ===
 global cell code::token_launch;

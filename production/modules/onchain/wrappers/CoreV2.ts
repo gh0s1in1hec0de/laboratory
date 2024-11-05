@@ -103,9 +103,9 @@ export class CoreV2 implements Contract {
             jetPubLimitPct: stack.readNumber(),
             jetDexSharePct: stack.readNumber(),
 
-            creatorRoundDurationMs: stack.readNumber(),
-            wlRoundDurationMs: stack.readNumber(),
-            pubRoundDurationMs: stack.readNumber(),
+            creatorRoundDurationSec: stack.readNumber(),
+            wlRoundDurationSec: stack.readNumber(),
+            pubRoundDurationSec: stack.readNumber(),
         };
     }
 

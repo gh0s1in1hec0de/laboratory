@@ -13,9 +13,9 @@
     launch_conf::jet_pub_limit_pct = launch_config_slice~load_uint(16);
     launch_conf::jet_dex_share_pct = launch_config_slice~load_uint(16);
 
-    launch_conf::creator_round_duration_ms = launch_config_slice~load_int(32);
-    launch_conf::wl_round_duration_ms = launch_config_slice~load_int(32);
-    launch_conf::pub_round_duration_ms = launch_config_slice~load_int(32);
+    launch_conf::creator_round_duration_sec = launch_config_slice~load_int(32);
+    launch_conf::wl_round_duration_sec = launch_config_slice~load_int(32);
+    launch_conf::pub_round_duration_sec = launch_config_slice~load_int(32);
     launch_config_slice.end_parse();
 }
 
@@ -53,9 +53,9 @@ cell load_data() impure inline_ref {
         .store_uint(launch_conf::jet_pub_limit_pct, 16)
         .store_uint(launch_conf::jet_dex_share_pct, 16)
 
-        .store_int(launch_conf::creator_round_duration_ms, 32)
-        .store_int(launch_conf::wl_round_duration_ms, 32)
-        .store_int(launch_conf::pub_round_duration_ms, 32)
+        .store_int(launch_conf::creator_round_duration_sec, 32)
+        .store_int(launch_conf::wl_round_duration_sec, 32)
+        .store_int(launch_conf::pub_round_duration_sec, 32)
         .end_cell();
     cell data = begin_cell()
         .store_slice(this::chief)

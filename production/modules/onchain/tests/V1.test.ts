@@ -171,9 +171,9 @@ describe("V1", () => {
             jetPubLimitPct: 30000,
             jetDexSharePct: 25000,
 
-            creatorRoundDurationMs: ONE_HOUR_SEC,
-            wlRoundDurationMs: ONE_HOUR_SEC,
-            pubRoundDurationMs: ONE_HOUR_SEC,
+            creatorRoundDurationSec: ONE_HOUR_SEC,
+            wlRoundDurationSec: ONE_HOUR_SEC,
+            pubRoundDurationSec: ONE_HOUR_SEC,
         };
         core = blockchain.openContract(
             CoreV1.createFromState(
@@ -583,7 +583,7 @@ describe("V1", () => {
             console.log(`Loaded user vault stats: ${stateInitStats}`);
         });
         test("stranger can't buy on wl round", async () => {
-            blockchain.now = sampleLaunchStartTime + launchConfig.creatorRoundDurationMs + 1;
+            blockchain.now = sampleLaunchStartTime + launchConfig.creatorRoundDurationSec + 1;
             const strangerWlPurchaseTry = await sampleTokenLaunch.sendWhitelistPurchase({
                 queryId: 123123123n,
                 value: toNano("1"),

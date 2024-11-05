@@ -191,7 +191,7 @@ export class TokenLaunchV2 implements Contract {
             .storeCoins(loadAtMax ? CoinsMaxValue : creatorJetPrice)
             .storeInt(
                 loadAtMax ? ThirtyTwoIntMaxValue : startTime
-                    + launchConfig.creatorRoundDurationMs,
+                    + launchConfig.creatorRoundDurationSec,
                 32
             )
             .endCell();
@@ -203,8 +203,8 @@ export class TokenLaunchV2 implements Contract {
             .storeCoins(0)
             .storeInt(
                 loadAtMax ? ThirtyTwoIntMaxValue : startTime
-                    + launchConfig.creatorRoundDurationMs
-                    + launchConfig.wlRoundDurationMs,
+                    + launchConfig.creatorRoundDurationSec
+                    + launchConfig.wlRoundDurationSec,
                 32
             )
             .endCell();
@@ -215,9 +215,9 @@ export class TokenLaunchV2 implements Contract {
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
             .storeInt(
                 loadAtMax ? ThirtyTwoIntMaxValue : startTime
-                    + launchConfig.creatorRoundDurationMs
-                    + launchConfig.wlRoundDurationMs
-                    + launchConfig.pubRoundDurationMs,
+                    + launchConfig.creatorRoundDurationSec
+                    + launchConfig.wlRoundDurationSec
+                    + launchConfig.pubRoundDurationSec,
                 32
             )
             .endCell();

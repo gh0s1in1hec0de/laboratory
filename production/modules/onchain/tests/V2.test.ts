@@ -188,9 +188,9 @@ describe("V2", () => {
             jetPubLimitPct: toPct(30),
             jetDexSharePct: toPct(25),
 
-            creatorRoundDurationMs: ONE_HOUR_SEC,
-            wlRoundDurationMs: ONE_HOUR_SEC,
-            pubRoundDurationMs: ONE_HOUR_SEC,
+            creatorRoundDurationSec: ONE_HOUR_SEC,
+            wlRoundDurationSec: ONE_HOUR_SEC,
+            pubRoundDurationSec: ONE_HOUR_SEC,
         };
         core = blockchain.openContract(
             CoreV2.createFromState(
@@ -603,7 +603,7 @@ describe("V2", () => {
             expect((await consumerUtilJettonWallet.getWalletData()).balance).toEqual(amount);
 
             // Straight before wl round start
-            blockchain.now = sampleLaunchStartTime + launchConfig.creatorRoundDurationMs - 1;
+            blockchain.now = sampleLaunchStartTime + launchConfig.creatorRoundDurationSec - 1;
             const totalPurchaseValue = toNano("10");
             const wrongTimeWlPurchaseResult = await consumerUtilJettonWallet.sendTransfer(
                 consumer.getSender(),
@@ -637,7 +637,7 @@ describe("V2", () => {
 
 
             // Wl round has been started
-            blockchain.now = sampleLaunchStartTime + launchConfig.creatorRoundDurationMs + 1;
+            blockchain.now = sampleLaunchStartTime + launchConfig.creatorRoundDurationSec + 1;
             const wrongPassWlPurchaseFailResult = await consumerUtilJettonWallet.sendTransfer(
                 consumer.getSender(),
                 totalPurchaseValue + toNano("0.1"),

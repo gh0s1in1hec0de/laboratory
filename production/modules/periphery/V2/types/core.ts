@@ -15,9 +15,9 @@ export type LaunchConfigV2 = {
     jetPubLimitPct: number,
     jetDexSharePct: number,
 
-    creatorRoundDurationMs: number,
-    wlRoundDurationMs: number,
-    pubRoundDurationMs: number,
+    creatorRoundDurationSec: number,
+    wlRoundDurationSec: number,
+    pubRoundDurationSec: number,
 };
 
 export type CoreStateV2 = {

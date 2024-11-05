@@ -24,9 +24,9 @@ export async function run(provider: NetworkProvider) {
         jetPubLimitPct: toPct(25),
         jetDexSharePct: toPct(25),
 
-        creatorRoundDurationMs: FIVE_MIN,
-        wlRoundDurationMs: FIVE_MIN,
-        pubRoundDurationMs: FIVE_MIN,
+        creatorRoundDurationSec: FIVE_MIN,
+        wlRoundDurationSec: FIVE_MIN,
+        pubRoundDurationSec: FIVE_MIN,
     };
     const core = provider.open(
         CoreV1.createFromState(

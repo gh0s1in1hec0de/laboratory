@@ -25,9 +25,9 @@ export function packLaunchConfigV2ToCell(c: LaunchConfigV2) {
         .storeUint(c.jetPubLimitPct, 16)
         .storeUint(c.jetDexSharePct, 16)
 
-        .storeInt(c.creatorRoundDurationMs, 32)
-        .storeInt(c.wlRoundDurationMs, 32)
-        .storeInt(c.pubRoundDurationMs, 32)
+        .storeInt(c.creatorRoundDurationSec, 32)
+        .storeInt(c.wlRoundDurationSec, 32)
+        .storeInt(c.pubRoundDurationSec, 32)
         .endCell();
 }
 
