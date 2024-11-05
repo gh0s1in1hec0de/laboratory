@@ -13,7 +13,8 @@ export type LabelVariants =
   | "medium16"
   | "semiBold18"
   | "bold24"
-  | "semiBold24";
+  | "semiBold24"
+  | "bold16";
 
 export enum LabelColors {
   Orange = "orange",

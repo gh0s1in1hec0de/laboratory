@@ -33,54 +33,75 @@
 		}
 	},
 	"SupportButton": {
-		"title": "Still have questions? Ask us directly!",
-		"buttonLabel": "Support chat"
+		"title": "Остались вопросы? Напишите нам!",
+		"buttonLabel": "Чат поддержки"
 	},
 	"Top": {
 		"title": "Hello 👋",
-		"risingStarTitle": "⭐️ Rising Star",
+		"risingStarTitle": "⭐️ Восходящая звезда",
 		"starClubButton": "Star Club",
-		"holdersTitle": "holders",
-		"collectedTitle": "TON collected",
-		"topTokensTitle": "Top Tokens",
+		"holdersTitle": "холдеров",
+		"collectedTitle": "TON собрано",
+		"topTokensTitle": "Топ токенов",
 		"waveLaunchButton": "Wave Launch",
-		"waveLaunchCloseButton": "Got it!",
-		"searchPlaceholder": "Search",
-		"commonError": "Oops, something went wrong... Please reload the page or try again later.",
-		"risingStarNotFound": "Rising Star not found",
-		"risingStarNotReachable": "Rising Star not reachable",
-		"launchesNotFound": "No matches found",
-		"createToken": "Create token",
+		"waveLaunchCloseButton": "Понятно!",
+		"searchPlaceholder": "Поиск",
+		"commonError": "Ой, что-то пошло не так... Пожалуйста, перезагрузите страницу или попробуйте позже.",
+		"risingStarNotFound": "Восходящая звезда не найдена",
+		"risingStarNotReachable": "Восходящая звезда недоступна",
+		"launchesNotFound": "Совпадений не найдено",
+		"createToken": "Создать токен",
+		"filterDrawer": {
+			"title": "Фильтры",
+			"applyButton": "Применить",
+			"resetButton": "Сбросить",
+			"categories": {
+				"title": "Категории",
+				"succeed": "Успешные",
+				"failed": "Неуспешные",
+				"myLaunches": "Запущенные мной"
+			},
+			"sortBy": {
+				"title": "Сортировать по",
+				"createdAt": "Дате создания",
+				"totalTonsCollected": "Количеству собранных TON"
+			},
+			"sortOrder": {
+				"title": "Порядок",
+				"decreasing": "Убывание",
+				"increasing": "Возрастание"
+			}
+		},
 		"starClubDrawer": {
 			"firstParagraph": {
 				"text1": "Star club"
 			},
 			"secondParagraph": {
-				"text1": "Join the club of people ",
-				"text2": "who know the drill!"
+				"text1": "Присоединяйтесь к клубу людей, ",
+				"text2": "которые знают что делают!"
 			},
 			"thirdParagraph": {
 				"text1": "Wavelaunch’s ",
-				"text2": "demand-based algo",
-				"text3": " of calculating price is designed to ensure that club members ",
-				"text4": "make profits ",
-				"text5": "from ",
-				"text6": "any successful launch."
+				"text2": "demand-based алгоритм",
+				"text3": " расчета цены разработан для того, чтобы члены клуба ",
+				"text4": "получали прибыль ",
+				"text5": "от ",
+				"text6": "любого успешного запуска."
 			},
 			"fourthParagraph": {
-				"text1": "With Star club you can:"
+				"text1": "С Star Club вы можете:"
 			},
 			"firstListParagraph": {
-				"text1": "Participate in any ",
+				"text1": "Участвовать в любом запуске ",
 				"text2": "Wavelaunch ",
-				"text3": "among first!"
+				"text3": "первыми!"
 			},
 			"secondListParagraph": {
-				"text1": "Chat with other club members ",
-				"text2": "privately"
+				"text1": "Общаться с другими участниками клуба в ",
+				"text2": "приватном чате"
 			},
 			"thirdListParagraph": {
-				"text1": "Make profits easier and faster than anyone else!"
+				"text1": "Получать прибыль легче и быстрее, чем кто-либо другой!"
 			}
 		},
 		"waveLaunchDrawer": {
@@ -89,42 +110,42 @@
 			},
 			"secondParagraph": {
 				"text1": "Wavelaunch ",
-				"text2": "– is a new method to launch tokens in 3 stages."
+				"text2": "– это новый метод запуска токенов в 3 этапа."
 			},
 			"firstListParagraph": {
-				"text1": "First stage: for you as founder",
-				"description1": "Token is purchased by the token founder, up to 25% of the total supply."
+				"text1": "Первый этап: для Вас",
+				"description1": "Токен покупается основателем токена, до 25% всего саплая."
 			},
 			"secondListParagraph": {
-				"text1": "Second stage: for Star club members only",
-				"description1": "Demand-based pricing algorithm designed to ensure that club members profit from any successful launch."
+				"text1": "Второй этап: только для участников Star Club",
+				"description1": "Demand-based алгоритм расчета цены разработан для того, чтобы члены клуба получали прибыль от любого успешного запуска."
 			},
 			"thirdListParagraph": {
-				"text1": "Third stage: public sale",
-				"description1": "Everyone is able to purchase the token for a limited amount of time."
+				"text1": "Третий этап: публичный сейл",
+				"description1": "Все желающие могут приобрести токен в течение ограниченного количества времени."
 			},
 			"thirdParagraph": {
-				"text1": "Additionally:"
+				"text1": "Дополнительно:"
 			},
 			"fourthListParagraph": {
-				"text1": "Users can refund their invested TON if they change their mind, and get rewards for participating in Wavelaunch"
+				"text1": "Юзеры могут вернуть вложенные TON, если передумали, и получить реварды за участие в Wavelaunch."
 			},
 			"fifthListParagraph": {
-				"text1": "StartON provides marketing assistance for 0.5% and 1.5% of your token's saplay"
+				"text1": "StartON предоставляет маркетинговую помощь за 0,5% и 1,5% от саплая вашего токена."
 			},
 			"sixthListParagraph": {
-				"text1": "Standard tokenomics of your token for Wavelaunch:",
-				"description1": "– 25% - for Founder",
-				"description2": "– 17.5% - for WL Club",
-				"description3": "– 37.5% - for Public Stage",
-				"description4": "– 20% - for listing on DEX"
+				"text1": "Стандартная токеномика вашего токена для Wavelaunch:",
+				"description1": "– 25% - для фаундера",
+				"description2": "– 17.5% - для Star Club",
+				"description3": "– 37.5% - для Public Stage",
+				"description4": "– 20% - для листинга на DEX"
 			},
 			"seventhListParagraph": {
-				"text1": "Distribution of collected funds in TON:",
-				"description1": "– 52% goes to DEX",
-				"description2": "– 38% goes to funders",
-				"description3": "– 8% to provide referral system",
-				"description4": "– 2% StartON commission."
+				"text1": "Распределение собранных средств в TON:",
+				"description1": "– 52% TON отправляются на DEX",
+				"description2": "– 38% отправляются фаундерам",
+				"description3": "– 8% на обеспечение реферальной системы",
+				"description4": "– 2% комиссия StartON"
 			}
 		}
 	},

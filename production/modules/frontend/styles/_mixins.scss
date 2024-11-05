@@ -28,6 +28,11 @@
   font-weight: 700;
 }
 
+@mixin bold16 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
 @mixin regular16 {
   font-size: 16px;
   font-weight: 400;

@@ -38,14 +38,11 @@ export const CustomButton = forwardRef<HTMLButtonElement, CustomButtonProps>(
             className={classNames(
               styles.button,
               {
-                [styles.hover]: hover && addHover,
+                [styles.hover]: hover && addHover && !disabled,
                 [styles.fullWidth]: fullWidth,
                 [styles.disabled]: disabled,
               },
               [styles[background], styles[borderColor], className],
-            // !hover && !active && "bg-sky-600",
-            // hover && !active && "bg-sky-500",
-            // active && "bg-sky-700"
             )}
           >
             {children}

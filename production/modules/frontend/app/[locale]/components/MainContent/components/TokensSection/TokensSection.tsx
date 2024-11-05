@@ -11,15 +11,24 @@ import { useTokensList } from "./hooks/useTokensList";
 
 export function TokensSection() {
   const {
+    filterData,
     search,
-    handleSearch,
+    handleSearchChange,
+    handleSucceedChange,
+    handleCreatedByChange,
+    handleOrderByChange,
+    hasFilterDataChanged,
     launchesData,
+    handleOrderChange,
     fetchTokenLaunchesNextPage,
     isLoadingPage,
     isLoadingNextPage,
     errorText,
     isOpenDrawer,
     toggleOpenDrawer,
+    handleResetFilter,
+    handleApplyFilter,
+    onCloseDrawer,
   } = useTokensList();
 
   if (errorText) {
@@ -41,7 +50,7 @@ export function TokensSection() {
       >
         <TokensListFilters
           search={search}
-          handleSearch={handleSearch}
+          handleSearch={handleSearchChange}
           toggleOpenDrawer={toggleOpenDrawer}
         />
       </Grid>
@@ -49,6 +58,18 @@ export function TokensSection() {
       <FilterDrawer
         isOpenDrawer={isOpenDrawer}
         toggleOpenDrawer={toggleOpenDrawer}
+        succeed={filterData.succeed}
+        handleSucceedChange={handleSucceedChange}
+        createdBy={filterData.createdBy}
+        handleCreatedByChange={handleCreatedByChange}
+        orderBy={filterData.orderBy}
+        handleOrderByChange={handleOrderByChange}
+        order={filterData.order}
+        handleOrderChange={handleOrderChange}
+        handleResetFilter={handleResetFilter}
+        handleApplyFilter={handleApplyFilter}
+        hasFilterDataChanged={hasFilterDataChanged}
+        onCloseDrawer={onCloseDrawer}
       />
 
       <TokenInfinityList

@@ -5,6 +5,9 @@ export const initialFilterData: GetLaunchesChunkRequest = {
   limit: 10,
   orderBy: LaunchSortParameters.CREATED_AT,
   order: SortingOrder.HIGH_TO_LOW,
+  createdBy: "",
+  search: "",
+  succeed: undefined,
 };
 
 export const initialLaunchesData: GetLaunchesChunkResponse = {

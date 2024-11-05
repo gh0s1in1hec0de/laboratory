@@ -21,6 +21,8 @@
 
   --white-regular: #FFFFFF;
   --white-transparent: rgba(255, 255, 255, 0.05);
+  --white-transparent-medium: rgba(255, 255, 255, 0.1);
+  --white-transparent-light: rgba(255, 255, 255, 0.15);
 
   --border: #FFFFFF08;
 
@@ -42,6 +44,7 @@
 body {
   background: var(--black-dark);
   color: var(--white-regular);
+  overflow-anchor: none;
 }
 
 // todo стилизовать скроллбар

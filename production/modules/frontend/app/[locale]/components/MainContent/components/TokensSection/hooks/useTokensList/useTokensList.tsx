@@ -1,26 +1,56 @@
-import { useDebounce, useToggle } from "@/hooks";
 import { launchService } from "@/services";
-import { ChangeEvent, useEffect, useState } from "react";
-import { initialFilterData, initialLaunchesData } from "./initValue";
-import type { GetLaunchesChunkRequest, GetLaunchesChunkResponse } from "starton-periphery";
-import { filterRequestParams } from "./helpers";
 import { getErrorText } from "@/utils";
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
+import type {
+  GetLaunchesChunkRequest,
+  GetLaunchesChunkResponse
+} from "starton-periphery";
+import { useFilterDrawer } from "../useFilterDrawer";
+import { useSortingValues } from "../useSortingValues";
+import { filterRequestParams } from "./helpers";
+import { initialFilterData, initialLaunchesData } from "./initValue";
 
 export function useTokensList() {
+  const t = useTranslations("Top");
+
   const [filterData, setFilterData] = useState<GetLaunchesChunkRequest>(initialFilterData);
+  const [prevFilterData, setPrevFilterData] = useState<GetLaunchesChunkRequest>(initialFilterData);
+
   const [launchesData, setLaunchesData] = useState<GetLaunchesChunkResponse>(initialLaunchesData);
-  const [search, setSearch] = useState<string>("");
+
   const [errorText, setErrorText] = useState<string>("");
   const [isLoadingPage, setIsLoadingPage] = useState<boolean>(true);
   const [isLoadingNextPage, setIsLoadingNextPage] = useState<boolean>(false);
-  const [isOpenDrawer, toggleOpenDrawer] = useToggle(false);
-  const t = useTranslations("Top");
+
+  // drawer management
+  const {
+    isOpenDrawer,
+    toggleOpenDrawer,
+    onCloseDrawer
+  } = useFilterDrawer({
+    prevFilterData,
+    setFilterData,
+  });
+
+  // change sorting values management
+  const {
+    handleSearchChange,
+    handleSucceedChange,
+    handleCreatedByChange,
+    handleOrderByChange,
+    handleOrderChange,
+    search
+  } = useSortingValues({
+    setFilterData,
+    fetchTokenLaunches
+  });
+
 
   async function fetchTokenLaunches(data: GetLaunchesChunkRequest, isNextPage = false) {
     try {
       const res = await launchService.getTokenLaunches(filterRequestParams(data));
-      
+
       setLaunchesData(prev => isNextPage ? {
         ...res,
         launchesChunk: [...prev.launchesChunk, ...res.launchesChunk],
@@ -60,26 +90,41 @@ export function useTokensList() {
     setIsLoadingNextPage(false);
   }
 
-  const debouncedFetch = useDebounce(fetchTokenLaunches, [500]);
+  async function handleResetFilter() {
+    toggleOpenDrawer();
+    setFilterData(initialFilterData);
+    setPrevFilterData(initialFilterData);
+    await fetchTokenLaunches(initialFilterData);
+  }
 
-  function handleSearch(event: ChangeEvent<HTMLInputElement>) {
-    const newSearch = event.target.value;
-    setSearch(newSearch);
+  async function handleApplyFilter() {
+    toggleOpenDrawer();
 
-    setFilterData((prevData) => {
-      const updatedData = {
-        ...prevData,
-        page: 1,
-        search: newSearch,
-      };
-      debouncedFetch(updatedData);
-      return updatedData;
-    });
+    const newFilterData = {
+      ...filterData,
+      page: 1,
+    };
+
+    setPrevFilterData(newFilterData);
+    await fetchTokenLaunches(newFilterData);
+  }
+
+  function hasFilterDataChanged(compareTo: GetLaunchesChunkRequest = prevFilterData) {
+    const fieldsToCompare: (keyof GetLaunchesChunkRequest)[] = ["orderBy", "order", "createdBy", "succeed"];
+    return fieldsToCompare.some((field) => filterData[field] !== compareTo[field]);
   }
 
   return {
+    filterData,
     search,
-    handleSearch,
+    handleSearchChange,
+    handleSucceedChange,
+    handleCreatedByChange,
+    handleOrderByChange,
+    handleResetFilter,
+    handleOrderChange,
+    handleApplyFilter,
+    hasFilterDataChanged,
     launchesData,
     fetchTokenLaunchesNextPage,
     isLoadingPage,
@@ -87,5 +132,6 @@ export function useTokensList() {
     errorText,
     isOpenDrawer,
     toggleOpenDrawer,
+    onCloseDrawer,
   };
 }

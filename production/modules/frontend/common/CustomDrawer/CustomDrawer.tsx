@@ -48,7 +48,11 @@ export function CustomDrawer({
               <Box className={styles.button} />
             </Grid>
 
-            <Grid container width="100%" paddingBottom="20px">
+            <Grid 
+              container 
+              width="100%"
+              paddingBottom="20px"
+            >
               {children}
             </Grid>
 

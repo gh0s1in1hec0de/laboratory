@@ -12,7 +12,7 @@ export function SupportButton() {
       container
       gap={1.5}
     >
-      <Grid size={12}>
+      <Grid container size={12} justifyContent="center">
         <Label 
           label={t("title")} 
           variantSize="regular16" 

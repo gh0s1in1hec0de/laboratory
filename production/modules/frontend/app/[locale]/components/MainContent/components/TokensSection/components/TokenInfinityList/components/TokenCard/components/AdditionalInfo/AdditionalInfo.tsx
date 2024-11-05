@@ -23,6 +23,7 @@ export function AdditionalInfo({ holders, timings }: AdditionalInfoProps) {
             label="Creator"
             variantSize="regular14"
             offUserSelect
+            cropped
           />
         </MainBox>
       );
@@ -39,6 +40,7 @@ export function AdditionalInfo({ holders, timings }: AdditionalInfoProps) {
             label="Star Club"
             variantSize="regular14"
             offUserSelect
+            cropped
           />
         </MainBox>
       );
@@ -56,6 +58,7 @@ export function AdditionalInfo({ holders, timings }: AdditionalInfoProps) {
             label="Public"
             variantSize="regular14"
             variantColor="orange"
+            cropped
           />
         </MainBox>
       );
@@ -73,6 +76,7 @@ export function AdditionalInfo({ holders, timings }: AdditionalInfoProps) {
             variantSize="regular14"
             variantColor="red"
             offUserSelect
+            cropped
           />
         </MainBox>
       );

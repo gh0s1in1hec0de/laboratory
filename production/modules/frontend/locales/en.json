@@ -51,6 +51,27 @@
 		"risingStarNotReachable": "Rising Star not reachable",
 		"launchesNotFound": "No matches found",
 		"createToken": "Create token",
+		"filterDrawer": {
+			"title": "Filters",
+			"applyButton": "Apply",
+			"resetButton": "Reset",
+			"categories": {
+				"title": "Categories",
+				"succeed": "Succeed",
+				"failed": "Failed",
+				"myLaunches": "My Launches"
+			},
+			"sortBy": {
+				"title": "Sort by",
+				"createdAt": "Creation date",
+				"totalTonsCollected": "Number of collected TON"
+			},
+			"sortOrder": {
+				"title": "Sort order",
+				"decreasing": "Descending",
+				"increasing": "Ascending"
+			}
+		},
 		"starClubDrawer": {
 			"firstParagraph": {
 				"text1": "Star club"

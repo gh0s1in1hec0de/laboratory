@@ -1,6 +1,6 @@
 export enum LAUNCH_ROUTES {
   GetTokenLaunches = "/token-launches/get-chunk",
-  GetRisingStar = "/token-launches/get-certain",
+  GetRisingStar = "/token-launches/get-rising-star",
   GetCertainToken = "/token-launches/get-certain"
 }
 

@@ -1,31 +1,38 @@
 import { CheckIcon } from "@/icons";
 import { Checkbox } from "@headlessui/react";
 import { CustomCheckboxProps } from "./types";
+import styles from "./CustomCheckbox.module.scss";
+import { classNames } from "@/utils";
+import { Label } from "../Label";
+import Grid from "@mui/material/Grid2";
 
-export function CustomCheckbox({ checked, onChange }: CustomCheckboxProps) {
+export function CustomCheckbox({
+  checked,
+  onChange,
+  label,
+}: CustomCheckboxProps) {
   return (
-    <Checkbox
-      checked={checked}
-      onChange={onChange}
-      style={{
-        width: "20px",
-        height: "20px",
-        borderRadius: "6px",
-        backgroundColor: checked ? "var(--orange-regular)" : "rgba(255, 255, 255, 0.1)",
-        padding: "0.25rem",
-        boxShadow: "inset 0 0 0 1px rgba(255, 255, 255, 0.15)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: "pointer",
-      }}
-      // className={`group ${checked ? "bg-white" : ""}`}
+    <Grid
+      container
+      gap={1}
+      alignItems="center"
     >
-      <CheckIcon
-        style={{
-          display: checked ? "block" : "none",
-        }}
-      />
-    </Checkbox>
+      <Checkbox
+        checked={checked}
+        onChange={onChange}
+        className={classNames(
+          styles.checkbox,
+          { [styles.checked]: checked },
+        )}
+      >
+        <CheckIcon
+          style={{
+            display: checked ? "block" : "none",
+          }}
+        />
+      </Checkbox>
+      
+      {label && <Label label={label} variantSize="regular16" offUserSelect />}
+    </Grid>
   );
 }

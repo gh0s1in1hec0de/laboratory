@@ -140,7 +140,6 @@ export function useConnectButton() {
       retrieveLaunchParams();
       navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_FRONTEND_MINIAPP_URL}?startapp=${Address.parse(address).toString()}`);
     } catch (error) {
-      console.log("its browser!");
       navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_FRONTEND_BROWSER_URL}/?referral=${Address.parse(address).toRawString()}`);
     }
   }
