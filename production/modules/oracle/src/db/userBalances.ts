@@ -1,16 +1,16 @@
 import type { SqlClient } from "./types";
 import { globalClient } from "./db";
 import type {
-    GetUserBalancesResponse,
+    ExtendedUserBalance,
     TokenLaunchTimings,
     StoredUserBalance,
     RawAddressString,
-    JettonMetadata
+    JettonMetadata,
 } from "starton-periphery";
 
 export async function getCallerBalances(
     address: RawAddressString, launch?: RawAddressString, client?: SqlClient
-): Promise<GetUserBalancesResponse | null> {
+): Promise<ExtendedUserBalance[] | null> {
     const c = client ?? globalClient;
 
     const res = await c<

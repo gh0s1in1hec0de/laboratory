@@ -124,6 +124,8 @@ export async function getSortedTokenLaunches(
         WHERE tl.identifier ILIKE ${`%${search ?? ""}%`}
             ${succeed !== undefined ? c`AND tl.is_successful = ${succeed}` : c``}
             ${createdBy ? c`AND tl.creator = ${createdBy}` : c``}
+            -- If createdBy hadn't beed provided - we show only launches, that are available for all users 
+            ${!createdBy ? c`AND (tl.timings->> 'creatorRoundEndTime')::BIGINT < EXTRACT(EPOCH FROM now())` : c``}
         ORDER BY tl.platform_share DESC, ${orderByExpression}
         LIMIT ${limit + 1} OFFSET ${offset};
     `;

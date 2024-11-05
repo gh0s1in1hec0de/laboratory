@@ -1,10 +1,11 @@
-import { CommonServerError, } from "starton-periphery";
+import { CommonServerError } from "starton-periphery";
 import * as db from "../../../db";
 import type {
     ConnectCallerWalletRequest,
     GetUserBalancesResponse,
     GetUserBalancesRequest,
-    Caller,
+    MappedUserBalances,
+    Caller
 } from "starton-periphery";
 
 export async function connectCallerWallet(
@@ -18,5 +19,13 @@ export async function connectCallerWallet(
 export async function getUserBalances(
     { user, launch }: GetUserBalancesRequest
 ): Promise<GetUserBalancesResponse> {
-    return await db.getCallerBalances(user, launch);
+    const userBalances = await db.getCallerBalances(user, launch);
+
+    return userBalances ? userBalances.reduce(
+        (acc, balance) => {
+            const { tokenLaunch } = balance;
+            acc[tokenLaunch] = balance;
+            return acc;
+        }, {} as MappedUserBalances
+    ) : null;
 }

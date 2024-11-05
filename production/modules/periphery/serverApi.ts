@@ -57,9 +57,15 @@ export type GetCertainLaunchRequest = { creator?: RawAddressString, address?: Ra
 export type GetCertainLaunchResponse = ExtendedLaunch | null;
 
 export type GetUserBalancesRequest = { user: RawAddressString, launch?: RawAddressString }
-export type GetUserBalancesResponse =
-    (StoredUserBalance & JettonMetadata & TokenLaunchTimings & { isSuccessful: boolean, creator: RawAddressString, })[]
-    | null;
+
+export type ExtendedUserBalance = (StoredUserBalance & JettonMetadata & TokenLaunchTimings & {
+    isSuccessful: boolean,
+    creator: RawAddressString,
+});
+export type MappedUserBalances = {
+    [tokenLaunch: RawAddressString]: ExtendedUserBalance
+};
+export type GetUserBalancesResponse = MappedUserBalances | null;
 
 export type GetRisingStarResponse = ExtendedLaunch | null;
 
