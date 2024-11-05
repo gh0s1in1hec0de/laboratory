@@ -22,3 +22,19 @@ export async function buyWhitelist(callerAddress: RawAddressString, tokenLaunchA
         storeWhitelistRelation(tokenLaunchAddress, callerAddress, sql);
     });
 }
+
+export async function checkWhitelistStatus(
+    tokenLaunchAddress: RawAddressString,
+    callerAddress: RawAddressString,
+    client?: SqlClient
+): Promise<boolean> {
+    const res = await (client ?? globalClient)<{ isWhitelisted: boolean }[]>`
+        SELECT EXISTS(
+            SELECT 1
+            FROM whitelist_relations
+            WHERE caller_address = ${callerAddress}
+              AND token_launch_address = ${tokenLaunchAddress}
+        ) as isWhitelisted
+    `;
+    return res[0]?.isWhitelisted || false;
+}

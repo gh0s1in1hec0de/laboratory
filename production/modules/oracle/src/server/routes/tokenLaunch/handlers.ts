@@ -14,6 +14,7 @@ export async function getLaunchesChunk(req: GetLaunchesChunkRequest): Promise<Ge
     }) ?? { launchesChunk: [], hasMore: false };
 }
 
+// For creator filtering may return `NOT_STARTED` launch
 export async function getCertainLaunch(
     { creator, address, metadataUri }: GetCertainLaunchRequest
 ): Promise<GetCertainLaunchResponse> {

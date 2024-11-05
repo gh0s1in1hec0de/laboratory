@@ -1,5 +1,5 @@
-import { getCallerTasks, getCallerTicketBalance, connectCallerWallet } from "./handlers";
-import { ConnectWalletSchema, GetTasksSchema, GetTicketBalanceSchema } from "./types";
+import { ConnectWalletSchema, GetWhitelistStatusSchema, GetTasksSchema, GetTicketBalanceSchema } from "./types";
+import { getCallerTasks, getCallerTicketBalance, connectCallerWallet, getWhitelistStatus } from "./handlers";
 import { createDetailsForEndpoint, SwaggerTags } from "../../config";
 import { CommonServerError } from "starton-periphery";
 import { authMiddleware } from "../auth";
@@ -50,6 +50,21 @@ export function UserRoutes() {
             },
             {
                 query: GetTicketBalanceSchema,
+                ...createDetailsForEndpoint(SwaggerTags.User)
+            }
+        )
+        .get(
+            "/whitelist-status",
+            async ({ query, error }) => {
+                try {
+                    return await getWhitelistStatus(query);
+                } catch (e) {
+                    if (e instanceof CommonServerError) return error(e.code, e.message);
+                    else return error(500, e);
+                }
+            },
+            {
+                query: GetWhitelistStatusSchema,
                 ...createDetailsForEndpoint(SwaggerTags.User)
             }
         );

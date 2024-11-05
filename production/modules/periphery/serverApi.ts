@@ -21,7 +21,7 @@ export type UploadMetadataToIpfsRequest = {
     influencerSupport?: boolean,
 };
 
-export type BuyWhitelistRequest = { userAddress: RawAddressString, launchAddress: RawAddressString };
+export type BuyWhitelistRequest = { callerAddress: RawAddressString, launchAddress: RawAddressString };
 
 export type ConnectCallerWalletRequest = { address: RawAddressString, referral?: string, }
 
@@ -37,6 +37,7 @@ export type GetCallerTasksResponse = {
     createdAt: number,
     completed: boolean,
 }
+export type GetWhitelistStatusRequest = { tokenLaunch: RawAddressString, callerAddress: RawAddressString };
 
 // Oracle API
 

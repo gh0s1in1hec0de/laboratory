@@ -24,6 +24,6 @@ export async function uploadMetadataToIpfs(
     return metadataJsonCID;
 }
 
-export async function buyWhitelist({ userAddress, launchAddress }: BuyWhitelistRequest,): Promise<void> {
-    return await db.buyWhitelist(userAddress, launchAddress);
+export async function buyWhitelist({ callerAddress, launchAddress }: BuyWhitelistRequest,): Promise<void> {
+    return await db.buyWhitelist(callerAddress, launchAddress);
 }

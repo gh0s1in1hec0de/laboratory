@@ -1,8 +1,8 @@
+import { Address, beginCell, Cell, toNano } from "@ton/core";
+import { getQueryId, tokenMetadataToCell } from "./utils";
 import { SendTransactionRequest } from "@tonconnect/sdk";
 import { fees, JETTON_MIN_TRANSFER_FEE } from "./fees";
 import { LaunchParams } from "lauchpad/wrappers/types";
-import { Address, beginCell, Cell } from "@ton/core";
-import { tokenMetadataToCell } from "./utils";
 import { StringifiedCoins } from "./Database";
 import {
     QUERY_ID_LENGTH,
@@ -25,8 +25,18 @@ import {
 */
 export class TxRequestBuilder {
     public static createLaunch(
-        { coreAddress, queryId, amount }: { coreAddress: string, queryId: number, amount: StringifiedCoins },
-        { totalSupply, startTime, platformSharePct, metadata, maybePackedConfig = null }:
+        { coreAddress, queryId = Math.floor(Date.now()), amount = toNano("1").toString() }: {
+            coreAddress: string,
+            queryId?: number,
+            amount?: StringifiedCoins
+        },
+        {
+            totalSupply,
+            platformSharePct,
+            metadata,
+            startTime = Math.floor(Date.now() / 1000) + 60,
+            maybePackedConfig = null
+        }:
             LaunchParams & { maybePackedConfig: Cell | null },
         validUntil: number = Math.floor(Date.now() / 1000) + 90
     ): SendTransactionRequest {
@@ -52,7 +62,11 @@ export class TxRequestBuilder {
     }
 
     public static creatorBuyoutMessage(
-        { launchAddress, queryId, amount }: { launchAddress: string, queryId: number, amount: StringifiedCoins },
+        { launchAddress, amount, queryId = Math.floor(Date.now()) }: {
+            launchAddress: string,
+            queryId?: number,
+            amount: StringifiedCoins
+        },
         validUntil: number = Math.floor(Date.now() / 1000) + 90
     ): SendTransactionRequest {
         const body = beginCell()
@@ -71,13 +85,14 @@ export class TxRequestBuilder {
         };
     }
 
+    // Should be called ONLY if user is whitelisted
     public static whitelistPurchaseV1Message(
-        { launchAddress, queryId, amount }: { launchAddress: string, queryId: number, amount: StringifiedCoins },
+        { launchAddress, amount }: { launchAddress: string, amount: StringifiedCoins },
         validUntil: number = Math.floor(Date.now() / 1000) + 90
     ): SendTransactionRequest {
         const body = beginCell()
             .storeUint(TokensLaunchOps.WhitelistPurchase, OP_LENGTH)
-            .storeUint(queryId, QUERY_ID_LENGTH)
+            .storeUint(getQueryId(), QUERY_ID_LENGTH)
             .endCell();
         return {
             validUntil,
@@ -93,7 +108,11 @@ export class TxRequestBuilder {
 
     // Actually a jetton transfer
     public static whitelistPurchaseV2Message(
-        { launchAddress, queryId, amount }: { launchAddress: string, queryId: number, amount: Coins },
+        { launchAddress, amount, queryId = Math.floor(Date.now()) }: {
+            launchAddress: string,
+            queryId?: number,
+            amount: Coins
+        },
         { userAddress, userWalletAddress, jettonAmount }: {
             userAddress: Address,
             userWalletAddress: Address,
@@ -122,7 +141,11 @@ export class TxRequestBuilder {
     }
 
     public static publicPurchaseMessage(
-        { launchAddress, queryId, amount }: { launchAddress: string, queryId: number, amount: StringifiedCoins },
+        { launchAddress, amount, queryId = Math.floor(Date.now()), }: {
+            launchAddress: string,
+            queryId?: number,
+            amount: StringifiedCoins
+        },
         validUntil: number = Math.floor(Date.now() / 1000) + 90
     ): SendTransactionRequest {
         const body = beginCell()
@@ -145,9 +168,14 @@ export class TxRequestBuilder {
 
     public static refundMessage(
         version: GlobalVersions,
-        { launchAddress, queryId, mode = BalanceUpdateMode.TotalWithdrawal, isCreator = false }: {
+        {
+            launchAddress,
+            queryId = Math.floor(Date.now()),
+            mode = BalanceUpdateMode.TotalWithdrawal,
+            isCreator = false
+        }: {
             launchAddress: string,
-            queryId: number,
+            queryId?: number,
             mode: BalanceUpdateMode,
             isCreator?: boolean
         },
@@ -181,7 +209,7 @@ export class TxRequestBuilder {
 
     public static claimMessage(
         version: GlobalVersions,
-        { launchAddress, queryId }: { launchAddress: string, queryId: number, },
+        { launchAddress, queryId = Math.floor(Date.now()) }: { launchAddress: string, queryId?: number, },
         validUntil: number = Math.floor(Date.now() / 1000) + 90
     ): SendTransactionRequest {
         const commonRefundBody = beginCell()

@@ -13,3 +13,8 @@ export const GetTasksSchema = t.Object({
     address: t.Optional(t.String()),
     staged: t.String(),
 });
+
+export const GetWhitelistStatusSchema = t.Object({
+    tokenLaunch: t.String(),
+    callerAddress: t.String(),
+});

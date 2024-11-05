@@ -1,14 +1,15 @@
-import { CommonServerError, } from "starton-periphery";
+import { CommonServerError } from "starton-periphery";
 import { Address } from "@ton/core";
 import * as db from "../../../db";
 import type {
     GetCallerTicketBalanceRequest,
     ConnectCallerWalletRequest,
+    GetWhitelistStatusRequest,
     GetCallerTasksResponse,
     GetCallerTasksRequest,
     RawAddressString,
     Subtask,
-    Caller,
+    Caller
 } from "starton-periphery";
 
 export async function connectCallerWallet(
@@ -69,5 +70,10 @@ export async function getCallerTasks(
             };
         })
     );
+}
 
+export async function getWhitelistStatus(
+    { tokenLaunch, callerAddress }: GetWhitelistStatusRequest
+): Promise<boolean> {
+    return db.checkWhitelistStatus(tokenLaunch, callerAddress);
 }
