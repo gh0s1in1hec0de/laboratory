@@ -32,9 +32,14 @@ CREATE TABLE token_launches
 
 CREATE TABLE whitelist_relations
 (
-    token_launch_address address REFERENCES token_launches (address),
-    caller_address       address REFERENCES callers (address),
-    PRIMARY KEY (token_launch_address, caller_address)
+    token_launch address REFERENCES token_launches (address),
+    caller       address REFERENCES callers (address),
+    PRIMARY KEY (token_launch, caller)
+);
+
+CREATE TABLE whitelist_exceptions
+(
+    token_launch address PRIMARY KEY REFERENCES token_launches (address)
 );
 
 CREATE TABLE user_actions

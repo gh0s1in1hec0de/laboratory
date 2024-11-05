@@ -9,7 +9,7 @@ export async function storeWhitelistRelation(
     client?: SqlClient
 ): Promise<WhitelistRelations | null> {
     const res = await (client ?? globalClient)<WhitelistRelations[]>`
-        INSERT INTO whitelist_relations (token_launch_address, caller_address)
+        INSERT INTO whitelist_relations (token_launch, caller)
         VALUES (${tokenLaunchAddress}, ${callerAddress})
         RETURNING 1
     `;
@@ -24,17 +24,20 @@ export async function buyWhitelist(callerAddress: RawAddressString, tokenLaunchA
 }
 
 export async function checkWhitelistStatus(
-    tokenLaunchAddress: RawAddressString,
-    callerAddress: RawAddressString,
+    tokenLaunch: RawAddressString,
+    caller: RawAddressString,
     client?: SqlClient
 ): Promise<boolean> {
     const res = await (client ?? globalClient)<{ isWhitelisted: boolean }[]>`
-        SELECT EXISTS(
-            SELECT 1
-            FROM whitelist_relations
-            WHERE caller_address = ${callerAddress}
-              AND token_launch_address = ${tokenLaunchAddress}
-        ) as isWhitelisted
+        SELECT CASE
+                   WHEN EXISTS(SELECT 1
+                               FROM whitelist_exceptions
+                               WHERE token_launch = ${tokenLaunch}) THEN TRUE
+                   ELSE EXISTS(SELECT 1
+                               FROM whitelist_relations
+                               WHERE caller = ${caller}
+                                 AND token_launch = ${tokenLaunch})
+                   END as is_whitelisted
     `;
     return res[0]?.isWhitelisted || false;
 }

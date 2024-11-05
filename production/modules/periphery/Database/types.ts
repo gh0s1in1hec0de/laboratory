@@ -136,8 +136,8 @@ export const balanceUpdateModeToUserActionType: { [key in BalanceUpdateMode]: Us
 };
 
 export type WhitelistRelations = {
-    tokenLaunchAddress: string,
-    callerAddress: string,
+    tokenLaunch: string,
+    caller: string,
 }
 
 // Dispenser
