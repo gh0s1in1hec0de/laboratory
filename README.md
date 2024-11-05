@@ -10,8 +10,3 @@
  `-----'    `--'     `--' `--' `--' '--'   `--'        `-----' `--'  `--'  
                                            by gh0s1in1hec0de & dondarubin
 ```
-
-#### TODO
-- Add launch config constraints (core)
-- Update IPFS node config
-- Reward jetton share calculation util

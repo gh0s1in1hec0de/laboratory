@@ -51,6 +51,7 @@ To run any service container correctly, we need to provide our custom network as
 service="manager/oracle/etc" docker run -d \
   --name st-${service} \
   --network starlink \
+  --restart on-failure \
   -v $(pwd)/modules/logs_${service}:/app/modules/logs_${service} \
   -v $(pwd)/modules/${service}/config.yaml:/app/modules/${service}/config.yaml \
   ${service}:latest
@@ -90,6 +91,7 @@ Fishell version looks like this:
 service="manager/oracle/etc" docker run -d \
         --name {$service}-service \
         --network starlink \
+        --restart on-failure \
         -v $(pwd)/modules/logs_{$service}:/app/modules/logs_{$service} \
         -v $(pwd)/modules/{$service}/config.yaml:/app/modules/{$service}/config.yaml \
         {$service}:latest
@@ -99,6 +101,7 @@ service="manager/oracle/etc" docker run -d \
 docker run -d \
   --name st-frontend \
   --network starlink \
+  --restart on-failure \
   -p 3000:3000 \
   -v $(pwd)/modules/frontend/.env:/app/modules/frontend/.env \
   frontend:latest
