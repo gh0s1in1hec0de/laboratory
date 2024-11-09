@@ -11,6 +11,16 @@ CREATE TABLE reward_jettons
     CHECK (current_balance > reward_amount)
 );
 
+CREATE TABLE reward_pools
+(
+    token_launch  address NOT NULL REFERENCES token_launches (address),
+    reward_jetton address NOT NULL REFERENCES reward_jettons (master_address),
+
+    reward_amount coins   NOT NULL DEFAULT 0,
+
+    PRIMARY KEY (token_launch, reward_jetton)
+);
+
 CREATE OR REPLACE FUNCTION create_reward_pools_for_new_launch()
     RETURNS TRIGGER AS
 $$
@@ -71,16 +81,6 @@ CREATE TRIGGER trigger_handle_failed_token_launch
     WHEN (OLD.is_successful IS DISTINCT FROM NEW.is_successful AND NEW.is_successful = FALSE)
 EXECUTE FUNCTION return_reward_pools();
 
-CREATE TABLE reward_pools
-(
-    token_launch  address NOT NULL REFERENCES token_launches (address),
-    reward_jetton address NOT NULL REFERENCES reward_jettons (master_address),
-
-    reward_amount coins   NOT NULL DEFAULT 0 CHECK (reward_amount > 0),
-
-    PRIMARY KEY (token_launch, reward_jetton)
-);
-
 CREATE TYPE user_launch_reward_status AS ENUM ('unclaimed', 'claimed');
 CREATE TABLE user_launch_reward_positions
 (
@@ -109,7 +109,7 @@ CREATE OR REPLACE FUNCTION update_balances_after_claim()
 $$
 DECLARE
     current_user_balance   coins;
-    current_jetton_balance coins;
+    current_total_jetton_balance coins;
     current_locked_balance coins;
 BEGIN
 
@@ -135,18 +135,18 @@ BEGIN
 
 
     SELECT current_balance, locked_for_rewards
-    INTO current_jetton_balance, current_locked_balance
+    INTO current_total_jetton_balance, current_locked_balance
     FROM reward_jettons
     WHERE master_address = OLD.reward_jetton
         FOR UPDATE;
 
-    IF current_jetton_balance - OLD.balance < 0 THEN
+    IF current_total_jetton_balance - OLD.balance < 0 THEN
         UPDATE reward_jettons
         SET current_balance = 0
         WHERE master_address = OLD.reward_jetton;
     ELSE
         UPDATE reward_jettons
-        SET current_balance = current_jetton_balance - OLD.balance
+        SET current_balance = current_total_jetton_balance - OLD.balance
         WHERE master_address = OLD.reward_jetton;
     END IF;
 

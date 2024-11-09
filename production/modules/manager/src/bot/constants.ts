@@ -5,9 +5,12 @@ import { Address } from "@ton/core";
 import {
     type StoredTokenLaunch,
     type LaunchMetadata,
+    type JettonMetadata,
     type RewardJetton,
+    type RewardPool,
     type StoredTask,
     jettonFromNano,
+    toSnakeCase
 } from "starton-periphery";
 
 /**
@@ -19,28 +22,23 @@ interface ICommand {
 }
 
 export const commands: ICommand[] = [
-    { command: "start", description: "start the bot" },
-    { command: "menu", description: "go to hell" }
+    { command: "start", description: "pretty obvious" },
+    { command: "menu", description: "this one too" }
 ];
-//
-// export const initLaunchesSortData: GetLaunchesChunkRequest = {
-//     page: 1,
-//     limit: 10,
-//     orderBy: LaunchSortParameters.CREATED_AT,
-//     order: SortingOrder.HIGH_TO_LOW,
-//     search: ""
-// };
+
 export type PaginationData = { page: number, limit: number };
-export const initSortingData: PaginationData = {
+export const initPaginationData: PaginationData = {
     page: 1,
     limit: 6,
 };
 
 export enum Conversations {
-    addWallets = "addWalletsToRelations",
-    addRewardJetton = "addRewardJetton",
+    saveCompletedTasks = "saveCompletedTasks",
     createTask = "createTask",
     deleteTask = "deleteTask",
+    setRewardJetton = "setRewardJetton",
+    setRewardPool = "setRewardPool",
+    listRewardPoolsPrelude = "listRewardPoolsPrelude"
 }
 
 // ٩(ఠ益ఠ)۶
@@ -73,7 +71,8 @@ const replies = {
     confirmDeleteTask: "Are you sure you want to delete these tasks? ٩(ఠ益ఠ)۶",
     deleteTasksCanceled: "Task deletion canceled successfully! ＼(￣▽￣)／\n\n<b>Want to continue?</b> Click /menu",
     invalidDeleteTasks: "Invalid <b>data</b> (￣ヘ￣).",
-    noRewardJettons: "No reward jettons available (￣ヘ￣)"
+    noRewardJettons: "No reward jettons available (￣ヘ￣)",
+    noRewardPools: "Reward pools not found (￣ヘ￣)"
 };
 
 export function getReplyText(key: keyof typeof replies): string {
@@ -109,9 +108,19 @@ export function getRewardJettonsReply(rewardJettons: RewardJetton[]): string {
             return `${metadata.symbol}\n` +
                 `${Address.parse(masterAddress)}\n` +
                 `${isActive ? "active" : "not active"}\n` +
-                `balance: ${jettonFromNano(currentBalance, Number(metadata.decimals ?? 6))}\n` +
-                `locked: ${jettonFromNano(lockedForRewards, Number(metadata.decimals ?? 6))}\n` +
-                `reward amount: ${jettonFromNano(rewardAmount, Number(metadata.decimals ?? 6))} \n`;
+                `balance: ${jettonFromNano(currentBalance, Number(metadata.decimals ?? 6))} (raw ${currentBalance})\n` +
+                `locked: ${jettonFromNano(lockedForRewards, Number(metadata.decimals ?? 6))} (raw ${lockedForRewards})\n` +
+                `reward amount: ${jettonFromNano(rewardAmount, Number(metadata.decimals ?? 6))} (raw ${rewardAmount}) \n`;
+        }
+    ).join("\n");
+}
+
+export function getRewardPoolsReply(rewardJettons: (RewardPool & { metadata: JettonMetadata })[]): string {
+    return rewardJettons.map(
+        ({ rewardJetton, metadata, rewardAmount, }) => {
+            return `${metadata.symbol} - ${metadata.name}\n` +
+                `jetton address: ${Address.parse(rewardJetton)}\n` +
+                `reward amount: ${jettonFromNano(rewardAmount, Number(metadata.decimals ?? 6))} (raw ${rewardAmount}) \n`;
         }
     ).join("\n");
 }
@@ -145,20 +154,22 @@ export async function getUnknownMsgReply(ctx: MyContext) {
  */
 export function getMenuKeyboard(): InlineKeyboard {
     return new InlineKeyboard()
-        // .text("get token launches", "list_launches").row()
-        .text("users completed tasks", "add_wallets").row()
-        .text("get tasks", "list_tasks").row()
-        .text("add reward jettons", "add_reward_jettons").row()
-        .text("list token launches", "list_launches").row()
-        .text("list reward jettons", "list_reward_jettons").row()
-        .text("create tasks", "create_task")
-        .text("delete tasks", "delete_task");
+        .text("Save completed tasks", "save_tasks_completions").row()
+        .text("Get tasks", "list_tasks").row()
+        .text("List token launches", "list_launches").row()
+        .text("Set reward pools", "set_reward_pool")
+        .text("List reward pools", "list_reward_pools_prelude").row()
+        .text("Set reward jettons", "set_reward_jetton")
+        .text("List reward jettons", "list_reward_jettons").row()
+        .text("Create tasks", "create_task")
+        .text("Delete tasks", "delete_task");
 }
 
 export enum ListedObjects {
     Tasks = "tasks",
     Launches = "launches",
-    RewardJettons = "reward_jettons"
+    RewardJettons = "reward_jettons",
+    RewardPools = "reward_pools"
 }
 
 export function getPaginationKeyboard(listedObject: ListedObjects, hasMore: boolean, page: number): InlineKeyboard {
@@ -177,19 +188,9 @@ export function getResetKeyboard(listedObject: ListedObjects): InlineKeyboard {
         .text("< back to menu", "back");
 }
 
-export function getCancelAddWalletsConvKeyboard(): InlineKeyboard {
+export function cancelConversationKeyboard(conversation: Conversations): InlineKeyboard {
     return new InlineKeyboard()
-        .text("cancel", "cancel_conv_add_wallets").row();
-}
-
-export function getCancelCreateTaskConvKeyboard(): InlineKeyboard {
-    return new InlineKeyboard()
-        .text("cancel", "cancel_conv_create_task").row();
-}
-
-export function getCancelDeleteTaskConvKeyboard(): InlineKeyboard {
-    return new InlineKeyboard()
-        .text("cancel", "cancel_conv_delete_task").row();
+        .text("cancel", `cancel_conv_${toSnakeCase(conversation)}`).row();
 }
 
 export function getConfirmDeleteTaskConvKeyboard(): InlineKeyboard {
@@ -207,12 +208,9 @@ export async function getAdminFilter(ctx: MyContext | HearsContext<MyContext>): 
             admins
         }
     } = getConfig();
-
     if (!admins.includes(ctx.from!.id)) {
         await ctx.reply("(⊙_⊙) Shutta f up, you are not an admin...");
         await ctx.stopPoll();
-        return false;
     }
-
-    return true;
+    return admins.includes(ctx.from!.id);
 }

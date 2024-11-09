@@ -3,6 +3,7 @@ import { fromNano, type OutActionSendMsg, SendMode } from "@ton/ton";
 import { Address, beginCell } from "@ton/core";
 import type { ClaimRequest } from "./scanner";
 import { balancedTonClient } from "../client";
+import { walletData } from "./highload";
 import { getConfig } from "../config";
 import { logger } from "../logger";
 import * as db from "../db";
@@ -14,7 +15,6 @@ import {
     JettonOps,
     delay,
 } from "starton-periphery";
-import { walletData } from "./highload";
 
 export async function handleMaybeClaimRequest(request: ClaimRequest) {
     const { user, requestType, attachedValue } = request;
@@ -22,7 +22,6 @@ export async function handleMaybeClaimRequest(request: ClaimRequest) {
     const actions: OutActionSendMsg[] = [];
     try {
         if (requestType === "t") {
-            // All the balances
             const rewardBalances = await db.getRewardJettonBalances(user.toRawString());
             if (!rewardBalances) {
                 logger().warn(`reward balances gone at some reason for user ${user}`);
@@ -144,8 +143,7 @@ export async function handleMaybeClaimRequest(request: ClaimRequest) {
             }
             if (requestType === "t") {
                 await db.markUserRewardPositionsAsClaimed(user.toRawString());
-                if (await db.getRewardJettonBalances(user.toRawString()))
-                    logger().error(`inconsistent state reached: not all the balances zeroed for user ${user.toRawString()}`);
+                await db.deleteMaybeExtraBalances(user.toRawString());
             } else await db.markUserRewardPositionsAsClaimed(user.toRawString(), Address.parse(requestType).toRawString());
         }
     } catch (e) {

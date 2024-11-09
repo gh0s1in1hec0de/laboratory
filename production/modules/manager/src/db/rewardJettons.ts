@@ -5,7 +5,6 @@ import type {
     SortedRewardJettons,
     RawAddressString,
     RewardJetton,
-    Coins,
 } from "starton-periphery";
 
 export async function getRewardJetton(masterAddress: RawAddressString, client?: SqlClient): Promise<RewardJetton | null> {
@@ -17,7 +16,7 @@ export async function getRewardJetton(masterAddress: RawAddressString, client?: 
     return !res.length ? null : res[0];
 }
 
-export async function storeRewardJetton(
+export async function upsertRewardJetton(
     {
         masterAddress,
         ourWalletAddress,
@@ -33,25 +32,16 @@ export async function storeRewardJetton(
         INSERT INTO reward_jettons (master_address, metadata, our_wallet_address, current_balance, reward_amount,
                                     is_active)
         VALUES (${masterAddress}, ${metadata}, ${ourWalletAddress}, ${currentBalance}, ${rewardAmount}, ${isActive})
+        ON CONFLICT (master_address)
+            DO UPDATE
+            SET current_balance    = EXCLUDED.current_balance,
+                reward_amount      = EXCLUDED.reward_amount,
+                is_active          = EXCLUDED.is_active,
+                our_wallet_address = EXCLUDED.our_wallet_address,
+                metadata           = EXCLUDED.metadata
         RETURNING 1;
     `;
-    if (res.length !== 1) logger().warn(`exactly 1 column must be created, got: ${res}`);
-}
-
-export async function updateRewardJettonNumbers(
-    masterAddress: string,
-    newBalance: Coins,
-    newRewardAmount: Coins,
-    client?: SqlClient
-): Promise<void> {
-    const res = await (client ?? globalClient)`
-        UPDATE reward_jettons
-        SET current_balance = ${newBalance},
-            reward_amount   = ${newRewardAmount}
-        WHERE master_address = ${masterAddress}
-        RETURNING 1;
-    `;
-    if (res.length !== 1) logger().warn(`exactly 1 row must be updated, got: ${res}`);
+    if (res.length !== 1) logger().warn(`exactly 1 row must be affected, got: ${res}`);
 }
 
 export async function getSortedRewardJettons(

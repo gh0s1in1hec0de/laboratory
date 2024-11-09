@@ -3,9 +3,19 @@ import { globalClient } from "./db";
 import {
     type GetLaunchesChunkRequest,
     type StoredTokenLaunch,
+    type RawAddressString,
     LaunchSortParameters,
     type LaunchMetadata
 } from "starton-periphery";
+
+export async function getTokenLaunch(address: RawAddressString, client?: SqlClient): Promise<StoredTokenLaunch | null> {
+    const res = await (client ?? globalClient)<StoredTokenLaunch[]>`
+        SELECT *
+        FROM token_launches
+        WHERE address = ${address}
+    `;
+    return res.length ? res[0] : null;
+}
 
 export async function getSortedTokenLaunches(
     { page, limit, orderBy, order, succeed, createdBy, search }: GetLaunchesChunkRequest, client?: SqlClient

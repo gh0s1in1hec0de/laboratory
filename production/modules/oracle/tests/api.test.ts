@@ -1,4 +1,4 @@
-import { storeLaunchMetadata, storeRewardJetton } from "manager/src/db";
+import { storeLaunchMetadata, upsertRewardJetton } from "manager/src/db";
 import { afterAll, beforeAll, describe, test } from "bun:test";
 import { randomAddress } from "@ton/test-utils";
 import { ok as assert } from "node:assert";
@@ -13,8 +13,9 @@ import {
     UserActionType,
     GlobalVersions,
     SortingOrder,
-    jettonToNano
+    jettonToNano,
 } from "starton-periphery";
+import { deleteMaybeExtraBalances } from "dispenser/src/db";
 
 async function markLaunchAsSuccessful(address: RawAddressString, client: db.SqlClient): Promise<void> {
     const res = await client`
@@ -47,6 +48,16 @@ describe("launch sorter", () => {
     let client: db.SqlClient;
     let launchAddresses: Address[];
     let creators: Address[];
+    let actors: Address[];
+    const metadata: JettonMetadata = {
+        name: "Example Token",
+        description: "This is an example token description",
+        symbol: "EXM",
+        decimals: "6",
+        image: "https://ipfs.io/ipfs/Qmb4Yjspwz3gVq371wvVN9hqzzAoopzv5W1yS49qdTJJ7f",
+        uri: "https://ipfs.io/ipfs/QmVCMdxyudybb9vDefct1qU3DEZBhj3zhg3n9uM6EqGbN6"
+    };
+
     beforeAll(async () => {
         client = postgres({
             host: process.env.POSTGRES_HOST,
@@ -68,7 +79,19 @@ describe("launch sorter", () => {
     //     cleanDatabase();
     // });
 
-    test("extended launches data mock", async () => {
+    test.skip("synthetic launch jettons", async () => {
+        for (let i = 0; i < 5; i++) {
+            await upsertRewardJetton({
+                masterAddress: randomAddress().toRawString(),
+                ourWalletAddress: randomAddress().toRawString(),
+                metadata,
+                currentBalance: jettonToNano((i + 1) * 1000_000),
+                rewardAmount: jettonToNano((i + 1) * 10_000),
+                isActive: i % 2 === 0
+            }, client);
+        }
+    });
+    test.skip("extended launches data mock", async () => {
         const now = Math.floor(Date.now() / 1000);
 
         await storeLaunchMetadata({
@@ -78,33 +101,15 @@ describe("launch sorter", () => {
             website: "https://juicy_bitches.cia",
             influencerSupport: true
         }, client);
-        const metadata: JettonMetadata = {
-            name: "Example Token",
-            description: "This is an example token description",
-            symbol: "EXM",
-            decimals: "6",
-            image: "https://ipfs.io/ipfs/Qmb4Yjspwz3gVq371wvVN9hqzzAoopzv5W1yS49qdTJJ7f",
-            uri: "https://ipfs.io/ipfs/QmVCMdxyudybb9vDefct1qU3DEZBhj3zhg3n9uM6EqGbN6"
-        };
 
         launchAddresses = Array.from({ length: 30 }, () => randomAddress());
         creators = Array.from({ length: 30 }, () => randomAddress());
-
-        for (let i = 0; i < 5; i++) {
-            await storeRewardJetton({
-                masterAddress: randomAddress().toRawString(),
-                ourWalletAddress: randomAddress().toRawString(),
-                metadata,
-                currentBalance: jettonToNano((i + 1) * 1000_000),
-                rewardAmount: jettonToNano((i + 1) * 10_000),
-                isActive: i % 2 === 0
-            }, client);
-        }
+        actors = Array.from({ length: 30 }, () => randomAddress());
 
         // Current launches
-        for (let i = 0; i < 15; i++) {
-            const address = launchAddresses[i].toRawString();
-            const timings = i < 5
+        for (let currentLaunchIndex = 0; currentLaunchIndex < 15; currentLaunchIndex++) {
+            const address = launchAddresses[currentLaunchIndex].toRawString();
+            const timings = currentLaunchIndex < 5
                 ? {
                     startTime: now - Math.floor(Math.random() * 3600 * 3),  // Up to 3 hours in the past
                     creatorRoundEndTime: now + 60 * 60 * 3 + Math.floor(Math.random() * 3600 * 2), // 3-5 hours in the future
@@ -112,7 +117,7 @@ describe("launch sorter", () => {
                     publicRoundEndTime: now + 60 * 60 * 12 + Math.floor(Math.random() * 3600 * 2), // 12-14 hours in the future
                     endTime: now + 60 * 60 * 15 + Math.floor(Math.random() * 1800) // 15-15.5 hours in the future
                 }
-                : i < 10
+                : currentLaunchIndex < 10
                     ? {
                         startTime: now - 60 * 60 * 4 + Math.floor(Math.random() * 3600),  // 4 hours ago to 3 hours ago
                         creatorRoundEndTime: now - Math.floor(Math.random() * 3600),  // Up to 1 hour ago
@@ -130,11 +135,11 @@ describe("launch sorter", () => {
             await db.storeTokenLaunch({
                 address,
                 identifier: `${metadata.symbol} ${metadata.name ?? " "} ${metadata.description ?? " "}`.trim(),
-                creator: creators[i].toRawString(),
-                version: i % 2 === 0 ? GlobalVersions.V1 : GlobalVersions.V2,
+                creator: creators[currentLaunchIndex].toRawString(),
+                version: currentLaunchIndex % 2 === 0 ? GlobalVersions.V1 : GlobalVersions.V2,
                 metadata, timings,
                 totalSupply: jettonToNano(666_666),
-                platformShare: i % 2 === 0 ? 0.5 : 1.5,
+                platformShare: currentLaunchIndex % 2 === 0 ? 0.5 : 1.5,
                 minTonTreshold: toNano("1000"),
                 createdAt: timings.startTime - 300
             }, client);
@@ -144,10 +149,10 @@ describe("launch sorter", () => {
                 totalTonsCollected: toNano("1")
             }, client);
 
-            if (i >= 5 && i < 10) {
+            if (currentLaunchIndex >= 5 && currentLaunchIndex < 10) {
                 for (let i = 0; i < 5; i++) {
                     await db.storeUserAction({
-                        actor: randomAddress().toRawString(),
+                        actor: actors[i].toRawString(),
                         tokenLaunch: address,
                         actionType: UserActionType.WhiteListBuy,
                         whitelistTons: toNano("1"),
@@ -163,10 +168,10 @@ describe("launch sorter", () => {
                     totalTonsCollected: toNano("6")
                 }, client);
             }
-            if (i >= 10 && i < 15) {
+            if (currentLaunchIndex >= 10 && currentLaunchIndex < 15) {
                 for (let i = 0; i < 5; i++) {
                     await db.storeUserAction({
-                        actor: randomAddress().toRawString(),
+                        actor: actors[i].toRawString(),
                         tokenLaunch: address,
                         actionType: UserActionType.PublicBuy,
                         whitelistTons: 0n,
@@ -185,8 +190,8 @@ describe("launch sorter", () => {
         }
 
         // Ended launches
-        for (let i = 15; i < 30; i++) {
-            const address = launchAddresses[i].toRawString();
+        for (let currentLaunchIndex = 15; currentLaunchIndex < 30; currentLaunchIndex++) {
+            const address = launchAddresses[currentLaunchIndex].toRawString();
             const timings = {
                 startTime: now - 60 * 60 * 24 - Math.floor(Math.random() * 3600 * 3), // 1 day ago + random up to 3 hours
                 creatorRoundEndTime: now - 60 * 60 * 18 - Math.floor(Math.random() * 3600 * 2), // 18 hrs ago + random up to 2 hours
@@ -197,21 +202,21 @@ describe("launch sorter", () => {
             await db.storeTokenLaunch({
                 address,
                 identifier: `${metadata.symbol} ${metadata.name ?? " "} ${metadata.description ?? " "}`.trim(),
-                creator: creators[i].toRawString(),
-                version: i % 2 === 0 ? GlobalVersions.V1 : GlobalVersions.V2,
+                creator: creators[currentLaunchIndex].toRawString(),
+                version: currentLaunchIndex % 2 === 0 ? GlobalVersions.V1 : GlobalVersions.V2,
                 metadata, timings,
                 totalSupply: jettonToNano(666_666),
-                platformShare: i % 2 === 0 ? 0.5 : 1.5,
+                platformShare: currentLaunchIndex % 2 === 0 ? 0.5 : 1.5,
                 minTonTreshold: toNano("1000"),
                 createdAt: timings.startTime - 300
             }, client);
 
             for (let i = 0; i < 5; i++) {
                 await db.storeUserAction({
-                    actor: randomAddress().toRawString(),
+                    actor: actors[i].toRawString(),
                     tokenLaunch: address,
                     actionType: UserActionType.WhiteListBuy,
-                    whitelistTons: toNano(i % 2 ? "200" : "20"),
+                    whitelistTons: toNano(currentLaunchIndex % 2 ? "200" : "20"),
                     publicTons: 0n,
                     jettons: 0n,
                     lt: BigInt(i + 1),
@@ -221,11 +226,11 @@ describe("launch sorter", () => {
             }
             for (let i = 0; i < 5; i++) {
                 await db.storeUserAction({
-                    actor: randomAddress().toRawString(),
+                    actor: actors[i].toRawString(),
                     tokenLaunch: address,
                     actionType: UserActionType.PublicBuy,
                     whitelistTons: 0n,
-                    publicTons: toNano(i % 2 ? "50" : "5"),
+                    publicTons: toNano(currentLaunchIndex % 2 ? "50" : "5"),
                     jettons: (BigInt(i) + 1n) * jettonToNano("1"),
                     lt: BigInt(i + 1),
                     timestamp: randomBetween(timings.wlRoundEndTime, timings.publicRoundEndTime),
@@ -234,11 +239,11 @@ describe("launch sorter", () => {
             }
 
             await db.updateLaunchBalance(address, {
-                creatorTonsCollected: toNano(i % 2 ? "50" : "5"),
-                wlTonsCollected: toNano(i % 2 ? "1000" : "100"),
-                totalTonsCollected: toNano(i % 2 ? "1250" : "125")
+                creatorTonsCollected: toNano(currentLaunchIndex % 2 ? "50" : "5"),
+                wlTonsCollected: toNano(currentLaunchIndex % 2 ? "1000" : "100"),
+                totalTonsCollected: toNano(currentLaunchIndex % 2 ? "1250" : "125")
             }, client);
-            if (i % 2) {
+            if (currentLaunchIndex % 2) {
                 await markLaunchAsSuccessful(address, client);
                 await db.updatePostDeployEnrollmentStats(
                     address,
@@ -260,10 +265,34 @@ describe("launch sorter", () => {
                         payedToCreator: true,
                     }, client);
                 }
+                for (let i = 0; i < 5; i++) {
+                    if (i % 2 !== 0) continue;
+                    const actorsBalance = await db.getCallerBalances(actors[i].toRawString(), address, client);
+                    if (!actorsBalance) continue;
+                    await db.storeUserAction({
+                        actor: actors[i].toRawString(),
+                        tokenLaunch: address,
+                        actionType: UserActionType.Claim,
+                        whitelistTons: actorsBalance[0].whitelistTons,
+                        publicTons: actorsBalance[0].publicTons,
+                        jettons: actorsBalance[0].jettons,
+                        lt: BigInt(i + 1),
+                        timestamp: randomBetween(timings.publicRoundEndTime, timings.endTime),
+                        queryId: BigInt(i + 1)
+                    }, client);
+                    // Replace with approximate claim amount
+                    await db.storeUserClaim({
+                        tokenLaunch: address, actor: actors[i].toRawString(), jettonAmount: jettonToNano(666_666) / 10n
+                    });
+                }
             } else {
                 await db.markLaunchAsFailed(address, client);
             }
         }
+    });
+
+    test("user rewards balances clean-up", async () => {
+        await deleteMaybeExtraBalances("0:7bd0f90d4cba5744cca5e628336625c70535a73b4a977360c5f7068c132db7ee", client);
     });
 
     test.skip("mock launches activity data", async () => {

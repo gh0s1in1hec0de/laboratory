@@ -8,9 +8,9 @@ import {
     type PaginationData,
     getResetKeyboard,
     getLaunchesReply,
+    initPaginationData,
     ListedObjects,
     getReplyText,
-    initSortingData,
 } from "../constants";
 
 async function handleListLaunches(
@@ -52,7 +52,7 @@ async function handleListLaunches(
 export async function handleListLaunchesCallback(ctx: CallbackQueryContext<MyContext>) {
     await ctx.answerCallbackQuery();
     await handleListLaunches(ctx, {
-        ...initSortingData,
+        ...initPaginationData,
         page: ctx.session.launchesPage
     });
 }
@@ -65,7 +65,7 @@ export async function handleLaunchesPaginationCallback(ctx: CallbackQueryContext
             ? ctx.session.launchesPage -= 1
             : ctx.session.launchesPage = 1;
     await handleListLaunches(ctx, {
-        ...initSortingData,
+        ...initPaginationData,
         page: newPage
     });
 }

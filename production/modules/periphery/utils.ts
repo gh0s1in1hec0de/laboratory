@@ -94,3 +94,7 @@ export class CommonServerError extends Error {
         this.name = "CommonServerError";
     }
 }
+
+export function toSnakeCase(camelCaseStr: string) {
+    return camelCaseStr.replace(/([A-Z])/g, "_$1").toLowerCase();
+}

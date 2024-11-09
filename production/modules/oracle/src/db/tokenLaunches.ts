@@ -11,8 +11,6 @@ import { globalClient } from "./db";
 import { logger } from "../logger";
 import postgres from "postgres";
 
-// Warning! In runtime, when `StoredTokenLaunch` is returned - `TokenLaunchTimings`' fields are strings.
-// So - be careful, when using it - its better convert it via `new Date()`.
 export async function getTokenLaunch(address: RawAddressString, client?: SqlClient): Promise<StoredTokenLaunch | null> {
     const res = await (client ?? globalClient)<StoredTokenLaunch[]>`
         SELECT *

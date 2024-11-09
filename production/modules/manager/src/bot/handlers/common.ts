@@ -25,7 +25,7 @@ export async function handleCancelConversationCallback(
     conversationName: string
 ) {
     await ctx.conversation.exit(conversationName);
-    await ctx.answerCallbackQuery("Left conversation");
+    await ctx.answerCallbackQuery("Au revoir!");
     await ctx.reply(getReplyText("menu"), {
         parse_mode: "HTML",
         reply_markup: getMenuKeyboard()

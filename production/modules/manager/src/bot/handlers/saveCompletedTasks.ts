@@ -1,13 +1,14 @@
-import { getCancelAddWalletsConvKeyboard, getReplyText } from "../constants";
+import { cancelConversationKeyboard, Conversations, getReplyText } from "../constants";
 import type { MyContext, MyConversation } from "..";
 import { isReadyUsersTasksToDb } from "./common";
 import { logger } from "../../logger";
 import { Address } from "@ton/core";
 import * as db from "../../db";
 
-export async function addWalletsToRelations(conversation: MyConversation, ctx: MyContext): Promise<void> {
-    await ctx.reply(getReplyText("addressListRequest"),
-        { parse_mode: "HTML", reply_markup: getCancelAddWalletsConvKeyboard() }
+export async function saveCompletedTasks(conversation: MyConversation, ctx: MyContext): Promise<void> {
+    await ctx.reply(
+        getReplyText("addressListRequest"),
+        { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.saveCompletedTasks) }
     );
 
     let progress = false;
@@ -18,7 +19,7 @@ export async function addWalletsToRelations(conversation: MyConversation, ctx: M
         if (errors.length) {
             await ctx.reply(getReplyText("invalidAddUsersTasksRelations") + "\n" + errors.join("\n"), {
                 parse_mode: "HTML",
-                reply_markup: getCancelAddWalletsConvKeyboard()
+                reply_markup: cancelConversationKeyboard(Conversations.saveCompletedTasks)
             });
             continue;
         }
@@ -31,7 +32,7 @@ export async function addWalletsToRelations(conversation: MyConversation, ctx: M
             }
         } catch (error) {
             await ctx.reply(getReplyText("error"),
-                { parse_mode: "HTML", reply_markup: getCancelAddWalletsConvKeyboard() }
+                { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.saveCompletedTasks) }
             );
             if (error instanceof Error) {
                 logger().error("error in db when adding to table 'UserTaskRelation'", error.message);
@@ -44,8 +45,5 @@ export async function addWalletsToRelations(conversation: MyConversation, ctx: M
         progress = true;
     } while (!progress);
 
-    await ctx.reply(getReplyText("addWalletsSuccess"), {
-        parse_mode: "HTML",
-    });
-    return;
+    await ctx.reply(getReplyText("addWalletsSuccess"), { parse_mode: "HTML", });
 }

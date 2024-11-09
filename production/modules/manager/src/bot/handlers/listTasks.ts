@@ -5,7 +5,7 @@ import * as db from "../../db";
 import {
     getPaginationKeyboard,
     getResetKeyboard,
-    initSortingData,
+    initPaginationData,
     getTasksReply,
     ListedObjects,
     getReplyText,
@@ -28,18 +28,15 @@ async function handleListTasks(
 
         await ctx.callbackQuery.message!.editText(
             getTasksReply(data.tasks),
-            { reply_markup: getPaginationKeyboard(ListedObjects.Tasks,data.hasMore, sortData.page) }
+            { reply_markup: getPaginationKeyboard(ListedObjects.Tasks, data.hasMore, sortData.page) }
         );
-    } catch (error) {
+    } catch (e) {
         await ctx.callbackQuery.message!.editText(
             getReplyText("error"),
             { reply_markup: getResetKeyboard(ListedObjects.Tasks) }
         );
-        if (error instanceof Error) {
-            logger().error("error when trying to retrieve a list tasks: ", error.message);
-        } else {
-            logger().error("unknown error");
-        }
+        if (e instanceof Error) logger().error("error when trying to retrieve a list of tasks: ", e);
+        else logger().error("unknown error", e);
     }
 }
 
@@ -47,7 +44,7 @@ async function handleListTasks(
 export async function handleListTasksCallback(ctx: CallbackQueryContext<MyContext>) {
     await ctx.answerCallbackQuery();
     await handleListTasks(ctx, {
-        ...initSortingData,
+        ...initPaginationData,
         page: ctx.session.tasksPage
     });
 }
@@ -60,7 +57,7 @@ export async function handleTasksPaginationCallback(ctx: CallbackQueryContext<My
             ? ctx.session.tasksPage -= 1
             : ctx.session.tasksPage = 1;
     await handleListTasks(ctx, {
-        ...initSortingData,
+        ...initPaginationData,
         page: newPage
     });
 }

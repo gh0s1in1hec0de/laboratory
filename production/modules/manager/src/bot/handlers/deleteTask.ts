@@ -1,4 +1,4 @@
-import { getCancelDeleteTaskConvKeyboard, getConfirmDeleteTaskConvKeyboard, getReplyText } from "../constants";
+import { cancelConversationKeyboard, Conversations, getConfirmDeleteTaskConvKeyboard, getReplyText } from "../constants";
 import type { StoredTask } from "starton-periphery";
 import type { MyContext, MyConversation } from "..";
 import { logger } from "../../logger";
@@ -6,7 +6,7 @@ import * as db from "../../db";
 
 export async function deleteTask(conversation: MyConversation, ctx: MyContext): Promise<void> {
     await ctx.reply(getReplyText("deleteTaskRequest"),
-        { parse_mode: "HTML", reply_markup: getCancelDeleteTaskConvKeyboard() }
+        { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.deleteTask) }
     );
 
     let progress = false;
@@ -25,7 +25,7 @@ export async function deleteTask(conversation: MyConversation, ctx: MyContext): 
                 }
 
                 const task = await db.getTaskById(taskId.trim());
-                    
+
                 if (!task) {
                     errors.push(`Error with taskId = ${taskId}: task not found`);
                 } else {
@@ -34,7 +34,7 @@ export async function deleteTask(conversation: MyConversation, ctx: MyContext): 
             }
         } catch (error) {
             await ctx.reply(getReplyText("error"),
-                { parse_mode: "HTML", reply_markup: getCancelDeleteTaskConvKeyboard() }
+                { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.deleteTask) }
             );
             if (error instanceof Error) {
                 logger().error("error in db when deleting task", error.message);
@@ -47,7 +47,7 @@ export async function deleteTask(conversation: MyConversation, ctx: MyContext): 
         if (errors.length) {
             await ctx.reply(getReplyText("invalidDeleteTasks") + "\n\n" + errors.join("\n"), {
                 parse_mode: "HTML",
-                reply_markup: getCancelDeleteTaskConvKeyboard()
+                reply_markup: cancelConversationKeyboard(Conversations.deleteTask)
             });
             continue;
         }
@@ -57,7 +57,7 @@ export async function deleteTask(conversation: MyConversation, ctx: MyContext): 
         );
 
         const { callbackQuery } = await conversation.waitFor("callback_query:data");
-        
+
         if (callbackQuery.data === "confirm_delete_task") {
             for (const task of tasks) {
                 await db.deleteTask(task.taskId.toString());

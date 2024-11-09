@@ -7,17 +7,17 @@ import {
     getRewardJettonsReply,
     type PaginationData,
     getResetKeyboard,
+    initPaginationData,
     ListedObjects,
     getReplyText,
-    initSortingData,
 } from "../constants.ts";
 
 async function handleListRewardJettons(
     ctx: CallbackQueryContext<MyContext>,
-    sortData: PaginationData,
+    paginationData: PaginationData,
 ): Promise<void> {
     try {
-        const sortedRewardJettons = await db.getSortedRewardJettons(sortData);
+        const sortedRewardJettons = await db.getSortedRewardJettons(paginationData);
         if (!sortedRewardJettons) {
             await ctx.callbackQuery.message!.editText(
                 getReplyText("noRewardJettons"),
@@ -28,25 +28,22 @@ async function handleListRewardJettons(
 
         await ctx.callbackQuery.message!.editText(
             getRewardJettonsReply(sortedRewardJettons.rewardJettons),
-            { reply_markup: getPaginationKeyboard(ListedObjects.RewardJettons, sortedRewardJettons.hasMore, sortData.page) }
+            { reply_markup: getPaginationKeyboard(ListedObjects.RewardJettons, sortedRewardJettons.hasMore, paginationData.page) }
         );
-    } catch (error) {
+    } catch (e) {
         await ctx.callbackQuery.message!.editText(
             getReplyText("error"),
             { reply_markup: getResetKeyboard(ListedObjects.RewardJettons) }
         );
-        if (error instanceof Error) {
-            logger().error("error when trying to retrieve a list launches: ", error.message);
-        } else {
-            logger().error("unknown error");
-        }
+        if (e instanceof Error) logger().error("error when trying to retrieve a list of reward jettons: ", e);
+        else logger().error("unknown error", e);
     }
 }
 
 export async function handleListRewardJettonsCallback(ctx: CallbackQueryContext<MyContext>) {
     await ctx.answerCallbackQuery();
     await handleListRewardJettons(ctx, {
-        ...initSortingData,
+        ...initPaginationData,
         page: ctx.session.launchesPage
     });
 }
@@ -59,7 +56,7 @@ export async function handleRewardJettonsPaginationCallback(ctx: CallbackQueryCo
             ? ctx.session.launchesPage -= 1
             : ctx.session.launchesPage = 1;
     await handleListRewardJettons(ctx, {
-        ...initSortingData,
+        ...initPaginationData,
         page: newPage
     });
 }

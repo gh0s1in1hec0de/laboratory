@@ -1,4 +1,4 @@
-import { getCancelCreateTaskConvKeyboard, getReplyText } from "../constants";
+import { cancelConversationKeyboard, Conversations, getReplyText } from "../constants";
 import type { MyContext, MyConversation } from "..";
 import { isReadyTasksToDb } from "./common";
 import { logger } from "../../logger";
@@ -6,7 +6,7 @@ import * as db from "../../db";
 
 export async function createTask(conversation: MyConversation, ctx: MyContext): Promise<void> {
     await ctx.reply(getReplyText("createTaskRequest"),
-        { parse_mode: "HTML", reply_markup: getCancelCreateTaskConvKeyboard() }
+        { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.createTask) }
     );
 
     let progress = false;
@@ -18,7 +18,7 @@ export async function createTask(conversation: MyConversation, ctx: MyContext): 
         if (errors.length) {
             await ctx.reply(getReplyText("invalidAddTasks") + "\n" + errors.join("\n"), {
                 parse_mode: "HTML",
-                reply_markup: getCancelCreateTaskConvKeyboard()
+                reply_markup: cancelConversationKeyboard(Conversations.createTask)
             });
             continue;
         }
@@ -29,7 +29,7 @@ export async function createTask(conversation: MyConversation, ctx: MyContext): 
             }
         } catch (error) {
             await ctx.reply(getReplyText("error"),
-                { parse_mode: "HTML", reply_markup: getCancelCreateTaskConvKeyboard() }
+                { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.createTask) }
             );
             if (error instanceof Error) {
                 logger().error("error in db when adding to table 'Tasks'", error.message);

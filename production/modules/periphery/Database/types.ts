@@ -162,6 +162,11 @@ export type RewardPool = {
     rewardAmount: Coins,
 };
 
+export type SortedRewardPools = {
+    rewardPools: (RewardPool & { metadata: JettonMetadata })[],
+    hasMore: boolean,
+}
+
 export enum UserLaunchRewardStatus {
     Unclaimed = "unclaimed",
     Claimed = "claimed",
