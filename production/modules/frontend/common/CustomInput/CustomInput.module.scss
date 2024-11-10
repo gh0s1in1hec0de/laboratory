@@ -25,7 +25,6 @@
   color: var(--white-regular);
   padding-left: 4px;
 
-
   &:-webkit-autofill {
     transition: all 5000s ease-in-out 0s;
   }
@@ -37,4 +36,16 @@
 
 .errorText {
   color: var(--red-regular);
+}
+
+.endAdornment {
+  display: flex;
+  align-items: center;
+}
+
+.divider {
+  background-color: var(--gray-dark);
+  height: 16px;
+  width: 1px;
+  margin-left: 6px;
 }

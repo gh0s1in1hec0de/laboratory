@@ -63,6 +63,7 @@ export function TokenInfinityList({
 
       <Box ref={triggerRef} style={{ width: "100%", height: "20px" }} />
 
+      {/* todo: remove this */}
       {/* {!isLoadingNextPage && launchesData.hasMore && (
         <Grid
           container

@@ -1,11 +1,11 @@
-import { Button } from "@headlessui/react";
-import styles from "./CustomButton.module.scss";
-import { ButtonBackground, ButtonBorderColor, CustomButtonProps } from "./types";
 import { classNames } from "@/utils";
-import { forwardRef, Fragment } from "react";
-
+import { Button } from "@headlessui/react";
+import { forwardRef } from "react";
+import styles from "./CustomButton.module.scss";
+import { useCustomButton } from "./hooks/useCustomButton/useCustomButton";
+import { ButtonBackground, ButtonBorderColor, CustomButtonProps } from "./types";
 export const CustomButton = forwardRef<HTMLButtonElement, CustomButtonProps>(
-  function CustomButton({ 
+  function CustomButton({
     disabled,
     onClick,
     children,
@@ -17,37 +17,37 @@ export const CustomButton = forwardRef<HTMLButtonElement, CustomButtonProps>(
     borderRadius = 10,
     borderColor = ButtonBorderColor.BorderTransparent,
     addHover = true,
-  }: CustomButtonProps, 
+    type = "button",
+    form,
+  }: CustomButtonProps,
   ref
   ) {
-
+    const { isHovered, handleMouseEnter, handleMouseLeave } = useCustomButton();
     return (
       <Button
-        as={Fragment}
-      >
-        {({ hover, active }) => (
-          <Button
-            as={as}
-            ref={ref}
-            disabled={disabled}
-            onClick={onClick}
-            style={{ 
-              padding: padding,
-              borderRadius: borderRadius,
-            }}
-            className={classNames(
-              styles.button,
-              {
-                [styles.hover]: hover && addHover && !disabled,
-                [styles.fullWidth]: fullWidth,
-                [styles.disabled]: disabled,
-              },
-              [styles[background], styles[borderColor], className],
-            )}
-          >
-            {children}
-          </Button>
+        as={as}
+        type={type}
+        {...(as === "button" && { form: form })}
+        ref={ref}
+        disabled={disabled}
+        onClick={onClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          padding: padding,
+          borderRadius: borderRadius,
+        }}
+        className={classNames(
+          styles.button,
+          {
+            [styles.hover]: isHovered && addHover && !disabled,
+            [styles.fullWidth]: fullWidth,
+            [styles.disabled]: disabled,
+          },
+          [styles[background], styles[borderColor], className],
         )}
+      >
+        {children}
       </Button>
     );
   });

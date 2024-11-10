@@ -1,0 +1,43 @@
+.root {
+  width: 38px;
+  height: 24px;
+  padding: 0;
+}
+
+.switchBase {
+  padding: 0;
+  margin: 2px;
+  transition-duration: 300ms;
+  color: var(--white-regular);
+
+  &.disabled {
+    color: var(--white-transparent-extra-light);
+  }
+}
+
+.thumb {
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+}
+
+.track {
+  position: relative;
+  border-radius: 20px;
+  background-color: var(--white-transparent-extra-light);
+  opacity: 1;
+}
+
+.checked {
+  color: var(--white-regular);
+  transform: translateX(14px);
+
+  & + .track {
+    background-color: var(--orange-regular);
+    opacity: 1;
+  }
+
+  &.disabled + .track {
+    background-color: var(--orange-dark);
+  }
+}

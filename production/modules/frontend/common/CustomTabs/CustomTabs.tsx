@@ -10,7 +10,7 @@ import { TAB_VARIANT_CONFIG } from "./constants";
 export function CustomTabs<T>({
   selectedTab,
   onChange,
-  disabled,
+  disabled = false,
   tabs,
   variant = CustomTabsVariant.DEFAULT,
 }: CustomTabsProps<T>) {
@@ -47,6 +47,7 @@ export function CustomTabs<T>({
                 label={t(tab.label)}
                 variantSize="medium16"
                 variantColor={label.variantColor(isSelected)}
+                offUserSelect
                 cropped
               />
             </CustomButton>

@@ -1,9 +1,9 @@
 @charset "UTF-8";
 
 :root {
-  --navbar-bg:#191a1c;
+  --navbar-bg: #191a1c;
 
-  --orange-extra-dark: rgba(244, 90, 56, 0.18); //  accent/orange/50
+  --orange-extra-dark: #F45A382E; //  accent/orange/50
   --orange-dark: #7b330b;
   --orange-regular: #F45A38;  // accent/orange
 
@@ -15,14 +15,15 @@
 
   --black-dark: #0C0D0F; // surface/black
   --black-regular: #191A1CE0; // surface/100
-  --black-light: #FFFFFF08; 
+  --black-light: #FFFFFF08;
   
-  --skeleton-color: #ffffff14;
+  --skeleton-color: #FFFFFF14;
 
   --white-regular: #FFFFFF;
-  --white-transparent: rgba(255, 255, 255, 0.05);
-  --white-transparent-medium: rgba(255, 255, 255, 0.1);
-  --white-transparent-light: rgba(255, 255, 255, 0.15);
+  --white-transparent: #FFFFFF0D;
+  --white-transparent-medium: #FFFFFF1A;
+  --white-transparent-light: #FFFFFF26;
+  --white-transparent-extra-light: #FFFFFF38;
 
   --border: #FFFFFF08;
 

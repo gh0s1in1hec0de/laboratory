@@ -17,7 +17,6 @@ export function TabLabel({ label }: TabLabelProps) {
             <CustomButton 
               padding="8px"
               fullWidth 
-              onClick={() => {}} 
               background={selected ? "gray" : "transparent"}
               addHover={!selected}
             >

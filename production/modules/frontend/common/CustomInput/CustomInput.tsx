@@ -5,6 +5,7 @@ import { FormControl, FormHelperText, Input, InputAdornment, Box } from "@mui/ma
 import { Label } from "../Label";
 import styles from "./CustomInput.module.scss";
 import { CustomInputProps } from "./types";
+import { ChangeEvent } from "react";
 
 export function CustomInput({
   placeholder,
@@ -18,31 +19,37 @@ export function CustomInput({
   disabled,
   fullWidth = true,
 }: CustomInputProps) {
+
+  function handleChangeValue(e: ChangeEvent<HTMLInputElement>) {
+    onChange(e.target.value);
+  }
+
   return (
     <FormControl
-      className={classNames(styles.formControl, {
-        [styles.fullWidth]: fullWidth,
-      })}
+      className={classNames(
+        styles.formControl,
+        { [styles.fullWidth]: fullWidth },
+      )}
       error={!!errorText}
     >
       <Input
         placeholder={placeholder}
         type={type}
         name={name}
-        value={value}
         disabled={disabled}
-        onChange={onChange}
-        startAdornment={(
+        value={value}
+        onChange={handleChangeValue}
+        startAdornment={startAdornment && (
           <InputAdornment position="start">
             {startAdornment}
           </InputAdornment>
         )}
-        endAdornment={
-          <InputAdornment position="end" style={{ display: "flex", alignItems: "center" }}>
-            <Box style={{ backgroundColor: "var(--gray-dark)", height: "16px", width: "1px" }} />
+        endAdornment={endAdornment && (
+          <InputAdornment position="end" className={styles.endAdornment}>
+            <Box className={styles.divider} />
             {endAdornment}
           </InputAdornment>
-        }
+        )}
         classes={{
           root: styles.root,
           input: styles.input,
@@ -50,7 +57,7 @@ export function CustomInput({
         }}
       />
 
-      <FormHelperText>
+      <FormHelperText sx={{ paddingLeft: 1.5 }}>
         <Label
           component="span"
           label={errorText || ""}

@@ -14,8 +14,8 @@ export interface Tab<T> {
 export interface CustomTabsProps<T> {
   selectedTab: T;
   onChange: (tab: T) => void;
-  disabled: boolean;
   tabs: Tab<T>[];
+  disabled?: boolean;
   variant?: `${CustomTabsVariant}`;
 }
 

@@ -1,10 +1,9 @@
 import { CALLER_ADDRESS } from "@/constants";
+import { useDebounce } from "@/hooks";
 import { localStorageWrapper } from "@/utils";
-import { ChangeEvent, useState } from "react";
+import { useState } from "react";
 import { LaunchSortParameters, SortingOrder } from "starton-periphery";
 import { UseSortingValuesProps } from "./types";
-import { useDebounce } from "@/hooks";
-
 
 export function useSortingValues({
   setFilterData,
@@ -13,15 +12,14 @@ export function useSortingValues({
   const [search, setSearch] = useState<string>("");
   const debouncedFetchList = useDebounce(fetchTokenLaunches, [500]);
 
-  function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
-    const newSearch = event.target.value;
-    setSearch(newSearch);
+  function handleSearchChange(value: string) {
+    setSearch(value);
 
     setFilterData((prevData) => {
       const updatedData = {
         ...prevData,
         page: 1,
-        search: newSearch,
+        search: value,
       };
       debouncedFetchList(updatedData);
       return updatedData;

@@ -1,0 +1,2 @@
+export { useMarketingSupportInfo } from "./useMarketingSupportInfo";
+

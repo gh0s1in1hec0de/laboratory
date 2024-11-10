@@ -3,24 +3,29 @@ import { Label } from "@/common/Label";
 import { CustomButton } from "@/common/CustomButton";
 import { ArrowUpRightIcon } from "@/icons";
 import { useTranslations } from "next-intl";
+import { SupportButtonProps } from "./types";
 
-export function SupportButton() {
+export function SupportButton({
+  withLabel = true,
+}: SupportButtonProps) {
   const t = useTranslations("SupportButton");
 
   return (
     <Grid 
       container
       gap={1.5}
+      width="100%"
     >
-      <Grid container size={12} justifyContent="center">
-        <Label 
-          label={t("title")} 
-          variantSize="regular16" 
-        />
-      </Grid>
+      {withLabel && (
+        <Grid container size={12} justifyContent="center">
+          <Label 
+            label={t("title")} 
+            variantSize="regular16" 
+          />
+        </Grid>
+      )}
       
       <CustomButton 
-        onClick={() => {}}
         background="gray"
         padding="10px 0"
         fullWidth

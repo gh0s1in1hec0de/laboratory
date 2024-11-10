@@ -53,6 +53,14 @@
   }
 }
 
+.grayDark {
+  color: var(--gray-regular);
+
+  &.disabled {
+    color: var(--gray-dark);
+  }
+}
+
 .red {
   color: var(--red-regular);
 

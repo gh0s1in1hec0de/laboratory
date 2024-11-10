@@ -1,0 +1,44 @@
+@import "@/styles/mixins";
+
+.formControl {
+  &.fullWidth {
+    width: 100%;
+  }
+}
+
+.textarea {
+  font-family: var(--font-manrope);
+  @include regular16;
+  width: 100%;
+  border: 1px solid var(--gray-dark);
+  background-color: transparent !important;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--white-regular);
+
+  &.disabled {
+    -webkit-text-fill-color: var(--gray-dark) !important;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  // &[data-focus='true'] {
+  //   outline-width: 2px;
+  //   outline-offset: -2px;
+  //   outline-color: rgba(255, 255, 255, 0.25);
+  // }
+
+  &.resize-none {
+    resize: none;
+  }
+
+  &.resize-vertical {
+    resize: vertical;
+  }
+
+  &.resize-horizontal {
+    resize: horizontal;
+  }
+}

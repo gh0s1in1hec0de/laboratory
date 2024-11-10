@@ -14,9 +14,9 @@ export enum ButtonBorderColor {
   BorderTransparent = "borderTransparent",
 }
 
-export interface CustomButtonProps  {
+export interface CustomButtonProps {
 	children: ReactNode;
-  onClick: () => void;
+  onClick?: () => void;
 	className?: string;
 	as?: ElementType;
 	disabled?: boolean;
@@ -26,4 +26,6 @@ export interface CustomButtonProps  {
 	addHover?: boolean;
 	borderRadius?: number;
 	borderColor?: `${ButtonBorderColor}`;
+	type?: "button" | "submit" | "reset";
+	form?: string;
 }

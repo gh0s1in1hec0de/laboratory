@@ -1,0 +1,1 @@
+export { SocialMediaInfo } from "./SocialMediaInfo";

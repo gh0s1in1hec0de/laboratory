@@ -20,6 +20,7 @@ export enum LabelColors {
   Orange = "orange",
   White = "white",
   Gray = "gray",
+  GrayDark = "grayDark",
   Red = "red",
   Green = "green",
   GreenDark = "greenDark",
