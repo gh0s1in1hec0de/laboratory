@@ -5,6 +5,7 @@ import * as db from "../../../db";
 export async function uploadMetadataToIpfs(
     { links, metadata, image, influencerSupport }: UploadMetadataToIpfsRequest
 ): Promise<string> {
+    // return "Qmb4Yjspwz3gVq371wvVN9hqzzAoopzv5W1yS49qdTJJ7f";
     const base64Image = image.split(",")[1];  // remove `data:image/...;base64,` if present
     const imageBuffer = Buffer.from(base64Image, "base64");
 
