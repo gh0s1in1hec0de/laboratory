@@ -1,8 +1,13 @@
-import { cancelConversationKeyboard, Conversations, getConfirmDeleteTaskConvKeyboard, getReplyText } from "../constants";
 import type { StoredTask } from "starton-periphery";
 import type { MyContext, MyConversation } from "..";
 import { logger } from "../../logger";
 import * as db from "../../db";
+import {
+    getConfirmDeleteTaskConvKeyboard,
+    cancelConversationKeyboard,
+    Conversations,
+    getReplyText
+} from "../constants";
 
 export async function deleteTask(conversation: MyConversation, ctx: MyContext): Promise<void> {
     await ctx.reply(getReplyText("deleteTaskRequest"),
@@ -10,7 +15,6 @@ export async function deleteTask(conversation: MyConversation, ctx: MyContext): 
     );
 
     let progress = false;
-
     do {
         const { msg: { text } } = await conversation.waitFor("message:text");
 
@@ -32,15 +36,11 @@ export async function deleteTask(conversation: MyConversation, ctx: MyContext): 
                     tasks.push(task);
                 }
             }
-        } catch (error) {
+        } catch (e) {
             await ctx.reply(getReplyText("error"),
                 { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.deleteTask) }
             );
-            if (error instanceof Error) {
-                logger().error("error in db when deleting task", error.message);
-            } else {
-                logger().error("unknown error");
-            }
+            logger().error("Failed to delete task with error: ", e);
             continue;
         }
 

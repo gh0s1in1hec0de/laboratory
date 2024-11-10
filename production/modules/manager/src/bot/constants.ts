@@ -33,7 +33,7 @@ export const initPaginationData: PaginationData = {
 };
 
 export enum Conversations {
-    saveCompletedTasks = "saveCompletedTasks",
+    setTaskCompletions = "setTaskCompletions",
     createTask = "createTask",
     deleteTask = "deleteTask",
     setRewardJetton = "setRewardJetton",

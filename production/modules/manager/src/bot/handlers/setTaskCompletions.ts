@@ -5,10 +5,10 @@ import { logger } from "../../logger";
 import { Address } from "@ton/core";
 import * as db from "../../db";
 
-export async function saveCompletedTasks(conversation: MyConversation, ctx: MyContext): Promise<void> {
+export async function setTaskCompletions(conversation: MyConversation, ctx: MyContext): Promise<void> {
     await ctx.reply(
         getReplyText("addressListRequest"),
-        { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.saveCompletedTasks) }
+        { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.setTaskCompletions) }
     );
 
     let progress = false;
@@ -19,7 +19,7 @@ export async function saveCompletedTasks(conversation: MyConversation, ctx: MyCo
         if (errors.length) {
             await ctx.reply(getReplyText("invalidAddUsersTasksRelations") + "\n" + errors.join("\n"), {
                 parse_mode: "HTML",
-                reply_markup: cancelConversationKeyboard(Conversations.saveCompletedTasks)
+                reply_markup: cancelConversationKeyboard(Conversations.setTaskCompletions)
             });
             continue;
         }
@@ -32,13 +32,9 @@ export async function saveCompletedTasks(conversation: MyConversation, ctx: MyCo
             }
         } catch (error) {
             await ctx.reply(getReplyText("error"),
-                { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.saveCompletedTasks) }
+                { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.setTaskCompletions) }
             );
-            if (error instanceof Error) {
-                logger().error("error in db when adding to table 'UserTaskRelation'", error.message);
-            } else {
-                logger().error("unknown error");
-            }
+            logger().error("Failed to add new task relations with an error: ", error);
             continue;
         }
 

@@ -17,7 +17,7 @@ import {
     handleBackToMenuCallback,
     handleListTasksCallback,
     listRewardPoolsPrelude,
-    saveCompletedTasks,
+    setTaskCompletions,
     handleStartCommand,
     handleMenuCommand,
     setRewardJetton,
@@ -55,7 +55,7 @@ export async function createBot(): Promise<Bot<MyContext>> {
     maybeBot.use(session({ initial }));
     maybeBot.use(conversations());
     maybeBot.use(createConversation(listRewardPoolsPrelude));
-    maybeBot.use(createConversation(saveCompletedTasks));
+    maybeBot.use(createConversation(setTaskCompletions));
     maybeBot.use(createConversation(setRewardJetton));
     maybeBot.use(createConversation(setRewardPool));
     maybeBot.use(createConversation(createTask));

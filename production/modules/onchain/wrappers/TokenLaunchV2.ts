@@ -1,9 +1,9 @@
-import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode } from "@ton/core";
+import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, SendMode, toNano } from "@ton/core";
 import {
     getCreatorJettonPrice, parseGetConfigResponse, parseMoneyFlows, tokenMetadataToCell,
     PERCENTAGE_DENOMINATOR, BASECHAIN, QUERY_ID_LENGTH, OP_LENGTH,
     LaunchConfigV2, Contracts, GetConfigResponse, MoneyFlows,
-    TokensLaunchOps, BalanceUpdateMode, LaunchData, Coins,
+    TokensLaunchOps, BalanceUpdateMode, LaunchData, Coins, jettonToNano,
 } from "starton-periphery";
 import { randomAddress } from "@ton/test-utils";
 import { LaunchParams } from "./types";
@@ -88,6 +88,29 @@ export class TokenLaunchV2 implements Contract {
             value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
         });
     }
+
+    // `WARNING` Only for testing purposes
+    async sendRefundConfirmation(
+        provider: ContractProvider,
+        sendMessageParams: SendMessageParams,
+        mode: BalanceUpdateMode,
+    ) {
+        const { queryId, via, value } = sendMessageParams;
+
+        const body = beginCell()
+            .storeUint(TokensLaunchOps.RefundConfirmation, OP_LENGTH)
+            .storeUint(queryId, QUERY_ID_LENGTH)
+            .storeCoins(toNano("1"))
+            .storeCoins(toNano("1"))
+            .storeCoins(jettonToNano("1"))
+            .storeUint(mode, 4)
+            .storeAddress(via.address)
+            .endCell();
+        await provider.internal(via, {
+            body, sendMode: SendMode.PAY_GAS_SEPARATELY, value
+        });
+    }
+
 
     async sendDeployJetton(provider: ContractProvider, sendMessageParams: SendMessageParams) {
         const { queryId, via, value } = sendMessageParams;

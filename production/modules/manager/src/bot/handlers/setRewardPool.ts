@@ -75,7 +75,6 @@ export async function setRewardPool(conversation: MyConversation, ctx: MyContext
 
     const { msg: { text: rewardAmountStringified } } = await conversation.waitFor("message:text");
     const rewardAmount = BigInt(rewardAmountStringified);
-    console.log(rewardAmount, rewardAmount === 0n);
 
     if (rewardAmount > freeToUse) {
         await ctx.reply("Are you dumb? I said less than free to use, ok, now do everything again");

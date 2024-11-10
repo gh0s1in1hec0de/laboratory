@@ -1,13 +1,13 @@
 import {
-    MsgPrices, printTxsLogs, StorageStats, getStoragePrices, StorageValue, formatValue,
-    collectCellStats, computedGeneric, computeFwdFees, getGasPrices, computeGasFee,
-    FullFees, GasPrices, computeFwdFeesVerbose, getMsgPrices, computeStorageFee,
+    collectCellStats, computedGeneric, computeFwdFees, getGasPrices, computeGasFee, formatValue,
+    computeFwdFeesVerbose, getMsgPrices, computeStorageFee, printTxsLogs, getStoragePrices,
+    MsgPrices, FullFees, GasPrices, StorageStats, StorageValue,
 } from "./utils";
 import {
-    BASECHAIN, JETTON_MIN_TRANSFER_FEE, MAX_WL_ROUND_TON_LIMIT, PERCENTAGE_DENOMINATOR,
+    BalanceUpdateMode, TokensLaunchOps, LaunchConfigV2, UserVaultOps, CoreOps, GlobalVersions,
     getPublicAmountOut, getApproximateClaimAmount, packLaunchConfigV2ToCell, toPct,
-    BalanceUpdateMode, TokensLaunchOps, LaunchConfigV2, UserVaultOps, CoreOps,
-    validateValueMock, jettonFromNano, getCreatorAmountOut, jettonToNano, GlobalVersions,
+    JETTON_MIN_TRANSFER_FEE, MAX_WL_ROUND_TON_LIMIT, PERCENTAGE_DENOMINATOR,
+    validateValueMock, jettonFromNano, getCreatorAmountOut, jettonToNano,
 } from "starton-periphery";
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
@@ -903,8 +903,55 @@ describe("V2", () => {
             const newTimings = await sampleTokenLaunch.getSaleTimings();
             assert(newTimings.wlRoundEndTime < oldTimings.wlRoundEndTime, "smartcontract must shift timings");
         }, 20000);
-        test("public buys work the proper way", async () => {
+        test("high public purchase pressure", async () => {
             blockchain.now = (await sampleTokenLaunch.getSaleTimings()).wlRoundEndTime + 1;
+
+            const [pubBuyer1, pubBuyer2, pubBuyer3, pubBuyer4, pubBuyer5] = await Promise.all(
+                ["pub_buyer_1", "pub_buyer_2", "pub_buyer_3", "pub_buyer_4", "pub_buyer_5"]
+                    .map(async b => blockchain.treasury(b))
+            );
+
+            const value = toNano("10");
+            await sampleTokenLaunch.sendPublicPurchase({
+                queryId: 1n, value, via: pubBuyer1.getSender()
+            });
+            blockchain.now! += 20;
+            await sampleTokenLaunch.sendPublicPurchase({
+                queryId: 2n, value, via: pubBuyer2.getSender()
+            });
+            blockchain.now! += 20;
+            await sampleTokenLaunch.sendPublicPurchase({
+                queryId: 3n, value, via: pubBuyer3.getSender()
+            });
+            blockchain.now! += 20;
+            await sampleTokenLaunch.sendPublicPurchase({
+                queryId: 4n, value, via: pubBuyer4.getSender()
+            });
+            blockchain.now! += 20;
+            await sampleTokenLaunch.sendPublicPurchase({
+                queryId: 5n, value, via: pubBuyer5.getSender()
+            });
+            // [pubBuyer1Vault, pubBuyer2Vault, pubBuyer3Vault, pubBuyer4Vault, pubBuyer5Vault]
+            const vaults = await Promise.all(
+                [pubBuyer1, pubBuyer2, pubBuyer3, pubBuyer4, pubBuyer5].map((buyer) => {
+                    return blockchain.openContract(
+                        UserVaultV2.createFromState({
+                            owner: buyer.address,
+                            tokenLaunch: sampleTokenLaunch.address
+                        }, userVaultCode)
+                    );
+                })
+            );
+            const vaultsData = await Promise.all(
+                vaults.map((buyer) => buyer.getVaultData())
+            );
+            console.log(
+                vaultsData
+                    .map((data, index) => `Public buyer #${index + 1} jettons after buy: ${jettonFromNano(data.jettonBalance!)}`)
+                    .join("\n")
+            );
+        }, 20000);
+        test("public buys work the proper way", async () => {
             const secondPublicBuyer = await blockchain.treasury("public_buyer_2");
             const launchContractInstance = await blockchain.getContract(sampleTokenLaunch.address);
 
@@ -985,38 +1032,20 @@ describe("V2", () => {
             expect(secondPublicBuyerVaultData.jettonBalance!).toBeGreaterThanOrEqual(amountOut);
             expect(firstPublicBuyerVaultData.jettonBalance!).toBeGreaterThan(secondPublicBuyerVaultData.jettonBalance!);
         }, 20000);
-        test("high public purchase pressure", async () => {
-            const value = toNano("10");
-            await sampleTokenLaunch.sendPublicPurchase({
-                queryId: 1n,
-                value,
-                via: (await blockchain.treasury("pub_buyer_1")).getSender()
+        test("stranger can't steal money via refund", async () => {
+            const refundStranger = await blockchain.treasury("refund_stranger");
+            const strangerRefundResult = await sampleTokenLaunch.sendRefundConfirmation({
+                queryId: 0n, via: refundStranger.getSender(), value: toNano("0.1")
+            }, BalanceUpdateMode.TotalWithdrawal);
+
+            expect(strangerRefundResult.transactions).toHaveTransaction({
+                from: refundStranger.address,
+                to: sampleTokenLaunch.address,
+                op: TokensLaunchOps.RefundConfirmation,
+                success: false,
+                exitCode: 73
             });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendPublicPurchase({
-                queryId: 2n,
-                value,
-                via: (await blockchain.treasury("pub_buyer_2")).getSender()
-            });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendPublicPurchase({
-                queryId: 3n,
-                value,
-                via: (await blockchain.treasury("pub_buyer_3")).getSender()
-            });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendPublicPurchase({
-                queryId: 4n,
-                value,
-                via: (await blockchain.treasury("pub_buyer_4")).getSender()
-            });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendPublicPurchase({
-                queryId: 5n,
-                value,
-                via: (await blockchain.treasury("pub_buyer_5")).getSender()
-            });
-        }, 20000);
+        });
         test("refunds work good (at this moment you may get tired from this typical names)", async () => {
             // At this point we have a guy called consumer, that have some wl goods and public goods in his vault
             // We'll test public and wl refunds one by one, reset state and test global refund ^^

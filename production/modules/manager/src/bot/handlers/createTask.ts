@@ -12,7 +12,7 @@ export async function createTask(conversation: MyConversation, ctx: MyContext): 
     let progress = false;
     do {
         const { msg: { text } } = await conversation.waitFor("message:text");
-        
+
         const { validMap, errors } = isReadyTasksToDb(text);
 
         if (errors.length) {
@@ -27,15 +27,12 @@ export async function createTask(conversation: MyConversation, ctx: MyContext): 
             for (const [taskName, description] of validMap.entries()) {
                 await db.storeTask(taskName, description);
             }
-        } catch (error) {
+        } catch (e) {
             await ctx.reply(getReplyText("error"),
                 { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.createTask) }
             );
-            if (error instanceof Error) {
-                logger().error("error in db when adding to table 'Tasks'", error.message);
-            } else {
-                logger().error("unknown error");
-            }
+            logger().error("Failed to add new task with error: ", e);
+
             continue;
         }
 
