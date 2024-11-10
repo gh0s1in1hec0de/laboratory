@@ -35,13 +35,12 @@ export class TxRequestBuilder {
             amount?: StringifiedCoins
         },
         {
-            totalSupply,
-            platformSharePct,
+            totalSupply, // jettonToNano before
+            platformSharePct, // toPct
             metadata,
             startTime = Math.floor(Date.now() / 1000) + 60,
             maybePackedConfig = null
-        }:
-            LaunchParams & { maybePackedConfig: Cell | null },
+        }: LaunchParams & { maybePackedConfig: Cell | null },
         validUntil: number = Math.floor(Date.now() / 1000) + 90
     ): SendTransactionRequest {
         const body = beginCell()

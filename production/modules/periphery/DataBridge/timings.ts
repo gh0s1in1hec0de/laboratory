@@ -1,3 +1,4 @@
+import { GlobalVersions } from "../standards";
 import { TokenLaunchTimings } from "../types";
 import { UnixTimeSeconds } from "../utils";
 import { toNano } from "@ton/core";
@@ -8,7 +9,6 @@ import {
     SyntheticReserves,
     WlPhaseLimits
 } from "./priceOracle";
-import { GlobalVersions } from "../standards";
 
 export enum SalePhase {
     NOT_STARTED = "NOT_STARTED",
