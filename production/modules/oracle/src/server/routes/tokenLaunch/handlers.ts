@@ -1,4 +1,4 @@
-import { CommonServerError } from "starton-periphery";
+import { CommonServerError, LaunchSortParameters, SortingOrder } from "starton-periphery";
 import * as db from "../../../db";
 import type {
     GetLaunchesChunkResponse,
@@ -23,7 +23,14 @@ export async function getCertainLaunch(
 }
 
 export async function getRisingStar(): Promise<GetRisingStarResponse> {
-    const res = await db.getLaunchWithTopActivity();
-    if (!res) throw new CommonServerError(500, "unreachable: top activity launch not found");
-    return await db.getLaunch({ address: res.tokenLaunch });
+    const risingStar = await db.getLaunchWithTopActivity();
+    const address = risingStar?.tokenLaunch ?? await db.getSortedTokenLaunches({
+        page: 1,
+        limit: 6,
+        order: SortingOrder.HIGH_TO_LOW,
+        orderBy: LaunchSortParameters.TOTAL_TONS_COLLECTED
+    }).then(r => r?.launchesChunk[r.launchesChunk.length - 1]?.address);
+    if (!address) throw new CommonServerError(500, "rising star not found");
+
+    return await db.getLaunch({ address });
 }
