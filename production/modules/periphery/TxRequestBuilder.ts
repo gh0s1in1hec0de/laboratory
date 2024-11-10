@@ -25,7 +25,11 @@ import {
 */
 export class TxRequestBuilder {
     public static createLaunch(
-        { coreAddress, queryId = Math.floor(Date.now()), amount = toNano("1").toString() }: {
+        {
+            coreAddress,
+            queryId = Math.floor(Date.now()),
+            amount = toNano("1").toString()
+        }: {
             coreAddress: string,
             queryId?: number,
             amount?: StringifiedCoins
