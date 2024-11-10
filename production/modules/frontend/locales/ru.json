@@ -205,5 +205,13 @@
 				}
 			}
 		}
+	},
+	"Token": {
+		"marketingSupport": {
+			"tabs": {
+				"first": "0,5%",
+				"second": "1,5%"
+			}
+		}
 	}
 }

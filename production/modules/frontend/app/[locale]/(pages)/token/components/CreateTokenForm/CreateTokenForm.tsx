@@ -13,50 +13,44 @@ import { initialValues, useCreateToken } from "./hooks/useCreateToken";
 import { CREATE_TOKEN_FORM_ID } from "./constants";
 import { Descriptions } from "./components/Descriptions";
 import { ChangeEvent, useState } from "react";
+import { UploadImage } from "./components/UploadImage";
 
 export function CreateTokenForm() {
   const {
     isLoading,
     onSubmitForm,
   } = useCreateToken();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // const [base64, setBase64] = useState<string | null>(null);
+  // const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  // Обработчик выбора файла
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
+  // // Обработчик выбора файла
+  // const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+  //   const file = event.target.files?.[0];
+  //   if (file) {
+  //     setSelectedFile(file);
+  //     convertToBase64(file);
+  //     setPreviewUrl(URL.createObjectURL(file)); // Создаем URL для предварительного просмотра
+  //   }
+  // };
 
-      // Создаем URL для предварительного просмотра изображения
-      const preview = URL.createObjectURL(file);
-      setPreviewUrl(preview);
-    }
-  };
+  // // Преобразование файла в Base64
+  // const convertToBase64 = (file: File) => {
+  //   const reader = new FileReader();
+  //   reader.readAsDataURL(file);
+  //   reader.onload = () => {
+  //     if (reader.result) {
+  //       setBase64(reader.result.toString()); // Устанавливаем строку Base64
+  //     }
+  //   };
+  //   reader.onerror = (error) => {
+  //     console.error("Ошибка при преобразовании файла в Base64:", error);
+  //   };
+  // };
 
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      alert("Пожалуйста, выберите файл");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("avatar", selectedFile); // 'avatar' - это название поля, которое сервер ожидает для файла
-
-    try {
-      const response = await axios.post("/api/upload-avatar", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      console.log("Файл успешно загружен:", response.data);
-    } catch (error) {
-      console.error("Ошибка при загрузке файла:", error);
-    }
-  };
-
-  console.log(selectedFile);
-  console.log(previewUrl);
+  // console.log(selectedFile);
+  // console.log(previewUrl);
+  // console.log(base64);
   
   return (
     <LoadingWrapper
@@ -74,18 +68,19 @@ export function CreateTokenForm() {
             width="100%"
             gap={3}
           >
-            <label>
-            Загрузить аватар:
+            {/* <label>
               <input type="file" accept="image/*" onChange={handleFileChange} />
             </label>
       
-            {/* Предварительный просмотр изображения */}
-            {previewUrl && <img src={previewUrl} alt="Avatar Preview" style={{ width: "100px", height: "100px", borderRadius: "50%" }} />}
+            {previewUrl && 
+              <img src={previewUrl} alt="Avatar Preview" style={{ width: "100px", height: "100px", borderRadius: "50%" }} />
+            } */}
 
+            <UploadImage />
             <MetadataInfo />
             <SupplyInfo />
             <SocialMediaInfo />
-            {/* <MarketingSupportInfo /> */}
+            <MarketingSupportInfo />
             <InfluencerSupportInfo />
             <Descriptions />
             <SubmitButton />
