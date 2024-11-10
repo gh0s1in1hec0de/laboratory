@@ -6,6 +6,8 @@ import classNames from "classnames";
 import { Label } from "../Label";
 import styles from "./CustomTextarea.module.scss";
 import { CustomTextareaProps } from "./types";
+import { useTranslations } from "next-intl";
+import { ChangeEvent } from "react";
 
 export function CustomTextarea({
   placeholder,
@@ -18,6 +20,12 @@ export function CustomTextarea({
   name,
   resize = "none",
 }: CustomTextareaProps) {
+  const t = useTranslations("");
+  
+  function handleChangeValue(e: ChangeEvent<HTMLTextAreaElement>) {
+    onChange(e.target.value);
+  }
+  
   return (
     <FormControl
       className={classNames(
@@ -31,7 +39,7 @@ export function CustomTextarea({
         placeholder={placeholder}
         rows={rows}
         value={value}
-        onChange={onChange}
+        onChange={handleChangeValue}
         disabled={disabled}
         className={classNames(
           styles.textarea,
@@ -39,16 +47,17 @@ export function CustomTextarea({
           [styles[`resize-${resize}`]],
         )}
       />
-
-      <FormHelperText sx={{ paddingLeft: 1.5 }}>
-        <Label
-          component="span"
-          label={errorText || ""}
-          variantSize="medium10"
-          variantColor="red"
-          disabled={disabled}
-        />
-      </FormHelperText>
+      {errorText && (
+        <FormHelperText sx={{ paddingLeft: 1.5, paddingTop: 0.5 }}>
+          <Label
+            component="span"
+            label={t(errorText)}
+            variantSize="regular12"
+            variantColor="red"
+            disabled={disabled}
+          />
+        </FormHelperText>
+      )}
     </FormControl>
   );
 }

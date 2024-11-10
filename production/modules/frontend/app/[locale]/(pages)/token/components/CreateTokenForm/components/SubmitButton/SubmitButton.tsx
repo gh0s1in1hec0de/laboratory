@@ -3,24 +3,39 @@ import { Label } from "@/common/Label";
 import { useFormikContext } from "formik";
 import { CreateTokenFormFields } from "../../hooks/useCreateToken";
 import { CREATE_TOKEN_FORM_ID } from "../../constants";
+import { useTranslations } from "next-intl";
+import Grid from "@mui/material/Grid2";
 
 export function SubmitButton() {
+  const t = useTranslations("Token.submitButton");
   const { errors, isSubmitting } = useFormikContext<CreateTokenFormFields>();
 
   return (
-    <CustomButton
-      form={CREATE_TOKEN_FORM_ID}
-      type="submit"
-      padding="10px 6px"
-      disabled={Object.keys(errors).length > 0 || isSubmitting}
-      fullWidth
+    <Grid
+      container
+      width="100%"
+      gap={1}
     >
+      <CustomButton
+        form={CREATE_TOKEN_FORM_ID}
+        type="submit"
+        padding="10px 6px"
+        // disabled={Object.keys(errors).length > 0 || isSubmitting}
+        disabled={isSubmitting}
+        fullWidth
+      >
+        <Label
+          label={isSubmitting ? t("loading") : t("label")}
+          variantSize="medium16"
+          offUserSelect
+        />
+      </CustomButton>
       <Label
-        label="Create"
-        variantSize="medium16"
+        label={t("description")}
+        variantSize="regular14"
+        variantColor="gray"
         offUserSelect
-        // label={isSubmitting ? t("saveLoading") : t("save")}
       />
-    </CustomButton>
+    </Grid>
   );
 }

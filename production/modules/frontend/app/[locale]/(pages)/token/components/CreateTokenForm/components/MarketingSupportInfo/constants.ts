@@ -3,11 +3,11 @@ import { MarketingSupportTab } from "./types";
 
 export const MARKETING_SUPPORT_TABS: MarketingSupportTab[] = [
   {
-    label: "Token.marketingSupport.tabs.first",
+    label: "Token.marketingSupportCheckbox.tabs.first",
     value: MarketingSupportTabsValues.LOW,
   },
   {
-    label: "Token.marketingSupport.tabs.second",
+    label: "Token.marketingSupportCheckbox.tabs.second",
     value: MarketingSupportTabsValues.HIGH,
   },
 ];

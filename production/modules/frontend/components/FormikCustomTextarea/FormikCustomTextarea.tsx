@@ -1,7 +1,6 @@
 import { CustomTextarea } from "@/common/CustomTextarea";
 import { FormikCustomTextareaProps } from "./types";
 import { useField } from "formik";
-import { ChangeEvent } from "react";
 
 export function FormikCustomTextarea({
   name,
@@ -18,9 +17,9 @@ export function FormikCustomTextarea({
     { setValue, setTouched },
   ] = useField(name);
 
-  function handleChangeValue(e: ChangeEvent<HTMLTextAreaElement>) {
-    // setTouched(true);
-    setValue(e.target.value);
+  function handleChangeValue(e: string) {
+    setTouched(true);
+    setValue(e);
   }
 
   return (
@@ -29,7 +28,7 @@ export function FormikCustomTextarea({
       placeholder={placeholder}
       value={value}
       onChange={handleChangeValue}
-      errorText={errorText}
+      errorText={error && touched ? error : ""}
       disabled={disabled}
       fullWidth={fullWidth}
       rows={rows}

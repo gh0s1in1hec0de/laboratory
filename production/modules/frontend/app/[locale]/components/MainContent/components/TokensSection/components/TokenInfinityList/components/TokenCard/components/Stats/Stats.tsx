@@ -42,6 +42,7 @@ export function Stats({
         label={`${collected} / ${max}`}
         variantSize="regular12"
         variantColor="gray"
+        offUserSelect
       />
     </Grid>
   );

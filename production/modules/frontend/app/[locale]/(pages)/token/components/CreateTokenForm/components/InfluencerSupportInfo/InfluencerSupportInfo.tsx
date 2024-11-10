@@ -6,8 +6,13 @@ import { IconButton } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useField } from "formik";
 import { MarketingSupportTabsValues } from "../../hooks/useCreateToken";
+import { useTranslations } from "next-intl";
+import { useFormikContext } from "formik";
+import { CreateTokenFormFields } from "../../hooks/useCreateToken";
 
 export function InfluencerSupportInfo() {
+  const t = useTranslations("Token.influencerSupportCheckbox");
+  const { isSubmitting } = useFormikContext<CreateTokenFormFields>();
   const [{ value: marketingSupportValue }, { }, { }] = useField("marketingSupportValue");
   const [{ value: marketingSupportEnabled }, { }, { }] = useField("marketingSupportEnabled");
   const [{ value: influencerSupportEnabled }, { }, { }] = useField("influencerSupport");
@@ -35,7 +40,7 @@ export function InfluencerSupportInfo() {
             alignItems="center"
           >
             <Label
-              label="Influencer support"
+              label={t("label")}
               variantSize="semiBold18"
               disabled={isDisabled}
               offUserSelect
@@ -53,7 +58,7 @@ export function InfluencerSupportInfo() {
 
           <FormikCustomSwitch
             name="influencerSupport"
-            disabled={isDisabled}
+            disabled={isDisabled || isSubmitting}
           />
         </Grid>
 
@@ -64,10 +69,10 @@ export function InfluencerSupportInfo() {
             gap={1.5}
           >
             <Label
-              label="Choose the percent of the token supply you'd like to donate to get StartON marketing support"
+              label={t("description")}
               variantSize="regular16"
               variantColor="gray"
-              disabled={isDisabled}
+              disabled={isDisabled || isSubmitting}
               offUserSelect
             />
 

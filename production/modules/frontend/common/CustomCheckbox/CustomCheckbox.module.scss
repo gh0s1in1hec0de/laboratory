@@ -9,6 +9,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 
   &.checked {
     background-color: var(--orange-regular);

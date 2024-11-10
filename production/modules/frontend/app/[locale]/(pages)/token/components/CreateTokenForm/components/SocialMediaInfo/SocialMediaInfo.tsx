@@ -3,8 +3,14 @@ import { Label } from "@/common/Label";
 import { FormikCustomInput } from "@/components/FormikCustomInput";
 import styles from "./SocialMediaInfo.module.scss";
 import { SOCIAL_MEDIA_DATA } from "./constants";
+import { useTranslations } from "next-intl";
+import { useFormikContext } from "formik";
+import { CreateTokenFormFields } from "../../hooks/useCreateToken";
 
 export function SocialMediaInfo() {
+  const t = useTranslations("Token.urlInput");
+  const { isSubmitting } = useFormikContext<CreateTokenFormFields>();
+
   return (
     <Grid
       container
@@ -13,13 +19,13 @@ export function SocialMediaInfo() {
     >
       <Grid container gap={0.5}>
         <Label 
-          label="Social media"
+          label={t("label")}
           variantSize="semiBold18"
           offUserSelect
         />
         
         <Label 
-          label="You can provide social media links to improve your token conversion"
+          label={t("description")}
           variantSize="regular16"
           variantColor="gray"
           offUserSelect
@@ -31,10 +37,11 @@ export function SocialMediaInfo() {
           fullWidth
           key={item.formikName}
           name={item.formikName}
-          placeholder={item.placeholder}
+          placeholder={t(item.placeholder)}
+          disabled={isSubmitting}
           endAdornment={(
             <Label
-              label={item.label}
+              label={t(item.label)}
               variantSize="regular14"
               variantColor="grayDark"
               className={styles.endAdornment}

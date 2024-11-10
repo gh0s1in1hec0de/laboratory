@@ -1,8 +1,6 @@
-import { ChangeEvent } from "react";
-
 export interface CustomTextareaProps {
   value: string;
-  onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+  onChange: (e: string) => void;
   placeholder: string;
   name: string;
   errorText?: string;

@@ -4,7 +4,7 @@ export interface CustomInputProps {
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
-  type?: "text" | "email" | "password";
+  type?: "text" | "email" | "password" | "number";
   name?: string;
   startAdornment?: ReactNode;
   endAdornment?: ReactNode;

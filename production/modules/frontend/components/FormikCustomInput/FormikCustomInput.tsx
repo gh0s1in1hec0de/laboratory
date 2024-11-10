@@ -17,18 +17,18 @@ export function FormikCustomInput({
     { setValue, setTouched },
   ] = useField(name);
 
-  // function handlerChange(e: string) {
-  //   setTouched(true);
-  //   setValue(e);
-  // }
+  function handlerChange(e: string) {
+    setTouched(true);
+    setValue(e);
+  }
 
   return (
     <CustomInput
       placeholder={placeholder}
       value={value}
-      onChange={setValue}
+      onChange={handlerChange}
       disabled={disabled}
-      errorText={error}
+      errorText={touched && error ? error : ""}
       fullWidth={fullWidth}
       type={type}
       startAdornment={startAdornment}

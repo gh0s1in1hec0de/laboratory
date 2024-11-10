@@ -32,7 +32,7 @@ export function NavbarItems() {
           alignItems="center"
           flexDirection="column"
           onClick={() => handleClick({ page })}
-          sx={{ cursor: "pointer" }}
+          sx={{ cursor: "pointer", WebkitTapHighlightColor: "transparent" }}
         >
           <IconButton style={{ padding: 0, cursor: "inherit" }}>
             <IconComponent active={isActive({ page })}/>

@@ -1,4 +1,5 @@
 import { CreateTokenFormFields, MarketingSupportTabsValues } from "./types";
+import { DEFAULT_DECIMALS } from "../../constants";
 
 export const initialValues: CreateTokenFormFields = {
   x: "",
@@ -7,7 +8,7 @@ export const initialValues: CreateTokenFormFields = {
   name: "",
   description: "",
   symbol: "",
-  decimals: "6",
+  decimals: DEFAULT_DECIMALS,
   image: "",
   influencerSupport: false,
   totalSupply: "",

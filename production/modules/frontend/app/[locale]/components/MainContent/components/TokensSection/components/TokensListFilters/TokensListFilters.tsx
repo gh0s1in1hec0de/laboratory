@@ -4,6 +4,7 @@ import Grid from "@mui/material/Grid2";
 import { useTranslations } from "next-intl";
 import { FilterAdornment } from "./components/FilterAdornment";
 import { TokensListFiltersProps } from "./types";
+import { Box } from "@mui/material";
 
 export function TokensListFilters({
   search,

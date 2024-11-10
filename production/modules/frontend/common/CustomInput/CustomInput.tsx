@@ -6,6 +6,7 @@ import { Label } from "../Label";
 import styles from "./CustomInput.module.scss";
 import { CustomInputProps } from "./types";
 import { ChangeEvent } from "react";
+import { useTranslations } from "next-intl";
 
 export function CustomInput({
   placeholder,
@@ -19,6 +20,7 @@ export function CustomInput({
   disabled,
   fullWidth = true,
 }: CustomInputProps) {
+  const t = useTranslations("");
 
   function handleChangeValue(e: ChangeEvent<HTMLInputElement>) {
     onChange(e.target.value);
@@ -57,15 +59,17 @@ export function CustomInput({
         }}
       />
 
-      <FormHelperText sx={{ paddingLeft: 1.5 }}>
-        <Label
-          component="span"
-          label={errorText || ""}
-          variantSize="medium10"
-          variantColor="red"
-          disabled={disabled}
-        />
-      </FormHelperText>
+      {errorText && (
+        <FormHelperText sx={{ paddingLeft: 1.5, paddingTop: 0.5 }}>
+          <Label
+            component="span"
+            label={t(errorText)}
+            variantSize="regular12"
+            variantColor="red"
+            disabled={disabled}
+          />
+        </FormHelperText>
+      )}
     </FormControl>
   );
 }

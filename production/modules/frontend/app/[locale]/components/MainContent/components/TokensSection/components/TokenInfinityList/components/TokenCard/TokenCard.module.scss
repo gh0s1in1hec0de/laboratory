@@ -1,6 +1,7 @@
 .card {
   cursor: pointer;
   border-radius: 10px;
+  -webkit-tap-highlight-color: transparent;
   transition: background-color 0.3s ease-in-out;
 
   &:hover {

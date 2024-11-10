@@ -1,14 +1,14 @@
 import Grid from "@mui/material/Grid2";
-import { Label } from "@/common/Label";
+import { WaveLaunchDescription } from "./components/WaveLaunchDescription";
+import { RewardsDescription } from "./components/RewardsDescription";
+import { RefundsDescription } from "./components/RefundsDescription";
 
 export function Descriptions() {
   return (
-    <Grid>
-      <Label
-        label="Descriptions"
-        variantSize="semiBold18"
-        offUserSelect
-      />
+    <Grid container flexDirection="column" gap={1}>
+      <WaveLaunchDescription />
+      <RefundsDescription />
+      <RewardsDescription />
     </Grid>
   );
 }

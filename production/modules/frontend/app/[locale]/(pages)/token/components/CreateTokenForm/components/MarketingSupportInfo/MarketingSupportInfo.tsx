@@ -4,22 +4,23 @@ import { FormikCustomSwitch } from "@/components/FormikCustomSwitch";
 import { QuestionIcon } from "@/icons";
 import Grid from "@mui/material/Grid2";
 import IconButton from "@mui/material/IconButton";
-import { useFormikContext } from "formik";
-import { CreateTokenFormFields } from "../../hooks/useCreateToken";
 import { MARKETING_SUPPORT_TABS } from "./constants";
 import { useMarketingSupportInfo } from "./hooks/useMarketingSupportInfo";
+import { useTranslations } from "next-intl";
+
+import { useFormikContext } from "formik";
+import { CreateTokenFormFields } from "../../hooks/useCreateToken";
 
 export function MarketingSupportInfo() {
+  const t = useTranslations("Token.marketingSupportCheckbox");
+  const { isSubmitting } = useFormikContext<CreateTokenFormFields>();
+
   const {
     marketingSupportValue,
     marketingSupportEnabled,
     handleMarketingSupportTabsChange,
     handleMarketingSupportEnabledChange,
   } = useMarketingSupportInfo();
-
-  // todo
-  // const { values } = useFormikContext<CreateTokenFormFields>();
-  // console.log(values);
 
   return (
     <Grid
@@ -40,7 +41,7 @@ export function MarketingSupportInfo() {
             alignItems="center"
           >
             <Label
-              label="Marketing support"
+              label={t("label")}
               variantSize="semiBold18"
               offUserSelect
             />
@@ -53,11 +54,12 @@ export function MarketingSupportInfo() {
           <FormikCustomSwitch
             name="marketingSupportEnabled"
             onChange={handleMarketingSupportEnabledChange}
+            disabled={isSubmitting}
           />
         </Grid>
 
         <Label
-          label="Choose the percent of the token supply you'd like to donate to get StartON marketing support"
+          label={t("description")}
           variantSize="regular16"
           variantColor="gray"
           offUserSelect
@@ -69,7 +71,7 @@ export function MarketingSupportInfo() {
         selectedTab={marketingSupportValue}
         onChange={handleMarketingSupportTabsChange}
         tabs={MARKETING_SUPPORT_TABS}
-        disabled={!marketingSupportEnabled}
+        disabled={!marketingSupportEnabled || isSubmitting}
       />
     </Grid>
   );

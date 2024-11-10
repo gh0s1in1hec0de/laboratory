@@ -207,11 +207,93 @@
 		}
 	},
 	"Token": {
-		"marketingSupport": {
+		"imageInput": {
+			"label": "add logo",
+			"changeLabel": "change logo",
+			"errors": {
+				"required": "image is required",
+				"invalid": "select an image file"
+			}
+		},
+		"nameInput": {
+			"placeholder": "Name",
+			"errors": {
+				"required": "name is required",
+				"short": "name is too short",
+				"long": "name is too long"
+			}
+		},
+		"symbolInput": {
+			"placeholder": "$TICKER",
+			"errors": {
+				"required": "symbol is required",
+				"short": "symbol is too short",
+				"long": "symbol is too long"
+			}
+		},
+		"descriptionTextarea": {
+			"placeholder": "Token description",
+			"errors": {
+				"required": "description is required",
+				"short": "description is too short",
+				"long": "description is too long"
+			}
+		},
+		"totalSupplyInput": {
+			"label": "Total supply",
+			"placeholder": "Specify quantity",
+			"description": "* Total sales must exceed > 1 000 000",
+			"errors": {
+				"required": "total supply is required",
+				"minimum": "total supply must be greater than 1,000,000"
+			}
+		},
+		"urlInput": {
+			"label": "Social media",
+			"description": "You can provide social media links to improve your token conversion",
+			"placeholder": "Insert link",
+			"adornments": {
+				"telegram": "Telegram",
+				"twitter": "X",
+				"website": "Website"
+			},
+			"errors": {
+				"invalid": "link must be https://..."
+			}
+		},
+		"marketingSupportCheckbox": {
+			"label": "Marketing support",
+			"description": "Choose the percent of the token supply you'd like to donate to get StartON marketing support",
 			"tabs": {
 				"first": "0,5%",
 				"second": "1,5%"
 			}
+		},
+		"influencerSupportCheckbox": {
+			"label": "Influencer support",
+			"description": "If you choose to support an influencer, please contact us on Telegram"
+		},
+		"decimals": {
+			"errors": {
+				"required": "decimals is required",
+				"invalid": "decimals must be '6'"
+			}
+		},
+		"descriptions": {
+			"waveLaunch": {
+				"title": "Wave Launch"
+			},
+			"rewards": {
+				"title": "Rewards"
+			},
+			"refunds": {
+				"title": "Refunds"
+			}
+		},
+		"submitButton": {
+			"label": "Create",
+			"loading": "Creating...",
+			"description": "* Сheck the data is correct - you can edit the description and links to social networks only once!"
 		}
 	}
 }

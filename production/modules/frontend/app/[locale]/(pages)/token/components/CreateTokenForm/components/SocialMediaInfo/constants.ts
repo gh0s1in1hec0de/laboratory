@@ -1,17 +1,17 @@
 export const SOCIAL_MEDIA_DATA = [
   {
     formikName: "telegram",
-    label: "Telegram",
-    placeholder: "Insert link",
+    label: "adornments.telegram",
+    placeholder: "placeholder",
   },
   {
     formikName: "x",
-    label: "X",
-    placeholder: "Insert link",
+    label: "adornments.twitter",
+    placeholder: "placeholder",
   },
   {
     formikName: "website",
-    label: "Website",
-    placeholder: "Insert link",
+    label: "adornments.website",
+    placeholder: "placeholder",
   },
 ];

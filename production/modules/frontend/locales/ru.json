@@ -207,11 +207,93 @@
 		}
 	},
 	"Token": {
-		"marketingSupport": {
+		"imageInput": {
+			"label": "добавить логотип",
+			"changeLabel": "изменить логотип",
+			"errors": {
+				"required": "изображение обязательно",
+				"invalid": "выберите файл изображения"
+			}
+		},
+		"nameInput": {
+			"placeholder": "Название",
+			"errors": {
+				"required": "название обязательно",
+				"short": "название слишком короткое",
+				"long": "название слишком длинное"
+			}
+		},
+		"symbolInput": {
+			"placeholder": "$TICKER",
+			"errors": {
+				"required": "$TICKER обязателен",
+				"short": "$TICKER слишком короткий",
+				"long": "$TICKER слишком длинный"
+			}
+		},
+		"descriptionTextarea": {
+			"placeholder": "Описание токена",
+			"errors": {
+				"required": "описание обязательно",
+				"short": "описание слишком короткое",
+				"long": "описание слишком длинное"
+			}
+		},
+		"totalSupplyInput": {
+			"label": "Общая продажа",
+			"placeholder": "Укажите количество",
+			"description": "* Общая продажа должна превышать > 1 000 000",
+			"errors": {
+				"required": "общая продажа обязательна",
+				"minimum": "общая продажа должна превышать > 1 000 000"
+			}
+		},
+		"urlInput": {
+			"label": "Социальные сети",
+			"description": "Вы можете предоставить ссылки на социальные сети, чтобы повысить конверсию вашего токена",
+			"placeholder": "Вставьте ссылку",
+			"adornments": {
+				"telegram": "Telegram",
+				"twitter": "X",
+				"website": "Website"
+			},
+			"errors": {
+				"invalid": "ссылка должна быть https://..."
+			}
+		},
+		"marketingSupportCheckbox": {
+			"label": "Маркетинговая поддержка",
+			"description": "Выберите процент общего количества токенов, которые вы хотите передать, чтобы получить маркетинговую поддержку StartON",
 			"tabs": {
 				"first": "0,5%",
 				"second": "1,5%"
 			}
+		},
+		"influencerSupportCheckbox": {
+			"label": "Поддержка влиятеля",
+			"description": "Если вы решите поддержать влиятеля, пожалуйста, свяжитесь с нами в Telegram"
+		},
+		"decimals": {
+			"errors": {
+				"required": "decimals is required",
+				"invalid": "decimals must be '6'"
+			}
+		},
+		"descriptions": {
+			"waveLaunch": {
+				"title": "Wave Launch"
+			},
+			"rewards": {
+				"title": "Rewards"
+			},
+			"refunds": {
+				"title": "Refunds"
+			}
+		},
+		"submitButton": {
+			"label": "Создать",
+			"loading": "Создаём...",
+			"description": "* Проверьте данные - вы можете редактировать описание и ссылки на социальные сети только один раз!"
 		}
 	}
 }
