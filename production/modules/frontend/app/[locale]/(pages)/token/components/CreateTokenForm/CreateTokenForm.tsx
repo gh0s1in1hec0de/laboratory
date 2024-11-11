@@ -1,8 +1,11 @@
 "use client";
 
 import { LoadingWrapper } from "@/common/LoadingWrapper";
+import CloseIcon from "@mui/icons-material/Close";
+import { Button, IconButton, Snackbar } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { Form, Formik } from "formik";
+import { Fragment } from "react";
 import { Descriptions } from "./components/Descriptions";
 import { InfluencerSupportInfo } from "./components/InfluencerSupportInfo";
 import { MarketingSupportInfo } from "./components/MarketingSupportInfo";
@@ -12,12 +15,14 @@ import { SubmitButton } from "./components/SubmitButton";
 import { SupplyInfo } from "./components/SupplyInfo";
 import { UploadImage } from "./components/UploadImage";
 import { CREATE_TOKEN_FORM_ID } from "./constants";
-import { initialValues, useCreateToken, getValidationSchema } from "./hooks/useCreateToken";
+import { getValidationSchema, initialValues, useCreateToken } from "./hooks/useCreateToken";
+import { Label } from "@/common/Label";
 
 export function CreateTokenForm() {
   const {
     isLoadingPage,
     onSubmitForm,
+    errorText,
   } = useCreateToken();
 
   return (
@@ -36,6 +41,32 @@ export function CreateTokenForm() {
             gap={3}
             paddingTop={3}
           >
+            {/* todo add toasts */}
+            {/* <Snackbar
+              open={openToast}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              // autoHideDuration={6000}
+              sx={{
+                justifyContent: "space-between",
+              }}
+              onClose={handleCloseToast}
+              message={errorText}
+              action={(
+                <>
+                  <IconButton
+                    style={{
+                      marginLeft: "auto",
+                    }}
+                    size="small"
+                    aria-label="close"
+                    color="inherit"
+                    onClick={handleCloseToast}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </>
+              )}
+            /> */}
             <UploadImage />
             <MetadataInfo />
             <SupplyInfo />
@@ -43,6 +74,14 @@ export function CreateTokenForm() {
             <MarketingSupportInfo />
             <InfluencerSupportInfo />
             <Descriptions />
+            {errorText && (
+              <Label
+                label={errorText}
+                variantSize="regular14"
+                variantColor="red"
+                offUserSelect
+              />
+            )}
             <SubmitButton />
           </Grid>
         </Form>

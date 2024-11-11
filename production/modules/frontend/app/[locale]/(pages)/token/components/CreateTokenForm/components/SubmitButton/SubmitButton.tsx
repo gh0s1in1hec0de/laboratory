@@ -9,7 +9,7 @@ import Grid from "@mui/material/Grid2";
 export function SubmitButton() {
   const t = useTranslations("Token.submitButton");
   const { errors, isSubmitting } = useFormikContext<CreateTokenFormFields>();
-
+  
   return (
     <Grid
       container

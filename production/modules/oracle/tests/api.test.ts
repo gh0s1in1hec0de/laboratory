@@ -79,7 +79,7 @@ describe("launch sorter", () => {
     //     cleanDatabase();
     // });
 
-    test.skip("synthetic launch jettons", async () => {
+    test("synthetic launch jettons", async () => {
         for (let i = 0; i < 5; i++) {
             await upsertRewardJetton({
                 masterAddress: randomAddress().toRawString(),
@@ -91,7 +91,7 @@ describe("launch sorter", () => {
             }, client);
         }
     });
-    test.skip("extended launches data mock", async () => {
+    test("extended launches data mock", async () => {
         const now = Math.floor(Date.now() / 1000);
 
         await storeLaunchMetadata({
@@ -295,7 +295,7 @@ describe("launch sorter", () => {
         await deleteMaybeExtraBalances("0:7bd0f90d4cba5744cca5e628336625c70535a73b4a977360c5f7068c132db7ee", client);
     });
 
-    test.skip("mock launches activity data", async () => {
+    test("mock launches activity data", async () => {
         const now = Math.floor(Date.now() / 1000);
 
         for (let i = 1; i <= 3; i++) {
@@ -413,7 +413,7 @@ describe("launch sorter", () => {
             }, client);
         }
     });
-    test.skip("sorting by time", async () => {
+    test("sorting by time", async () => {
         const sortedByTime = await db.getSortedTokenLaunches({
             page: 1,
             limit: 10,
@@ -438,7 +438,7 @@ describe("launch sorter", () => {
         }
         console.log();
     });
-    test.skip("sorting by total value", async () => {
+    test("sorting by total value", async () => {
         const sortedByTime = await db.getSortedTokenLaunches({
             page: 1,
             limit: 10,
@@ -462,7 +462,7 @@ describe("launch sorter", () => {
         }
         console.log();
     });
-    test.skip("filtering", async () => {
+    test("filtering", async () => {
         const sortedByTime = await db.getSortedTokenLaunches({
             page: 1,
             limit: 10,
@@ -489,7 +489,7 @@ describe("launch sorter", () => {
         }
         console.log();
     });
-    test.skip("certain launch", async () => {
+    test("certain launch", async () => {
         const l = await db.getLaunch({
             address: "addr_1",
             // metadataUri: "onchain_metadata_link_1"
@@ -497,12 +497,12 @@ describe("launch sorter", () => {
         assert(l);
         console.log(l);
     });
-    test.skip("certain launch", async () => {
+    test("certain launch", async () => {
         const balances = await db.getCallerBalances("meow");
         assert(balances);
         console.log(balances);
     });
-    test.skip("top activity materialized", async () => {
+    test("top activity materialized", async () => {
         console.log(await db.getLaunchWithTopActivity(client));
     });
 });

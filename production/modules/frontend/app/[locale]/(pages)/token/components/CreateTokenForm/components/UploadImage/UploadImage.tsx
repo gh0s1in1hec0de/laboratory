@@ -7,9 +7,8 @@ import { CreateTokenFormFields } from "../../hooks/useCreateToken";
 
 export function UploadImage() {
   const t = useTranslations("Token.imageInput");
-  const { values, errors, isSubmitting } = useFormikContext<CreateTokenFormFields>();
-  console.log(values);
-  console.log(errors);
+  const { isSubmitting } = useFormikContext<CreateTokenFormFields>();
+
   return (
     <Grid container width="100%" justifyContent="center">
       <BgLight />
