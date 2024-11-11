@@ -2,7 +2,7 @@ import { managerService, oracleService } from "@/api";
 import { CreateTokenFormFields } from "@/app/[locale]/(pages)/token/components/CreateTokenForm/hooks/useCreateToken";
 import { LAUNCH_ERROR } from "@/errors";
 import { LAUNCH_ROUTES } from "@/routes";
-import type { GetLaunchesChunkRequest, GetLaunchesChunkResponse, GetRisingStarResponse } from "starton-periphery";
+import type { GetLaunchesChunkRequest, GetLaunchesChunkResponse, GetRisingStarResponse, UploadMetadataToIpfsRequest } from "starton-periphery";
 
 async function getTokenLaunches(req: Partial<GetLaunchesChunkRequest>): Promise<GetLaunchesChunkResponse> {
   try {
@@ -35,33 +35,19 @@ async function getRisingStar(): Promise<GetRisingStarResponse> {
 }
 
 async function saveMetadata({
-  x,
-  telegram,
-  website,
   image,
-  name,
-  symbol,
-  description,
-  decimals,
-  influencerSupport,
-}: CreateTokenFormFields): Promise<string> {
+  links,
+  metadata,
+  influencerSupport
+}: UploadMetadataToIpfsRequest): Promise<string> {
   try {
     const { data } = await managerService.post<string>(
       LAUNCH_ROUTES.SaveMetadata,
       {
-        links: {
-          x,
-          telegram,
-          website,
-        },
+        links,
         image,
-        metadata: {
-          name,
-          description,
-          symbol,
-          decimals,
-        },
-        influencerSupport,
+        metadata,
+        influencerSupport: influencerSupport?.toString(),
       }
     );
 

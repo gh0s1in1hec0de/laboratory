@@ -1,4 +1,5 @@
 export * from "./chainMessageParsers";
+export * from "./TxRequestBuilder";
 export * from "./HighloadWalletV3";
 export * from "./jettonMetadata";
 export * from "./DataBridge";

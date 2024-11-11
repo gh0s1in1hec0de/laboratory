@@ -8,7 +8,7 @@ import { CreateTokenFormFields } from "../../hooks/useCreateToken";
 export function MetadataInfo() {
   const t = useTranslations("Token");
   const { isSubmitting } = useFormikContext<CreateTokenFormFields>();
-  console.log("isSubmitting", isSubmitting);
+
   return (
     <Grid
       container

@@ -1,13 +1,18 @@
 import { getErrorText } from "@/utils/getErrorText";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { FormikHelpers } from "formik";
-import { CreateTokenFormFields } from "./types";
+import { CreateTokenFormFields, MarketingSupportTabsValues } from "./types";
+import { launchService } from "@/services";
+import { jettonToNano, toPct, TxRequestBuilder } from "starton-periphery";
+import { useRouter } from "next/navigation";
 
 export function useCreateToken() {
   const t = useTranslations("Token.submitButton");
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
+  const router = useRouter();
+  const locale = useLocale();
   // const [openToast, setOpenToast] = useState(false);
 
   // const handleCloseToast = (
@@ -27,13 +32,61 @@ export function useCreateToken() {
   ) {
     setSubmitting(true);
     setErrorText(null);
-    // setOpenToast(false);
     
     try {
-      
-      // await launchService.createToken(data);
+      const links = Object.fromEntries(
+        Object.entries({
+          x: values.x,
+          telegram: values.telegram,
+          website: values.website,
+        }).filter(([_, value]) => value)
+      );
+
+      const metadata = {
+        name: values.name,
+        description: values.description,
+        symbol: values.symbol,
+        decimals: values.decimals,
+      };
+
+      // Qmb4Yjspwz3gVq371wvVN9hqzzAoopzv5W1yS49qdTJJ7f
+      // const metadataJsonCID = await launchService.saveMetadata({
+      //   links,
+      //   image: values.image,
+      //   metadata,
+      //   influencerSupport: values.influencerSupport,
+      // });
+
+      // console.log("metadataJsonCID", metadataJsonCID);
+
+      // TxRequestBuilder.createLaunch(
+      //   {
+      //     coreAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
+      //   },
+      //   {
+      //     totalSupply: jettonToNano(values.totalSupply),
+      //     platformSharePct: toPct(values.marketingSupportEnabled ? values.marketingSupportValue : 0),
+      //     metadata: {
+      //       uri: `${process.env.NEXT_PUBLIC_DEFAULT_IPFS_PATH}${metadataJsonCID}`
+      //     },
+      //     maybePackedConfig: null,
+      //   },
+      // );
+      console.log("txRequest", {
+        coreAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
+      },
+      {
+        totalSupply: jettonToNano(values.totalSupply),
+        platformSharePct: toPct(values.marketingSupportEnabled ? values.marketingSupportValue : 0),
+        metadata: {
+          uri: `${process.env.NEXT_PUBLIC_DEFAULT_IPFS_PATH}PIZDA`
+        },
+        maybePackedConfig: null,
+      },
+      );
+
+      // router.replace(`/${locale}/token/123`);
     } catch (error) {
-      // setOpenToast(true);
       setErrorText(getErrorText(error, t("creatingError")));
     } finally {
       setSubmitting(false);

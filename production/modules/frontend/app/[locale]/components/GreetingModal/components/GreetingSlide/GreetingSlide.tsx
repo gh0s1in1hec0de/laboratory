@@ -54,6 +54,7 @@ export function GreetingSlide({ item, index, closeBanner }: GreetingSlideProps) 
           offUserSelect
         />
       </Grid>
+      
       {index === GREETING_MODAL_ITEMS.length - 1 && (
         <CustomButton
           fullWidth
