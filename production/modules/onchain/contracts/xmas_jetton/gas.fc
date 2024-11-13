@@ -21,18 +21,18 @@ const MIN_STORAGE_DURATION = 5 * 365 * 24 * 3600; ;; 5 years
 ;;Get calculated in a separate test file [/sandbox_tests/StateInit.spec.ts](StateInit.spec.ts)
 
 ;;- `JETTON_WALLET_BITS` [/sandbox_tests/StateInit.spec.ts#L92](L92)
-const JETTON_WALLET_BITS  = 7210;
+const JETTON_WALLET_BITS  = 8570;
 
 ;;- `JETTON_WALLET_CELLS`: [/sandbox_tests/StateInit.spec.ts#L92](L92)
-const JETTON_WALLET_CELLS = 15;
+const JETTON_WALLET_CELLS = 17;
 
 ;; difference in JETTON_WALLET_BITS/JETTON_WALLET_INITSTATE_BITS is difference in
 ;; StateInit and AccountStorage (https://github.com/ton-blockchain/ton/blob/master/crypto/block/block.tlb)
 ;; we count bits as if balances are max possible
 ;;- `JETTON_WALLET_INITSTATE_BITS` [/sandbox_tests/StateInit.spec.ts#L95](L95)
-const JETTON_WALLET_INITSTATE_BITS  = 7108;
+const JETTON_WALLET_INITSTATE_BITS  = 8468;
 ;;- `JETTON_WALLET_INITSTATE_CELLS` [/sandbox_tests/StateInit.spec.ts#L95](L95)
-const JETTON_WALLET_INITSTATE_CELLS = 15;
+const JETTON_WALLET_INITSTATE_CELLS = 17;
 
 ;; wallet.fc#L163 - maunal bits counting
 const BURN_NOTIFICATION_BITS = 754; ;; body = 32+64+124+(3+8+256)+(3+8+256)
@@ -45,16 +45,16 @@ const BURN_NOTIFICATION_CELLS = 1; ;; body always in ref
 ;;resulting gas consumption is printed to the console.
 
 ;;- `SEND_TRANSFER_GAS_CONSUMPTION` [/sandbox_tests/Pool.test.ts#L853](L853)
-const SEND_TRANSFER_GAS_CONSUMPTION    = 9255;
+const SEND_TRANSFER_GAS_CONSUMPTION    = 8710;
 
 ;;- `RECEIVE_TRANSFER_GAS_CONSUMPTION` [/sandbox_tests/Pool.test.ts#L862](L862)
-const RECEIVE_TRANSFER_GAS_CONSUMPTION = 10355;
+const RECEIVE_TRANSFER_GAS_CONSUMPTION = 9895;
 
 ;;- `SEND_BURN_GAS_CONSUMPTION` [/sandbox_tests/Pool.test.ts#L1154](L1154)
-const SEND_BURN_GAS_CONSUMPTION    = 5791;
+const SEND_BURN_GAS_CONSUMPTION    = 7000;
 
 ;;- `RECEIVE_BURN_GAS_CONSUMPTION` [/sandbox_tests/Pool.test.ts#L1155](L1155)
-const RECEIVE_BURN_GAS_CONSUMPTION = 6775;
+const RECEIVE_BURN_GAS_CONSUMPTION = 8000;
 
 
 int calculate_jetton_wallet_min_storage_fee() inline {
@@ -64,6 +64,8 @@ int calculate_jetton_wallet_min_storage_fee() inline {
 int forward_init_state_overhead() inline {
     return get_simple_forward_fee(MY_WORKCHAIN, JETTON_WALLET_INITSTATE_BITS, JETTON_WALLET_INITSTATE_CELLS);
 }
+
+;; TODO Extend with supply message forward fee + increase supply compute fee
 
 () check_amount_is_enough_to_transfer(int msg_value, int forward_ton_amount, int fwd_fee) impure inline {
     int fwd_count = forward_ton_amount ? 2 : 1; ;; second sending (forward) will be cheaper that first

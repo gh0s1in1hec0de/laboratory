@@ -1,14 +1,15 @@
-import {
-    collectCellStats, computedGeneric, computeFwdFees, getGasPrices, computeGasFee, formatValue,
-    computeFwdFeesVerbose, getMsgPrices, computeStorageFee, printTxsLogs, getStoragePrices,
-    MsgPrices, FullFees, GasPrices, StorageStats, StorageValue,
-} from "./utils";
+import { estimateBodyFwdFeeWithReverseCheck, forwardStateInitOverhead, printTxGasStats } from "./utils/gasUtils";
 import {
     BalanceUpdateMode, TokensLaunchOps, LaunchConfigV2, UserVaultOps, CoreOps, GlobalVersions,
     getPublicAmountOut, getApproximateClaimAmount, packLaunchConfigV2ToCell, toPct,
     JETTON_MIN_TRANSFER_FEE, MAX_WL_ROUND_TON_LIMIT, PERCENTAGE_DENOMINATOR,
     validateValueMock, jettonFromNano, getCreatorAmountOut, jettonToNano,
 } from "starton-periphery";
+import {
+    collectCellStats, computeFwdFees, getGasPrices, computeGasFee, formatValue,
+    getMsgPrices, computeStorageFee, printTxsLogs, getStoragePrices,
+    MsgPrices, GasPrices, StorageStats, StorageValue,
+} from "./utils";
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import { TokenLaunchV2 } from "../wrappers/TokenLaunchV2";
@@ -28,16 +29,12 @@ import {
     TreasuryContract,
     SandboxContract,
     Blockchain,
-    internal,
 } from "@ton/sandbox";
 import {
     storeStateInit,
-    storeMessage,
-    Transaction,
     beginCell,
     StateInit,
     fromNano,
-    Address,
     toNano,
     Cell,
 } from "@ton/core";
@@ -87,16 +84,6 @@ describe("V2", () => {
     let launchConfig: LaunchConfigV2;
     let sampleLaunchParams: LaunchParams;
     let sampleLaunchStartTime: number;
-
-    // Functions initialization:
-    //
-    // Measures fees for code execution (computational fee) and returns nanotons value
-    let printTxGasStats: (name: string, trans: Transaction) => bigint;
-    // `force_ref` is set to `true` for bony-in-a-ref cases
-    let estimateBodyFwdFee: (body: Cell, force_ref: boolean, prices?: MsgPrices) => FullFees;
-    // Returns total fee (performing reverse-check before)
-    let estimateBodyFwdFeeWithReverseCheck: (body: Cell, force_ref: boolean, prices?: MsgPrices) => bigint;
-    let forwardStateInitOverhead: (prices: MsgPrices, stats: StorageStats) => bigint;
 
     let balanceUpdateCost: bigint;
     let calcBalanceUpdateCost: (
@@ -249,31 +236,6 @@ describe("V2", () => {
             }, jettonWalletCode)
         );
 
-        printTxGasStats = (name, transaction) => {
-            const txComputed = computedGeneric(transaction);
-            console.log(`${name} used ${txComputed.gasUsed} gas`);
-            console.log(`${name} gas cost is ${txComputed.gasFees}(${fromNano(txComputed.gasFees)} TONs)`);
-            return txComputed.gasFees;
-        };
-        estimateBodyFwdFee = (body, forceRef, prices) => {
-            const mockAddr = new Address(0, Buffer.alloc(32, "A"));
-            const testMsg = internal({
-                from: mockAddr,
-                to: mockAddr,
-                value: toNano("1"),
-                body
-            });
-            const packed = beginCell().store(storeMessage(testMsg, { forceRef })).endCell();
-            const stats = collectCellStats(packed, [], true);
-            return computeFwdFeesVerbose(prices || msgPrices, stats.cells, stats.bits);
-        };
-        estimateBodyFwdFeeWithReverseCheck = (body, forceRef, prices) => {
-            const feesRes = estimateBodyFwdFee(body, forceRef, prices);
-            const reverse = feesRes.remaining * 65536n / (65536n - (prices || msgPrices).firstFrac);
-            expect(reverse).toBeGreaterThanOrEqual(feesRes.total);
-            return reverse;
-        };
-        forwardStateInitOverhead = (prices, stats) => computeFwdFees(prices, stats.cells, stats.bits) - prices.lumpPrice;
         calcBalanceUpdateCost = (
             balanceUpdateMsgForwardFee: bigint, userVaultStateInitOverhead: bigint,
             balanceUpdateComputeFee: bigint, userVaultMinStorageFee: bigint
@@ -370,7 +332,7 @@ describe("V2", () => {
                 }, true
             );
             // Body will be stored in a reference - then `force_ref` is true
-            const unifiedCheckFees = estimateBodyFwdFeeWithReverseCheck(bodyCell, true);
+            const unifiedCheckFees = estimateBodyFwdFeeWithReverseCheck(bodyCell, true, msgPrices);
             console.info(`Token Launch deployment message forward fee: ${unifiedCheckFees}`);
             for (const [i, stateInit] of [tokenLaunchStateInit, loadedTokenLaunchStateInit].entries()) {
                 const tokenLaunchState: StateInit = {

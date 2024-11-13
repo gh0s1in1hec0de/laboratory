@@ -90,7 +90,7 @@ describe("General", () => {
         });
     });
     test("metadata reading trick", async () => {
-        let { stack } = await (await userWallet(justAGuy.address)).getWalletDatSerialized();
+        let { stack } = await (await userWallet(justAGuy.address)).getWalletDataSerialized();
         stack.skip(2);
         const jettonMinterAddress = stack.readAddress();
         expect(jettonMinterAddress.toRawString()).toEqual(jettonMinter.address.toRawString());

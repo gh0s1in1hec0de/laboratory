@@ -102,5 +102,7 @@ export enum JettonOps {
     CallTo = 0x235caf52,
     TopUp = 0xd372158c,
     ChangeMetadataUrl = 0xcb862902,
-    SetStatus = 0xeed236d3,
+
+    // Xmas one
+    IncreaseSupply = 0x700fbcb0
 }

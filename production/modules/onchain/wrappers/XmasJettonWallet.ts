@@ -1,16 +1,10 @@
+import { JettonOps } from "./JettonConstants";
+import { endParse } from "starton-periphery";
 import {
-    Address,
-    beginCell,
-    Cell,
-    Contract,
-    contractAddress, ContractGetMethodResult,
-    ContractProvider,
-    Sender,
-    SendMode,
-    toNano, TupleReader
+    Address, Cell, Contract, beginCell,
+    ContractProvider, contractAddress,
+    Sender, SendMode, toNano
 } from "@ton/core";
-import { Op } from "./JettonConstants";
-import { endParse } from "./JettonMinter";
 
 export type JettonWalletConfig = {
     ownerAddress: Address,
@@ -19,37 +13,25 @@ export type JettonWalletConfig = {
 
 export function jettonWalletConfigToCell(config: JettonWalletConfig): Cell {
     return beginCell()
-        .storeUint(0, 4) // status
         .storeCoins(0) // jetton balance
         .storeAddress(config.ownerAddress)
         .storeAddress(config.jettonMasterAddress)
         .endCell();
 }
 
-export function parseJettonWalletData(data: Cell) {
-    const sc = data.beginParse();
-    const parsed = {
-        status: sc.loadUint(4),
-        balance: sc.loadCoins(),
-        ownerAddress: sc.loadAddress(),
-        jettonMasterAddress: sc.loadAddress(),
-    };
-    endParse(sc);
-    return parsed;
-}
-
-export class JettonWallet implements Contract {
+// Unchanged from standard JettonWallet, just avoiding naming mess
+export class XmasJettonWallet implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {
     }
 
     static createFromAddress(address: Address) {
-        return new JettonWallet(address);
+        return new XmasJettonWallet(address);
     }
 
     static createFromConfig(config: JettonWalletConfig, code: Cell, workchain = 0) {
         const data = jettonWalletConfigToCell(config);
         const init = { code, data };
-        return new JettonWallet(contractAddress(workchain, init), init);
+        return new XmasJettonWallet(contractAddress(workchain, init), init);
     }
 
     async sendDeploy(provider: ContractProvider, via: Sender, value: bigint) {
@@ -68,10 +50,6 @@ export class JettonWallet implements Contract {
             minter: stack.readAddress(),
             wallet_code: stack.readCell()
         };
-    }
-
-    async getWalletDataSerialized(provider: ContractProvider): Promise<ContractGetMethodResult> {
-        return await provider.get("get_wallet_data", []);
     }
 
     async getJettonBalance(provider: ContractProvider) {
@@ -98,7 +76,7 @@ export class JettonWallet implements Contract {
         forward_ton_amount: bigint,
         forwardPayload: Cell | null) {
 
-        return beginCell().storeUint(Op.transfer, 32).storeUint(0, 64) // op, queryId
+        return beginCell().storeUint(JettonOps.Transfer, 32).storeUint(0, 64) // op, queryId
             .storeCoins(jetton_amount)
             .storeAddress(to)
             .storeAddress(responseAddress)
@@ -117,7 +95,7 @@ export class JettonWallet implements Contract {
         forwardPayload: Cell | null) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: JettonWallet.transferMessage(jetton_amount, to, responseAddress, customPayload, forward_ton_amount, forwardPayload),
+            body: XmasJettonWallet.transferMessage(jetton_amount, to, responseAddress, customPayload, forward_ton_amount, forwardPayload),
             value: value
         });
 
@@ -131,7 +109,7 @@ export class JettonWallet implements Contract {
     static burnMessage(jetton_amount: bigint,
         responseAddress: Address | null,
         customPayload: Cell | null) {
-        return beginCell().storeUint(Op.burn, 32).storeUint(0, 64) // op, queryId
+        return beginCell().storeUint(JettonOps.Burn, 32).storeUint(0, 64) // op, queryId
             .storeCoins(jetton_amount).storeAddress(responseAddress)
             .storeMaybeRef(customPayload)
             .endCell();
@@ -143,7 +121,7 @@ export class JettonWallet implements Contract {
         customPayload: Cell | null) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: JettonWallet.burnMessage(jetton_amount, responseAddress, customPayload),
+            body: XmasJettonWallet.burnMessage(jetton_amount, responseAddress, customPayload),
             value: value
         });
 
@@ -160,7 +138,7 @@ export class JettonWallet implements Contract {
     async sendWithdrawTons(provider: ContractProvider, via: Sender) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: JettonWallet.withdrawTonsMessage(),
+            body: XmasJettonWallet.withdrawTonsMessage(),
             value: toNano("0.1")
         });
 
@@ -180,7 +158,7 @@ export class JettonWallet implements Contract {
     async sendWithdrawJettons(provider: ContractProvider, via: Sender, from: Address, amount: bigint) {
         await provider.internal(via, {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: JettonWallet.withdrawJettonsMessage(from, amount),
+            body: XmasJettonWallet.withdrawJettonsMessage(from, amount),
             value: toNano("0.1")
         });
 
