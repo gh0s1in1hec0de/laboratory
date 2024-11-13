@@ -4,6 +4,7 @@ import { Label } from "@/common/Label";
 import { StarBannerIcon } from "@/icons";
 import { Box } from "@mui/material";
 import { BgLight } from "@/common/BgLight";
+import { TonProvider } from "@/providers/ton";
 
 export default function Token() {
   return (
@@ -12,10 +13,12 @@ export default function Token() {
       width="100%"
     >
       {/* FORM */}
-      {/* <CreateTokenForm /> */}
+      <TonProvider>
+        <CreateTokenForm />
+      </TonProvider>
 
       {/* WAITING PAGE */}
-      <Grid
+      {/* <Grid
         container
         flexDirection="column"
         alignItems="center"
@@ -69,7 +72,7 @@ export default function Token() {
             />
           </Box>
         </Grid>
-      </Grid>
+      </Grid> */}
 
       {/* TOKEN PAGE */}
       {/* <Grid

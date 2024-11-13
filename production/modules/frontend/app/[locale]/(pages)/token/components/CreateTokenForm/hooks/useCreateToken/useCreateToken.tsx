@@ -6,11 +6,13 @@ import { CreateTokenFormFields, MarketingSupportTabsValues } from "./types";
 import { launchService } from "@/services";
 import { jettonToNano, toPct, TxRequestBuilder } from "starton-periphery";
 import { useRouter } from "next/navigation";
+import { useTonConnectUI } from "@tonconnect/ui-react";
 
 export function useCreateToken() {
   const t = useTranslations("Token.submitButton");
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
+  const [tonConnectUI] = useTonConnectUI();
   const router = useRouter();
   const locale = useLocale();
   // const [openToast, setOpenToast] = useState(false);
@@ -50,40 +52,46 @@ export function useCreateToken() {
       };
 
       // Qmb4Yjspwz3gVq371wvVN9hqzzAoopzv5W1yS49qdTJJ7f
-      // const metadataJsonCID = await launchService.saveMetadata({
-      //   links,
-      //   image: values.image,
-      //   metadata,
-      //   influencerSupport: values.influencerSupport,
-      // });
+      const metadataJsonCID = await launchService.saveMetadata({
+        links,
+        image: values.image,
+        metadata,
+        influencerSupport: values.influencerSupport,
+      });
 
-      // console.log("metadataJsonCID", metadataJsonCID);
+      console.log("metadataJsonCID", metadataJsonCID);
 
-      // TxRequestBuilder.createLaunch(
-      //   {
-      //     coreAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
-      //   },
-      //   {
-      //     totalSupply: jettonToNano(values.totalSupply),
-      //     platformSharePct: toPct(values.marketingSupportEnabled ? values.marketingSupportValue : 0),
-      //     metadata: {
-      //       uri: `${process.env.NEXT_PUBLIC_DEFAULT_IPFS_PATH}${metadataJsonCID}`
-      //     },
-      //     maybePackedConfig: null,
-      //   },
-      // );
-      console.log("txRequest", {
-        coreAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
-      },
-      {
-        totalSupply: jettonToNano(values.totalSupply),
-        platformSharePct: toPct(values.marketingSupportEnabled ? values.marketingSupportValue : 0),
-        metadata: {
-          uri: `${process.env.NEXT_PUBLIC_DEFAULT_IPFS_PATH}PIZDA`
+      // send transaction
+      const tx = TxRequestBuilder.createLaunch(
+        {
+          coreAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
         },
-        maybePackedConfig: null,
-      },
+        {
+          totalSupply: jettonToNano(values.totalSupply),
+          platformSharePct: toPct(values.marketingSupportEnabled ? values.marketingSupportValue : 0),
+          metadata: {
+            uri: `https://ipfs.io/ipfs/${metadataJsonCID}`
+          },
+          maybePackedConfig: null,
+        },
       );
+
+      const txRes = await tonConnectUI.sendTransaction(tx, { modals: "all" });
+
+      console.log("txRes", txRes.boc);
+
+      // console.log("txRequest", {
+      //   coreAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
+      // },
+      // {
+      //   totalSupply: jettonToNano(values.totalSupply),
+      //   platformSharePct: toPct(values.marketingSupportEnabled ? values.marketingSupportValue : 0),
+      //   metadata: {
+      //     uri: `${process.env.NEXT_PUBLIC_DEFAULT_IPFS_PATH}PIZDA`
+      //   },
+      //   maybePackedConfig: null,
+      // },
+      // );
 
       // router.replace(`/${locale}/token/123`);
     } catch (error) {
