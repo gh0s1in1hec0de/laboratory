@@ -21,7 +21,7 @@ const TWO_MONTHS = 60 * ONE_DAY;
 
 ;; Minimal fees
 ;; https://github.com/ton-blockchain/stablecoin-contract/blob/62f661d79012a259c0110dce611dafc31359be78/contracts/gas.fc#L14 (Actuallly 28627415, but rounded)
-const JETTON_MIN_TRANSFER_FEE = 50000000;
+const JETTON_MIN_TRANSFER_FEE = 70000000;
 ;; https://docs.ton.org/develop/smart-contracts/fees#fees-for-sending-ton
 const SIMPLE_TRANSFER_FEE = 6000000;
 
@@ -34,8 +34,8 @@ const TOKEN_LAUNCH_STATE_CELLS = 113;
 const USER_VAULT_STATE_BITS  = 5092;
 const USER_VAULT_STATE_CELLS = 17;
 
-const JETTON_MASTER_STATE_BITS = 16703;
-const JETTON_MASTER_STATE_CELLS = 35;
+const JETTON_MASTER_STATE_BITS = 20000;
+const JETTON_MASTER_STATE_CELLS = 40;
 
 ;; refund_confirmation & jetton_claim_confirmation in main.tlb, still unified but took the upper bound (with `mode`)
 const WITHDRAW_CONFIRMATION_MSG_BITS = 739;
@@ -152,7 +152,7 @@ const JETTON_TRANSFER_TO_CHIEF_FORWARD_PAYLOAD_CELLS = 1;
 const JETTON_TRANSFER_TO_CHIEF_ENROLLMENT_GAS_CONSUMPTION = 500;
 const REVOKE_ADMIN_MSG_BITS = 96;
 const REVOKE_ADMIN_MSG_CELLS = 1;
-const REVOKE_ADMIN_GAS_CONSUMPTION = 2814;
+const REVOKE_ADMIN_GAS_CONSUMPTION = 3000;
 
 int get_jetton_deployment_request_gas_cost() inline_ref {
     return

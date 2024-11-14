@@ -1,7 +1,7 @@
 export enum JettonOps {
     Transfer = 0xf8a7ea5, // 260734629
     TransferNotification = 0x7362d09c,
-    InternalTransfer = 0x178d4519,
+    InternalTransfer = 0x178d4519, // 395134233
     Excesses = 0xd53276db, // 3576854235
     Burn = 0x595f07bc,
     BurnNotification = 0x7bdd97de,

@@ -42,7 +42,7 @@
         .store_msg_flags_and_address_none(NON_BOUNCEABLE)
         .store_slice(jetton_master_address)
         .store_coins(get_jetton_deployment_request_gas_cost())
-        .store_statinit_ref_and_body_ref(jetton_master_stateinit, msg_body)
+        .store_stateinit_ref_and_body_ref(jetton_master_stateinit, msg_body)
         .end_cell();
     send_raw_message(msg, SEND_MODE_PAY_FEES_SEPARATELY | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 }

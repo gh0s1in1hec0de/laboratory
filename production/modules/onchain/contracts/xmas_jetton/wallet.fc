@@ -112,7 +112,7 @@
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(to_wallet_address)
         .store_coins(0)
-        .store_statinit_ref_and_body_ref(state_init, msg_body)
+        .store_stateinit_ref_and_body_ref(state_init, msg_body)
         .end_cell();
 
     send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE | SEND_MODE_BOUNCE_ON_ACTION_FAIL);

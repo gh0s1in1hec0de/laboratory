@@ -135,7 +135,7 @@
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(token_launch_address)
         .store_coins(msg_value)
-        .store_statinit_ref_and_body_ref(token_launch_stateinit, msg_body)
+        .store_stateinit_ref_and_body_ref(token_launch_stateinit, msg_body)
         .end_cell();
     this::not_funded_launches~dict_set(ADDRESS_SIZE, pack_address(token_launch_address), "");
     this::not_funded_launches_amount += 1;

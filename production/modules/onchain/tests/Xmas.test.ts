@@ -68,12 +68,13 @@ describe("Marry Christmas and happy New Year!", () => {
             const mintResult = await jettonMaster.sendMint(
                 deployer.getSender(), deployer.address, jettonToNano("1000000")
             );
-            expect(mintResult.transactions).toHaveTransaction({
+            const mintTx = findTransactionRequired(mintResult.transactions, {
                 op: JettonOps.InternalTransfer,
                 on: deployerWallet.address,
                 success: true,
                 deploy: true
             });
+            printTxGasStats("Mint transaction", mintTx);
         }, 20000);
         test("common transfer specs", async () => {
             const recipient = randomAddress();

@@ -35,6 +35,40 @@ export class TokenLaunchV1 implements Contract {
         return new TokenLaunchV1(contractAddress(workchain, init), init);
     }
 
+    /*
+    cell msg_body = begin_cell()
+        .store_op(op::tl::init)
+        .store_query_id(query_id)
+        .store_slice(token_launch_fut_jet_wallet_address)
+        .store_slice(fut_jet_master_address)
+        .end_cell();
+    cell msg = begin_cell()
+        .store_msg_flags_and_address_none(BOUNCEABLE)
+        .store_slice(token_launch_address)
+        .store_coins(msg_value)
+        .store_statinit_ref_and_body_ref(token_launch_stateinit, msg_body)
+        .end_cell();
+    */
+
+    async sendInit(
+        provider: ContractProvider,
+        sendMessageParams: SendMessageParams,
+        tokenLaunchFutJetWalletAddress: Address,
+        futJetMasterAddress: Address,
+    ) {
+        const { queryId, via, value } = sendMessageParams;
+
+        const body = beginCell()
+            .storeUint(TokensLaunchOps.Init, OP_LENGTH)
+            .storeUint(queryId, QUERY_ID_LENGTH)
+            .storeAddress(tokenLaunchFutJetWalletAddress)
+            .storeAddress(futJetMasterAddress)
+            .endCell();
+        await provider.internal(via, {
+            value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
+        });
+    }
+
     async sendCreatorBuyout(provider: ContractProvider, sendMessageParams: SendMessageParams) {
         const { queryId, via, value } = sendMessageParams;
 
@@ -196,13 +230,9 @@ export class TokenLaunchV1 implements Contract {
         };
     }
 
-    static buildState({
-        creator,
-        chief,
-        launchConfig,
-        launchParams,
-        code
-    }: StateParams, loadAtMax: boolean = false): Cell {
+    static buildState(
+        { creator, chief, launchConfig, launchParams, code }: StateParams, loadAtMax: boolean = false
+    ): Cell {
         const { startTime, totalSupply, platformSharePct, metadata } = launchParams;
         const packedMetadata = metadata instanceof Cell ? metadata : tokenMetadataToCell(metadata);
 

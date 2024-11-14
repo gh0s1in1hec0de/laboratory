@@ -42,7 +42,7 @@
     .store_coins(ton_amount);
 
     if (need_state_init) {
-        msg = msg.store_statinit_ref_and_body_ref(state_init, master_msg);
+        msg = msg.store_stateinit_ref_and_body_ref(state_init, master_msg);
     } else {
         msg = msg.store_only_body_ref(master_msg);
     }

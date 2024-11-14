@@ -184,7 +184,7 @@ cell build_balance_update_message(cell user_vault_code, int query_id, int msg_va
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(user_vault_address)
         .store_coins(msg_value)
-        .store_statinit_ref_and_body_ref(user_vault_stateinit, msg_body)
+        .store_stateinit_ref_and_body_ref(user_vault_stateinit, msg_body)
         .end_cell();
     return msg;
 }

@@ -35,6 +35,27 @@ export class TokenLaunchV2 implements Contract {
         return new TokenLaunchV2(contractAddress(workchain, init), init);
     }
 
+    async sendInit(
+        provider: ContractProvider,
+        sendMessageParams: SendMessageParams,
+        tokenLaunchFutJetWalletAddress: Address,
+        futJetMasterAddress: Address,
+        tokenLaunchUtilJetWalletAddress: Address
+    ) {
+        const { queryId, via, value } = sendMessageParams;
+
+        const body = beginCell()
+            .storeUint(TokensLaunchOps.Init, OP_LENGTH)
+            .storeUint(queryId, QUERY_ID_LENGTH)
+            .storeAddress(tokenLaunchFutJetWalletAddress)
+            .storeAddress(futJetMasterAddress)
+            .storeAddress(tokenLaunchUtilJetWalletAddress)
+            .endCell();
+        await provider.internal(via, {
+            value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
+        });
+    }
+
     async sendCreatorBuyout(provider: ContractProvider, sendMessageParams: SendMessageParams) {
         const { queryId, via, value } = sendMessageParams;
 
