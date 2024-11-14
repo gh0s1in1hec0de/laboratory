@@ -63,16 +63,16 @@
         if (chance < 33) {
             diff = muldiv(jetton_amount, 2, 100);
         }
-        if ((chance > 33) & (chance < 66)) {
+        if ((chance >= 33) & (chance < 66)) {
             diff = muldiv(jetton_amount, 4, 100);
         }
-        if ((chance > 66) & (chance < 77)) {
+        if ((chance >= 66) & (chance < 80)) {
             diff = muldiv(jetton_amount, 7, 100);
         }
-        if ((chance > 77) & (chance < 88)) {
+        if ((chance >= 80) & (chance < 91)) {
             diff = muldiv(jetton_amount, 10, 100);
         }
-        if (chance > 88) {
+        if (chance >= 91) {
             diff = muldiv(jetton_amount, 15, 100);
         }
         throw_unless(error::meowreachable, diff);
@@ -87,8 +87,11 @@
         cell msg = begin_cell()
             .store_msg_flags_and_address_none(NON_BOUNCEABLE)
             .store_slice(jetton_master_address)
-            .store_coins(10000000) ;; TODO calc this stuff
-            .store_statinit_ref_and_body_ref(state_init, msg_body)
+            .store_coins(
+                get_forward_fee(MY_WORKCHAIN, INCREASE_SUPPLY_MESSAGE_BITS, INCREASE_SUPPLY_MESSAGE_CELLS) +
+                get_compute_fee(MY_WORKCHAIN, INCREASE_SUPPLY_GAS_CONSUMTION)
+            )
+            .store_only_body_ref(msg_body)
             .end_cell();
         send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
     }

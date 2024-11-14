@@ -20,7 +20,7 @@ const error::wrong_workchain = 333;
 const error::crampus_not_allowed = 666;
 const error::meowreachable = 777;
 
-;; jetton-minter
+;; jetton-master
 
 const op::mint = 0x642b7d07;
 const op::change_admin = 0x6501f354;
@@ -28,7 +28,7 @@ const op::revoke_admin = 0x471ffff3;
 const op::upgrade = 0x2508d66a;
 const op::call_to = 0x235caf52;
 const op::change_metadata_uri = 0xcb862902;
-const op::increase_supply = "increase_supply"c;
+const op::increase_supply = 0x700fbcb0;
 
 ;; jetton-wallet
 
