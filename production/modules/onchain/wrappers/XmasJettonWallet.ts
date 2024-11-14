@@ -109,8 +109,11 @@ export class XmasJettonWallet implements Contract {
     static burnMessage(jetton_amount: bigint,
         responseAddress: Address | null,
         customPayload: Cell | null) {
-        return beginCell().storeUint(JettonOps.Burn, 32).storeUint(0, 64) // op, queryId
-            .storeCoins(jetton_amount).storeAddress(responseAddress)
+        return beginCell()
+            .storeUint(JettonOps.Burn, 32)
+            .storeUint(0, 64) // op, queryId
+            .storeCoins(jetton_amount)
+            .storeAddress(responseAddress)
             .storeMaybeRef(customPayload)
             .endCell();
     }

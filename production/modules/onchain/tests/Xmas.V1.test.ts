@@ -14,7 +14,6 @@ import { XmasJettonMaster } from "../wrappers/XmasJettonMaster";
 import { XmasJettonWallet } from "../wrappers/XmasJettonWallet";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import { TokenLaunchV1 } from "../wrappers/TokenLaunchV1";
-import { JettonMaster } from "../wrappers/JettonMaster";
 import { JettonWallet } from "../wrappers/JettonWallet";
 import { JettonOps } from "../wrappers/JettonConstants";
 import { UserVaultV1 } from "../wrappers/UserVaultV1";
@@ -191,7 +190,7 @@ describe("Xmas V1 Launch", () => {
             }, userVaultCode)
         );
         derivedJettonMaster = blockchain.openContract(
-            JettonMaster.createFromConfig({
+            XmasJettonMaster.createFromConfig({
                 admin: sampleTokenLaunch.address,
                 jettonContent: sampleLaunchParams.metadata,
                 supply: 0n,
@@ -199,7 +198,7 @@ describe("Xmas V1 Launch", () => {
             }, jettonMasterCode)
         );
         tokenLaunchDerivedJettonWallet = blockchain.openContract(
-            JettonWallet.createFromConfig({
+            XmasJettonWallet.createFromConfig({
                 jettonMasterAddress: derivedJettonMaster.address,
                 ownerAddress: sampleTokenLaunch.address
             }, jettonWalletCode)
@@ -270,6 +269,19 @@ describe("Xmas V1 Launch", () => {
             success: true,
             deploy: true
         });
+    });
+    test("token launch on-chain state stats", async () => {
+        const smc = await blockchain.getContract(sampleTokenLaunch.address);
+        assert(smc.accountState, "Can't access token launch state");
+        // Runtime doesn't see assert here lol
+        if (smc.accountState.type !== "active") throw new Error("Token launch is not active");
+        assert(smc.account.account, "Can't access token launch!");
+        console.log(
+            "Token launch ~ storage stats:",
+            smc.account.account.storageStats.used
+        );
+        const stateCell = beginCell().store(storeStateInit(smc.accountState.state)).endCell();
+        console.log("Token launch state stats:", collectCellStats(stateCell, []));
     });
     describe("token launch operations", () => {
         test("creator can buy his own tokens out", async () => {

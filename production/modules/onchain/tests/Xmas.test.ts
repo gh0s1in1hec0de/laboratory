@@ -76,6 +76,17 @@ describe("Marry Christmas and happy New Year!", () => {
             });
             printTxGasStats("Mint transaction", mintTx);
         }, 20000);
+        test("stranger can't increase supply", async () => {
+            const increaseSupplyResult = await jettonMaster.sendIncreaseSupply(
+                { queryId: 0n, via: deployer.getSender(), value: toNano("1") }
+            );
+            expect(increaseSupplyResult.transactions).toHaveTransaction({
+                op: JettonOps.IncreaseSupply,
+                on: jettonMaster.address,
+                success: false,
+                exitCode: 666
+            });
+        }, 20000);
         test("common transfer specs", async () => {
             const recipient = randomAddress();
             const transferAmount = jettonToNano("100");
@@ -103,9 +114,23 @@ describe("Marry Christmas and happy New Year!", () => {
             const walletBalance = await userWallet(recipient).getJettonBalance();
             assert(walletBalance === transferAmount);
         }, 20000);
+        test("burn specs", async () => {
+            const burnResult = await jettonMaster.sendForceBurn(
+                deployer.getSender(), jettonToNano("1"), deployer.address, null
+            );
+            const transferTx = findTransactionRequired(burnResult.transactions, {
+                op: JettonOps.CallTo,
+                success: true,
+            });
+            printTxGasStats("Burn request transaction", transferTx);
+            const internalTransferTx = findTransactionRequired(burnResult.transactions, {
+                op: JettonOps.Burn,
+                success: true,
+            });
+            printTxGasStats("Burn confirmation transaction", internalTransferTx);
+        }, 20000);
     });
     describe("event!", () => {
-        // TODO Supply increase
         test("christmas transfer", async () => {
             blockchain.now = START + 1;
 
@@ -166,11 +191,12 @@ describe("Marry Christmas and happy New Year!", () => {
                 increaseCounts[`${increasePercent}%` as keyof typeof increaseCounts]++;
             }
 
-            console.log("Increase type percentages: ");
+            let result = "Increase type percentages:\n";
             for (const [type, count] of Object.entries(increaseCounts)) {
                 const percentage = (count / totalTransfers) * 100;
-                console.log(`${type} increase: ${percentage.toFixed(2)}%`);
+                result += `${type} increase: ${percentage.toFixed(2)}%\n`;
             }
+            console.log(result);
         }, 20000);
         test("event end", async () => {
             blockchain.now = END + 1;
@@ -180,7 +206,6 @@ describe("Marry Christmas and happy New Year!", () => {
                 deployer.getSender(), toNano("1"), transferAmount, recipient, deployer.address,
                 null, toNano("0.1"), null
             );
-
             expect(transferResult.transactions).not.toHaveTransaction({
                 op: JettonOps.IncreaseSupply,
                 success: true

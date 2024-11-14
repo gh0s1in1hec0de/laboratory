@@ -25,11 +25,12 @@ const JETTON_MIN_TRANSFER_FEE = 70000000;
 ;; https://docs.ton.org/develop/smart-contracts/fees#fees-for-sending-ton
 const SIMPLE_TRANSFER_FEE = 6000000;
 
-const CORE_STATE_BITS  = 47510;
-const CORE_STATE_CELLS = 122;
+;; So I decided to round it just because I tired to change it evey time
+const CORE_STATE_BITS  = 50000;
+const CORE_STATE_CELLS = 150;
 ;; Use `loadAtMax` to measure
-const TOKEN_LAUNCH_STATE_BITS  = 44124;
-const TOKEN_LAUNCH_STATE_CELLS = 113;
+const TOKEN_LAUNCH_STATE_BITS  = 50000;
+const TOKEN_LAUNCH_STATE_CELLS = 150;
 
 const USER_VAULT_STATE_BITS  = 5092;
 const USER_VAULT_STATE_CELLS = 17;
@@ -105,7 +106,7 @@ const CREATOR_BUYOUT_GAS_CONSUMPTION = 13938;
     return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_BUYOUT_GAS_CONSUMPTION));
 }
 
-const CREATOR_REFUND_GAS_CONSUMPTION = 15117;
+const CREATOR_REFUND_GAS_CONSUMPTION = 15135;
 (int, int) check_amount_is_enough_for_creator_refund(int msg_value) impure inline {
     return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_REFUND_GAS_CONSUMPTION));
 }
@@ -142,10 +143,10 @@ const REFUND_CONFIRMATION_GAS_CONSUMPTION = 19305;
 }
 
 ;; === Jetton Deploy ===
-const DEPLOY_JETTON_REQUEST_GAS_CONSUMPTION = 16000;
+const DEPLOY_JETTON_REQUEST_GAS_CONSUMPTION = 18000;
 const MINT_MSG_BITS = 1366;
 const MINT_MSG_CELLS = 3;
-const MINT_REQUEST_GAS_CONSUMPTION = 8000;
+const MINT_REQUEST_GAS_CONSUMPTION = 9000;
 const JETTONS_ENROLLMENT_ACCEPTANCE_GAS_CONSUMPTION = 20000;
 const JETTON_TRANSFER_TO_CHIEF_FORWARD_PAYLOAD_BITS = 248; ;; See token_launch/jetton_operating.fc
 const JETTON_TRANSFER_TO_CHIEF_FORWARD_PAYLOAD_CELLS = 1;

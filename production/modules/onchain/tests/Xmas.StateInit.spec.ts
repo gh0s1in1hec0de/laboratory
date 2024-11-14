@@ -70,7 +70,22 @@ describe("State init tests", () => {
 
         const curBalance = await deployerWallet.getJettonBalance();
         expect(curBalance).toEqual(maxValue);
-        const smc = await blockchain.getContract(deployerWallet.address);
+    });
+    it("jetton master specs", async () => {
+        const smc = await blockchain.getContract(jettonMaster.address);
+        if (smc.accountState === undefined)
+            throw new Error("Can't access wallet account state");
+        if (smc.accountState.type !== "active")
+            throw new Error("Master account is not active");
+        if (smc.account.account === undefined || smc.account.account === null)
+            throw new Error("Can't access master account!");
+        console.log("Jetton master max storage stats:", smc.account.account.storageStats.used);
+        const state = smc.accountState.state;
+        const stateCell = beginCell().store(storeStateInit(state)).endCell();
+        console.log("State init stats:", collectCellStats(stateCell, []));
+    });
+    it("jetton wsallet specs", async () => {
+        const smc = await blockchain.getContract((await userWallet(deployer.address)).address);
         if (smc.accountState === undefined)
             throw new Error("Can't access wallet account state");
         if (smc.accountState.type !== "active")

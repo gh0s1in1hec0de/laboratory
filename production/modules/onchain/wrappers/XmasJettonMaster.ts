@@ -1,4 +1,11 @@
-import { tokenMetadataToCell, endParse, OnchainMetadataStandard } from "starton-periphery";
+import {
+    tokenMetadataToCell,
+    endParse,
+    OnchainMetadataStandard,
+    TokensLaunchOps,
+    OP_LENGTH,
+    QUERY_ID_LENGTH, jettonToNano, Coins
+} from "starton-periphery";
 import { JettonWallet } from "./JettonWallet";
 import { JettonOps } from "./JettonConstants";
 import {
@@ -13,6 +20,8 @@ import {
     Slice,
     Cell,
 } from "@ton/core";
+import { SendMessageParams } from "./utils";
+import { randomAddress } from "@ton/test-utils";
 
 export type JettonMasterConfig = {
     supply: bigint,
@@ -136,6 +145,26 @@ export class XmasJettonMaster implements Contract {
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: XmasJettonMaster.mintMessage(to, jetton_amount, from, response_addr, customPayload, forward_ton_amount, total_ton_amount / 2n),
             value: total_ton_amount,
+        });
+    }
+
+    // Only for testing purposes
+    async sendIncreaseSupply(
+        provider: ContractProvider,
+        sendMessageParams: SendMessageParams,
+        walletOwner: Address = randomAddress(),
+        amount: Coins = jettonToNano("100"),
+    ) {
+        const { queryId, via, value } = sendMessageParams;
+
+        const body = beginCell()
+            .storeUint(JettonOps.IncreaseSupply, OP_LENGTH)
+            .storeUint(queryId, QUERY_ID_LENGTH)
+            .storeAddress(walletOwner)
+            .storeCoins(amount)
+            .endCell();
+        await provider.internal(via, {
+            value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
         });
     }
 

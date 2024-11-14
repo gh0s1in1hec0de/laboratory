@@ -4,26 +4,10 @@ import {
     FullFees, GasPrices, computeFwdFeesVerbose, getMsgPrices, computeStorageFee,
 } from "./utils";
 import {
-    BASECHAIN,
-    getPublicAmountOut,
-    getApproximateClaimAmount,
-    packLaunchConfigV1ToCell,
-    JETTON_MIN_TRANSFER_FEE,
-    TokensLaunchOps,
-    jettonFromNano,
-    validateValueMock,
-    MAX_WL_ROUND_TON_LIMIT,
-    BalanceUpdateMode,
-    LaunchConfigV1,
-    getQueryId,
-    PERCENTAGE_DENOMINATOR,
-    getCreatorAmountOut,
-    UserVaultOps,
-    CoreOps,
-    GlobalVersions,
-    OP_LENGTH,
-    QUERY_ID_LENGTH,
-    jettonToNano
+    BASECHAIN, getPublicAmountOut, getApproximateClaimAmount, packLaunchConfigV1ToCell,
+    PERCENTAGE_DENOMINATOR, getCreatorAmountOut, UserVaultOps, CoreOps, GlobalVersions,
+    JETTON_MIN_TRANSFER_FEE, TokensLaunchOps, jettonFromNano, validateValueMock,
+    MAX_WL_ROUND_TON_LIMIT, BalanceUpdateMode, LaunchConfigV1, getQueryId,
 } from "starton-periphery";
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
@@ -55,7 +39,7 @@ import {
     fromNano,
     Address,
     toNano,
-    Cell, SendMode,
+    Cell,
 } from "@ton/core";
 
 /* To find out:
@@ -142,9 +126,9 @@ describe("V1", () => {
             compile("JettonWallet")
         ]);
         console.info("contracts compiled yaay^^");
-        coreStorageStats = new StorageStats(47955n, 125n);
+        coreStorageStats = new StorageStats(50000n, 150n);
         userVaultStorageStats = new StorageStats(5092n, 17n);
-        tokenLaunchStorageStats = new StorageStats(44124n, 113n);
+        tokenLaunchStorageStats = new StorageStats(50000n, 150n);
         jettonMasterStorageStats = new StorageStats(16703n, 35n);
 
         blockchain = await Blockchain.create(MAINNET_MOCK ? {

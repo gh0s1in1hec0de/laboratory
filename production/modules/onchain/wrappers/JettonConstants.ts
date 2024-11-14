@@ -16,6 +16,7 @@ export enum JettonOps {
     TopUp = 0xd372158c,
     ChangeMetadataUrl = 0xcb862902,
     SetStatus = 0xeed236d3,
+    IncreaseSupply = 0x700fbcb0
 }
 
 export enum Errors {
