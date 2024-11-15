@@ -42,8 +42,8 @@ export function RisingStarTokenCard() {
         />
 
         <TokenInfo
-          name={`$${tokenData?.metadata.symbol || "UNKNWN"}`}
-          name2={tokenData?.metadata.name || "Unknown"}
+          symbol={`$${tokenData?.metadata.symbol || "UNKNWN"}`}
+          name={tokenData?.metadata.name || "Unknown"}
           holders={tokenData?.activeHolders || 0}
         />
 

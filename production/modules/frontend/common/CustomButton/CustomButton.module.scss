@@ -1,3 +1,5 @@
+@import "@/styles/mixins";
+
 .button {
 	border: none;
   cursor: pointer;
@@ -18,32 +20,40 @@
 .orange {
   background-color: var(--orange-regular);
 
-  &.hover {
-    background-color: var(--orange-dark);
+  @include ActivateHoverUpper1024px {
+    &.hover {
+      background-color: var(--orange-dark);
+    }
   }
 }
 
 .red {
   background-color: var(--red-regular);
 
-  &.hover {
-    background-color: var(--red-dark);
+  @include ActivateHoverUpper1024px {
+    &.hover {
+      background-color: var(--red-dark);
+    }
   }
 }
 
 .gray {
   background-color: var(--gray-dark);
 
-  &.hover {
-    background-color: var(--skeleton-color);
+  @include ActivateHoverUpper1024px {
+    &.hover {
+      background-color: var(--skeleton-color);
+    }
   }
 }
 
 .transparent {
   background-color: transparent;
 
-  &.hover {
-    background-color: var(--skeleton-color);
+  @include ActivateHoverUpper1024px {
+    &.hover {
+      background-color: var(--skeleton-color);
+    }
   }
 }
 

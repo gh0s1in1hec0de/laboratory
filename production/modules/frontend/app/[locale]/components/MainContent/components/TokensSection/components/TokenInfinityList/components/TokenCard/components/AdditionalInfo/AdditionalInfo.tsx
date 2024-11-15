@@ -4,8 +4,11 @@ import { StarIcon } from "@/icons";
 import Grid from "@mui/material/Grid2";
 import { AdditionalInfoProps } from "./types";
 import { getCurrentSalePhase, SalePhase } from "starton-periphery";
+import { useTranslations } from "next-intl";
 
 export function AdditionalInfo({ holders, timings }: AdditionalInfoProps) {
+  const t = useTranslations("CurrentLaunch");
+
   const { phase } = getCurrentSalePhase(timings);
 
   function renderPhase() {
@@ -102,7 +105,7 @@ export function AdditionalInfo({ holders, timings }: AdditionalInfoProps) {
         <StarIcon />
 
         <Label
-          label={`${holders} holders`}
+          label={`${holders} ${t("holdersLabel")}`}
           variantSize="regular14"
           variantColor="gray"
           offUserSelect

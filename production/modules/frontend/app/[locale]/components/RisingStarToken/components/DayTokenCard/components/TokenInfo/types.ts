@@ -1,5 +1,5 @@
 export interface TokenInfoProps {
+  symbol: string;
   name: string;
-  name2: string;
   holders: number;
 }

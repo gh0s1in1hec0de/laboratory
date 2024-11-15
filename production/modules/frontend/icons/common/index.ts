@@ -10,3 +10,8 @@ export { LoupeIcon } from "./LoupeIcon/LoupeIcon";
 export { ArrowUpRightIcon } from "./ArrowUpRightIcon/ArrowUpRightIcon";
 export { FilterSettingsIcon } from "./FilterSettingsIcon/FilterSettingsIcon";
 export { CheckIcon } from "./CheckIcon/CheckIcon";
+export { TelegramIcon } from "./TelegramIcon/TelegramIcon";
+export { ShareIcon } from "./ShareIcon/ShareIcon";
+export { WebsiteIcon } from "./WebsiteIcon/WebsiteIcon";
+export { TwitterIcon } from "./TwitterIcon/TwitterIcon";
+export { ColonIcon } from "./ColonIcon/ColonIcon";

@@ -87,6 +87,10 @@
 
 
 // SIZES
+.medium44 {
+  @include medium44;
+}
+
 .semiBold32 {
   @include semiBold32;
 }

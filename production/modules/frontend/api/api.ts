@@ -2,20 +2,20 @@ import { CALLER_ADDRESS } from "@/constants";
 import { localStorageWrapper } from "@/utils";
 import axios from "axios";
 
+const getContentType = () => ({
+  "Content-Type": "application/json",
+});
+
 export const managerService = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_MANAGER_DEV}/api`,
   withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  headers: getContentType(),
 });
 
 export const oracleService = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_ORACLE_DEV}/api`,
   withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  headers: getContentType(),
 });
 
 managerService.interceptors.request.use((config) => {

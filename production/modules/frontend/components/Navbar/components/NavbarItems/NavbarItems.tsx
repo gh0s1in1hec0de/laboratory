@@ -30,25 +30,27 @@ export function NavbarItems() {
   return(
     <LoadingWrapper isLoading={isPending}>
       {NAVBAR_ITEMS.map(({ page, IconComponent, id, label }) => (
-        <Box
+        <IconButton
           key={id}
-          minWidth={50}
-          display="flex"
-          alignItems="center"
-          flexDirection="column"
+          style={{ padding: 0, cursor: "pointer" }}
           onClick={() => handleClick({ page })}
-          sx={{ cursor: "pointer", WebkitTapHighlightColor: "transparent" }}
         >
-          <IconButton style={{ padding: 0, cursor: "inherit" }}>
+          <Box
+            minWidth={50}
+            display="flex"
+            alignItems="center"
+            flexDirection="column"
+            sx={{ cursor: "inherit", WebkitTapHighlightColor: "transparent" }}
+          >
             <IconComponent active={isActive({ page })}/>
-          </IconButton>
-          <Label
-            label={t(label)}
-            variantColor={isActive({ page }) ? "orange" : "gray"}
-            variantSize="medium10"
-            offUserSelect
-          />
-        </Box>
+            <Label
+              label={t(label)}
+              variantColor={isActive({ page }) ? "orange" : "gray"}
+              variantSize="medium10"
+              offUserSelect
+            />
+          </Box>
+        </IconButton>
       ))}
     </LoadingWrapper>
   );

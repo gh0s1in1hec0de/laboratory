@@ -4,11 +4,9 @@ import { SupportButton } from "@/components/SupportButton";
 import { QuestionIcon } from "@/icons";
 import { IconButton } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { useField } from "formik";
-import { MarketingSupportTabsValues } from "../../hooks/useCreateToken";
+import { useField , useFormikContext } from "formik";
+import { MarketingSupportTabsValues , CreateTokenFormFields } from "../../hooks/useCreateToken";
 import { useTranslations } from "next-intl";
-import { useFormikContext } from "formik";
-import { CreateTokenFormFields } from "../../hooks/useCreateToken";
 
 export function InfluencerSupportInfo() {
   const t = useTranslations("Token.influencerSupportCheckbox");

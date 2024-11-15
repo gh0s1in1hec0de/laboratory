@@ -5,11 +5,11 @@ import { TokenInfoProps } from "./types";
 import { useTranslations } from "next-intl";
 
 export function TokenInfo({
+  symbol,
   name,
-  name2,
   holders,
 }: TokenInfoProps) {
-  const t = useTranslations("Top");
+  const t = useTranslations("CurrentLaunch");
 
   return (
     <Grid
@@ -19,7 +19,7 @@ export function TokenInfo({
       size="grow"
     >
       <Label
-        label={name}
+        label={symbol}
         variantSize="bold18"
         cropped
       />
@@ -30,7 +30,7 @@ export function TokenInfo({
         gap={1}
       >
         <Label
-          label={name2}
+          label={name}
           variantSize="regular16"
         />
 
@@ -42,7 +42,7 @@ export function TokenInfo({
           <StarIcon />
 
           <Label
-            label={`${holders} ${t("holdersTitle")}`}
+            label={`${holders} ${t("holdersLabel")}`}
             variantSize="regular14"
             variantColor="gray"
           />

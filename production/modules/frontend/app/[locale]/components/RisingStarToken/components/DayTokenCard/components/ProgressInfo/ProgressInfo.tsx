@@ -9,7 +9,7 @@ export function ProgressInfo({
   collected,
   max,
 }: ProgressInfoProps) {
-  const t = useTranslations("Top");
+  const t = useTranslations("CurrentLaunch");
 
   return (
     <Grid
@@ -36,7 +36,7 @@ export function ProgressInfo({
         />
 
         <Label
-          label={`${collected} / ${max} ${t("collectedTitle")}`}
+          label={`${collected} / ${max} ${t("collectedLabel")}`}
           variantSize="regular14"
           variantColor="gray"
         />

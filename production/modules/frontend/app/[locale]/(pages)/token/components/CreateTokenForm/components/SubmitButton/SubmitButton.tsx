@@ -1,35 +1,27 @@
-import { CustomButton } from "@/common/CustomButton";
 import { Label } from "@/common/Label";
-import { useFormikContext } from "formik";
-import { CreateTokenFormFields } from "../../hooks/useCreateToken";
-import { CREATE_TOKEN_FORM_ID } from "../../constants";
-import { useTranslations } from "next-intl";
+import { CustomConnectButton } from "@/components/CustomConnectButton";
+import { TonProvider } from "@/providers/ton";
 import Grid from "@mui/material/Grid2";
+import { useTranslations } from "next-intl";
+import { CreateTokenButton } from "./components/CreateTokenButton";
 
 export function SubmitButton() {
   const t = useTranslations("Token.submitButton");
-  const { errors, isSubmitting } = useFormikContext<CreateTokenFormFields>();
-  
+
   return (
     <Grid
       container
       width="100%"
       gap={1}
     >
-      <CustomButton
-        form={CREATE_TOKEN_FORM_ID}
-        type="submit"
-        padding="10px 6px"
-        // disabled={Object.keys(errors).length > 0 || isSubmitting}
-        disabled={isSubmitting}
-        fullWidth
-      >
-        <Label
-          label={isSubmitting ? t("loading") : t("label")}
-          variantSize="medium16"
-          offUserSelect
+      <TonProvider>
+        <CustomConnectButton
+          successChildren={<CreateTokenButton />}
+          fullWidth
+          showDropdown={false}
         />
-      </CustomButton>
+      </TonProvider>
+
       <Label
         label={t("description")}
         variantSize="regular14"
