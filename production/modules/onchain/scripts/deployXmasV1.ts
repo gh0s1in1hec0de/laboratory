@@ -68,5 +68,5 @@ export async function run(provider: NetworkProvider) {
         launchXmasWallet.address,
         futureXmasJetton.address
     );
-    console.info(`Transaction sent`);
+    console.info("Transaction sent");
 }

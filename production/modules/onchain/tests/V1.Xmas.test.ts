@@ -159,6 +159,7 @@ describe("Xmas V1 Launch", () => {
             tonLimitForWlRound: toNano("100"),
             penny: toNano("1"),
 
+            // Warning! In case of fractional/odd shares contract's math may have slight calc inaccuracy
             jetWlLimitPct: 30000,
             jetPubLimitPct: 30000,
             jetDexSharePct: 25000,

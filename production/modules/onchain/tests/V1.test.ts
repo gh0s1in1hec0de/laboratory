@@ -6,8 +6,8 @@ import {
 import {
     BASECHAIN, getPublicAmountOut, getApproximateClaimAmount, packLaunchConfigV1ToCell,
     PERCENTAGE_DENOMINATOR, getCreatorAmountOut, UserVaultOps, CoreOps, GlobalVersions,
+    MAX_WL_ROUND_TON_LIMIT, BalanceUpdateMode, LaunchConfigV1, getQueryId, toPct,
     JETTON_MIN_TRANSFER_FEE, TokensLaunchOps, jettonFromNano, validateValueMock,
-    MAX_WL_ROUND_TON_LIMIT, BalanceUpdateMode, LaunchConfigV1, getQueryId,
 } from "starton-periphery";
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
@@ -166,9 +166,10 @@ describe("V1", () => {
             tonLimitForWlRound: toNano("100"),
             penny: toNano("1"),
 
-            jetWlLimitPct: 25000,
-            jetPubLimitPct: 35000,
-            jetDexSharePct: 25000,
+            // Warning! In case of fractional/odd shares contract's math may have slight calc inaccuracy
+            jetWlLimitPct: toPct(18),
+            jetPubLimitPct: toPct(38),
+            jetDexSharePct: toPct(20),
 
             creatorRoundDurationSec: ONE_HOUR_SEC,
             wlRoundDurationSec: ONE_HOUR_SEC,
@@ -458,7 +459,7 @@ describe("V1", () => {
             const valueLimitForCreator = tokenLaunchConfigBefore.creatorFutJetLeft * MAX_WL_ROUND_TON_LIMIT / tokenLaunchConfigBefore.creatorFutJetPriceReversed;
             console.log(`Creator round limits: ${jettonFromNano(tokenLaunchConfigBefore.creatorFutJetLeft)} jettons; ${fromNano(valueLimitForCreator)} TONs`);
 
-            const value = toNano("10");
+            const value = toNano("30");
             const gasPrices = getGasPrices(blockchain.config, BASECHAIN);
             const expectedFee = computeGasFee(gasPrices, 13938n); // Computed by printTxGasStats later
 
@@ -531,7 +532,7 @@ describe("V1", () => {
                 value: x => x! > valueLeftForCreator * 9n / 10n
             });
             const tokenLaunchConfigAfter = await sampleTokenLaunch.getConfig();
-            assert(tokenLaunchConfigAfter.creatorFutJetLeft === 0n);
+            assert(tokenLaunchConfigAfter.creatorFutJetLeft === 0n, `left: ${tokenLaunchConfigAfter.creatorFutJetLeft}`);
         }, 20000);
         test("creator can refund his share", async () => {
             const stateBeforeCreatorRefund = blockchain.snapshot();
