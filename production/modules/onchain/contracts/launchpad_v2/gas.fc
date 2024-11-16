@@ -21,7 +21,7 @@ const TWO_MONTHS = 60 * ONE_DAY;
 
 ;; Minimal fees
 ;; https://github.com/ton-blockchain/stablecoin-contract/blob/62f661d79012a259c0110dce611dafc31359be78/contracts/gas.fc#L14 (Actuallly 28627415, but rounded)
-const JETTON_MIN_TRANSFER_FEE = 50000000;
+const JETTON_MIN_TRANSFER_FEE = 70000000;
 ;; https://docs.ton.org/develop/smart-contracts/fees#fees-for-sending-ton
 const SIMPLE_TRANSFER_FEE = 6000000;
 

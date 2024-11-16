@@ -628,149 +628,44 @@ describe("V2", () => {
         // well, if you have free time - try to pack it inside a cycle and see - what is going to happen next *-*
         test("high wl purchase operations pressure", async () => {
             const conf = { totalTons: 80, totalBuys: 5 };
-            // 1st buy
-            const wlBuyer1 = await blockchain.treasury("wl_buyer_1");
-            const mintResult1 = await utilityJettonMaster.sendMint(
-                chief.getSender(),
-                wlBuyer1.address,
-                launchConfig.utilJetWlPassAmount,
-                null, null, null,
-                toNano("0.01"), toNano("1")
+            const wlBuyers = await Promise.all(
+                Array.from({ length: conf.totalBuys }, (_, i) =>
+                    blockchain.treasury(`wl_buyer_${i + 1}`, { balance: toNano("1000000") })
+                )
             );
-            expect(mintResult1.transactions).toHaveTransaction({
-                on: wlBuyer1.address,
-                op: JettonOps.TransferNotification,
-                success: true
-            });
-            const wlBuyer1UtilJetWallet = blockchain.openContract(JettonWallet.createFromAddress(await utilityJettonMaster.getWalletAddress(wlBuyer1.address)));
-            const wlPurchaseResult1 = await wlBuyer1UtilJetWallet.sendTransfer(
-                wlBuyer1.getSender(),
-                toNano(conf.totalTons / conf.totalBuys) + toNano("0.5"),
-                launchConfig.utilJetWlPassAmount,
-                sampleTokenLaunch.address,
-                consumer.address,
-                null, toNano(conf.totalTons / conf.totalBuys), null
-            );
-            expect(wlPurchaseResult1.transactions).toHaveTransaction({
-                op: UserVaultOps.balanceUpdate,
-                success: true
-            });
-            blockchain.now! += 20;
 
-            // 2nd buy
-            const wlBuyer2 = await blockchain.treasury("wl_buyer_2");
-            const mintResult2 = await utilityJettonMaster.sendMint(
-                chief.getSender(),
-                wlBuyer2.address,
-                launchConfig.utilJetWlPassAmount,
-                null, null, null,
-                toNano("0.01"), toNano("1")
-            );
-            expect(mintResult2.transactions).toHaveTransaction({
-                on: wlBuyer2.address,
-                op: JettonOps.TransferNotification,
-                success: true
-            });
-            const wlBuyer2UtilJetWallet = blockchain.openContract(JettonWallet.createFromAddress(await utilityJettonMaster.getWalletAddress(wlBuyer2.address)));
-            const wlPurchaseResult2 = await wlBuyer2UtilJetWallet.sendTransfer(
-                wlBuyer2.getSender(),
-                toNano(conf.totalTons / conf.totalBuys) + toNano("0.5"),
-                launchConfig.utilJetWlPassAmount,
-                sampleTokenLaunch.address,
-                consumer.address,
-                null, toNano(conf.totalTons / conf.totalBuys), null
-            );
-            expect(wlPurchaseResult2.transactions).toHaveTransaction({
-                op: UserVaultOps.balanceUpdate,
-                success: true
-            });
-            blockchain.now! += 20;
+            for (let i = 0; i < conf.totalBuys; i++) {
+                // Mint jettons for the current buyer
+                const mintResult = await utilityJettonMaster.sendMint(
+                    chief.getSender(),
+                    wlBuyers[i].address,
+                    launchConfig.utilJetWlPassAmount,
+                    null, null, null,
+                    toNano("0.01"), toNano("1")
+                );
+                expect(mintResult.transactions).toHaveTransaction({
+                    on: wlBuyers[i].address,
+                    op: JettonOps.TransferNotification,
+                    success: true
+                });
+                const wlBuyerUtilJetWallet = blockchain.openContract(
+                    JettonWallet.createFromAddress(await utilityJettonMaster.getWalletAddress(wlBuyers[i].address))
+                );
 
-            // 3rd buy
-            const wlBuyer3 = await blockchain.treasury("wl_buyer_3");
-            const mintResult3 = await utilityJettonMaster.sendMint(
-                chief.getSender(),
-                wlBuyer3.address,
-                launchConfig.utilJetWlPassAmount,
-                null, null, null,
-                toNano("0.01"), toNano("1")
-            );
-            expect(mintResult3.transactions).toHaveTransaction({
-                on: wlBuyer3.address,
-                op: JettonOps.TransferNotification,
-                success: true
-            });
-            const wlBuyer3UtilJetWallet = blockchain.openContract(JettonWallet.createFromAddress(await utilityJettonMaster.getWalletAddress(wlBuyer3.address)));
-            const wlPurchaseResult3 = await wlBuyer3UtilJetWallet.sendTransfer(
-                wlBuyer3.getSender(),
-                toNano(conf.totalTons / conf.totalBuys) + toNano("0.5"),
-                launchConfig.utilJetWlPassAmount,
-                sampleTokenLaunch.address,
-                consumer.address,
-                null, toNano(conf.totalTons / conf.totalBuys), null
-            );
-            expect(wlPurchaseResult3.transactions).toHaveTransaction({
-                op: UserVaultOps.balanceUpdate,
-                success: true
-            });
-            blockchain.now! += 20;
-
-            const wlBuyer4 = await blockchain.treasury("wl_buyer_4");
-            const mintResult4 = await utilityJettonMaster.sendMint(
-                chief.getSender(),
-                wlBuyer4.address,
-                launchConfig.utilJetWlPassAmount,
-                null, null, null,
-                toNano("0.01"), toNano("1")
-            );
-            expect(mintResult4.transactions).toHaveTransaction({
-                on: wlBuyer4.address,
-                op: JettonOps.TransferNotification,
-                success: true
-            });
-            const wlBuyer4UtilJetWallet = blockchain.openContract(JettonWallet.createFromAddress(await utilityJettonMaster.getWalletAddress(wlBuyer4.address)));
-            const wlPurchaseResult4 = await wlBuyer4UtilJetWallet.sendTransfer(
-                wlBuyer4.getSender(),
-                toNano(conf.totalTons / conf.totalBuys) + toNano("0.5"),
-                launchConfig.utilJetWlPassAmount,
-                sampleTokenLaunch.address,
-                consumer.address,
-                null, toNano(conf.totalTons / conf.totalBuys), null
-            );
-            expect(wlPurchaseResult4.transactions).toHaveTransaction({
-                op: UserVaultOps.balanceUpdate,
-                success: true
-            });
-            blockchain.now! += 20;
-
-            const wlBuyer5 = await blockchain.treasury("wl_buyer_5");
-            const mintResult5 = await utilityJettonMaster.sendMint(
-                chief.getSender(),
-                wlBuyer5.address,
-                launchConfig.utilJetWlPassAmount,
-                null, null, null,
-                toNano("0.01"), toNano("1")
-            );
-            expect(mintResult5.transactions).toHaveTransaction({
-                on: wlBuyer5.address,
-                op: JettonOps.TransferNotification,
-                success: true
-            });
-            const wlBuyer5UtilJetWallet = blockchain.openContract(JettonWallet.createFromAddress(await utilityJettonMaster.getWalletAddress(wlBuyer5.address)));
-            const wlPurchaseResult5 = await wlBuyer5UtilJetWallet.sendTransfer(
-                wlBuyer5.getSender(),
-                toNano(conf.totalTons / conf.totalBuys) + toNano("0.5"),
-                launchConfig.utilJetWlPassAmount,
-                sampleTokenLaunch.address,
-                wlBuyer5.address,
-                null, toNano(conf.totalTons / conf.totalBuys), null
-            );
-            expect(wlPurchaseResult5.transactions).toHaveTransaction({
-                op: UserVaultOps.balanceUpdate,
-                success: true
-            });
-            blockchain.now! += 20;
-
+                const wlPurchaseResult = await wlBuyerUtilJetWallet.sendTransfer(
+                    wlBuyers[i].getSender(),
+                    toNano(conf.totalTons / conf.totalBuys) + toNano("0.5"),
+                    launchConfig.utilJetWlPassAmount,
+                    sampleTokenLaunch.address,
+                    consumer.address,
+                    null, toNano(conf.totalTons / conf.totalBuys), null
+                );
+                expect(wlPurchaseResult.transactions).toHaveTransaction({
+                    op: UserVaultOps.balanceUpdate,
+                    success: true
+                });
+                blockchain.now! += 20;
+            }
         }, 20000);
         test("wl purchase works correctly", async () => {
             const [launchContractInstance, saleMoneyFlowBefore, innerDataBefore] = await Promise.all([
@@ -860,54 +755,51 @@ describe("V2", () => {
                 to: consumer.address,
                 success: true,
                 body: beginCell().storeUint(0, 32).storeStringTail("shift!").endCell(),
-                value: (v) => (v ?? 0n) > toNano("3")
+                // value: (v) => (v ?? 0n) > toNano("3")
             });
             const newTimings = await sampleTokenLaunch.getSaleTimings();
             assert(newTimings.wlRoundEndTime < oldTimings.wlRoundEndTime, "smartcontract must shift timings");
         }, 20000);
         test("high public purchase pressure", async () => {
             blockchain.now = (await sampleTokenLaunch.getSaleTimings()).wlRoundEndTime + 1;
-
-            const [pubBuyer1, pubBuyer2, pubBuyer3, pubBuyer4, pubBuyer5] = await Promise.all(
-                ["pub_buyer_1", "pub_buyer_2", "pub_buyer_3", "pub_buyer_4", "pub_buyer_5"]
-                    .map(async b => blockchain.treasury(b))
+            const totalBuys = 30; // we can also set 100
+            const publicBuyers = await Promise.all(
+                Array.from({ length: totalBuys }, (_, i) =>
+                    blockchain.treasury(`pub_buyer_${i + 1}`, { balance: toNano("1000000") }))
             );
+
+            const { pubRoundFutJetLimit } = await sampleTokenLaunch.getConfig();
+            const { publicRoundFutJetSold } = await sampleTokenLaunch.getMoneyFlows();
+            assert(!publicRoundFutJetSold, "there was no pub purchases before");
 
             const value = toNano("10");
-            await sampleTokenLaunch.sendPublicPurchase({
-                queryId: 1n, value, via: pubBuyer1.getSender()
-            });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendPublicPurchase({
-                queryId: 2n, value, via: pubBuyer2.getSender()
-            });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendPublicPurchase({
-                queryId: 3n, value, via: pubBuyer3.getSender()
-            });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendPublicPurchase({
-                queryId: 4n, value, via: pubBuyer4.getSender()
-            });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendPublicPurchase({
-                queryId: 5n, value, via: pubBuyer5.getSender()
-            });
-            // [pubBuyer1Vault, pubBuyer2Vault, pubBuyer3Vault, pubBuyer4Vault, pubBuyer5Vault]
+            const purchaseLogs = [];
+
+            for (let i = 0; i < totalBuys; i++) {
+                blockchain.now! += 5;
+                await sampleTokenLaunch.sendPublicPurchase({
+                    queryId: BigInt(i + 1),
+                    value,
+                    via: publicBuyers[i].getSender(),
+                });
+
+                const { publicRoundFutJetSold: futJetSoldAfterBuy } = await sampleTokenLaunch.getMoneyFlows();
+                const ratio = Number(jettonFromNano(futJetSoldAfterBuy)) / Number(jettonFromNano(pubRoundFutJetLimit));
+                purchaseLogs.push(`Jetton bought after ${i + 1} buy: ${(ratio * 100).toFixed(2)}%`);
+            }
+
             const vaults = await Promise.all(
-                [pubBuyer1, pubBuyer2, pubBuyer3, pubBuyer4, pubBuyer5].map((buyer) => {
-                    return blockchain.openContract(
-                        UserVaultV2.createFromState({
-                            owner: buyer.address,
-                            tokenLaunch: sampleTokenLaunch.address
-                        }, userVaultCode)
-                    );
-                })
+                publicBuyers.map((buyer) =>
+                    blockchain.openContract(UserVaultV2.createFromState({
+                        owner: buyer.address, tokenLaunch: sampleTokenLaunch.address,
+                    }, userVaultCode))
+                )
             );
-            const vaultsData = await Promise.all(
-                vaults.map((buyer) => buyer.getVaultData())
-            );
+            const vaultsData = await Promise.all(vaults.map((buyer) => buyer.getVaultData()));
+
             console.log(
+                purchaseLogs.join("\n") +
+                "\n\n" +
                 vaultsData
                     .map((data, index) => `Public buyer #${index + 1} jettons after buy: ${jettonFromNano(data.jettonBalance!)}`)
                     .join("\n")

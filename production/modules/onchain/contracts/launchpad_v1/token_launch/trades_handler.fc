@@ -122,8 +122,8 @@
     (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
 
     ;; Taking care of our synthetic price controllers
-    public_round::synthetic_ton_reserve += accessible_user_value / 2;
-    public_round::synthetic_jet_reserve -= res_jettons / 2;
+    public_round::synthetic_ton_reserve += accessible_user_value;
+    public_round::synthetic_jet_reserve -= res_jettons;
 
     general_state::fut_jet_inner_balance -= res_jettons;
     public_round::fut_jet_sold += res_jettons;

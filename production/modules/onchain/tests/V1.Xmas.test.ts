@@ -428,40 +428,25 @@ describe("Xmas V1 Launch", () => {
                 exitCode: 400
             });
         }, 20000);
-        // In my dreams (and my actual code before) there was a cycle,
-        // well, if you have free time - try to pack it inside a cycle and see - what is going to happen next *-*
         test("high wl purchase operations pressure", async () => {
             const conf = { totalTons: 80, totalBuys: 5 };
-            await sampleTokenLaunch.sendWhitelistPurchase({
-                queryId: BigInt(getQueryId()),
-                value: toNano(conf.totalTons / conf.totalBuys),
-                via: (await blockchain.treasury("wl_buyer_1")).getSender()
-            });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendWhitelistPurchase({
-                queryId: BigInt(getQueryId()),
-                value: toNano(conf.totalTons / conf.totalBuys),
-                via: (await blockchain.treasury("wl_buyer_2")).getSender()
-            });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendWhitelistPurchase({
-                queryId: BigInt(getQueryId()),
-                value: toNano(conf.totalTons / conf.totalBuys),
-                via: (await blockchain.treasury("wl_buyer_3")).getSender()
-            });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendWhitelistPurchase({
-                queryId: BigInt(getQueryId()),
-                value: toNano(conf.totalTons / conf.totalBuys),
-                via: (await blockchain.treasury("wl_buyer_4")).getSender()
-            });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendWhitelistPurchase({
-                queryId: BigInt(getQueryId()),
-                value: toNano(conf.totalTons / conf.totalBuys),
-                via: (await blockchain.treasury("wl_buyer_5")).getSender()
-            });
-            blockchain.now! += 20;
+            const wlBuyers = await Promise.all(
+                Array.from({ length: conf.totalBuys }, (_, i) =>
+                    blockchain.treasury(`wl_buyer_${i + 1}`, { balance: toNano("1000000") })
+                )
+            );
+            for (let i = 0; i < conf.totalBuys; i++) {
+                const res = await sampleTokenLaunch.sendWhitelistPurchase({
+                    queryId: BigInt(getQueryId()),
+                    value: toNano(conf.totalTons / conf.totalBuys),
+                    via: wlBuyers[i].getSender(),
+                });
+                expect(res.transactions).toHaveTransaction({
+                    op: TokensLaunchOps.WhitelistPurchase,
+                    success: true
+                });
+                blockchain.now! += 10;
+            }
         }, 20000);
         test("wl purchase works correctly", async () => {
             const [launchContractInstance, saleMoneyFlowBefore, innerDataBefore] = await Promise.all([
@@ -534,47 +519,44 @@ describe("Xmas V1 Launch", () => {
         }, 20000);
         test("high public purchase pressure", async () => {
             blockchain.now = (await sampleTokenLaunch.getSaleTimings()).wlRoundEndTime + 1;
-
-            const [pubBuyer1, pubBuyer2, pubBuyer3, pubBuyer4, pubBuyer5] = await Promise.all(
-                ["pub_buyer_1", "pub_buyer_2", "pub_buyer_3", "pub_buyer_4", "pub_buyer_5"]
-                    .map(async b => blockchain.treasury(b))
+            const totalBuys = 30; // we can also set 100
+            const publicBuyers = await Promise.all(
+                Array.from({ length: totalBuys }, (_, i) =>
+                    blockchain.treasury(`pub_buyer_${i + 1}`, { balance: toNano("1000000") }))
             );
+
+            const { pubRoundFutJetLimit } = await sampleTokenLaunch.getConfig();
+            const { publicRoundFutJetSold } = await sampleTokenLaunch.getMoneyFlows();
+            assert(!publicRoundFutJetSold, "there was no pub purchases before");
 
             const value = toNano("10");
-            await sampleTokenLaunch.sendPublicPurchase({
-                queryId: 1n, value, via: pubBuyer1.getSender()
-            });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendPublicPurchase({
-                queryId: 2n, value, via: pubBuyer2.getSender()
-            });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendPublicPurchase({
-                queryId: 3n, value, via: pubBuyer3.getSender()
-            });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendPublicPurchase({
-                queryId: 4n, value, via: pubBuyer4.getSender()
-            });
-            blockchain.now! += 20;
-            await sampleTokenLaunch.sendPublicPurchase({
-                queryId: 5n, value, via: pubBuyer5.getSender()
-            });
-            // [pubBuyer1Vault, pubBuyer2Vault, pubBuyer3Vault, pubBuyer4Vault, pubBuyer5Vault]
+            const purchaseLogs = [];
+
+            for (let i = 0; i < totalBuys; i++) {
+                blockchain.now! += 5;
+                await sampleTokenLaunch.sendPublicPurchase({
+                    queryId: BigInt(i + 1),
+                    value,
+                    via: publicBuyers[i].getSender(),
+                });
+
+                const { publicRoundFutJetSold: futJetSoldAfterBuy } = await sampleTokenLaunch.getMoneyFlows();
+                const ratio = Number(jettonFromNano(futJetSoldAfterBuy)) / Number(jettonFromNano(pubRoundFutJetLimit));
+                purchaseLogs.push(`Jetton bought after ${i + 1} buy: ${(ratio * 100).toFixed(2)}%`);
+            }
+
             const vaults = await Promise.all(
-                [pubBuyer1, pubBuyer2, pubBuyer3, pubBuyer4, pubBuyer5].map((buyer) => {
-                    return blockchain.openContract(
-                        UserVaultV1.createFromState({
-                            owner: buyer.address,
-                            tokenLaunch: sampleTokenLaunch.address
-                        }, userVaultCode)
-                    );
-                })
+                publicBuyers.map((buyer) =>
+                    blockchain.openContract(UserVaultV1.createFromState({
+                        owner: buyer.address, tokenLaunch: sampleTokenLaunch.address,
+                    }, userVaultCode))
+                )
             );
-            const vaultsData = await Promise.all(
-                vaults.map((buyer) => buyer.getVaultData())
-            );
+            const vaultsData = await Promise.all(vaults.map((buyer) => buyer.getVaultData()));
+
             console.log(
+                purchaseLogs.join("\n") +
+                "\n\n" +
                 vaultsData
                     .map((data, index) => `Public buyer #${index + 1} jettons after buy: ${jettonFromNano(data.jettonBalance!)}`)
                     .join("\n")
