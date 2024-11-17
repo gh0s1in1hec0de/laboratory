@@ -1,4 +1,4 @@
-import { GlobalVersions } from "../standards";
+import { Coins, GlobalVersions } from "../standards";
 import { TokenLaunchTimings } from "../types";
 import { UnixTimeSeconds } from "../utils";
 import { toNano } from "@ton/core";
@@ -43,17 +43,44 @@ export function getCurrentSalePhase(
 }
 
 
-// Returns an estimated value a participant will receive for their investment
+/**
+ * Returns an estimated value a participant will receive for their investment.
+ *
+ * ## Instructions:
+ *
+ * ### How to calculate creator's boundaries:
+ * 1. Call `getAmountOut` with `value = 10 TON`. This will return the amount of nano jettons for this value.
+ * 2. Calculate the amount of nano tons per one nano jetton:
+ *    ```
+ *    toNano(10) / receivedNanoJettons
+ *    ```
+ * 3. Perform the calculation:
+ *    ```
+ *    (totalSupply * 25 / 100) * value from step 2
+ *    ```
+ *    - **Note**: To avoid zeroing the result (since we are working with bigints), perform the following:
+ *      ```
+ *      (totalSupply * 25 / 100) * toNano(10) / receivedNanoJettons
+ *      ```
+ *      This ensures that the value from the first two operations is greater than the divisor.
+ *
+ * @param version - The version of the global configuration (e.g., `V1`, `V2`).
+ * @param phase - The sale phase (`SalePhase.CREATOR`, `SalePhase.WHITELIST`, or `SalePhase.PUBLIC`).
+ * @param data - The data structure containing phase-specific parameters (`WlPhaseLimits` or `SyntheticReserves`).
+ * @param value - The input value in TONs for which to calculate the estimated amount (default: `toNano("10")`).
+ * @returns The estimated amount of coins a participant will receive.
+ * @throws Will throw an error if the phase or data does not match any expected combination.
+ */
 export function getAmountOut(
     version: GlobalVersions,
     phase: SalePhase.CREATOR | SalePhase.WHITELIST | SalePhase.PUBLIC,
     data: WlPhaseLimits | SyntheticReserves,
     value = toNano("10")
-) {
+): Coins {
     if (phase === SalePhase.CREATOR && (data as WlPhaseLimits).wlRoundFutJetLimit !== undefined)
         return getCreatorJettonPrice(data as WlPhaseLimits);
 
-    if (phase === SalePhase.CREATOR && (data as WlPhaseLimits).wlRoundFutJetLimit !== undefined)
+    if (phase === SalePhase.WHITELIST && (data as WlPhaseLimits).wlRoundFutJetLimit !== undefined)
         return getApproximateWlAmountOut(data as WlPhaseLimits, version, value);
 
     if (phase === SalePhase.PUBLIC && (data as SyntheticReserves).syntheticTonReserve !== undefined)
@@ -61,4 +88,5 @@ export function getAmountOut(
 
     throw new Error("meowreachable");
 }
+
 
