@@ -8,7 +8,6 @@ import { useCurrentLaunch } from "./hooks/useCurrentLaunch";
 import { CurrentLaunchPageProps } from "./types";
 import { BgLight } from "@/common/BgLight";
 import { CurrentWave } from "./components/CurrentWave";
-import { getCurrentSalePhase } from "starton-periphery";
 
 export default function CurrentLaunch({
   params: { address }
@@ -18,11 +17,12 @@ export default function CurrentLaunch({
     isLoading,
     errorText,
     getLaunchLink
-  } = useCurrentLaunch(address);
+  } = useCurrentLaunch(decodeURIComponent(address));
 
   if (errorText) {
     return (
       <Label
+        sx={{ paddingTop: 2 }}
         label={errorText}
         variantColor="red"
         variantSize="regular14"
@@ -31,6 +31,7 @@ export default function CurrentLaunch({
     );
   }
 
+  // todo: add skeleton
   return (
     <LoadingWrapper
       isLoading={isLoading}

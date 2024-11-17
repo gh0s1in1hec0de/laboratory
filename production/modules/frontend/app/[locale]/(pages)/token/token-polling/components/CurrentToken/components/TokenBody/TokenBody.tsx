@@ -12,6 +12,7 @@ export function TokenBody({
   symbol,
   supply,
   launchAddress,
+  timings,
 }: TokenBodyProps) {
   const {
     amount,
@@ -21,7 +22,7 @@ export function TokenBody({
     getAmountError,
     errorText,
     isLoading,
-  } = useBuyToken({ supply, launchAddress });
+  } = useBuyToken({ supply, launchAddress, timings });
   const t = useTranslations("Token.currentToken");
 
   return (

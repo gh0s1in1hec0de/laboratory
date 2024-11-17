@@ -10,7 +10,7 @@ export function AdditionalInfo({ holders, timings }: AdditionalInfoProps) {
   const t = useTranslations("CurrentLaunch");
 
   const { phase } = getCurrentSalePhase(timings);
-
+  
   function renderPhase() {
     switch (phase) {
     case SalePhase.CREATOR:

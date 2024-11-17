@@ -1,34 +1,35 @@
 import { getErrorText } from "@/utils";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { TxRequestBuilder } from "starton-periphery";
+import { getAmountOut, getCurrentSalePhase, GlobalVersions, TxRequestBuilder } from "starton-periphery";
 import { useTonConnectUI } from "@tonconnect/ui-react";
 import { UseBuyTokenProps } from "./types";
-import { toNano } from "@ton/core";
+import { fromNano, toNano } from "@ton/core";
 
-export function useBuyToken({ supply, launchAddress }: UseBuyTokenProps) {
+export function useBuyToken({ supply, launchAddress, timings }: UseBuyTokenProps) {
   const [amount, setAmount] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorText, setErrorText] = useState<string>("");
   const [tonConnectUI] = useTonConnectUI();
-  const t = useTranslations("Token.currentToken.buyButton");
+  const t = useTranslations("Token.currentToken.amountInput");
 
   const numericAmount = BigInt(amount);
-  const isValidAmount = numericAmount > 0 && numericAmount <= (supply ?? 0n) / 4n;
+  const isValidAmount = numericAmount > 0 && numericAmount <= (supply ?? 0n);
 
+  // проверка введенного значения TON
   function getAmountError() {
-    const numericAmount = BigInt(amount);
     if (numericAmount < 0) {
       return t("error.negative");
     }
 
-    if (numericAmount > (supply ?? 0n) / 4n) {
-      return `${t("error.maxAmount")} (${supply})`;
+    if (numericAmount > (supply ?? 0n)) {
+      return `${t("error.maxAmount")} (${fromNano(supply)})`;
     }
 
     return "";
   }
 
+  // функция для покупки
   async function onClickBuyTokens() {
     try {
       setIsLoading(true);

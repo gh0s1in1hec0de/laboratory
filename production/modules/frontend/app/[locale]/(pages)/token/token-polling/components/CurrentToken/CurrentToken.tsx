@@ -41,6 +41,7 @@ export function CurrentToken({ launchData }: CurrentTokenProps) {
           supply={launchData?.totalSupply}
           symbol={launchData?.metadata.symbol}
           launchAddress={launchData?.address}
+          timings={launchData?.timings}
         />
       </TonProvider>
 

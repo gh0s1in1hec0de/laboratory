@@ -179,7 +179,7 @@ export class TxRequestBuilder {
         }: {
             launchAddress: string,
             queryId?: number,
-            mode: BalanceUpdateMode,
+            mode?: BalanceUpdateMode,
             isCreator?: boolean
         },
         validUntil: number = Math.floor(Date.now() / 1000) + 90

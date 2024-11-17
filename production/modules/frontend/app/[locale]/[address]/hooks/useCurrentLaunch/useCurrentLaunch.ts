@@ -14,6 +14,11 @@ export function useCurrentLaunch(address: string) {
     (async () => {
       try {
         const launchData = await launchService.getCurrentToken({ address });
+
+        if (!launchData) {
+          setErrorText(t("noLaunchError"));
+        }
+
         setLaunchData(launchData);
       } catch (error) {
         setErrorText(getErrorText(error, t("fetchError")));

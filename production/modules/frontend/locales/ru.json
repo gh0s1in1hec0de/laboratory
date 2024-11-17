@@ -323,7 +323,8 @@
 		}
 	},
 	"CurrentLaunch": {
-		"fetchError": "Oops, something went wrong... Please reload the page or try again later.",
+		"noLaunchError": "Ой, лаунч не найден... Вернитесь на главную страницу и попробуйте еще раз.",
+		"fetchError": "Ой, что-то пошло не так... Пожалуйста, перезагрузите страницу или попробуйте позже.",
 		"holdersLabel": "холдеров",
 		"collectedLabel": "TON собрано",
 		"wave": {
@@ -332,7 +333,8 @@
 			"publicStage": "Public",
 			"listingStage": "Listing",
 			"now": "сейчас",
-			"waiting": "ждем"
+			"waiting": "ждем...",
+			"prev": "прошло"
 		},
 		"reward": {
 			"title": "Награды",
