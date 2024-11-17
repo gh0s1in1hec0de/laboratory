@@ -210,6 +210,7 @@ export class TxRequestBuilder {
         return { validUntil, messages };
     }
 
+    // todo: build claim reward message
     public static claimMessage(
         version: GlobalVersions,
         { launchAddress, queryId = Math.floor(Date.now()) }: { launchAddress: string, queryId?: number, },

@@ -89,4 +89,5 @@ export function getAmountOut(
     throw new Error("meowreachable");
 }
 
+// todo: blockchain getters
 
