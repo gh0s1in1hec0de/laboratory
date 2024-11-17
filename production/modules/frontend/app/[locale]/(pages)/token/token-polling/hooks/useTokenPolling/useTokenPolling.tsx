@@ -4,10 +4,11 @@ import { launchService } from "@/services";
 import { useLocale } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ExtendedLaunch } from "starton-periphery";
+import { ExtendedLaunch, getCurrentSalePhase, SalePhase } from "starton-periphery";
 
 export function useTokenPolling() {
   const [launchData, setLaunchData] = useState<ExtendedLaunch>();
+  const [isLaunchCreated, setIsLaunchCreated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const searchParams = useSearchParams();
   const creator = searchParams.get("creator");
@@ -19,8 +20,18 @@ export function useTokenPolling() {
     try {
       while (!launchData) {
         const data = await launchService.getCurrentToken({ creator, metadataUri });
+        
         if (data) {
           setLaunchData(data);
+
+          const { phase, nextPhaseIn } = getCurrentSalePhase(data.timings);
+
+          if (phase === SalePhase.NOT_STARTED && nextPhaseIn) {
+            setIsLaunchCreated(true);
+            await new Promise((resolve) => setTimeout(resolve, nextPhaseIn));
+            setIsLaunchCreated(false);
+          }
+
           setIsLoading(false);
           break;
         }
@@ -40,10 +51,14 @@ export function useTokenPolling() {
       } else if (meta) {
         pollingToken(undefined, meta);
       } else {
-        router.push(`/${locale}/${PAGES.Token}`);
+        router.replace(`/${locale}/${PAGES.Token}`);
       }
     })();
   }, []);
 
-  return { launchData, isLoading };
+  return { 
+    launchData, 
+    isLoading,
+    isLaunchCreated
+  };
 }

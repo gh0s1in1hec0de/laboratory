@@ -5,15 +5,24 @@ import { CustomInput } from "@/common/CustomInput";
 import { CustomButton } from "@/common/CustomButton";
 import { StarIcon } from "@/icons";
 import { TokenBodyProps } from "./types";
+import { CustomConnectButton } from "@/components/CustomConnectButton";
+import { useTranslations } from "next-intl";
 
 export function TokenBody({
   symbol,
+  supply,
+  launchAddress,
 }: TokenBodyProps) {
   const {
-    value,
-    setValue,
+    amount,
+    setAmount,
     onClickBuyTokens,
-  } = useBuyToken();
+    isValidAmount,
+    getAmountError,
+    errorText,
+    isLoading,
+  } = useBuyToken({ supply, launchAddress });
+  const t = useTranslations("Token.currentToken");
 
   return (
     <Grid
@@ -28,12 +37,12 @@ export function TokenBody({
         gap={0.5}
       >
         <Label
-          label="Contribute to your token"
+          label={t("title")}
           variantSize="semiBold18"
           cropped
         />
 
-        {value ? (
+        {amount ? (
           <Grid
             container
             alignItems="center"
@@ -41,7 +50,7 @@ export function TokenBody({
             width="100%"
           >
             <Label
-              label="You will get"
+              label={t("subtitle2")}
               variantColor="gray"
               variantSize="regular16"
             />
@@ -59,7 +68,7 @@ export function TokenBody({
                 size="grow"
               >
                 <Label
-                  label={`${value} $${symbol || "UNKNWN"}`}
+                  label={`${Number(amount) < 0 ? 0 : amount} $${symbol || "UNKNWN"}`}
                   variantSize="regular14"
                   variantColor="white"
                   cropped
@@ -69,23 +78,24 @@ export function TokenBody({
           </Grid>
         ) : (
           <Label
-            label="Purchase up to 25% of the supply of your token"
+            label={t("subtitle")}
             variantSize="regular16"
             variantColor="gray"
           />
         )}
       </Grid>
 
-      {/* TODO: add check for 25% of the supply */}
       <CustomInput
-        value={value}
-        onChange={setValue}
-        placeholder="Indicate the number of TON"
+        value={amount}
+        onChange={setAmount}
+        placeholder={t("amountInput.placeholder")}
         type="number"
         fullWidth
+        disabled={isLoading}
+        errorText={getAmountError()}
         endAdornment={(
           <Label
-            label="TON"
+            label={t("amountInput.currency")}
             variantSize="regular14"
             variantColor="grayDark"
             sx={{ paddingLeft: 1 }}
@@ -93,15 +103,31 @@ export function TokenBody({
         )}
       />
 
-      <CustomButton
-        padding="10px"
-        onClick={onClickBuyTokens}
-      >
+      <CustomConnectButton
+        fullWidth
+        showDropdown={false}
+        successChildren={(
+          <CustomButton
+            padding="10px"
+            onClick={onClickBuyTokens}
+            disabled={!isValidAmount || isLoading}
+          >
+            <Label
+              label={isLoading ? t("buyButton.loading") : t("buyButton.label")}
+              variantSize="regular16"
+            />
+          </CustomButton>
+        )}
+      />
+
+      {errorText && (
         <Label
-          label="Buy"
-          variantSize="regular16"
+          label={errorText}
+          variantSize="regular14"
+          textAlign="center"
+          variantColor="red"
         />
-      </CustomButton>
+      )}
     </Grid>
   );
 }

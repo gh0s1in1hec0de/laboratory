@@ -293,10 +293,59 @@
 			"loading": "Creating...",
 			"description": "* Сheck the data is correct - you can edit the description and links to social networks only once!",
 			"creatingError": "Oops, something went wrong when creating the token... Please reload the page or try again later."
+		},
+		"polling": {
+			"noLaunchData": "Oops, something went wrong... Please reload the page or try again later.",
+			"paragraph1": "Now the smart contract that is responsible for your launch is being deployed to the network.",
+			"paragraph2": "In the near future you will have the ",
+			"paragraph3": "opportunity to buy up to 25% ",
+			"paragraph4": "of your token supply ",
+			"paragraph5": "within 5 minutes.",
+			"successfullyCreated": "Launch has been successfully created! Wait a little longer..."
+		},
+		"currentToken": {
+			"title": "Contribute to your token",
+			"subtitle": "Purchase up to 25% of the supply of your token",
+			"subtitle2": "You will get",
+			"buyButton": {
+				"label": "Buy",
+				"loading": "Buying..."
+			},
+			"amountInput": {
+				"placeholder": "Indicate the number of TON",
+				"currency": "TON",
+				"error": {
+					"negative": "Amount cannot be negative",
+					"maxAmount": "Amount cannot be greater than 25% of the supply",
+					"buyingError": "Buying error"
+				}
+			}
 		}
 	},
 	"CurrentLaunch": {
+		"fetchError": "Oops, something went wrong... Please reload the page or try again later.",
 		"holdersLabel": "holders",
-		"collectedLabel": "TON collected"
+		"collectedLabel": "TON collected",
+		"wave": {
+			"title": "Current Wave",
+			"starClubStage": "Star Club",
+			"publicStage": "Public",
+			"listingStage": "Listing",
+			"now": "now",
+			"waiting": "waiting"
+		},
+		"reward": {
+			"title": "Rewards",
+			"description": "By investing in this token you can receive:"
+		},
+		"info": {
+			"title": "Info"
+		},
+		"timer": {
+			"days": "days",
+			"hours": "hours",
+			"minutes": "minutes",
+			"seconds": "seconds"
+		}
 	}
 }

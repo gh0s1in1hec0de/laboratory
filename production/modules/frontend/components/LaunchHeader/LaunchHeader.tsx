@@ -17,6 +17,7 @@ export function LaunchHeader({
   xLink,
   telegramLink,
   websiteLink,
+  getLaunchLink,
 }: LaunchHeaderProps) {
 
   const linksArray: LaunchHeaderInfoProps[] = [
@@ -56,7 +57,7 @@ export function LaunchHeader({
         showHolders={showHolders}
       />
 
-      {showBIO && <LaunchLinks linksArray={linksArray}/>}
+      {showBIO && <LaunchLinks linksArray={linksArray} getLaunchLink={getLaunchLink}/>}
 
       {showChart && (
         <LaunchChart />

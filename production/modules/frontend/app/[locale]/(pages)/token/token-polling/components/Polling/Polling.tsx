@@ -3,8 +3,12 @@ import { Box } from "@mui/material";
 import { Label } from "@/common/Label";
 import Grid from "@mui/material/Grid2";
 import { StarBannerIcon } from "@/icons";
+import { PollingProps } from "./types";
+import { useTranslations } from "next-intl";
 
-export function Polling() {
+export function Polling({ isLaunchCreated }: PollingProps) {
+  const t = useTranslations("Token.polling");
+
   return (
     <Grid
       container
@@ -22,7 +26,7 @@ export function Polling() {
         paddingBottom={2}
       >
         <Label
-          label="Now the smart contract that is responsible for your launch is being deployed to the network."
+          label={t("paragraph1")}
           variantSize="regular16"
           textAlign="center"
           offUserSelect
@@ -30,34 +34,43 @@ export function Polling() {
 
         <Box sx={{ textAlign: "center" }}>
           <Label
-            label="In the near future you will have the "
+            label={t("paragraph2")}
             variantSize="regular16"
             textAlign="center"
             component="span"
             offUserSelect
           />
           <Label
-            label="opportunity to buy up to 25% "
+            label={t("paragraph3")}
             variantSize="bold16"
             component="span"
             offUserSelect
             textAlign="center"
           />
           <Label
-            label="of your token supply "
+            label={t("paragraph4")}
             variantSize="regular16"
             component="span"
             offUserSelect
             textAlign="center"
           />
           <Label
-            label="within 5 minutes."
+            label={t("paragraph5")}
             variantSize="bold16"
             component="span"
             offUserSelect
             textAlign="center"
           />
         </Box>
+
+        {isLaunchCreated && (
+          <Label
+            label={t("successfullyCreated")}
+            variantSize="regular16"
+            variantColor="green"
+            textAlign="center"
+          />
+        )}
       </Grid>
 
       <Loader fullScreen={false} />

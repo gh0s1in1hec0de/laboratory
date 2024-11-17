@@ -4,7 +4,7 @@ import { MainBox } from "@/common/MainBox";
 import { IconButton } from "@mui/material";
 import { ShareIcon } from "@/icons";
 
-export function LaunchLinks({ linksArray }: LaunchLinksProps) {
+export function LaunchLinks({ linksArray, getLaunchLink }: LaunchLinksProps) {
 
   function onClick(link?: string) {
     if (link) {
@@ -33,8 +33,8 @@ export function LaunchLinks({ linksArray }: LaunchLinksProps) {
         </IconButton>
       ))}
 
-      {/* todo: add tooltip and logic */}
-      <IconButton>
+      {/* todo: add success copy */}
+      <IconButton onClick={() => getLaunchLink?.()}>
         <MainBox
           roundedXl
           paddingX={2}

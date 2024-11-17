@@ -1,5 +1,3 @@
-"use client";
-
 import { 
   DRAWER_FIRST_TEXT_DATA, 
   DRAWER_FOURTH_TEXT_DATA, 
@@ -15,15 +13,21 @@ import Grid from "@mui/material/Grid2";
 import { InfoBlock } from "@/components/InfoBlock";
 import { useTranslations } from "next-intl";
 import { SupportButton } from "@/components/SupportButton";
+import { MouseEvent } from "react";
 
 export function StarClubDrawer() {
   const t = useTranslations("Top");
   const [isOpenDrawer, toggleOpenDrawer] = useToggle(false);
   
+  function handleOpenDrawer(event: MouseEvent<HTMLDivElement>) {
+    event.stopPropagation();
+    toggleOpenDrawer();
+  }
+
   return (
     <>
       <InfoBlock 
-        onClick={toggleOpenDrawer}
+        onClick={handleOpenDrawer}
         label={t("starClubButton")}
         position="absolute"
         top="0"

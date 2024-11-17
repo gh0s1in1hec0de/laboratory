@@ -75,8 +75,6 @@ export function useTokensList() {
 
   async function fetchTokenLaunchesNextPage() {
     if (!launchesData?.hasMore || isLoadingNextPage) return;
-    //todo: arrow pagination. remove this if dont need
-    // if (!launchesData?.hasMore) return;
 
     setIsLoadingNextPage(true);
 

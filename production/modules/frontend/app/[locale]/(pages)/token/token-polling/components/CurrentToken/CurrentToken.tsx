@@ -1,19 +1,24 @@
-import Grid from "@mui/material/Grid2";
-import { CurrentTokenProps } from "./types";
 import { BgLight } from "@/common/BgLight";
 import { LaunchHeader } from "@/components/LaunchHeader";
-import { TokenBody } from "./components/TokenBody";
 import { LaunchTimer } from "@/components/LaunchTimer";
+import Grid from "@mui/material/Grid2";
 import { getCurrentSalePhase } from "starton-periphery";
+import { TokenBody } from "./components/TokenBody";
+import { CurrentTokenProps } from "./types";
+import { TonProvider } from "@/providers/ton";
 
 export function CurrentToken({ launchData }: CurrentTokenProps) {
-  const testTimings = {
-    endTime: 1731644879,
-    startTime: 1731583302,
-    wlRoundEndTime: 1731614419,
-    publicRoundEndTime: 1731633702,
-    creatorRoundEndTime: 1731606825,
-  };
+  //todo: remove
+  // const testTimings = {
+  //   endTime: 1731845849,
+  //   startTime: 1731779692,
+  //   wlRoundEndTime: 1731813136,
+  //   publicRoundEndTime: 1731839869,
+  //   creatorRoundEndTime: 1731804413
+  // };
+  // const secondsToNextPhase = getCurrentSalePhase(testTimings).nextPhaseIn;
+
+  const secondsToNextPhase = getCurrentSalePhase(launchData?.timings).nextPhaseIn;
 
   return (
     <Grid
@@ -31,14 +36,16 @@ export function CurrentToken({ launchData }: CurrentTokenProps) {
         name={launchData?.metadata.name}
       />
 
-      <TokenBody
-        symbol={launchData?.metadata.symbol}
-      />
+      <TonProvider>
+        <TokenBody
+          supply={launchData?.totalSupply}
+          symbol={launchData?.metadata.symbol}
+          launchAddress={launchData?.address}
+        />
+      </TonProvider>
 
-      {/* TODO: change */}
       <LaunchTimer
-        initialSeconds={getCurrentSalePhase(testTimings).nextPhaseIn}
-        // initialSeconds={getCurrentSalePhase(launchData?.timings).nextPhaseIn}
+        initialSeconds={secondsToNextPhase}
       />
     </Grid>
   );

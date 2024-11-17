@@ -62,21 +62,6 @@ export function TokenInfinityList({
       {isLoadingNextPage && getSkeletons()}
 
       <Box ref={triggerRef} style={{ width: "100%", height: "20px" }} />
-
-      {/* todo: remove this */}
-      {/* {!isLoadingNextPage && launchesData.hasMore && (
-        <Grid
-          container
-          justifyContent="center"
-          alignItems="center"
-        >
-          <IconButton
-            onClick={fetchNextPage}
-          >
-            <ArrowIcon />
-          </IconButton>
-        </Grid>
-      )} */}
     </Grid>
   );
 }

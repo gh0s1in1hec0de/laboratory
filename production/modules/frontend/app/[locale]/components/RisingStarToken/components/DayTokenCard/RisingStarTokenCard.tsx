@@ -1,21 +1,18 @@
-"use client";
-
 import { LoadingWrapper } from "@/common/LoadingWrapper";
 import { CustomAvatar } from "@/common/CustomAvatar";
 import Grid from "@mui/material/Grid2";
 import { RisingStarTokenCardSkeleton } from "./components/DayTokenCardSkeleton";
 import { TokenInfo } from "./components/TokenInfo";
 import { ProgressInfo } from "./components/ProgressInfo";
-import { useRisingStarToken } from "./hooks/useRisingStarToken";
 import { fromNano } from "@ton/core";
 import { Label } from "@/common/Label";
+import { RisingStarTokenCardProps } from "./types";
 
-export function RisingStarTokenCard() {
-  const { 
-    isLoading,
-    errorText,
-    tokenData
-  } = useRisingStarToken();
+export function RisingStarTokenCard({
+  isLoading,
+  errorText,
+  tokenData
+}: RisingStarTokenCardProps) {
 
   if (errorText && !tokenData) {
     return (

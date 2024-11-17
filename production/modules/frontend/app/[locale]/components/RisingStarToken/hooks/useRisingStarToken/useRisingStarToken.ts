@@ -2,13 +2,20 @@ import { useState, useEffect } from "react";
 import { GetRisingStarResponse } from "starton-periphery";
 import { launchService } from "@/services";
 import { getErrorText, getErrorStatus } from "@/utils";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
 
 export function useRisingStarToken() {
   const [tokenData, setTokenData] = useState<GetRisingStarResponse>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
   const t = useTranslations("Top");
+  const router = useRouter();
+  const locale = useLocale();
+
+  function handleRedirectToLaunch() {
+    router.push(`/${locale}/${tokenData?.address}`);
+  }
 
   useEffect(() => {
     (async () => {
@@ -33,6 +40,7 @@ export function useRisingStarToken() {
   return {
     isLoading,
     errorText,
-    tokenData
+    tokenData,
+    handleRedirectToLaunch
   };
 }

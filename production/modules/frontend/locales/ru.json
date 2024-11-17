@@ -293,10 +293,59 @@
 			"loading": "Создаём...",
 			"description": "* Проверьте данные - вы можете редактировать описание и ссылки на социальные сети только один раз!",
 			"creatingError": "Ой, что-то пошло не так при создании токена... Пожалуйста, перезагрузите страницу или попробуйте позже."
+		},
+		"polling": {
+			"noLaunchData": "Ой, что-то пошло не так... Пожалуйста, перезагрузите страницу или попробуйте позже.",
+			"paragraph1": "Теперь контракт, отвечающий за ваш запуск, развертывается в сети.",
+			"paragraph2": "В ближайшее время вы получите ",
+			"paragraph3": "возможность приобрести до 25% ",
+			"paragraph4": "вашего токена ",
+			"paragraph5": "в течение 5 минут.",
+			"successfullyCreated": "Лаунч успешно создан! Подождите еще немного..."
+		},
+		"currentToken": {
+			"title": "Внести в свой токен",
+			"subtitle": "Приобрести до 25% предложения вашего токена",
+			"subtitle2": "Вы получите",
+			"buyButton": {
+				"label": "Купить",
+				"loading": "Покупаем..."
+			},
+			"amountInput": {
+				"placeholder": "Укажите количество TON",
+				"currency": "TON",
+				"error": {
+					"negative": "Количество не может быть отрицательным",
+					"maxAmount": "Количество не может быть больше 25% от саплая",
+					"buyingError": "Ошибка при покупке"
+				}
+			}
 		}
 	},
 	"CurrentLaunch": {
+		"fetchError": "Oops, something went wrong... Please reload the page or try again later.",
 		"holdersLabel": "холдеров",
-		"collectedLabel": "TON собрано"
+		"collectedLabel": "TON собрано",
+		"wave": {
+			"title": "Текущая волна",
+			"starClubStage": "Star Club",
+			"publicStage": "Public",
+			"listingStage": "Listing",
+			"now": "сейчас",
+			"waiting": "ждем"
+		},
+		"reward": {
+			"title": "Награды",
+			"description": "Вложив в этот токен, вы можете получить:"
+		},
+		"info": {
+			"title": "Информация"
+		},
+		"timer": {
+			"days": "дней",
+			"hours": "часов",
+			"minutes": "минут",
+			"seconds": "секунд"
+		}
 	}
 }

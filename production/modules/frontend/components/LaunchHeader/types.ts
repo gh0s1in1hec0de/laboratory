@@ -1,5 +1,3 @@
-import { ReactNode } from "react";
-
 export interface LaunchHeaderProps {
   avatarSrc?: string;
   symbol?: string;
@@ -10,6 +8,7 @@ export interface LaunchHeaderProps {
   xLink?: string;
   telegramLink?: string;
   websiteLink?: string;
+  getLaunchLink?: () => void;
   showChart?: boolean;
 }
 

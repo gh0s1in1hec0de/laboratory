@@ -5,6 +5,7 @@ import { ColonIcon } from "@/icons";
 import { useLaunchTimer } from "./hooks/useLaunchTimer";
 import { LaunchTimerSkeleton } from "./components/LaunchTimerSkeleton";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
+import { useTranslations } from "next-intl";
 
 export function LaunchTimer({
   initialSeconds,
@@ -18,6 +19,7 @@ export function LaunchTimer({
     seconds,
     isMounted,
   } = useLaunchTimer(initialSeconds, isLoading);
+  const t = useTranslations("CurrentLaunch.timer");
 
   return (
     <LoadingWrapper 
@@ -31,24 +33,24 @@ export function LaunchTimer({
       >
         <Grid container alignItems="center">
           <TimerCard
-            label="days"
+            label={t("days")}
             value={days}
           />
           <ColonIcon />
           <TimerCard
-            label="hours"
+            label={t("hours")}
             value={hours}
           />
         </Grid>
 
         <Grid container alignItems="center">
           <TimerCard
-            label="minutes"
+            label={t("minutes")}
             value={minutes}
           />
           <ColonIcon />
           <TimerCard
-            label="seconds"
+            label={t("seconds")}
             value={seconds}
           />
         </Grid>

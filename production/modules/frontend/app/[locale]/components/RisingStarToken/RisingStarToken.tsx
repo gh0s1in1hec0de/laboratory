@@ -1,24 +1,35 @@
+"use client";
+
 import { Label } from "@/common/Label";
 import { MainBox } from "@/common/MainBox";
-import { StarClubDrawer } from "./components/StarClubDrawer";
-import { RisingStarTokenCard } from "./components/DayTokenCard";
-import { useTranslations } from "next-intl";
 import Grid from "@mui/material/Grid2";
+import { useTranslations } from "next-intl";
+import { RisingStarTokenCard } from "./components/DayTokenCard";
+import { StarClubDrawer } from "./components/StarClubDrawer";
+import { useRisingStarToken } from "./hooks/useRisingStarToken";
 
 export function RisingStarToken() {
+  const {
+    isLoading,
+    errorText,
+    tokenData,
+    handleRedirectToLaunch
+  } = useRisingStarToken();
   const t = useTranslations("Top");
-  
+
   return (
     <MainBox
       container
       roundedXl
-      fullWidth 
+      fullWidth
       position="relative"
       minHeight="80px"
       paddingX={2}
       paddingY={1.5}
       gap={2}
       width="100%"
+      onClick={handleRedirectToLaunch}
+      style={{ cursor: "pointer" }}
     >
       <StarClubDrawer />
 
@@ -34,7 +45,11 @@ export function RisingStarToken() {
         />
       </Grid>
 
-      <RisingStarTokenCard />
+      <RisingStarTokenCard
+        isLoading={isLoading}
+        errorText={errorText}
+        tokenData={tokenData}
+      />
     </MainBox>
   );
 }

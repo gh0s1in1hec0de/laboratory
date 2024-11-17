@@ -6,10 +6,18 @@ import styles from "./TokenCard.module.scss";
 import { AdditionalInfo } from "./components/AdditionalInfo";
 import { TokenCardProps } from "./types";
 import { fromNano } from "@ton/core";
+import { useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
 
 export function TokenCard({
   launch,
 }: TokenCardProps) {
+  const router = useRouter();
+  const locale = useLocale();
+
+  function handleRedirectToLaunch() {
+    router.push(`/${locale}/${launch.address}`);
+  }
 
   return (
     <Grid
@@ -19,6 +27,7 @@ export function TokenCard({
       size="grow"
       gap={1}
       className={styles.card}
+      onClick={handleRedirectToLaunch}
     >
       <CustomAvatar
         size="extraSmall"

@@ -79,32 +79,32 @@ export function useCreateToken() {
       };
 
       // Qmb4Yjspwz3gVq371wvVN9hqzzAoopzv5W1yS49qdTJJ7f
-      // const metadataJsonCID = await launchService.saveMetadata({
-      //   links,
-      //   image: values.image,
-      //   metadata,
-      //   influencerSupport: values.influencerSupport,
-      // });
-      const metadataJsonCID = "Qmb4Yjspwz3gVq371wvVN9hqzzAoopzv5W1yS49qdTJJ7f";
+      const metadataJsonCID = await launchService.saveMetadata({
+        links,
+        image: values.image,
+        metadata,
+        influencerSupport: values.influencerSupport,
+      });
+      // const metadataJsonCID = "Qmb4Yjspwz3gVq371wvVN9hqzzAoopzv5W1yS49qdTJJ7f";
       // console.log("metadataJsonCID", metadataJsonCID);
 
 
-      // const transaction = TxRequestBuilder.createLaunch(
-      //   {
-      //     coreAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
-      //   },
-      //   {
-      //     totalSupply: jettonToNano(values.totalSupply),
-      //     platformSharePct: toPct(values.marketingSupportEnabled ? values.marketingSupportValue : 0),
-      //     metadata: {
-      //       uri: `https://ipfs.io/ipfs/${metadataJsonCID}`
-      //     },
-      //     startTime: Math.floor(Date.now() / 1000) + 60,
-      //     maybePackedConfig: null,
-      //   },
-      // );
+      const transaction = TxRequestBuilder.createLaunch(
+        {
+          coreAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
+        },
+        {
+          totalSupply: jettonToNano(values.totalSupply),
+          platformSharePct: toPct(values.marketingSupportEnabled ? values.marketingSupportValue : 0),
+          metadata: {
+            uri: `https://ipfs.io/ipfs/${metadataJsonCID}`
+          },
+          startTime: Math.floor(Date.now() / 1000) + 60,
+          maybePackedConfig: null,
+        },
+      );
 
-      // await tonConnectUI.sendTransaction(transaction, { modals: "all" });
+      await tonConnectUI.sendTransaction(transaction, { modals: "all" });
 
       router.replace(`/${locale}/${PAGES.Token}/${PAGES.TokenPolling}?meta=${metadataJsonCID}`);
     } catch (error) {
