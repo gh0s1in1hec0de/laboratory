@@ -210,7 +210,6 @@ export class TxRequestBuilder {
         return { validUntil, messages };
     }
 
-    // todo: build claim reward message
     public static claimMessage(
         version: GlobalVersions,
         { launchAddress, queryId = Math.floor(Date.now()) }: { launchAddress: string, queryId?: number, },
@@ -227,6 +226,29 @@ export class TxRequestBuilder {
                     amount: fees[version].claim.toString(),
                     address: launchAddress,
                     payload: commonRefundBody.toBoc().toString("base64")
+                }
+            ]
+        };
+    }
+
+    // We use only total mode, which is "t" for now
+    // To get amount - call the get-amount route on dispenser
+    public static claimRewardsMessage(
+        { dispenserAddress, mode = "t", amount }:
+        { dispenserAddress: string, mode: string | "t", amount: StringifiedCoins },
+        validUntil: number = Math.floor(Date.now() / 1000) + 90
+    ): SendTransactionRequest {
+        const transferBody = beginCell()
+            .storeUint(0, OP_LENGTH)
+            .storeStringRefTail(mode)
+            .endCell();
+        return {
+            validUntil,
+            messages: [
+                {
+                    amount,
+                    address: dispenserAddress,
+                    payload: transferBody.toBoc().toString("base64")
                 }
             ]
         };

@@ -1,7 +1,7 @@
 import { Coins, GlobalVersions } from "../standards";
-import { TokenLaunchTimings } from "../types";
+import { GetConfigResponse, MoneyFlows, TokenLaunchTimings } from "../types";
 import { UnixTimeSeconds } from "../utils";
-import { toNano } from "@ton/core";
+import { Address, toNano } from "@ton/core";
 import {
     getApproximateWlAmountOut,
     getCreatorJettonPrice,
@@ -9,6 +9,9 @@ import {
     SyntheticReserves,
     WlPhaseLimits
 } from "./priceOracle";
+import { TonClient4 } from "@ton/ton";
+import { parseGetConfigResponse, parseMoneyFlows } from "../chainMessageParsers";
+import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 
 export enum SalePhase {
     NOT_STARTED = "NOT_STARTED",
@@ -75,7 +78,7 @@ export function getAmountOut(
     version: GlobalVersions,
     phase: SalePhase.CREATOR | SalePhase.WHITELIST | SalePhase.PUBLIC,
     data: WlPhaseLimits | SyntheticReserves,
-    value = toNano("10")
+    value: Coins = toNano("10")
 ): Coins {
     if (phase === SalePhase.CREATOR && (data as WlPhaseLimits).wlRoundFutJetLimit !== undefined)
         return getCreatorJettonPrice(data as WlPhaseLimits);
@@ -89,5 +92,53 @@ export function getAmountOut(
     throw new Error("meowreachable");
 }
 
-// todo: blockchain getters
+/*
+On frontend, you can get TonClient4 like that:
+
+import { getHttpV4Endpoint } from "@orbs-network/ton-access";
+
+const tonClient = new TonClient4({
+    endpoint: await getHttpV4Endpoint({ network: "mainnet" }),
+});
+*/
+
+async function getMoneyFlows(tonClient: TonClient4, seqno: number, contractAddress: Address): Promise<MoneyFlows> {
+    let { reader } = await tonClient.runMethod(seqno, contractAddress, "get_money_flows", []);
+    return parseMoneyFlows(reader);
+}
+
+async function getConfig(tonClient: TonClient4, seqno: number, contractAddress: Address): Promise<GetConfigResponse> {
+    let { reader } = await tonClient.runMethod(seqno, contractAddress, "get_config", []);
+    return parseGetConfigResponse(reader);
+}
+
+export async function getContractData(
+    mode: "WlPhaseLimits" | "SyntheticReserves" | "All",
+    tonClient: TonClient4,
+    tokenLaunchAddress: Address,
+): Promise<WlPhaseLimits | SyntheticReserves | WlPhaseLimits & SyntheticReserves> {
+    const { last } = await tonClient.getLastBlock();
+    switch (mode) {
+        case "WlPhaseLimits":
+            const { wlRoundFutJetLimit, wlRoundTonLimit } = await getConfig(tonClient, last.seqno, tokenLaunchAddress);
+            return { wlRoundFutJetLimit, wlRoundTonLimit };
+        case "SyntheticReserves":
+            const {
+                syntheticTonReserve,
+                syntheticJetReserve
+            } = await getMoneyFlows(tonClient, last.seqno, tokenLaunchAddress);
+            return { syntheticTonReserve, syntheticJetReserve };
+        case "All":
+            const [config, moneyFlows] = await Promise.all([
+                getConfig(tonClient, last.seqno, tokenLaunchAddress),
+                getMoneyFlows(tonClient, last.seqno, tokenLaunchAddress)
+            ]);
+            return {
+                wlRoundFutJetLimit: config.wlRoundFutJetLimit,
+                wlRoundTonLimit: config.wlRoundTonLimit,
+                syntheticTonReserve: moneyFlows.syntheticTonReserve,
+                syntheticJetReserve: moneyFlows.syntheticJetReserve
+            };
+    }
+}
 
