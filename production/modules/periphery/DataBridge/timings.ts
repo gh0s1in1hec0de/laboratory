@@ -130,28 +130,21 @@ export async function getContractData(
     tonClient: TonClient4,
     tokenLaunchAddress: Address,
     seqno?: number
-): Promise<WlPhaseLimits | SyntheticReserves | WlPhaseLimits & SyntheticReserves> {
+): Promise<GetConfigResponse | MoneyFlows | GetConfigResponse & MoneyFlows> {
     const seqno_ = seqno ?? await getSeqno(tonClient);
     switch (mode) {
         case "WlPhaseLimits":
-            const { wlRoundFutJetLimit, wlRoundTonLimit } = await getConfig(tonClient, tokenLaunchAddress, seqno_);
-            return { wlRoundFutJetLimit, wlRoundTonLimit };
+            return await getConfig(tonClient, tokenLaunchAddress, seqno_);
         case "SyntheticReserves":
-            const {
-                syntheticTonReserve,
-                syntheticJetReserve
-            } = await getMoneyFlows(tonClient, tokenLaunchAddress, seqno_);
-            return { syntheticTonReserve, syntheticJetReserve };
+            return await getMoneyFlows(tonClient, tokenLaunchAddress, seqno_);
         case "All":
             const [config, moneyFlows] = await Promise.all([
                 getConfig(tonClient, tokenLaunchAddress, seqno_),
                 getMoneyFlows(tonClient, tokenLaunchAddress, seqno_)
             ]);
             return {
-                wlRoundFutJetLimit: config.wlRoundFutJetLimit,
-                wlRoundTonLimit: config.wlRoundTonLimit,
-                syntheticTonReserve: moneyFlows.syntheticTonReserve,
-                syntheticJetReserve: moneyFlows.syntheticJetReserve
+                ...config,
+                ...moneyFlows,
             };
     }
 }
