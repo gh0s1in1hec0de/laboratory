@@ -172,9 +172,9 @@ describe("V2", () => {
             utilJetWlPassOneTimePrice: jettonToNano("0.1"),
 
             // Warning! In case of fractional/odd shares contract's math may have slight calc inaccuracy
-            jetWlLimitPct: toPct(30),
-            jetPubLimitPct: toPct(30),
-            jetDexSharePct: toPct(25),
+            jetWlLimitPct: toPct(18),
+            jetPubLimitPct: toPct(38),
+            jetDexSharePct: toPct(20),
 
             creatorRoundDurationSec: ONE_HOUR_SEC,
             wlRoundDurationSec: ONE_HOUR_SEC,

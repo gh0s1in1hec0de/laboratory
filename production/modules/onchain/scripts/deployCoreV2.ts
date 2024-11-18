@@ -16,17 +16,17 @@ export async function run(provider: NetworkProvider) {
     // The app's code is its configuration - shout out to suckless.org folks
     const FIVE_MIN = 300;
     const launchConfig: LaunchConfigV2 = {
-        minTonForSaleSuccess: toNano("2"),
-        tonLimitForWlRound: toNano("2"),
+        minTonForSaleSuccess: toNano("4"),
+        tonLimitForWlRound: toNano("4"),
         penny: toNano("0.1"),
 
         utilJetMasterAddress: Address.parse("kQCRJ_NbvPCMGVIXRVU7KV8sZDmeX99uzumaAr7L5ZOMTIQz"),
         utilJetWlPassAmount: jettonToNano(10),
         utilJetWlPassOneTimePrice: jettonToNano(2),
 
-        jetWlLimitPct: toPct(25),
-        jetPubLimitPct: toPct(25),
-        jetDexSharePct: toPct(25),
+        jetWlLimitPct: toPct(18),
+        jetPubLimitPct: toPct(38),
+        jetDexSharePct: toPct(20),
 
         creatorRoundDurationSec: FIVE_MIN,
         wlRoundDurationSec: FIVE_MIN,

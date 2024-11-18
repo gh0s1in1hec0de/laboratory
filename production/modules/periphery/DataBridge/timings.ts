@@ -1,7 +1,9 @@
-import { Coins, GlobalVersions } from "../standards";
+import { parseGetConfigResponse, parseMoneyFlows } from "../chainMessageParsers";
 import { GetConfigResponse, MoneyFlows, TokenLaunchTimings } from "../types";
-import { UnixTimeSeconds } from "../utils";
+import { Coins, GlobalVersions } from "../standards";
 import { Address, toNano } from "@ton/core";
+import { UnixTimeSeconds } from "../utils";
+import { TonClient4 } from "@ton/ton";
 import {
     getApproximateWlAmountOut,
     getCreatorJettonPrice,
@@ -9,9 +11,6 @@ import {
     SyntheticReserves,
     WlPhaseLimits
 } from "./priceOracle";
-import { TonClient4 } from "@ton/ton";
-import { parseGetConfigResponse, parseMoneyFlows } from "../chainMessageParsers";
-import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 
 export enum SalePhase {
     NOT_STARTED = "NOT_STARTED",
@@ -98,17 +97,31 @@ On frontend, you can get TonClient4 like that:
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 
 const tonClient = new TonClient4({
-    endpoint: await getHttpV4Endpoint({ network: "mainnet" }),
+    endpoint: await getHttpV4Endpoint({ network: "mainnet (or "testnet")" }),
 });
 */
 
-async function getMoneyFlows(tonClient: TonClient4, seqno: number, contractAddress: Address): Promise<MoneyFlows> {
-    let { reader } = await tonClient.runMethod(seqno, contractAddress, "get_money_flows", []);
+async function getSeqno(tonClient: TonClient4) {
+    return (await tonClient.getLastBlock()).last.seqno;
+}
+
+async function getMoneyFlows(
+    tonClient: TonClient4, contractAddress: Address, seqno?: number
+): Promise<MoneyFlows> {
+    let { reader } = await tonClient.runMethod(
+        seqno ?? await getSeqno(tonClient),
+        contractAddress, "get_money_flows", []
+    );
     return parseMoneyFlows(reader);
 }
 
-async function getConfig(tonClient: TonClient4, seqno: number, contractAddress: Address): Promise<GetConfigResponse> {
-    let { reader } = await tonClient.runMethod(seqno, contractAddress, "get_config", []);
+async function getConfig(
+    tonClient: TonClient4, contractAddress: Address, seqno?: number
+): Promise<GetConfigResponse> {
+    let { reader } = await tonClient.runMethod(
+        seqno ?? await getSeqno(tonClient),
+        contractAddress, "get_config", []
+    );
     return parseGetConfigResponse(reader);
 }
 
@@ -116,22 +129,23 @@ export async function getContractData(
     mode: "WlPhaseLimits" | "SyntheticReserves" | "All",
     tonClient: TonClient4,
     tokenLaunchAddress: Address,
+    seqno?: number
 ): Promise<WlPhaseLimits | SyntheticReserves | WlPhaseLimits & SyntheticReserves> {
-    const { last } = await tonClient.getLastBlock();
+    const seqno_ = seqno ?? await getSeqno(tonClient);
     switch (mode) {
         case "WlPhaseLimits":
-            const { wlRoundFutJetLimit, wlRoundTonLimit } = await getConfig(tonClient, last.seqno, tokenLaunchAddress);
+            const { wlRoundFutJetLimit, wlRoundTonLimit } = await getConfig(tonClient, tokenLaunchAddress, seqno_);
             return { wlRoundFutJetLimit, wlRoundTonLimit };
         case "SyntheticReserves":
             const {
                 syntheticTonReserve,
                 syntheticJetReserve
-            } = await getMoneyFlows(tonClient, last.seqno, tokenLaunchAddress);
+            } = await getMoneyFlows(tonClient, tokenLaunchAddress, seqno_);
             return { syntheticTonReserve, syntheticJetReserve };
         case "All":
             const [config, moneyFlows] = await Promise.all([
-                getConfig(tonClient, last.seqno, tokenLaunchAddress),
-                getMoneyFlows(tonClient, last.seqno, tokenLaunchAddress)
+                getConfig(tonClient, tokenLaunchAddress, seqno_),
+                getMoneyFlows(tonClient, tokenLaunchAddress, seqno_)
             ]);
             return {
                 wlRoundFutJetLimit: config.wlRoundFutJetLimit,
