@@ -17,6 +17,6 @@ export const UploadMetaSchema = t.Object({
 });
 
 export const BuyWhitelist = t.Object({
-    userAddress: t.String(),
+    callerAddress: t.String(),
     launchAddress: t.String(),
 });

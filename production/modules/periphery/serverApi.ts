@@ -17,7 +17,7 @@ import type {
 export type UploadMetadataToIpfsRequest = {
     links: { x?: string, telegram?: string, website?: string },
     metadata: JettonMetadata,
-    image: string,
+    image?: string,
     influencerSupport?: boolean,
 };
 
