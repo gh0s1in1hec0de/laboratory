@@ -15,3 +15,5 @@ export { ShareIcon } from "./ShareIcon/ShareIcon";
 export { WebsiteIcon } from "./WebsiteIcon/WebsiteIcon";
 export { TwitterIcon } from "./TwitterIcon/TwitterIcon";
 export { ColonIcon } from "./ColonIcon/ColonIcon";
+export { CopyIcon } from "./CopyIcon/CopyIcon";
+export { ArrowDownDirectionIcon } from "./ArrowDownDirectionIcon/ArrowDownDirectionIcon";

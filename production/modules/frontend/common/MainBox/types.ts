@@ -15,5 +15,7 @@ export interface MainBoxProps extends Grid2Props {
   rounded?: boolean;
   roundedXl?: boolean;
   fullWidth?: boolean;
+  showMoreRewards?: boolean;
+  isOpen?: boolean;
 }
 

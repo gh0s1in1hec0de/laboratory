@@ -3,7 +3,7 @@ import { CustomAvatar } from "@/common/CustomAvatar";
 import Grid from "@mui/material/Grid2";
 import { RisingStarTokenCardSkeleton } from "./components/DayTokenCardSkeleton";
 import { TokenInfo } from "./components/TokenInfo";
-import { ProgressInfo } from "./components/ProgressInfo";
+import { ProgressInfo } from "@/common/ProgressInfo";
 import { fromNano } from "@ton/core";
 import { Label } from "@/common/Label";
 import { RisingStarTokenCardProps } from "./types";

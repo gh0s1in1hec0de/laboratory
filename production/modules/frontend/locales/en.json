@@ -314,7 +314,7 @@
 			"amountInput": {
 				"placeholder": "Indicate the number of TON",
 				"currency": "TON",
-				"error": {
+				"errors": {
 					"negative": "Amount cannot be negative",
 					"maxAmount": "Amount cannot be greater than 25% of the supply",
 					"buyingError": "Buying error"
@@ -326,7 +326,16 @@
 		"noLaunchError": "Oops, Launch not found... Return to the main page and try again.",
 		"fetchError": "Oops, something went wrong... Please reload the page or try again later.",
 		"holdersLabel": "holders",
-		"collectedLabel": "TON collected",
+		"collectedLabel": "TON collected",	
+		"contribute": {
+			"title": "Contribute",
+			"connectWallet": "Connect your wallet to start.",
+			"needStarTicket": "You need star ticket to join Star club wave or join this launch in public wave.",
+			"claimButtons": {
+				"label": "Claim",
+				"loading": "Claiming..."
+			}
+		},
 		"wave": {
 			"title": "Current Wave",
 			"starClubStage": "Star Club",
@@ -336,18 +345,52 @@
 			"waiting": "waiting...",
 			"prev": "passed"
 		},
-		"reward": {
+		"rewards": {
 			"title": "Rewards",
-			"description": "By investing in this token you can receive:"
+			"description": "By investing in this token you can receive:",
+			"moreRewards": "see more",
+			"lessRewards": "see less",
+			"fetchError": "Oops, something went wrong... Please reload the page or try again later."
 		},
 		"info": {
-			"title": "Info"
+			"title": "Info",
+			"description": "Token description token description token description token description token",
+			"supply": "Total supply",
+			"marketing": "Marketing support",
+			"influencer": "Influencer support",
+			"yes": "Yes",
+			"no": "No",
+			"refundButton": {
+				"label": "Refund",
+				"loading": "Refunding...",
+				"error": "Refund error"
+			}
 		},
 		"timer": {
 			"days": "days",
 			"hours": "hours",
 			"minutes": "minutes",
 			"seconds": "seconds"
+		},
+		"refundableDrawer": {
+			"tooltip": "Refundable",
+			"firstParagraph": {
+				"text1": "Refundable"
+			},
+			"secondParagraph": {
+				"text1": "Changed your mind? No worries!"
+			},
+			"thirdParagraph": {
+				"text1": "You can ",
+				"text2": "refund ",
+				"text3": "all your contributed TON until the listing process isn’t started."
+			},
+			"fourthParagraph": {
+				"text1": "Warning"
+			},
+			"fifthParagraph": {
+				"text1": "You won’t get ANY of rewards for your contribution and lose the opportunity to get them again in this Wavelaunch."
+			}
 		}
 	}
 }

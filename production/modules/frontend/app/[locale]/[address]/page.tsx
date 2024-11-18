@@ -8,6 +8,10 @@ import { useCurrentLaunch } from "./hooks/useCurrentLaunch";
 import { CurrentLaunchPageProps } from "./types";
 import { BgLight } from "@/common/BgLight";
 import { CurrentWave } from "./components/CurrentWave";
+import { LaunchActions } from "./components/LaunchActions";
+import { LaunchInfo } from "./components/LaunchInfo";
+import { jettonFromNano } from "starton-periphery";
+import { RewardsInfo } from "./components/RewardsInfo";
 
 export default function CurrentLaunch({
   params: { address }
@@ -58,7 +62,18 @@ export default function CurrentLaunch({
           showBIO
         />
 
+        <LaunchActions
+          launchData={launchData}
+          isAvailableClaim={true}
+        />
+
         {launchData && <CurrentWave timings={launchData.timings} />}
+
+        <RewardsInfo address={launchData?.address ?? ""} />
+
+        <LaunchInfo 
+          launchData={launchData}
+        />
       </Grid>
     </LoadingWrapper>
   );

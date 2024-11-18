@@ -1,7 +1,7 @@
 import { getErrorText } from "@/utils";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { getAmountOut, getCurrentSalePhase, GlobalVersions, TxRequestBuilder } from "starton-periphery";
+import { getAmountOut, getCurrentSalePhase, GlobalVersions, SalePhase, TxRequestBuilder } from "starton-periphery";
 import { useTonConnectUI } from "@tonconnect/ui-react";
 import { UseBuyTokenProps } from "./types";
 import { fromNano, toNano } from "@ton/core";
@@ -14,22 +14,26 @@ export function useBuyToken({ supply, launchAddress, timings }: UseBuyTokenProps
   const t = useTranslations("Token.currentToken.amountInput");
 
   const numericAmount = BigInt(amount);
-  const isValidAmount = numericAmount > 0 && numericAmount <= (supply ?? 0n);
+  const isValidAmount = numericAmount > 0;
 
-  // проверка введенного значения TON
-  function getAmountError() {
+  const receivedNanoJettons = getAmountOut(
+    GlobalVersions.V1,
+    SalePhase.CREATOR,
+    { wlRoundFutJetLimit: 1n, wlRoundTonLimit: 1n },
+    toNano(10),
+  );
+
+  const jettonAmount = (BigInt(fromNano(supply)) * BigInt(25) / BigInt(100)) * toNano(10) / BigInt(receivedNanoJettons);
+  
+  console.log("jettonAmount", jettonAmount);
+
+  function getAmountError(): string {
     if (numericAmount < 0) {
-      return t("error.negative");
+      return "Token.currentToken.amountInput.errors.negative";
     }
-
-    if (numericAmount > (supply ?? 0n)) {
-      return `${t("error.maxAmount")} (${fromNano(supply)})`;
-    }
-
     return "";
   }
 
-  // функция для покупки
   async function onClickBuyTokens() {
     try {
       setIsLoading(true);
@@ -43,7 +47,7 @@ export function useBuyToken({ supply, launchAddress, timings }: UseBuyTokenProps
 
       await tonConnectUI.sendTransaction(transaction, { modals: "all" });
     } catch (error) {
-      setErrorText(getErrorText(error, t("error.buyingError")));
+      setErrorText(getErrorText(error, t("errors.buyingError")));
     } finally {
       setIsLoading(false);
     }

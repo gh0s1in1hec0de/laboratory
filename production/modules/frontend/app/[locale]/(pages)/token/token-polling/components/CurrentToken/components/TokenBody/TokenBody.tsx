@@ -69,7 +69,7 @@ export function TokenBody({
                 size="grow"
               >
                 <Label
-                  label={`${Number(amount) < 0 ? 0 : amount} $${symbol || "UNKNWN"}`}
+                  label={`${Number(amount) <= 0 ? 0 : amount} $${symbol || "UNKNWN"}`}
                   variantSize="regular14"
                   variantColor="white"
                   cropped

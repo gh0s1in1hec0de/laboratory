@@ -2,22 +2,32 @@
 
 import { CustomButton } from "@/common/CustomButton";
 import { Label } from "@/common/Label";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
+import { PAGES } from "@/constants";
+import { useTransition } from "react";
+import { LoadingWrapper } from "@/common/LoadingWrapper";
 
 export function CreateTokenButton() {
   const t = useTranslations("Top");
+  const router = useRouter();
+  const locale = useLocale();
+  const [isPending, startTransition] = useTransition();
 
-  // todo: add logic
   function handleClick() {
-    console.log("Create token");
+    startTransition(() => {
+      router.push(`/${locale}/${PAGES.Token}`);
+    });
   }
 
   return (
-    <CustomButton
-      onClick={handleClick}
-      padding="8px 14px"
-    >
-      <Label label={t("createToken")} variantSize="medium14" />
-    </CustomButton>
+    <LoadingWrapper isLoading={isPending}>
+      <CustomButton
+        onClick={handleClick}
+        padding="8px 14px"
+      >
+        <Label label={t("createToken")} variantSize="medium14" />
+      </CustomButton>
+    </LoadingWrapper>
   );
 }

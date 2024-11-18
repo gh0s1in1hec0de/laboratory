@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect , useTransition } from "react";
 import { GetRisingStarResponse } from "starton-periphery";
 import { launchService } from "@/services";
 import { getErrorText, getErrorStatus } from "@/utils";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
 export function useRisingStarToken() {
   const [tokenData, setTokenData] = useState<GetRisingStarResponse>(null);
   const [isLoading, setIsLoading] = useState(true);
