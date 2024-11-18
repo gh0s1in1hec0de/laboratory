@@ -126,16 +126,16 @@ async function getConfig(
 }
 
 export async function getContractData(
-    mode: "WlPhaseLimits" | "SyntheticReserves" | "All",
+    mode: "Config" | "MoneyFlows" | "All",
     tonClient: TonClient4,
     tokenLaunchAddress: Address,
     seqno?: number
 ): Promise<GetConfigResponse | MoneyFlows | GetConfigResponse & MoneyFlows> {
     const seqno_ = seqno ?? await getSeqno(tonClient);
     switch (mode) {
-        case "WlPhaseLimits":
+        case "Config":
             return await getConfig(tonClient, tokenLaunchAddress, seqno_);
-        case "SyntheticReserves":
+        case "MoneyFlows":
             return await getMoneyFlows(tonClient, tokenLaunchAddress, seqno_);
         case "All":
             const [config, moneyFlows] = await Promise.all([
