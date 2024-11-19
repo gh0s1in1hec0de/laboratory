@@ -32,10 +32,10 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
 
         if (ticketBalance > 0) {
           // todo
-          await launchService.postBuyWl({
-            callerAddress,
-            launchAddress: launchData?.address ?? "",
-          });
+          // await launchService.postBuyWl({
+          //   callerAddress,
+          //   launchAddress: launchData?.address ?? "",
+          // });
 
           // Выполняем whitelistPurchaseV1Message
           // await launchService.postWhitelistPurchaseMessage({
