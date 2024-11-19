@@ -17,12 +17,6 @@ type Config = {
         },
         frontend_url: string,
     },
-    logger: {
-        bot_token: string,
-        chat_id: number,
-        dev_thread_id: number,
-        prod_thread_id: number,
-    },
     ton: {
         network: Network,
         limit_per_second: number,
@@ -32,6 +26,7 @@ type Config = {
         },
         jetton_transfer_fee: number,
         wallet: {
+            maybe_height: bigint | null,
             address: string,
             mnemonic: string,
         },

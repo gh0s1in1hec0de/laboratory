@@ -17,7 +17,7 @@ oracle:
     - address: ""
       height: null
       force_height: false
-      version: "V2A" # "V1"
+      version: "V1"
   network: "testnet"
   api:
     limit_per_second: 10
@@ -26,12 +26,6 @@ oracle:
         - "key"
       mainnet:
         - "key"
-
-logger:
-  bot_token: ""
-  chat_id: -0
-  dev_thread_id: 0
-  prod_thread_id: 0
 
 sale:
   dex_share_pct: 52

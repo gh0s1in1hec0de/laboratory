@@ -1,22 +1,10 @@
 import winston, { type Logger } from "winston";
-import { AppMode } from "starton-periphery";
 import { getConfig } from "./config";
 import "winston-daily-rotate-file";
 import path from "path";
 
-const {
-    printf,
-    combine,
-    timestamp,
-    json,
-    prettyPrint,
-    colorize,
-} = winston.format;
-
-const {
-    Console,
-    DailyRotateFile
-} = winston.transports;
+const { printf, combine, timestamp, json, prettyPrint, colorize, } = winston.format;
+const { Console, DailyRotateFile } = winston.transports;
 
 type LogLevels = "error" | "warn" | "info" | "debug" | "http";
 
@@ -41,9 +29,7 @@ const customFormat = printf(({ level, message, timestamp }) => {
 });
 
 const format = combine(
-    timestamp({
-        format: "YYYY-MM-DD HH:mm:ss.SSS"
-    }),
+    timestamp({ format: "YYYY-MM-DD HH:mm:ss.SSS" }),
     json(),
     prettyPrint(),
     customFormat
@@ -51,12 +37,10 @@ const format = combine(
 
 function configureLogger(): Logger {
     const { mode } = getConfig();
-    const isDev = mode === AppMode.DEV;
-    const level = isDev ? "http" : "error";
 
     return winston.createLogger({
         levels: logLevelsOrder,
-        level,
+        level: "http",
         format,
         transports: [
             new Console({
@@ -66,10 +50,10 @@ function configureLogger(): Logger {
                 )
             }),
             new DailyRotateFile({
-                filename: path.resolve(__dirname, `../../logs_manager/logs_${isDev ? "dev" : "prod"}_%DATE%.log`),
+                filename: path.resolve(__dirname, `../../logs_manager/logs_${mode}_%DATE%.log`),
                 datePattern: "YYYY-MM-DD",
                 maxFiles: "10d",
-                level,
+                level: "http",
                 format
             })
         ]
@@ -79,8 +63,6 @@ function configureLogger(): Logger {
 let maybeLogger: Logger | null = null;
 
 export function logger(): Logger {
-    if (!maybeLogger) {
-        maybeLogger = configureLogger();
-    }
+    if (!maybeLogger) maybeLogger = configureLogger();
     return maybeLogger;
 }

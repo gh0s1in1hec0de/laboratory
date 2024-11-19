@@ -17,12 +17,6 @@ type Config = {
         },
         frontend_url: string,
     },
-    logger: {
-        bot_token: string,
-        chat_id: number,
-        dev_thread_id: number,
-        prod_thread_id: number,
-    },
     ipfs: {
         host: string,
         port: number,

@@ -1,7 +1,6 @@
-import type { LamportTime, LaunchMetadata, RawAddressString } from "starton-periphery";
+import type { LamportTime, RawAddressString } from "starton-periphery";
 import type { SqlClient } from "./types";
 import { globalClient } from "./db";
-import { logger } from "manager/src/logger.ts";
 
 export async function setHeightForAddress(address: RawAddressString, height: LamportTime, force?: boolean, client?: SqlClient): Promise<void> {
     const c = client ?? globalClient;

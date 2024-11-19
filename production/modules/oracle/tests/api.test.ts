@@ -79,6 +79,9 @@ describe("launch sorter", () => {
     //     cleanDatabase();
     // });
 
+    test("clean database", async () => {
+        await cleanDatabase(client);
+    });
     test("synthetic launch jettons", async () => {
         for (let i = 0; i < 5; i++) {
             await upsertRewardJetton({

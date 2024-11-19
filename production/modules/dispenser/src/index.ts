@@ -3,6 +3,8 @@ import { startServer } from "./server";
 import { getConfig } from "./config";
 import { logger } from "./logger";
 import dotenv from "dotenv";
+import { Address } from "@ton/ton";
+import * as db from "./db";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error Prototype modification works at runtime, typescript doesn't like it
@@ -13,10 +15,17 @@ BigInt.prototype.toJSON = function () {
 dotenv.config();
 logger().debug(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_USER} | ${process.env.POSTGRES_PASSWORD}`);
 
+const { ton } = getConfig();
+
 async function main() {
-    console.info(`mode: ${getConfig().mode}`);
+    logger().info(`running in: ${getConfig().mode}`);
 
     startServer();
+    const { address, maybe_height } = ton.wallet;
+    if (maybe_height) {
+        const formatted = Address.parse(address).toRawString();
+        await db.setHeightForAddress(formatted, maybe_height, true);
+    }
     scanForRequests().then();
 }
 
