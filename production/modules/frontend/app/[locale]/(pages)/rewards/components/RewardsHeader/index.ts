@@ -1,0 +1,1 @@
+export { RewardsHeader } from "./RewardsHeader";

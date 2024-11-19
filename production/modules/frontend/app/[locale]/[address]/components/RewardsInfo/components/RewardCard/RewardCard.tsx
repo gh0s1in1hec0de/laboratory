@@ -1,8 +1,10 @@
 import { Label } from "@/common/Label";
 import Grid from "@mui/material/Grid2";
 import { CustomAvatar } from "@/common/CustomAvatar";
+import { jettonFromNano } from "starton-periphery";
+import { RewardCardProps } from "./types";
 
-export function RewardCard() {
+export function RewardCard({ rewardPool }: RewardCardProps) {
   return (
     <Grid 
       container 
@@ -15,7 +17,7 @@ export function RewardCard() {
       >
         <CustomAvatar
           size="extraSmall"
-          src="https://icdn.lenta.ru/images/2024/03/18/12/20240318124428151/square_1280_828947c85a8838d217fe9fcc8b0a17ec.jpg"
+          src={rewardPool.metadata.image ?? "https://icdn.lenta.ru/images/2024/03/18/12/20240318124428151/square_1280_828947c85a8838d217fe9fcc8b0a17ec.jpg"}
           alt="Reward Logo"
         />
       </Grid>
@@ -26,7 +28,7 @@ export function RewardCard() {
         paddingLeft={1}
       >
         <Label
-          label="Name NameNameNameмv Name Name Name Name Name"
+          label={rewardPool.metadata.name ?? "Unknown"}
           variantSize="medium16"
           cropped
         />
@@ -37,7 +39,7 @@ export function RewardCard() {
         paddingX={1.5}
       >
         <Label
-          label="50000 Name"
+          label={`${jettonFromNano(rewardPool.rewardAmount)} $${rewardPool.metadata.symbol ?? "UNKNWN"}`}
           variantSize="regular14"
           variantColor="gray"
           cropped

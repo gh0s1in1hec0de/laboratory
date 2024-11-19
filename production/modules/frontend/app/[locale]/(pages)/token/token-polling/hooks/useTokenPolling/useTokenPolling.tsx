@@ -47,9 +47,9 @@ export function useTokenPolling() {
   useEffect(() => {
     (async () => {
       if (creator) {
-        pollingToken(creator, undefined);
+        await pollingToken(creator, undefined);
       } else if (meta) {
-        pollingToken(undefined, meta);
+        await pollingToken(undefined, meta);
       } else {
         router.replace(`/${locale}/${PAGES.Token}`);
       }

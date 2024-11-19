@@ -9,6 +9,7 @@ import { useLaunchRewards } from "./hooks/useLaunchRewards";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
 import type { RewardsInfoProps } from "./types";
 import { RewardCard } from "./components/RewardCard";
+import { Fragment } from "react";
 
 export function RewardsInfo({ address }: RewardsInfoProps) {
   const t = useTranslations("CurrentLaunch.rewards");
@@ -72,16 +73,26 @@ export function RewardsInfo({ address }: RewardsInfoProps) {
                 <Grid
                   container
                   gap={2}
+                  width="100%"
                 >
-                  {rewardsData?.rewardPools.length === 0 ? (
+                  {!rewardsData || Object.keys(rewardsData).length === 0 ? (
                     <Label
                       label={t("noRewards")}
                       variantSize="regular16"
                       variantColor="gray"
+                      textAlign="center"
+                      cropped
                     />
                   ) : (
-                    rewardsData?.rewardPools.slice(0, 3).map((rewardPool) => (
-                      <RewardCard key={rewardPool.tokenLaunch} />
+                    Object.entries(rewardsData).map(([key, rewardPools]) => (
+                      <Fragment key={`top-${key}`}>
+                        {rewardPools.slice(0, 2).map((rewardPool, index) => (
+                          <RewardCard
+                            key={`${rewardPool.rewardJetton}-${index}`}
+                            rewardPool={rewardPool}
+                          />
+                        ))}
+                      </Fragment>
                     ))
                   )}
                 </Grid>
@@ -108,8 +119,15 @@ export function RewardsInfo({ address }: RewardsInfoProps) {
                         gap={2}
                         paddingTop={2}
                       >
-                        {rewardsData?.rewardPools.slice(3).map((rewardPool) => (
-                          <RewardCard key={rewardPool.tokenLaunch} />
+                        {rewardsData && Object.entries(rewardsData).map(([key, rewardPools]) => (
+                          <Fragment key={`top-${key}`}>
+                            {rewardPools.slice(2).map((rewardPool, index) => (
+                              <RewardCard
+                                key={`${rewardPool.rewardJetton}-${index}`}
+                                rewardPool={rewardPool}
+                              />
+                            ))}
+                          </Fragment>
                         ))}
                       </Grid>
                     </motion.div>

@@ -4,7 +4,8 @@ import type {
   GetLaunchesChunkRequest,
   GetLaunchesChunkResponse,
   GetRisingStarResponse,
-  UploadMetadataToIpfsRequest
+  UploadMetadataToIpfsRequest,
+  BuyWhitelistRequest
 } from "starton-periphery";
 import { managerService, oracleService } from "@/api";
 import { LAUNCH_ERROR } from "@/errors";
@@ -126,9 +127,28 @@ async function saveMetadata({
   }
 }
 
+async function postBuyWl({
+  callerAddress,
+  launchAddress
+}: BuyWhitelistRequest): Promise<void> {
+  try {
+    await managerService.post<void>(
+      LAUNCH_ROUTES.BuyWl,
+      {
+        userAddress: callerAddress,
+        launchAddress,
+      }
+    );
+  } catch (error) {
+    console.error(LAUNCH_ERROR.BuyWl, error);
+    throw error;
+  }
+}
+
 export const launchService = {
   getTokenLaunches,
   getRisingStar,
   saveMetadata,
   getCurrentToken,
+  postBuyWl,
 };

@@ -1,17 +1,18 @@
 "use client";
 
+import { BgLight } from "@/common/BgLight";
 import { Label } from "@/common/Label";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
 import { LaunchHeader } from "@/components/LaunchHeader";
+import { CALLER_ADDRESS } from "@/constants";
+import { localStorageWrapper } from "@/utils";
 import Grid from "@mui/material/Grid2";
-import { useCurrentLaunch } from "./hooks/useCurrentLaunch";
-import { CurrentLaunchPageProps } from "./types";
-import { BgLight } from "@/common/BgLight";
 import { CurrentWave } from "./components/CurrentWave";
 import { LaunchActions } from "./components/LaunchActions";
 import { LaunchInfo } from "./components/LaunchInfo";
-import { jettonFromNano } from "starton-periphery";
 import { RewardsInfo } from "./components/RewardsInfo";
+import { useCurrentLaunch } from "./hooks/useCurrentLaunch";
+import { CurrentLaunchPageProps } from "./types";
 
 export default function CurrentLaunch({
   params: { address }
@@ -38,7 +39,7 @@ export default function CurrentLaunch({
   // todo: add skeleton
   return (
     <LoadingWrapper
-      isLoading={isLoading}
+      isLoading={isLoading || localStorageWrapper.get(CALLER_ADDRESS) === null}
     >
       <Grid
         container
@@ -64,14 +65,13 @@ export default function CurrentLaunch({
 
         <LaunchActions
           launchData={launchData}
-          isAvailableClaim={true}
         />
 
         {launchData && <CurrentWave timings={launchData.timings} />}
 
         <RewardsInfo address={launchData?.address ?? ""} />
 
-        <LaunchInfo 
+        <LaunchInfo
           launchData={launchData}
         />
       </Grid>

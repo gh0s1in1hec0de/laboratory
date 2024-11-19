@@ -30,8 +30,8 @@
   },
   "scripts": {
     "start": "bun run src/index.ts",
-    "manager": "bun run src/index.ts",
-    "manager:dev": "bun run --hot src/index.ts",
+    "dispenser": "bun run src/index.ts",
+    "dispenser:dev": "bun run --hot src/index.ts",
     "start:dev": "bun run --hot src/index.ts",
     "lint": "bun run eslint .",
     "lint:fix": "bun run eslint . --fix"

@@ -5,7 +5,7 @@ import Grid from "@mui/material/Grid2";
 import { useTranslations } from "next-intl";
 import { Balance } from "./components/Balance";
 
-export function TicketBalance() {
+export function TicketBalance({ description }: { description?: string }) {
   const t = useTranslations("Tasks.header");
   
   return (
@@ -29,7 +29,7 @@ export function TicketBalance() {
       </Grid>
 
       <Label 
-        label={t("balance")} 
+        label={description || t("balance")} 
         variantSize="regular14" 
         variantColor="gray"
         offUserSelect

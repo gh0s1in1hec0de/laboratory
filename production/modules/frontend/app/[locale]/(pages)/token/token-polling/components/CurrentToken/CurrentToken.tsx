@@ -8,18 +8,6 @@ import { CurrentTokenProps } from "./types";
 import { TonProvider } from "@/providers/ton";
 
 export function CurrentToken({ launchData }: CurrentTokenProps) {
-  //todo: remove
-  // const testTimings = {
-  //   endTime: 1731845849,
-  //   startTime: 1731779692,
-  //   wlRoundEndTime: 1731813136,
-  //   publicRoundEndTime: 1731839869,
-  //   creatorRoundEndTime: 1731804413
-  // };
-  // const secondsToNextPhase = getCurrentSalePhase(testTimings).nextPhaseIn;
-
-  const secondsToNextPhase = getCurrentSalePhase(launchData?.timings).nextPhaseIn;
-
   return (
     <Grid
       container
@@ -47,7 +35,7 @@ export function CurrentToken({ launchData }: CurrentTokenProps) {
       </TonProvider>
 
       <LaunchTimer
-        initialSeconds={secondsToNextPhase}
+        initialSeconds={getCurrentSalePhase(launchData?.timings).nextPhaseIn}
       />
     </Grid>
   );

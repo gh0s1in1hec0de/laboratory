@@ -8,7 +8,7 @@ import { TokenBodyProps } from "./types";
 import { CustomConnectButton } from "@/components/CustomConnectButton";
 import { useTranslations } from "next-intl";
 
-export async function TokenBody({
+export function TokenBody({
   symbol,
   supply,
   launchAddress,
@@ -23,9 +23,7 @@ export async function TokenBody({
     getAmountError,
     errorText,
     isLoading,
-    jettonAmount,
-    tonMaxAmount,
-  } = await useBuyToken({
+  } = useBuyToken({
     supply,
     launchAddress,
     timings,
@@ -77,7 +75,8 @@ export async function TokenBody({
                 size="grow"
               >
                 <Label
-                  label={`${jettonAmount <= 0 ? 0 : jettonAmount} $${symbol || "UNKNWN"}`}
+                  // label={`${Number(creatorFutJetLeft) <= 0 ? 0 : creatorFutJetLeft} $${symbol || "UNKNWN"}`}
+                  label={`${Number(amount) <= 0 ? 0 : amount} $${symbol || "UNKNWN"}`}
                   variantSize="regular14"
                   variantColor="white"
                   cropped

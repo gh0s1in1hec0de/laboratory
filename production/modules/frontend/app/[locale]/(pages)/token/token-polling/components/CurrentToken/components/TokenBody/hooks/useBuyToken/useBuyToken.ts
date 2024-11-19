@@ -1,14 +1,14 @@
 import { getErrorText } from "@/utils";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { getAmountOut, getContractData, getCurrentSalePhase, GlobalVersions, SalePhase, TxRequestBuilder } from "starton-periphery";
 import { useTonConnectUI } from "@tonconnect/ui-react";
 import { UseBuyTokenProps } from "./types";
-import { fromNano, toNano } from "@ton/core";
+import { GetConfigResponse, getAmountOut, getContractData, getCurrentSalePhase, GlobalVersions, MAX_WL_ROUND_TON_LIMIT, SalePhase, TxRequestBuilder, jettonFromNano } from "starton-periphery";
+import { Address, fromNano, toNano } from "@ton/core";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import { TonClient4 } from "@ton/ton";
 
-export async function useBuyToken({ supply, launchAddress, timings, version }: UseBuyTokenProps) {
+export function useBuyToken({ supply, launchAddress, timings, version }: UseBuyTokenProps) {
   const [amount, setAmount] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorText, setErrorText] = useState<string>("");
@@ -16,32 +16,27 @@ export async function useBuyToken({ supply, launchAddress, timings, version }: U
   const t = useTranslations("Token.currentToken.amountInput");
 
   // todo: make global
-  const tonClient = new TonClient4({
-    endpoint: await getHttpV4Endpoint({ network: "mainnet" }),
-  });
+  // (async () => {
+  //   const tonClient = new TonClient4({
+  //     endpoint: await getHttpV4Endpoint({ network: "mainnet" }),
+  //   });
 
-  const data = await getContractData(
-    "WlPhaseLimits",
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    tonClient,
-    launchAddress,
-  );
+  //   const { creatorFutJetLeft, creatorFutJetPriceReversed } = (await getContractData(
+  //     "Config",
+  //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //     // @ts-ignore
+  //     tonClient,
+  //     Address.parse(launchAddress),
+  //   )) as GetConfigResponse;
+
+  //   const creatorMaxTons = creatorFutJetLeft * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
+  //   console.log(creatorMaxTons);
+  //   console.log(creatorFutJetLeft);
+  //   return { creatorMaxTons, creatorFutJetLeft };
+  // })();
   
   const numericAmount = BigInt(amount);
   const isValidAmount = numericAmount > 0;
-
-  const receivedNanoJettons = getAmountOut(
-    version,
-    getCurrentSalePhase(timings).phase as SalePhase.CREATOR | SalePhase.WHITELIST | SalePhase.PUBLIC,
-    data,
-    toNano(10),
-  );
-
-  // макс кол-во токенов, которые можно купить
-  const tonMaxAmount = (BigInt(supply) * 25n / 100n) * toNano(10) / receivedNanoJettons;
-  
-  const jettonAmount = BigInt(supply) * 25n / 100n;
 
   function getAmountError(): string {
     if (numericAmount < 0) {
@@ -75,8 +70,8 @@ export async function useBuyToken({ supply, launchAddress, timings, version }: U
     onClickBuyTokens,
     isValidAmount,
     getAmountError,
-    jettonAmount,
-    tonMaxAmount,
+    // creatorMaxTons: fromNano(creatorMaxTons),
+    // creatorFutJetLeft: jettonFromNano(creatorFutJetLeft),
     errorText,
     isLoading,
   };

@@ -331,6 +331,20 @@
 			"title": "Contribute",
 			"connectWallet": "Connect your wallet to start.",
 			"needStarTicket": "You need star ticket to join Star club wave or join this launch in public wave.",
+			"fetchError": "Oops, something went wrong... Please reload the page or try again later.",
+			"getStarTicket": "Get Star Ticket",
+			"amountInput": {
+				"placeholder": "Indicate the number of TON",
+				"currency": "TON",
+				"errors": {
+					"negative": "Amount cannot be negative",
+					"buyingError": "Buying error"
+				}
+			},
+			"startButton": {
+				"label": "Start",
+				"loading": "Starting..."
+			},
 			"claimButtons": {
 				"label": "Claim",
 				"loading": "Claiming..."
@@ -350,7 +364,8 @@
 			"description": "By investing in this token you can receive:",
 			"moreRewards": "see more",
 			"lessRewards": "see less",
-			"fetchError": "Oops, something went wrong... Please reload the page or try again later."
+			"fetchError": "Oops, something went wrong... Please reload the page or try again later.",
+			"noRewards": "No rewards yet"
 		},
 		"info": {
 			"title": "Info",
@@ -392,5 +407,29 @@
 				"text1": "You won’t get ANY of rewards for your contribution and lose the opportunity to get them again in this Wavelaunch."
 			}
 		}
+	},
+	"Rewards":{
+		"title": "All your rewards",
+		"myContribution": "My Contribution",
+		"jettonsToClaimTitle": "Jettons to claim",
+		"stage": "Stage:",
+		"remainingTime": "remaining",
+		"contributeMore": "Contribute more",
+		"rewards": "Rewards:",
+		"ton": "TON",
+		"infoBlock": {
+			"title": "What is it",
+			"closeButton": "Got it!"
+		},
+		"view": {
+			"title": "View all:",
+			"firstButton": "Claim",
+			"secondButton": "Rewards"
+		}
+	},
+	"Profile": {
+		"token": "My Tokens",
+		"rewards": "My Rewards",
+		"balanceDescription": "You can earn more right now"
 	}
 }
