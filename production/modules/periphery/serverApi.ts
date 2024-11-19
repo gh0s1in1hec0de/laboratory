@@ -59,10 +59,12 @@ export type GetCertainLaunchResponse = ExtendedLaunch | null;
 
 export type GetUserBalancesRequest = { user: RawAddressString, launch?: RawAddressString }
 
-export type ExtendedUserBalance = (StoredUserBalance & JettonMetadata & TokenLaunchTimings & {
+export type ExtendedUserBalance = (StoredUserBalance & {
+    timings: TokenLaunchTimings
+    metadata: JettonMetadata,
     totalSupply: Coins,
     isSuccessful: boolean | null,
-    creator: RawAddressString,
+    isCreator: RawAddressString,
 });
 export type MappedUserBalances = {
     [tokenLaunch: RawAddressString]: ExtendedUserBalance
