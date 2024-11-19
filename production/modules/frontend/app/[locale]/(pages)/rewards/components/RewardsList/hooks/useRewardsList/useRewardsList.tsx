@@ -6,7 +6,7 @@ import { CALLER_ADDRESS } from "@/constants";
 import { GetUserBalancesResponse } from "starton-periphery";
 
 export function useRewardsList() {
-  const [balances, setBalances] = useState<GetUserBalancesResponse>(null);
+  const [extendedBalances, setExtendedBalances] = useState<GetUserBalancesResponse>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
   const t = useTranslations("Rewards");
@@ -14,12 +14,12 @@ export function useRewardsList() {
   useEffect(() => {
     (async () => {
       try {
-        const balances = await userService.getBalances({
+        const extendedBalancesResponse = await userService.getBalances({
           // user: localStorageWrapper.get(CALLER_ADDRESS),
-          user: "0:1eb8e4e683f52de193a414eb9e823fe10ba440a8a28a1fe8fa19897d4b422bfa",
+          user: "0:b8f37554f0de7ea3a0e3b4a19c5f9cf01167e4888785b8c38fa5bd6e9eba0a38",
         });
 
-        setBalances(balances);
+        setExtendedBalances(extendedBalancesResponse);
       } catch (error) {
         setErrorText(getErrorText(error, t("fetchingError")));
       } finally {
@@ -29,7 +29,7 @@ export function useRewardsList() {
   }, []);
 
   return { 
-    balances,
+    extendedBalances,
     isLoading,
     errorText,
   };

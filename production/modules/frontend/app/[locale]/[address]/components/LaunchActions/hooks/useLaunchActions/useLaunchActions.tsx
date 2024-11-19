@@ -31,18 +31,17 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
         setTicketBalance(ticketBalance);
 
         if (ticketBalance > 0) {
-          if (!whitelistStatus) {
-            // await launchService.postBuyWl({
-            //   callerAddress,
-            //   launchAddress: launchData?.address ?? "",
-            // });
+          // todo
+          await launchService.postBuyWl({
+            callerAddress,
+            launchAddress: launchData?.address ?? "",
+          });
 
-            // Выполняем whitelistPurchaseV1Message
-            // await launchService.postWhitelistPurchaseMessage({
-            //   callerAddress,
-            //   launchAddress: launchData?.address ?? "",
-            // });
-          }
+          // Выполняем whitelistPurchaseV1Message
+          // await launchService.postWhitelistPurchaseMessage({
+          //   callerAddress,
+          //   launchAddress: launchData?.address ?? "",
+          // });
 
           return;
         }

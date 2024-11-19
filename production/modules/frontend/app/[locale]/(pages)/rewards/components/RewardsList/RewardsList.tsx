@@ -8,7 +8,7 @@ import { Label } from "@/common/Label";
 
 export function RewardsList() {
   const {
-    balances,
+    extendedBalances,
     isLoading,
     errorText,
   } = useRewardsList();
@@ -31,10 +31,10 @@ export function RewardsList() {
           />
         )}
         
-        {balances && Object.entries(balances).map(([key, balance]) => (
+        {extendedBalances && Object.entries(extendedBalances).map(([key, extendedBalance]) => (
           <RewardsCard
             key={key}
-            {...balance}
+            {...extendedBalance}
           />
         ))}
       </Grid>

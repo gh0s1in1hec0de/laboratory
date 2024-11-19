@@ -11,16 +11,10 @@ import { Disclosure, DisclosurePanel, DisclosureButton } from "@headlessui/react
 import { motion } from "framer-motion";
 import { RewardCard } from "@/app/[locale]/[address]/components/RewardsInfo/components/RewardCard";
 
-export function RewardsCard(balance: ExtendedUserBalance) {
+export function RewardsCard(extendedBalance: ExtendedUserBalance) {
   const t = useTranslations("Rewards");
 
-  const { phase } = getCurrentSalePhase({
-    startTime: balance.startTime,
-    creatorRoundEndTime: balance.creatorRoundEndTime,
-    wlRoundEndTime: balance.wlRoundEndTime,
-    publicRoundEndTime: balance.publicRoundEndTime,
-    endTime: balance.endTime,
-  });
+  const { phase } = getCurrentSalePhase(extendedBalance.timings);
   
   function renderPhase() {
     switch (phase) {
@@ -105,7 +99,7 @@ export function RewardsCard(balance: ExtendedUserBalance) {
       padding={1.5}
       gap={1}
     >
-      <LaunchInfo {...balance} />
+      <LaunchInfo {...extendedBalance} />
 
       <Grid container size={12} paddingTop={0.5}>
         <div style={{ width: "100%", height: "1px", backgroundColor: "var(--black-regular)" }} />
@@ -122,7 +116,7 @@ export function RewardsCard(balance: ExtendedUserBalance) {
           variantColor="gray"
         />
         <Label
-          label={jettonFromNano(balance.jettons)}
+          label={jettonFromNano(extendedBalance.jettons)}
           variantSize="regular14"
         />
       </Grid>

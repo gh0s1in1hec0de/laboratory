@@ -135,7 +135,7 @@ async function postBuyWl({
     await managerService.post<void>(
       LAUNCH_ROUTES.BuyWl,
       {
-        userAddress: callerAddress,
+        callerAddress,
         launchAddress,
       }
     );
