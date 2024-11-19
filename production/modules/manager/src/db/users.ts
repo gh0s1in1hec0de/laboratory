@@ -48,7 +48,7 @@ export async function decrementTicketBalance(
 ): Promise<void> {
     const res = await (client ?? globalClient)`
         UPDATE callers
-        SET ticket_balance = callers.ticket_balance - 1
+        SET ticket_balance = ticket_balance - 1
         WHERE address = ${callerAddress}
         RETURNING 1;
     `;

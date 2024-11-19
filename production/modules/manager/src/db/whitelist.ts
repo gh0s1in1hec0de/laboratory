@@ -2,21 +2,22 @@ import type { RawAddressString, WhitelistRelations } from "starton-periphery";
 import { decrementTicketBalance } from "./users";
 import type { SqlClient } from "./types";
 import { globalClient } from "./db";
+import { logger } from "../logger";
 
 export async function storeWhitelistRelation(
     tokenLaunchAddress: RawAddressString,
     callerAddress: RawAddressString,
     client?: SqlClient
-): Promise<WhitelistRelations | null> {
+): Promise<void> {
     const res = await (client ?? globalClient)<WhitelistRelations[]>`
         INSERT INTO whitelist_relations (token_launch, caller)
         VALUES (${tokenLaunchAddress}, ${callerAddress})
         RETURNING 1
     `;
-    return res.length ? res[0] : null;
+    if (res.length !== 1) logger().error(`exactly 1 column must be changed, got: ${res}`);
 }
 
-export async function buyWhitelist(callerAddress: RawAddressString, tokenLaunchAddress: string, client?: SqlClient): Promise<void> {
+export async function buyWhitelist(callerAddress: RawAddressString, tokenLaunchAddress: RawAddressString, client?: SqlClient): Promise<void> {
     return await (client ?? globalClient).begin(sql => {
         decrementTicketBalance(callerAddress, sql);
         storeWhitelistRelation(tokenLaunchAddress, callerAddress, sql);

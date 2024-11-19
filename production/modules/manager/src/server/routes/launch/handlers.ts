@@ -6,11 +6,13 @@ export async function uploadMetadataToIpfs(
     { links, metadata, image, influencerSupport }: UploadMetadataToIpfsRequest
 ): Promise<string> {
     // return "Qmb4Yjspwz3gVq371wvVN9hqzzAoopzv5W1yS49qdTJJ7f";
-    const base64Image = image.split(",")[1];  // remove `data:image/...;base64,` if present
-    const imageBuffer = Buffer.from(base64Image, "base64");
+    if (image) {
+        const base64Image = image.split(",")[1];  // remove `data:image/...;base64,` if present
+        const imageBuffer = Buffer.from(base64Image, "base64");
 
-    const imageCID = await uploadAndPinFileToIPFS(imageBuffer);
-    metadata.image = `https://ipfs.io/ipfs/${imageCID}`;
+        const imageCID = await uploadAndPinFileToIPFS(imageBuffer);
+        metadata.image = `https://ipfs.io/ipfs/${imageCID}`;
+    }
 
     const metadataJsonCID = await uploadAndPinFileToIPFS(
         Buffer.from(JSON.stringify(metadata))
@@ -25,6 +27,8 @@ export async function uploadMetadataToIpfs(
     return metadataJsonCID;
 }
 
-export async function buyWhitelist({ callerAddress, launchAddress }: BuyWhitelistRequest,): Promise<void> {
+export async function buyWhitelist(
+    { callerAddress, launchAddress }: BuyWhitelistRequest
+): Promise<void> {
     return await db.buyWhitelist(callerAddress, launchAddress);
 }

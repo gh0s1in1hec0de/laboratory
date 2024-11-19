@@ -47,10 +47,10 @@ export async function storeTokenLaunch(
         totalSupply, platformShare,
         minTonTreshold, createdAt
     }:
-        Omit<
-            StoredTokenLaunch,
-            "id" | "isSuccessful" | "postDeployEnrollmentStats" | "dexData"
-        >,
+    Omit<
+        StoredTokenLaunch,
+        "id" | "isSuccessful" | "postDeployEnrollmentStats" | "dexData"
+    >,
     client?: SqlClient
 ): Promise<void> {
     // @ts-expect-error just postgres typechecking nonsense
@@ -83,7 +83,8 @@ export async function getLaunch(
     const c = client ?? globalClient;
     const condition = {
         address: c`tl.address = ${address!}`,
-        creator: c`tl.creator = ${creator!} AND (timings ->> 'creatorRoundEndTime')::BIGINT > EXTRACT(EPOCH FROM now())`,
+        creator: c`tl.creator = ${creator!} AND (timings ->> 'creatorRoundEndTime')::BIGINT > EXTRACT(EPOCH FROM now())
+                   ORDER BY tl.created_at DESC LIMIT 1`,
         metadataUri: c`(tl.metadata ->> 'uri')::TEXT = ${metadataUri!}`
     }[address ? "address" : creator ? "creator" : "metadataUri"];
 
@@ -122,7 +123,7 @@ export async function getSortedTokenLaunches(
         WHERE tl.identifier ILIKE ${`%${search ?? ""}%`}
             ${succeed !== undefined ? c`AND tl.is_successful = ${succeed}` : c``}
             ${createdBy ? c`AND tl.creator = ${createdBy}` : c``}
-            -- If createdBy hadn't beed provided - we show only launches, that are available for all users 
+              -- If createdBy hadn't beed provided - we show only launches, that are available for all users 
             ${!createdBy ? c`AND (tl.timings->> 'creatorRoundEndTime')::BIGINT < EXTRACT(EPOCH FROM now())` : c``}
         ORDER BY tl.platform_share DESC, ${orderByExpression}
         LIMIT ${limit + 1} OFFSET ${offset};
