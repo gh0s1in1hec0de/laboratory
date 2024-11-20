@@ -10,6 +10,7 @@ import type {
 import { managerService, oracleService } from "@/api";
 import { LAUNCH_ERROR } from "@/errors";
 import { LAUNCH_ROUTES } from "@/routes";
+import { Address } from "@ton/core";
 
 async function getTokenLaunches(req: Partial<GetLaunchesChunkRequest>): Promise<GetLaunchesChunkResponse> {
   try {
@@ -38,9 +39,9 @@ async function getCurrentToken({
   try {
     const { data } = await oracleService.get<GetCertainLaunchResponse>(LAUNCH_ROUTES.GetCertainToken, {
       params: {
-        creator,
-        address,
-        metadataUri
+        ...(creator ? { creator: Address.parse(creator).toRawString() } : {}),
+        ...(address ? { address: Address.parse(address).toRawString() } : {}),
+        ...(metadataUri ? { metadataUri } : {}),
       }
     });
     return data;
@@ -135,8 +136,8 @@ async function postBuyWl({
     await managerService.post<void>(
       LAUNCH_ROUTES.BuyWl,
       {
-        callerAddress,
-        launchAddress,
+        callerAddress: Address.parse(callerAddress).toRawString(),
+        launchAddress: Address.parse(launchAddress).toRawString(),
       }
     );
   } catch (error) {
