@@ -23,13 +23,27 @@ export async function parseJettonMetadata(content: Cell, forcedContentType?: 0 |
     switch (contentType) {
         case 1: // Off-chain content
             const contentUrl = cs.remainingBits === 0 ? cs.loadStringRefTail() : cs.loadStringTail();
-            return await axios.get(formatLink(contentUrl)).then(res => res.data);
+            return await fetchMetadataWIthFallback(contentUrl);
         case 0: // On-chain content
             const onChainData = await loadOnChainData(cs);
             const offChainData: JettonMetadata = onChainData.uri ? await axios.get(formatLink(onChainData.uri)).then(res => res.data) : {};
             return buildJettonMetadataFromSource(onChainData, offChainData);
         default: // Unknown content type
             throw new Error(`Unknown metadata type: ${contentType}`);
+    }
+}
+
+export function formatLink(url: string): string {
+    return url.startsWith("ipfs://") ? url.replace("ipfs://", "https://ipfs.io/ipfs/") : url;
+}
+
+// Well, I know that hardcoding ipfs node url is not the best thing I could do, but I'm CEO, bitch
+export async function fetchMetadataWIthFallback(url: string, fallbackUri: string = "http://194.164.34.82:8080/ipfs/"): Promise<JettonMetadata> {
+    try {
+        return await axios.get(formatLink(url)).then(res => res.data);
+    } catch (e) {
+        if (!url.startsWith("https://ipfs.io/ipfs/") && !url.startsWith("ipfs://")) throw e;
+        return await axios.get(url.replace("ipfs://", fallbackUri)).then(res => res.data);
     }
 }
 
@@ -72,9 +86,4 @@ function buildJettonMetadataFromSource(onChainData: JettonMetadata, offChainData
         },
         {} as JettonMetadata
     );
-}
-
-
-export function formatLink(url: string): string {
-    return url.startsWith("ipfs://") ? url.replace("ipfs://", "https://ipfs.io/ipfs/") : url;
 }

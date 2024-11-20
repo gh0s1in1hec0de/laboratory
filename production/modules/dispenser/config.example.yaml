@@ -13,5 +13,6 @@ ton:
       - ""
   jetton_transfer_fee: 30000000
   wallet:
+    maybe_height: null
     address: ""
     mnemonic: ""
