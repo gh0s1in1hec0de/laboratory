@@ -159,7 +159,8 @@ async function createPoolsForNewJettons() {
                 address
             )
         );
-        if (dexData?.payedToCreator) continue;
+        const creatorsValue = BigInt(totalTonsCollected) * BigInt(getConfig().sale.creator_share_pct) / 100n;
+        if (dexData?.payedToCreator || creatorsValue > toNano("1000")) continue;
         actions.push({
             type: "sendMsg",
             mode: SendMode.PAY_GAS_SEPARATELY,
