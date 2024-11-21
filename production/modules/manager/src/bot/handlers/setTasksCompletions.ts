@@ -5,10 +5,10 @@ import { logger } from "../../logger";
 import { Address } from "@ton/core";
 import * as db from "../../db";
 
-export async function setTaskCompletions(conversation: MyConversation, ctx: MyContext): Promise<void> {
+export async function setTasksCompletions(conversation: MyConversation, ctx: MyContext): Promise<void> {
     await ctx.reply(
         getReplyText("addressListRequest"),
-        { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.setTaskCompletions) }
+        { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.setTasksCompletions) }
     );
 
     let progress = false;
@@ -19,7 +19,7 @@ export async function setTaskCompletions(conversation: MyConversation, ctx: MyCo
         if (errors.length) {
             await ctx.reply(getReplyText("invalidAddUsersTasksRelations") + "\n" + errors.join("\n"), {
                 parse_mode: "HTML",
-                reply_markup: cancelConversationKeyboard(Conversations.setTaskCompletions)
+                reply_markup: cancelConversationKeyboard(Conversations.setTasksCompletions)
             });
             continue;
         }
@@ -32,7 +32,7 @@ export async function setTaskCompletions(conversation: MyConversation, ctx: MyCo
             }
         } catch (error) {
             await ctx.reply(getReplyText("error"),
-                { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.setTaskCompletions) }
+                { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.setTasksCompletions) }
             );
             logger().error("Failed to add new task relations with an error: ", error);
             continue;

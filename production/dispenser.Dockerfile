@@ -11,4 +11,4 @@ RUN rm -f .env && mv .env.docker .env
 RUN bun install
 EXPOSE 5003
 
-CMD bun run dispencer
+CMD bun run dispenser

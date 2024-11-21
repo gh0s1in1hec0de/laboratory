@@ -23,11 +23,15 @@ export async function parseJettonMetadata(content: Cell, forcedContentType?: 0 |
     switch (contentType) {
         case 1: // Off-chain content
             const contentUrl = cs.remainingBits === 0 ? cs.loadStringRefTail() : cs.loadStringTail();
-            return await fetchMetadataWithFallback(contentUrl);
+            const metadata = await fetchMetadataWithFallback(contentUrl);
+            if (!metadata.uri) metadata.uri = contentUrl;
+            return metadata;
         case 0: // On-chain content
             const onChainData = await loadOnChainData(cs);
             const offChainData: JettonMetadata = onChainData.uri ? await axios.get(formatLink(onChainData.uri)).then(res => res.data) : {};
-            return buildJettonMetadataFromSource(onChainData, offChainData);
+            const mergedMetadata = buildJettonMetadataFromSource(onChainData, offChainData);
+            if (!mergedMetadata.uri) mergedMetadata.uri = onChainData.uri;
+            return mergedMetadata;
         default: // Unknown content type
             throw new Error(`Unknown metadata type: ${contentType}`);
     }

@@ -17,7 +17,7 @@ import {
     handleBackToMenuCallback,
     handleListTasksCallback,
     listRewardPoolsPrelude,
-    setTaskCompletions,
+    setTasksCompletions,
     handleStartCommand,
     handleMenuCommand,
     setRewardJetton,
@@ -40,11 +40,7 @@ export type MyConversation = Conversation<MyContext>;
 let maybeBot: Bot<MyContext> | null;
 
 export async function createBot(): Promise<Bot<MyContext>> {
-    const {
-        bot: {
-            token
-        }
-    } = getConfig();
+    const { bot: { token } } = getConfig();
 
     maybeBot = new Bot<MyContext, MyApi>(token);
 
@@ -55,7 +51,7 @@ export async function createBot(): Promise<Bot<MyContext>> {
     maybeBot.use(session({ initial }));
     maybeBot.use(conversations());
     maybeBot.use(createConversation(listRewardPoolsPrelude));
-    maybeBot.use(createConversation(setTaskCompletions));
+    maybeBot.use(createConversation(setTasksCompletions));
     maybeBot.use(createConversation(setRewardJetton));
     maybeBot.use(createConversation(setRewardPool));
     maybeBot.use(createConversation(createTask));

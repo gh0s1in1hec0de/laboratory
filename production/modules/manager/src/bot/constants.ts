@@ -12,6 +12,7 @@ import {
     jettonFromNano,
     toSnakeCase
 } from "starton-periphery";
+import { setTasksCompletions } from "./handlers";
 
 /**
  * COMMON
@@ -33,7 +34,7 @@ export const initPaginationData: PaginationData = {
 };
 
 export enum Conversations {
-    setTaskCompletions = "setTaskCompletions",
+    setTasksCompletions = "setTasksCompletions",
     createTask = "createTask",
     deleteTask = "deleteTask",
     setRewardJetton = "setRewardJetton",
@@ -141,7 +142,7 @@ export function getTasksReply(storedTasks: StoredTask[]): string {
 
         const status = (currentTime - Number(createdAt)) > oneWeekInSeconds ? "staged" : "not staged";
 
-        return `${taskId}. ${name} - ${formattedDate} - (${status})`;
+        return `[${taskId}] ${name} - ${formattedDate} - (${status})`;
     }).join("\n");
 }
 
@@ -154,8 +155,8 @@ export async function getUnknownMsgReply(ctx: MyContext) {
  */
 export function getMenuKeyboard(): InlineKeyboard {
     return new InlineKeyboard()
-        .text("Save completed tasks", "set_tasks_completions").row()
-        .text("Get tasks", "list_tasks").row()
+        .text("Set tasks completions", "set_tasks_completions").row()
+        .text("List tasks", "list_tasks").row()
         .text("List token launches", "list_launches").row()
         .text("Set reward pools", "set_reward_pool")
         .text("List reward pools", "list_reward_pools_prelude").row()
@@ -203,11 +204,7 @@ export function getConfirmDeleteTaskConvKeyboard(): InlineKeyboard {
  * FILTERS
  */
 export async function getAdminFilter(ctx: MyContext | HearsContext<MyContext>): Promise<boolean> {
-    const {
-        bot: {
-            admins
-        }
-    } = getConfig();
+    const { bot: { admins } } = getConfig();
     if (!admins.includes(ctx.from!.id)) {
         await ctx.reply("(⊙_⊙) Shutta f up, you are not an admin...");
         await ctx.stopPoll();
