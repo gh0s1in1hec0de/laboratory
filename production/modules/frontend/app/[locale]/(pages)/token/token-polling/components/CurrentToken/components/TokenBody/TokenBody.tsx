@@ -19,8 +19,6 @@ export function TokenBody({
     amount,
     setAmount,
     onClickBuyTokens,
-    isValidAmount,
-    getAmountError,
     errorText,
     isLoading,
   } = useBuyToken({
@@ -100,7 +98,6 @@ export function TokenBody({
         type="number"
         fullWidth
         disabled={isLoading}
-        errorText={getAmountError()}
         endAdornment={(
           <Label
             label={t("amountInput.currency")}
@@ -118,7 +115,7 @@ export function TokenBody({
           <CustomButton
             padding="10px"
             onClick={onClickBuyTokens}
-            disabled={!isValidAmount || isLoading}
+            disabled={isLoading}
           >
             <Label
               label={isLoading ? t("buyButton.loading") : t("buyButton.label")}

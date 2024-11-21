@@ -15,10 +15,38 @@ export function useBuyToken({ supply, launchAddress, timings, version }: UseBuyT
   const [tonConnectUI] = useTonConnectUI();
   const t = useTranslations("Token.currentToken.amountInput");
 
+  async function get(){
+    const tonClient = new TonClient4({
+      endpoint: await getHttpV4Endpoint({ network: "testnet" }),
+    });
+
+    const { creatorFutJetLeft, creatorFutJetPriceReversed, wlRoundFutJetLimit, wlRoundTonLimit } = (await getContractData(
+      "Config",
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      tonClient,
+      Address.parse("0:91b0b2deb5276bc2030315d3c650b0366138bc9ea8e1b10f1eade54271369b67"),
+      // Address.parse(launchAddress),
+    )) as GetConfigResponse;
+
+    const a = getAmountOut(
+      version,
+      SalePhase.CREATOR,
+      { wlRoundFutJetLimit, wlRoundTonLimit },
+      toNano(amount),
+    );
+    console.log(a);
+
+    const creatorMaxTons = creatorFutJetLeft * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
+    // console.log(creatorMaxTons);
+    // console.log(creatorFutJetLeft);
+    return { creatorMaxTons, creatorFutJetLeft, wlRoundFutJetLimit, wlRoundTonLimit };
+  }
+  
   // todo: make global
   // (async () => {
   //   const tonClient = new TonClient4({
-  //     endpoint: await getHttpV4Endpoint({ network: "mainnet" }),
+  //     endpoint: await getHttpV4Endpoint({ network: "testnet" }),
   //   });
 
   //   const { creatorFutJetLeft, creatorFutJetPriceReversed } = (await getContractData(
@@ -26,7 +54,8 @@ export function useBuyToken({ supply, launchAddress, timings, version }: UseBuyT
   //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //     // @ts-ignore
   //     tonClient,
-  //     Address.parse(launchAddress),
+  //     Address.parse("0:91b0b2deb5276bc2030315d3c650b0366138bc9ea8e1b10f1eade54271369b67"),
+  //     // Address.parse(launchAddress),
   //   )) as GetConfigResponse;
 
   //   const creatorMaxTons = creatorFutJetLeft * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
@@ -34,16 +63,6 @@ export function useBuyToken({ supply, launchAddress, timings, version }: UseBuyT
   //   console.log(creatorFutJetLeft);
   //   return { creatorMaxTons, creatorFutJetLeft };
   // })();
-  
-  const numericAmount = BigInt(amount);
-  const isValidAmount = numericAmount > 0;
-
-  function getAmountError(): string {
-    if (numericAmount < 0) {
-      return "Token.currentToken.amountInput.errors.negative";
-    }
-    return "";
-  }
 
   async function onClickBuyTokens() {
     try {
@@ -68,10 +87,9 @@ export function useBuyToken({ supply, launchAddress, timings, version }: UseBuyT
     amount,
     setAmount,
     onClickBuyTokens,
-    isValidAmount,
-    getAmountError,
     // creatorMaxTons: fromNano(creatorMaxTons),
     // creatorFutJetLeft: jettonFromNano(creatorFutJetLeft),
+    // creatorMaxTons: get().then(({ creatorMaxTons }) => creatorMaxTons),
     errorText,
     isLoading,
   };
