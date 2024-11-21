@@ -35,13 +35,17 @@ export function useBuyToken({ supply, launchAddress, timings, version }: UseBuyT
       { wlRoundFutJetLimit, wlRoundTonLimit },
       toNano(amount),
     );
-    console.log(a);
 
+    console.log(jettonFromNano(a));
+
+    // max tons 
     const creatorMaxTons = creatorFutJetLeft * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
     // console.log(creatorMaxTons);
     // console.log(creatorFutJetLeft);
-    return { creatorMaxTons, creatorFutJetLeft, wlRoundFutJetLimit, wlRoundTonLimit };
+    return { creatorMaxTons: fromNano(creatorMaxTons), amountOut: jettonFromNano(a) };
   }
+
+  get();
   
   // todo: make global
   // (async () => {
@@ -89,7 +93,7 @@ export function useBuyToken({ supply, launchAddress, timings, version }: UseBuyT
     onClickBuyTokens,
     // creatorMaxTons: fromNano(creatorMaxTons),
     // creatorFutJetLeft: jettonFromNano(creatorFutJetLeft),
-    // creatorMaxTons: get().then(({ creatorMaxTons }) => creatorMaxTons),
+    creatorMaxTons: get().then(({ amountOut }) => amountOut),
     errorText,
     isLoading,
   };
