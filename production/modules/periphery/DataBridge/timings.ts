@@ -5,7 +5,7 @@ import { Address, toNano } from "@ton/core";
 import { UnixTimeSeconds } from "../utils";
 import { TonClient4 } from "@ton/ton";
 import {
-    getApproximateWlAmountOut,
+    getApproximateWlAmountOut, getCreatorAmountOut,
     getCreatorJettonPrice,
     getPublicAmountOut,
     SyntheticReserves,
@@ -80,7 +80,7 @@ export function getAmountOut(
     value: Coins = toNano("10")
 ): Coins {
     if (phase === SalePhase.CREATOR && (data as WlPhaseLimits).wlRoundFutJetLimit !== undefined)
-        return getCreatorJettonPrice(data as WlPhaseLimits);
+        return getCreatorAmountOut(version, value, data as WlPhaseLimits);
 
     if (phase === SalePhase.WHITELIST && (data as WlPhaseLimits).wlRoundFutJetLimit !== undefined)
         return getApproximateWlAmountOut(data as WlPhaseLimits, version, value);
