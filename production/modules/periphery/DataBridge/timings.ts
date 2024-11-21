@@ -39,7 +39,7 @@ export function getCurrentSalePhase(
         return { phase: SalePhase.PUBLIC, nextPhaseIn: publicRoundEndTime - currentTime };
 
     if (currentTime < endTime)
-        return { phase: SalePhase.PUBLIC, nextPhaseIn: endTime - currentTime };
+        return { phase: SalePhase.ENDED, nextPhaseIn: endTime - currentTime };
 
     return { phase: SalePhase.ENDED, nextPhaseIn: null };
 }
