@@ -1,8 +1,5 @@
-import { CommonServerError } from "starton-periphery";
-import { getConfig } from "../../../config";
-import { Address } from "@ton/core";
-import * as db from "../../../db";
-import type {
+import {
+    CommonServerError, JettonMetadata, type UserRewardJettonBalance,
     GetRewardJettonBalancesResponse,
     GetRewardJettonBalancesRequest,
     GetRewardPositionsResponse,
@@ -13,6 +10,9 @@ import type {
     MappedRewardPools,
     GetAmountRequest,
 } from "starton-periphery";
+import { getConfig } from "../../../config";
+import { Address } from "@ton/core";
+import * as db from "../../../db";
 
 // Returned stringified nano-tons user needs to attach to claim application
 export async function getAmount(
@@ -58,6 +58,7 @@ export async function getRewardPositions(
     const rewardPositions = await db.getRewardPositions(
         Address.parse(userAddress).toRawString(), tokenLaunch ? Address.parse(tokenLaunch).toRawString() : undefined
     );
+    console.log(rewardPositions);
     return rewardPositions ? rewardPositions.reduce(
         (acc, position) => {
             const { tokenLaunch } = position;
@@ -69,8 +70,10 @@ export async function getRewardPositions(
     ) : null;
 }
 
-export async function getRewardBalances(
+export async function getRewardJettonBalances(
     { userAddress }: GetRewardJettonBalancesRequest,
 ): Promise<GetRewardJettonBalancesResponse> {
-    return await db.getRewardJettonBalances(Address.parse(userAddress).toRawString());
+    return await db.getRewardJettonBalances(Address.parse(userAddress).toRawString())
+        .then(r => r?.map(i => i))
+        ?? null;
 }

@@ -1,4 +1,4 @@
-import { getAmount, getLaunchesRewardPools, getRewardBalances, getRewardPositions } from "./handlers";
+import { getAmount, getLaunchesRewardPools, getRewardJettonBalances, getRewardPositions } from "./handlers";
 import { GetPositionsOrAmountSchema, GetRewardBalancesSchema, GetRewardPoolsSchema } from "./types";
 import { createDetailsForEndpoint, SwaggerTags } from "../../config";
 import { CommonServerError } from "starton-periphery";
@@ -57,7 +57,7 @@ export function RewardRoutes() {
             "/get-reward-balances",
             async ({ query, error }) => {
                 try {
-                    return await getRewardBalances(query);
+                    return await getRewardJettonBalances(query);
                 } catch (e) {
                     if (e instanceof CommonServerError) return error(e.code, e.message);
                     else return error(500, e);

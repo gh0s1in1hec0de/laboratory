@@ -1,2 +1,2 @@
 export * from "./priceOracle";
-export * from "./timings";
+export * from "./glue";
