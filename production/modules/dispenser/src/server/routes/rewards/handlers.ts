@@ -1,5 +1,5 @@
-import {
-    CommonServerError, JettonMetadata, type UserRewardJettonBalance,
+import { CommonServerError } from "starton-periphery";
+import type {
     GetRewardJettonBalancesResponse,
     GetRewardJettonBalancesRequest,
     GetRewardPositionsResponse,
