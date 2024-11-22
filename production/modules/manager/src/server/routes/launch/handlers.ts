@@ -5,20 +5,21 @@ import * as db from "../../../db";
 export async function uploadMetadataToIpfs(
     { links, metadata, image, influencerSupport }: UploadMetadataToIpfsRequest
 ): Promise<string> {
+    // Uncomment to use as a dummy
     // return "Qmb4Yjspwz3gVq371wvVN9hqzzAoopzv5W1yS49qdTJJ7f";
     if (image) {
         const base64Image = image.split(",")[1];  // remove `data:image/...;base64,` if present
         const imageBuffer = Buffer.from(base64Image, "base64");
 
         const imageCID = await uploadAndPinFileToIPFS(imageBuffer);
-        metadata.image = `https://ipfs.io/ipfs/${imageCID}`;
+        metadata.image = `https://storage.starton.pro/ipfs/${imageCID}`;
     }
 
     const metadataJsonCID = await uploadAndPinFileToIPFS(
         Buffer.from(JSON.stringify(metadata))
     );
     await db.storeLaunchMetadata({
-        onchainMetadataLink: `https://ipfs.io/ipfs/${metadataJsonCID}`,
+        onchainMetadataLink: `https://storage.starton.pro/ipfs/${metadataJsonCID}`,
         xLink: links.x,
         telegramLink: links.telegram,
         website: links.website,

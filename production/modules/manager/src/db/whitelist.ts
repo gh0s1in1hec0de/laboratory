@@ -1,8 +1,8 @@
 import type { RawAddressString, WhitelistRelations } from "starton-periphery";
-import { decrementTicketBalance } from "./users";
 import type { SqlClient } from "./types";
 import { globalClient } from "./db";
 import { logger } from "../logger";
+import { decrementTicketBalance } from "./users.ts";
 
 export async function storeWhitelistRelation(
     tokenLaunchAddress: RawAddressString,
@@ -18,9 +18,9 @@ export async function storeWhitelistRelation(
 }
 
 export async function buyWhitelist(callerAddress: RawAddressString, tokenLaunchAddress: RawAddressString, client?: SqlClient): Promise<void> {
-    return await (client ?? globalClient).begin(sql => {
-        decrementTicketBalance(callerAddress, sql);
-        storeWhitelistRelation(tokenLaunchAddress, callerAddress, sql);
+    await (client ?? globalClient).begin(async sql => {
+        await decrementTicketBalance(callerAddress, sql);
+        await storeWhitelistRelation(tokenLaunchAddress, callerAddress, sql);
     });
 }
 

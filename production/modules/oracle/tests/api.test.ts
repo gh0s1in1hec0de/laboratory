@@ -16,6 +16,7 @@ import {
     SortingOrder,
     jettonToNano,
 } from "starton-periphery";
+import { metadataArray } from "./metadata.ts";
 
 async function markLaunchAsSuccessful(address: RawAddressString, client: db.SqlClient): Promise<void> {
     const res = await client`
@@ -49,14 +50,14 @@ describe("launch sorter", () => {
     let launchAddresses: Address[];
     let creators: Address[];
     let actors: Address[];
-    const metadata: JettonMetadata = {
-        name: "Example Token",
-        description: "This is an example token description",
-        symbol: "EXM",
-        decimals: "6",
-        image: "https://ipfs.io/ipfs/Qmb4Yjspwz3gVq371wvVN9hqzzAoopzv5W1yS49qdTJJ7f",
-        uri: "https://ipfs.io/ipfs/QmVCMdxyudybb9vDefct1qU3DEZBhj3zhg3n9uM6EqGbN6"
-    };
+    // const metadata: JettonMetadata = {
+    //     name: "Example Token",
+    //     description: "This is an example token description",
+    //     symbol: "EXM",
+    //     decimals: "6",
+    //     image: "https://ipfs.io/ipfs/Qmb4Yjspwz3gVq371wvVN9hqzzAoopzv5W1yS49qdTJJ7f",
+    //     uri: "https://ipfs.io/ipfs/QmVCMdxyudybb9vDefct1qU3DEZBhj3zhg3n9uM6EqGbN6"
+    // };
 
     beforeAll(async () => {
         client = postgres({
@@ -87,7 +88,7 @@ describe("launch sorter", () => {
             await upsertRewardJetton({
                 masterAddress: randomAddress().toRawString(),
                 ourWalletAddress: randomAddress().toRawString(),
-                metadata,
+                metadata: metadataArray[i],
                 currentBalance: jettonToNano((i + 1) * 1000_000),
                 rewardAmount: jettonToNano((i + 1) * 10_000),
                 isActive: i % 2 === 0
@@ -97,13 +98,15 @@ describe("launch sorter", () => {
     test.skip("extended launches data mock", async () => {
         const now = Math.floor(Date.now() / 1000);
 
-        await storeLaunchMetadata({
-            onchainMetadataLink: "https://ipfs.io/ipfs/QmVCMdxyudybb9vDefct1qU3DEZBhj3zhg3n9uM6EqGbN6",
-            telegramLink: "https://t.me/juicy_bitches",
-            xLink: "https://x.com/juicy_bitches",
-            website: "https://juicy_bitches.cia",
-            influencerSupport: true
-        }, client);
+        for (let i = 0; i < metadataArray.length; i++) {
+            await storeLaunchMetadata({
+                onchainMetadataLink: `https://random_uri_link_${i + 1}`,
+                telegramLink: "https://t.me/juicy_bitches",
+                xLink: "https://x.com/juicy_bitches",
+                website: "https://juicy_bitches.cia",
+                influencerSupport: true
+            }, client);
+        }
 
         launchAddresses = Array.from({ length: 30 }, () => randomAddress());
         creators = Array.from({ length: 30 }, () => randomAddress());
@@ -137,10 +140,10 @@ describe("launch sorter", () => {
                     };
             await db.storeTokenLaunch({
                 address,
-                identifier: `${metadata.symbol} ${metadata.name ?? " "} ${metadata.description ?? " "}`.trim(),
+                identifier: `${metadataArray[currentLaunchIndex].symbol} ${metadataArray[currentLaunchIndex].name ?? " "} ${metadataArray[currentLaunchIndex].description ?? " "}`.trim(),
                 creator: creators[currentLaunchIndex].toRawString(),
                 version: currentLaunchIndex % 2 === 0 ? GlobalVersions.V1 : GlobalVersions.V2,
-                metadata, timings,
+                metadata: metadataArray[currentLaunchIndex], timings,
                 totalSupply: jettonToNano(666_666),
                 platformShare: currentLaunchIndex % 2 === 0 ? 0.5 : 1.5,
                 minTonTreshold: toNano("1000"),
@@ -204,10 +207,10 @@ describe("launch sorter", () => {
             };
             await db.storeTokenLaunch({
                 address,
-                identifier: `${metadata.symbol} ${metadata.name ?? " "} ${metadata.description ?? " "}`.trim(),
+                identifier: `${metadataArray[currentLaunchIndex].symbol} ${metadataArray[currentLaunchIndex].name ?? " "} ${metadataArray[currentLaunchIndex].description ?? " "}`.trim(),
                 creator: creators[currentLaunchIndex].toRawString(),
                 version: currentLaunchIndex % 2 === 0 ? GlobalVersions.V1 : GlobalVersions.V2,
-                metadata, timings,
+                metadata: metadataArray[currentLaunchIndex], timings,
                 totalSupply: jettonToNano(666_666),
                 platformShare: currentLaunchIndex % 2 === 0 ? 0.5 : 1.5,
                 minTonTreshold: toNano("1000"),

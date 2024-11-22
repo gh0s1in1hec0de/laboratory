@@ -2,7 +2,7 @@ import { XmasJettonMaster } from "../wrappers/XmasJettonMaster";
 import { XmasJettonWallet } from "../wrappers/XmasJettonWallet";
 import { compile, NetworkProvider } from "@ton/blueprint";
 import { TokenLaunchV1 } from "../wrappers/TokenLaunchV1";
-import { LaunchConfigV1 } from "starton-periphery";
+import { LaunchConfigV1, toPct } from "starton-periphery";
 import { LaunchParams } from "../wrappers/types";
 import { Address, toNano } from "@ton/core";
 
@@ -12,31 +12,31 @@ export async function run(provider: NetworkProvider) {
     const jettonMasterCode = await compile("XmasJettonMaster");
     const jettonWalletCode = await compile("XmasJettonWallet");
 
-    // TODO Check params and config twice before sending
+    const FIVE_MIN = 300;
     const launchParams: LaunchParams = {
-        startTime: Math.floor(Date.now() / 1000) + 90,
+        startTime: 1732209600,
         totalSupply: toNano("2025000"),
-        metadata: { uri: "replace me please" },
+        metadata: { uri: "https://ipfs.io/QmX1iE62YQHCkXa2UBgWCAi5KPgXruLm8TxpEnQRdbFYcd" },
         platformSharePct: 1500
     };
     const launchConfig: LaunchConfigV1 = {
-        minTonForSaleSuccess: toNano("100"),
-        tonLimitForWlRound: toNano("100"),
-        penny: toNano("1"),
+        minTonForSaleSuccess: toNano("4"),
+        tonLimitForWlRound: toNano("4"),
+        penny: toNano("0.1"),
 
-        jetWlLimitPct: 30000,
-        jetPubLimitPct: 30000,
-        jetDexSharePct: 25000,
+        jetWlLimitPct: toPct(18),
+        jetPubLimitPct: toPct(38),
+        jetDexSharePct: toPct(20),
 
-        creatorRoundDurationSec: 1,
-        wlRoundDurationSec: 1,
-        pubRoundDurationSec: 1,
+        creatorRoundDurationSec: FIVE_MIN,
+        wlRoundDurationSec: FIVE_MIN,
+        pubRoundDurationSec: FIVE_MIN,
     };
 
     const xmasLaunch = provider.open(
         TokenLaunchV1.createFromState({
-                creator: Address.parse("TODO"),
-                chief: Address.parse("TODO"),
+                creator: Address.parse("0QBXsUwWZ6K9fXs_zpp0UANP58PO1do2B91Vve7qKCg9GXWw"),
+                chief: Address.parse("0QCkmYN_RSz4qhhHEV3ralAbUfssRM59lqxbXeh5W5oCrYHO"),
                 launchParams,
                 code: {
                     tokenLaunch: tokenLaunchCode,
@@ -62,7 +62,7 @@ export async function run(provider: NetworkProvider) {
             ownerAddress: xmasLaunch.address
         }, jettonWalletCode)
     );
-    console.info(`Expected launch address: ${xmasLaunch.address}`);
+    console.info(`Expected launch address: ${xmasLaunch.address} (${xmasLaunch.address.toRawString()})`);
     await xmasLaunch.sendInit(
         { via: provider.sender(), value: toNano("0.3"), queryId: 2025n },
         launchXmasWallet.address,

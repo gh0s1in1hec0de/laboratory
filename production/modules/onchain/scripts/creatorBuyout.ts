@@ -5,14 +5,14 @@ import { NetworkProvider } from "@ton/blueprint";
 import { Address, toNano } from "@ton/core";
 import { checkVersionMatch } from "./units";
 
-const V: GlobalVersions = GlobalVersions.V2;
+const V: GlobalVersions = GlobalVersions.V1;
 
 export async function run(provider: NetworkProvider) {
     const ui = provider.ui();
 
     const tokenLaunchInstance =
         (V === GlobalVersions.V1 ? TokenLaunchV1 : TokenLaunchV2).createFromAddress(
-        Address.parse("kQDV-fQ8gH1fhrNNCZ1dn_sPowp3ftorP-VFZtE7cOFzaCj1")
+        Address.parse("kQBWnmGq5CRmYbMw_sJKqodg2LsiY0_K73uGu-q2K-TSH1u6")
     );
     checkVersionMatch(V, tokenLaunchInstance);
 

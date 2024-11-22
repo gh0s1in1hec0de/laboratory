@@ -23,7 +23,7 @@ export async function parseJettonMetadata(content: Cell, forcedContentType?: 0 |
     switch (contentType) {
         case 1: // Off-chain content
             const contentUrl = cs.remainingBits === 0 ? cs.loadStringRefTail() : cs.loadStringTail();
-            const metadata: JettonMetadata = await fetchMaybeIpfsObjectWithFallback(contentUrl);
+            const metadata: JettonMetadata = await axios.get(formatLink(contentUrl)).then(r => r.data);
             if (!metadata.uri) metadata.uri = contentUrl;
             return metadata;
         case 0: // On-chain content
@@ -42,7 +42,7 @@ export function formatLink(url: string): string {
 }
 
 // Well, I know that hardcoding ipfs node url is not the best thing I could do, but I'm CEO, bitch
-export async function fetchMaybeIpfsObjectWithFallback(
+export async function _fetchMaybeIpfsObjectWithFallback(
     url: string, fallbackUri: string = "http://194.164.34.82:8080/ipfs/"
 ): Promise<any> {
     try {
