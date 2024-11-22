@@ -11,8 +11,10 @@ import { useRewardsList } from "./hooks/useRewardsList";
 import { CustomAvatar } from "@/common/CustomAvatar";
 import { Label } from "@/common/Label";
 import { jettonFromNano } from "starton-periphery";
+import { useTranslations } from "next-intl";
 
 export default function Rewards() {
+  const t = useTranslations("Rewards");
   const [selectedTab, setSelectedTab] = useState<RewardsTabsValues>(RewardsTabsValues.CLAIMS);
   const {
     extendedBalances,
@@ -38,20 +40,26 @@ export default function Rewards() {
         tabs={REWARDS_TABS}
       />
 
-      
-      <RewardsList
+      {/* <RewardsList
         extendedBalances={extendedBalances}
         isLoading={isLoading}
         errorText={errorText}
         rewardPools={rewardPools}
-      />
+      /> */}
       
-      {/* {selectedTab === RewardsTabsValues.CLAIMS ? (
+      {selectedTab === RewardsTabsValues.CLAIMS ? (
         <RewardsList
           extendedBalances={extendedBalances}
           isLoading={isLoading}
           errorText={errorText}
           rewardPools={rewardPools}
+        />
+      ) : !rewardBalances ? (
+        <Label
+          label={t("noRewardBalances")}
+          variantColor="gray"
+          textAlign="center"
+          variantSize="regular16"
         />
       ) : rewardBalances?.map((reward, index) => (
         <Grid 
@@ -95,7 +103,7 @@ export default function Rewards() {
             />
           </Grid>
         </Grid>
-      ))} */}
+      ))}
     </Grid>
   );
 }

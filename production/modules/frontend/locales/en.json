@@ -422,6 +422,7 @@
 		"rewards": "Rewards",
 		"ton": "TON",
 		"noBalances": "Balances not found",
+		"noRewardBalances": "No reward balances",
 		"infoBlock": {
 			"title": "What is it",
 			"closeButton": "Got it!"

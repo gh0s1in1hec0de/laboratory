@@ -421,6 +421,7 @@
 		"claims": "Забрать",
 		"refund": "Возврат",
 		"noBalances": "Балансы не найдены",
+		"noRewardBalances": "Награды не найдены",
 		"ton": "TON",
 		"infoBlock": {
 			"title": "Что это",
