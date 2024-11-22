@@ -1,8 +1,8 @@
 import { parseGetConfigResponse, parseMoneyFlows } from "../chainMessageParsers";
 import { GetConfigResponse, MoneyFlows, TokenLaunchTimings } from "../types";
 import { Coins, GlobalVersions } from "../standards";
-import { Address, toNano } from "@ton/core";
-import { UnixTimeSeconds } from "../utils";
+import { Address, fromNano, toNano } from "@ton/core";
+import { jettonFromNano, UnixTimeSeconds } from "../utils";
 import { TonClient4 } from "@ton/ton";
 import {
     getApproximateWlAmountOut, getCreatorAmountOut,
@@ -46,7 +46,7 @@ export function getCurrentSalePhase(
 
 
 /**
- * Returns an estimated value a participant will receive for their investment.
+ * Returns an estimated nano-jetton value a participant will receive for their investment.
  *
  * ## Instructions:
  *
@@ -89,6 +89,10 @@ export function getAmountOut(
         return getPublicAmountOut(data as SyntheticReserves, version, value);
 
     throw new Error("meowreachable");
+}
+
+export function calculatePrice(tons: Coins, jettons: Coins): number {
+    return Number(fromNano(tons)) / Number(jettonFromNano(jettons));
 }
 
 /*
