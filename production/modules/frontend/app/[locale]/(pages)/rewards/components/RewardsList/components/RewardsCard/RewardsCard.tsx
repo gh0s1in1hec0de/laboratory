@@ -1,97 +1,31 @@
-import { MainBox } from "@/common/MainBox";
-import Grid from "@mui/material/Grid2";
-import { LaunchInfo } from "./components/LaunchInfo";
-import { ExtendedUserBalance, jettonFromNano, getCurrentSalePhase, SalePhase } from "starton-periphery";
 import { Label } from "@/common/Label";
-import { useTranslations } from "next-intl";
-import { ArrowIcon, ArrowUpRightIcon } from "@/icons";
-import styles from "./RewardsCard.module.scss";
-import { CustomButton } from "@/common/CustomButton";
-import { Disclosure, DisclosurePanel, DisclosureButton } from "@headlessui/react";
+import { MainBox } from "@/common/MainBox";
+import { RewardCard } from "@/components/RewardCard";
+import { ArrowIcon } from "@/icons";
+import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
+import Grid from "@mui/material/Grid2";
 import { motion } from "framer-motion";
-import { RewardCard } from "@/app/[locale]/[address]/components/RewardsInfo/components/RewardCard";
+import { useTranslations } from "next-intl";
+import {
+  jettonFromNano
+} from "starton-periphery";
+import { useRewardsCard } from "./components/hooks/useRewardsCard";
+import { LaunchInfo } from "./components/LaunchInfo";
+import styles from "./RewardsCard.module.scss";
+import { RewardsCardProps } from "./types";
 
-export function RewardsCard(extendedBalance: ExtendedUserBalance) {
+export function RewardsCard({
+  extendedBalance,
+  rewardPool,
+}: RewardsCardProps) {
   const t = useTranslations("Rewards");
-
-  const { phase } = getCurrentSalePhase(extendedBalance.timings);
-  
-  function renderPhase() {
-    switch (phase) {
-    case SalePhase.CREATOR:
-      return (
-        <MainBox
-          container
-          alignItems="center"
-          bgColor="green"
-          padding="4px 10px"
-          rounded
-        >
-          <Label
-            label="Creator"
-            variantSize="regular14"
-            offUserSelect
-            cropped
-          />
-        </MainBox>
-      );
-    case SalePhase.WHITELIST:
-      return (
-        <MainBox
-          container
-          alignItems="center"
-          bgColor="gray"
-          padding="4px 10px"
-          rounded
-        >
-          <Label
-            label="Star Club"
-            variantSize="regular14"
-            offUserSelect
-            cropped
-          />
-        </MainBox>
-      );
-    case SalePhase.PUBLIC:
-      return (
-        <MainBox
-          container
-          alignItems="center"
-          gap="2px"
-          bgColor="orange"
-          padding="4px 10px"
-          rounded
-        >
-          <Label
-            label="Public"
-            variantSize="regular14"
-            variantColor="orange"
-            cropped
-          />
-        </MainBox>
-      );
-    case SalePhase.ENDED:
-      return (
-        <MainBox
-          container
-          alignItems="center"
-          bgColor="orange"
-          padding="4px 10px"
-          rounded
-        >
-          <Label
-            label="Ended"
-            variantSize="regular14"
-            variantColor="red"
-            offUserSelect
-            cropped
-          />
-        </MainBox>
-      );
-    default:
-      return null;
-    }
-  }
+  const {
+    days,
+    hours,
+    minutes,
+    renderPhase,
+    renderButton,
+  } = useRewardsCard(extendedBalance);
 
   return (
     <MainBox
@@ -120,7 +54,7 @@ export function RewardsCard(extendedBalance: ExtendedUserBalance) {
           variantSize="regular14"
         />
       </Grid>
-    
+
       <Grid container size={12} paddingTop={0.5}>
         <div style={{ width: "100%", height: "1px", backgroundColor: "var(--black-regular)" }} />
       </Grid>
@@ -147,26 +81,26 @@ export function RewardsCard(extendedBalance: ExtendedUserBalance) {
             variantColor="gray"
           />
           <Label
-            label="0d. 0h. 0m."
+            label={`${days}d. ${hours}h. ${minutes}m.`}
             variantSize="regular14"
           />
         </Grid>
       </Grid>
-    
+
       <Grid container size={12} paddingTop={0.5}>
         <div style={{ width: "100%", height: "1px", backgroundColor: "var(--black-regular)" }} />
       </Grid>
 
       <Disclosure>
         {({ open }) => (
-          <Grid 
+          <Grid
             container
             alignItems="center"
             justifyContent="space-between"
             width="100%"
           >
-            <DisclosureButton 
-              as="div" 
+            <DisclosureButton
+              as="div"
               className={styles.button}
             >
               <Grid
@@ -181,8 +115,8 @@ export function RewardsCard(extendedBalance: ExtendedUserBalance) {
                   offUserSelect
                 />
 
-                <ArrowIcon 
-                  className={styles.icon} 
+                <ArrowIcon
+                  className={styles.icon}
                   isRotate={open}
                 />
               </Grid>
@@ -210,42 +144,21 @@ export function RewardsCard(extendedBalance: ExtendedUserBalance) {
                     gap={2}
                     paddingTop={2}
                   >
-
-                    123
-
-                    123
-
-                    123
-                    {/* <RewardCard
-                      rewardPool={balance.}
-                    /> */}
+                    {rewardPool?.map((reward, index) => (
+                      <RewardCard
+                        key={index}
+                        rewardPool={reward}
+                      />
+                    ))}
                   </Grid>
-                </motion.div> 
+                </motion.div>
               )}
             </DisclosurePanel>
           </Grid>
         )}
       </Disclosure>
 
-      <CustomButton
-        background="gray"
-        padding="10px 0"
-        fullWidth
-      >
-        <Grid 
-          container
-          gap={1}
-          alignItems="center"
-          justifyContent="center"
-        >
-          <ArrowUpRightIcon />
-          <Label 
-            label={t("contributeMore")} 
-            variantSize="medium16" 
-            offUserSelect
-          />
-        </Grid>
-      </CustomButton>
+      {renderButton()}
     </MainBox>
   );
 }

@@ -22,6 +22,7 @@ export function TokenBody({
     onClickBuyTokens,
     errorText,
     isLoading,
+    amountOut,
     creatorMaxTons,
   } = useBuyToken({
     supply,
@@ -74,9 +75,7 @@ export function TokenBody({
                 size="grow"
               >
                 <Label
-                  // label={`${Number(creatorFutJetLeft) <= 0 ? 0 : creatorFutJetLeft} $${symbol || "UNKNWN"}`}
-                  // label={`${Number(amount) <= 0 ? 0 : amount} $${symbol || "UNKNWN"}`}
-                  label={`${creatorMaxTons} $${symbol || "UNKNWN"}`}
+                  label={`${Number(amount) <= 0 ? 0 : amountOut} $${symbol || "UNKNWN"}`}
                   variantSize="regular14"
                   variantColor="white"
                   cropped
@@ -86,7 +85,7 @@ export function TokenBody({
           </Grid>
         ) : (
           <Label
-            label={t("subtitle")}
+            label={`${t("subtitle")} (${creatorMaxTons} TON)`}
             variantSize="regular16"
             variantColor="gray"
           />
@@ -100,6 +99,7 @@ export function TokenBody({
         type="number"
         fullWidth
         disabled={isLoading}
+        disableBigFloat
         endAdornment={(
           <Label
             label={t("amountInput.currency")}

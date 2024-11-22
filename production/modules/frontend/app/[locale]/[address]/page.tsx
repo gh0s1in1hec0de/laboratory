@@ -21,6 +21,7 @@ export default function CurrentLaunch({
     launchData,
     isLoading,
     errorText,
+    balance,
     getLaunchLink
   } = useCurrentLaunch(decodeURIComponent(address));
 
@@ -73,6 +74,7 @@ export default function CurrentLaunch({
 
         <LaunchInfo
           launchData={launchData}
+          showRefund={!!balance}
         />
       </Grid>
     </LoadingWrapper>

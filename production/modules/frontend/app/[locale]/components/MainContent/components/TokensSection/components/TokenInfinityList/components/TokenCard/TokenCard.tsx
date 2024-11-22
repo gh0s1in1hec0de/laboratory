@@ -10,6 +10,7 @@ import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
+
 export function TokenCard({
   launch,
 }: TokenCardProps) {

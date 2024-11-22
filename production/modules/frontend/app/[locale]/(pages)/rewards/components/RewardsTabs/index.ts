@@ -1,0 +1,1 @@
+export { RewardsTabs } from "./RewardsTabs";

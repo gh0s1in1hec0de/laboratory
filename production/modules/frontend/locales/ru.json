@@ -333,6 +333,7 @@
 			"needStarTicket": "Вам нужен Star Тикет чтобы присоединиться к Star Club волне или присоединиться к этому запуску в публичной волне.",
 			"fetchError": "Ой, что-то пошло не так... Пожалуйста, перезагрузите страницу или попробуйте позже.",
 			"getStarTicket": "Получить Star Тикет",
+			"ended": "Лаунч завершен",
 			"amountInput": {
 				"placeholder": "Укажите количество TON",
 				"currency": "TON",
@@ -415,7 +416,11 @@
 		"stage": "Этап:",
 		"remainingTime": "осталось",
 		"contributeMore": "Внести больше",
-		"rewards": "Награды:",
+		"rewards": "Награды",
+		"claim": "Забрать",
+		"claims": "Забрать",
+		"refund": "Возврат",
+		"noBalances": "Балансы не найдены",
 		"ton": "TON",
 		"infoBlock": {
 			"title": "Что это",

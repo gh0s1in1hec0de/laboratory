@@ -13,6 +13,19 @@ export function RisingStarTokenCard({
   errorText,
   tokenData
 }: RisingStarTokenCardProps) {
+  // const [imageUrl, setImageUrl] = useState<string>("");
+  // const [isLoadingImg, setIsLoadingImg] = useState<boolean>(false);
+  
+  // useEffect(() => {
+  //   (async () => {
+  //     if (tokenData?.metadata.image) {
+  //       setIsLoadingImg(true);
+  //       const url = await fetchMaybeIpfsObjectWithFallback(tokenData.metadata.image);
+  //       setImageUrl(url);
+  //       setIsLoadingImg(false);
+  //     }
+  //   })();
+  // }, [tokenData?.metadata.image]);
 
   if (errorText && !tokenData) {
     return (
@@ -34,6 +47,7 @@ export function RisingStarTokenCard({
       >
         <CustomAvatar
           size="medium"
+          // src={imageUrl}
           src={tokenData?.metadata.image || "https://icdn.lenta.ru/images/2024/03/18/12/20240318124428151/square_1280_828947c85a8838d217fe9fcc8b0a17ec.jpg"}
           alt="Rising Star Token"
         />

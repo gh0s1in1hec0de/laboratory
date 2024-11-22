@@ -2,12 +2,13 @@ import Grid from "@mui/material/Grid2";
 import { CustomButton } from "@/common/CustomButton";
 import { Label } from "@/common/Label";
 import { useTranslations } from "next-intl";
-import { useLaunchActions } from "../../hooks/useLaunchActions";
 import { ButtonsProps } from "./types";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
 import { ConnectButtonSkeleton } from "@/components/CustomConnectButton";
 import { ArrowUpRightIcon } from "@/icons";
 import { ContributeInput } from "./components/ContributeInput";
+import { SalePhase } from "starton-periphery";
+import { useLaunchActions } from "./hooks/useLaunchActions";
 
 export function Buttons({
   launchData,
@@ -18,6 +19,7 @@ export function Buttons({
     whitelistStatus,
     errorText,
     ticketBalance,
+    phase,
   } = useLaunchActions(launchData);
 
   return (
@@ -30,20 +32,23 @@ export function Buttons({
         container
         width="100%"
       >
-        {whitelistStatus ||( ticketBalance && ticketBalance > 0 )? (
-          // <CustomButton
-          //   fullWidth
-          //   padding="10px"
-          // // onClick={onClickBuyTokens}
-          // // disabled={!isValidAmount || isLoading}
-          // >
-          //   <Label
-          //   // label={isLoading ? t("loading") : t("label")}
-          //     label={t("claimButtons.label")}
-          //     variantSize="regular16"
-          //   />
-          // </CustomButton>
-          <ContributeInput launchAddress={launchData?.address || ""} />
+        {phase === SalePhase.ENDED ? (
+          <CustomButton
+            fullWidth
+            padding="10px"
+            background="gray"
+            addHover={false}
+          >
+            <Label
+              label={t("ended")}
+              variantSize="regular16"
+            />
+          </CustomButton>
+        ) : launchData && (whitelistStatus ||( ticketBalance && ticketBalance > 0 )) ? (
+          <ContributeInput 
+            launchAddress={launchData.address}
+            timings={launchData.timings}
+          />
         ) : (
           <CustomButton
             fullWidth

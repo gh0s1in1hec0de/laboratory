@@ -30,10 +30,12 @@ export function CustomRadioGroup<T>({
               { [styles.checked]: selected === value }
             )}
           >
-            <span className={classNames(
-              styles.radioIcon,
-              { [styles.checked]: selected === value }
-            )} />
+            <span 
+              className={classNames(
+                styles.radioIcon,
+                { [styles.checked]: selected === value }
+              )}
+            />
           </Radio>
 
           {label && (

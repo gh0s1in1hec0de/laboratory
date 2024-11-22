@@ -2,7 +2,7 @@ import { launchService, userService } from "@/services";
 import { getErrorText, localStorageWrapper } from "@/utils";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { GetCertainLaunchResponse } from "starton-periphery";
+import { GetCertainLaunchResponse, getCurrentSalePhase, TokenLaunchTimings } from "starton-periphery";
 import { CALLER_ADDRESS } from "@/constants";
 
 export function useLaunchActions(launchData: GetCertainLaunchResponse) {
@@ -11,6 +11,8 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
   const [whitelistStatus, setWhitelistStatus] = useState<boolean | null>(null);
   const [ticketBalance, setTicketBalance] = useState<number | null>(null);
   const t = useTranslations("CurrentLaunch.contribute");
+
+  const { phase } = getCurrentSalePhase(launchData?.timings as TokenLaunchTimings);
 
   useEffect(() => {
     (async () => {
@@ -31,18 +33,10 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
         setTicketBalance(ticketBalance);
 
         if (ticketBalance > 0) {
-          // todo
-          // await launchService.postBuyWl({
-          //   callerAddress,
-          //   launchAddress: launchData?.address ?? "",
-          // });
-
-          // Выполняем whitelistPurchaseV1Message
-          // await launchService.postWhitelistPurchaseMessage({
-          //   callerAddress,
-          //   launchAddress: launchData?.address ?? "",
-          // });
-
+          await launchService.postBuyWl({
+            callerAddress,
+            launchAddress: launchData?.address ?? "",
+          });
           return;
         }
       } catch (error) {
@@ -58,5 +52,6 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
     errorText,
     whitelistStatus,
     ticketBalance,
+    phase,
   };
 }

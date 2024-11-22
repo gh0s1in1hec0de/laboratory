@@ -1,17 +1,20 @@
 "use client";
 
 import Grid from "@mui/material/Grid2";
-import { useRewardsList } from "./hooks/useRewardsList";
 import { RewardsCard } from "./components/RewardsCard";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
 import { Label } from "@/common/Label";
+import { useTranslations } from "next-intl";
+import { TonProvider } from "@/providers/ton";
+import { RewardsListProps } from "./types";
 
-export function RewardsList() {
-  const {
-    extendedBalances,
-    isLoading,
-    errorText,
-  } = useRewardsList();
+export function RewardsList({
+  extendedBalances,
+  isLoading,
+  errorText,
+  rewardPools,
+}: RewardsListProps) {
+  const t = useTranslations("Rewards");
 
   return (
     <LoadingWrapper
@@ -30,13 +33,29 @@ export function RewardsList() {
             variantSize="regular14"
           />
         )}
-        
-        {extendedBalances && Object.entries(extendedBalances).map(([key, extendedBalance]) => (
-          <RewardsCard
-            key={key}
-            {...extendedBalance}
+
+        {!extendedBalances ? (
+          <Label
+            label={t("noBalances")}
+            variantColor="gray"
+            textAlign="center"
+            variantSize="regular16"
           />
-        ))}
+        ) : (
+          <TonProvider>
+            {Object.entries(extendedBalances).map(([key, extendedBalance]) => {
+              const rewardPoolForKey = rewardPools?.[key];
+
+              return (
+                <RewardsCard
+                  key={key}
+                  rewardPool={rewardPoolForKey}
+                  extendedBalance={extendedBalance}
+                />
+              );
+            })}
+          </TonProvider>
+        )}
       </Grid>
     </LoadingWrapper>
   );
