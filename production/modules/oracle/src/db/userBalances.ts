@@ -10,6 +10,7 @@ export async function getCallerBalances(
     const res = await c<ExtendedUserBalance[]>`
         SELECT ub.*,
                tl.is_successful,
+               tl.version,
                tl.timings,
                tl.metadata,
                tl.total_supply,
