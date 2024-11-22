@@ -1,4 +1,5 @@
 import type { 
+  GetAmountRequest,
   GetRewardJettonBalancesRequest, 
   GetRewardJettonBalancesResponse, 
   GetRewardPoolsRequest, 
@@ -47,7 +48,27 @@ async function getRewardBalances({
   }
 }
 
+async function getClaimAllRewards({
+  userAddress,
+  tokenLaunch
+}: GetAmountRequest): Promise<string> {
+  try {
+    const { data } = await dispenserService.get<string>(REWARDS_ROUTES.ClaimAllRewards, {
+      params: {
+        userAddress: Address.parse(userAddress).toRawString(),
+        ...(tokenLaunch ? { tokenLaunch: Address.parse(tokenLaunch).toRawString() } : {}),
+      }
+    });
+
+    return data;
+  } catch (error) {
+    console.error(REWARDS_ERROR.ClaimAllRewards, error);
+    throw error;
+  }
+}
+
 export const rewardsService = {
   getRewardPools,
   getRewardBalances,
+  getClaimAllRewards
 };

@@ -64,11 +64,13 @@ export function LaunchHeader({
 
       {showBIO && <LaunchLinks linksArray={linksArray} getLaunchLink={getLaunchLink}/>}
 
-      {showPrice && <LaunchPrice
-        launchAddress={launchAddress || ""}
-        timings={timings}
-        version={version}
-      />}
+      {showPrice && timings && version && (
+        <LaunchPrice
+          launchAddress={launchAddress || ""}
+          timings={timings}
+          version={version}
+        />
+      )}
 
       {showChart && (
         <LaunchChart />

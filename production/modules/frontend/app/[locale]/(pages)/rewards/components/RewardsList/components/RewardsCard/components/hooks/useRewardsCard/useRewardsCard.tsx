@@ -5,34 +5,41 @@ import {
   GlobalVersions,
   TxRequestBuilder,
 } from "starton-periphery";
-import { formatTime } from "@/utils";
+import { formatTime, getErrorText } from "@/utils";
 import { MainBox } from "@/common/MainBox";
 import { Label } from "@/common/Label";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { ArrowUpRightIcon } from "@/icons";
 import { CustomButton } from "@/common/CustomButton";
 import Grid from "@mui/material/Grid2";
 import { useTonConnectUI } from "@tonconnect/ui-react";
+import { useState, useTransition } from "react";
+import { PAGES } from "@/constants";
+import { useRouter } from "next/navigation";
 
 export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
   const t = useTranslations("Rewards");
   const { phase, nextPhaseIn } = getCurrentSalePhase(extendedBalance.timings);
   const { days, hours, minutes } = formatTime(nextPhaseIn || 0);
+  const [errorText, setErrorText] = useState<string>("");
   const [tonConnectUI] = useTonConnectUI();
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const locale = useLocale();
 
   async function onClickRefundHandler() {
     try {
       const transaction = TxRequestBuilder.refundMessage(
-        extendedBalance.,
+        extendedBalance.version,
         {
-          launchAddress: "",
-          isCreator: "" === "",
+          launchAddress: extendedBalance.tokenLaunch,
+          isCreator: Boolean(extendedBalance.isCreator),
         }
       );
 
       await tonConnectUI.sendTransaction(transaction, { modals: "all" });
     } catch (error) {
-      console.log(error);
+      setErrorText(getErrorText(error, t("refundError")));
     }
   }
 
@@ -47,12 +54,14 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
 
       await tonConnectUI.sendTransaction(transaction, { modals: "all" });
     } catch (error) {
-      console.log(error);
+      setErrorText(getErrorText(error, t("claimError")));
     }
   }
 
   async function onClickContributeHandler() {
-    console.log("contribute");
+    startTransition(() => { 
+      router.push(`/${locale}/${PAGES.Quests}`);
+    });
   }
 
   function renderPhase() {
@@ -195,5 +204,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
     minutes,
     renderPhase,
     renderButton,
+    errorText,
+    isPending,
   };
 }

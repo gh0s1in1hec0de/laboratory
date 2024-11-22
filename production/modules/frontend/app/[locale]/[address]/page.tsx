@@ -55,17 +55,17 @@ export default function CurrentLaunch({
         {launchData && (
           <TonProvider>
             <LaunchHeader
-              avatarSrc={launchData?.metadata.image}
-              symbol={launchData?.metadata.symbol}
-              name={launchData?.metadata.name}
-              holders={launchData?.activeHolders}
-              telegramLink={launchData?.telegramLink}
-              xLink={launchData?.xLink}
-              websiteLink={launchData?.website}
-              launchAddress={launchData?.address}
-              timings={launchData?.timings}
+              avatarSrc={launchData.metadata.image}
+              symbol={launchData.metadata.symbol}
+              name={launchData.metadata.name}
+              holders={launchData.activeHolders}
+              telegramLink={launchData.telegramLink}
+              xLink={launchData.xLink}
+              websiteLink={launchData.website}
+              launchAddress={launchData.address}
+              timings={launchData.timings}
               getLaunchLink={getLaunchLink}
-              version={launchData?.version}
+              version={launchData.version}
               showHolders
               showBIO
               showPrice
@@ -77,7 +77,7 @@ export default function CurrentLaunch({
 
             {launchData && <CurrentWave timings={launchData.timings} />}
 
-            <RewardsInfo address={launchData?.address ?? ""} />
+            <RewardsInfo address={launchData.address} />
 
             <LaunchInfo
               launchData={launchData}

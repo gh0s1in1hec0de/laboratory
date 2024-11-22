@@ -14,8 +14,8 @@ export interface LaunchHeaderProps {
   showChart?: boolean;
   showPrice?: boolean;
   launchAddress?: string;
-  timings: TokenLaunchTimings;
-  version: GlobalVersions;
+  timings?: TokenLaunchTimings;
+  version?: GlobalVersions;
 }
 
 export interface LaunchHeaderInfoProps {

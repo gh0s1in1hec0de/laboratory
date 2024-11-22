@@ -8,10 +8,11 @@ import { CustomTabs } from "@/common/CustomTabs";
 import { RewardsTabsValues } from "./types";
 import { REWARDS_TABS } from "./constants";
 import { useRewardsList } from "./hooks/useRewardsList";
-import { CustomAvatar } from "@/common/CustomAvatar";
 import { Label } from "@/common/Label";
-import { jettonFromNano } from "starton-periphery";
 import { useTranslations } from "next-intl";
+import { RewardBalancesList } from "./components/RewardBalancesList";
+import { CustomButton } from "@/common/CustomButton";
+import { TonProvider } from "@/providers/ton";
 
 export default function Rewards() {
   const t = useTranslations("Rewards");
@@ -59,49 +60,13 @@ export default function Rewards() {
             variantSize="regular16"
           />
         </Grid>
-      ) : rewardBalances?.map((reward, index) => (
-        <Grid 
-          key={index}
-          container 
-          width="100%"
-          alignItems="center"
-        >
-          <Grid
-            container
-            paddingLeft={1.5}
-          >
-            <CustomAvatar
-              size="extraSmall"
-              src={reward.metadata.image ?? "https://icdn.lenta.ru/images/2024/03/18/12/20240318124428151/square_1280_828947c85a8838d217fe9fcc8b0a17ec.jpg"}
-              alt="Reward Logo"
-            />
-          </Grid>
-
-          <Grid
-            container
-            size="grow"
-            paddingLeft={1}
-          >
-            <Label
-              label={reward.metadata.name ?? "Unknown"}
-              variantSize="medium16"
-              cropped
-            />
-          </Grid>
-
-          <Grid
-            container
-            paddingX={1.5}
-          >
-            <Label
-              label={`${jettonFromNano(reward.balance)} $${reward.metadata.symbol ?? "UNKNWN"}`}
-              variantSize="regular14"
-              variantColor="gray"
-              cropped
-            />
-          </Grid>
-        </Grid>
-      ))}
+      ) : (
+        <TonProvider>
+          <RewardBalancesList
+            rewardBalances={rewardBalances}
+          />
+        </TonProvider>
+      )}
     </Grid>
   );
 }
