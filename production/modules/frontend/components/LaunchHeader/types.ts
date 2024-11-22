@@ -1,3 +1,5 @@
+import { TokenLaunchTimings, GlobalVersions } from "starton-periphery";
+
 export interface LaunchHeaderProps {
   avatarSrc?: string;
   symbol?: string;
@@ -10,6 +12,10 @@ export interface LaunchHeaderProps {
   websiteLink?: string;
   getLaunchLink?: () => void;
   showChart?: boolean;
+  showPrice?: boolean;
+  launchAddress?: string;
+  timings: TokenLaunchTimings;
+  version: GlobalVersions;
 }
 
 export interface LaunchHeaderInfoProps {

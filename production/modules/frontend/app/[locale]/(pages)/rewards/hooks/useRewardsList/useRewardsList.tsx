@@ -47,7 +47,7 @@ export function useRewardsList({ selectedTab }: UseRewardsListProps) {
   async function fetchRewards() {
     try {
       const response = await rewardsService.getRewardBalances({
-        // user: localStorageWrapper.get(CALLER_ADDRESS),
+        // userAddress: localStorageWrapper.get(CALLER_ADDRESS),
         userAddress: "0:2dd16bb9a506382fa6b54ca661e44c3ef40c3bd776088995f94db50a44b44ad2",
       });
 

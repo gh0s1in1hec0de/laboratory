@@ -1,6 +1,7 @@
 import { 
   GetConfigResponse, 
   MAX_WL_ROUND_TON_LIMIT, 
+  Network, 
   SalePhase, 
   TxRequestBuilder, 
   getAmountOut, 
@@ -36,7 +37,7 @@ export function useBuyToken({ launchAddress, version }: UseBuyTokenProps) {
     (async () => {
       try {
         const tonClient = new TonClient4({
-          endpoint: await getHttpV4Endpoint({ network: "testnet" }),
+          endpoint: await getHttpV4Endpoint({ network: process.env.NEXT_PUBLIC_NETWORK_TESTNET as Network }),
         });
 
         const {
@@ -46,11 +47,9 @@ export function useBuyToken({ launchAddress, version }: UseBuyTokenProps) {
           wlRoundTonLimit,
         } = (await getContractData(
           "Config",
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
           tonClient,
-          Address.parse("0:91b0b2deb5276bc2030315d3c650b0366138bc9ea8e1b10f1eade54271369b67"),
-          // Address.parse(launchAddress),
+          // Address.parse("0:91b0b2deb5276bc2030315d3c650b0366138bc9ea8e1b10f1eade54271369b67"),
+          Address.parse(launchAddress),
         )) as GetConfigResponse;
 
         const creatorMaxTons =

@@ -73,6 +73,8 @@ export function getCurrentSalePhase(
  * @returns The estimated amount of coins a participant will receive.
  * @throws Will throw an error if the phase or data does not match any expected combination.
  */
+// SyntheticReserves - public
+// WlPhaseLimits - whitelist
 export function getAmountOut(
     version: GlobalVersions,
     phase: SalePhase.CREATOR | SalePhase.WHITELIST | SalePhase.PUBLIC,
@@ -91,7 +93,9 @@ export function getAmountOut(
     throw new Error("meowreachable");
 }
 
-export function calculatePrice(tons: Coins, jettons: Coins): number {
+// tons - toNano(10)
+// jettons - getAmountOut()
+export function calculatePrice(jettons: Coins, tons: Coins = toNano("10")): number {
     return Number(fromNano(tons)) / Number(jettonFromNano(jettons));
 }
 
@@ -129,6 +133,7 @@ async function getConfig(
     return parseGetConfigResponse(reader);
 }
 
+// mode: WHITELIST(STAR CLUB) - "Config" | PUBLIC - "MoneyFlows"
 export async function getContractData(
     mode: "Config" | "MoneyFlows" | "All",
     tonClient: TonClient4,

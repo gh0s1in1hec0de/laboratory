@@ -5,6 +5,7 @@ import { MainInfo } from "./components/MainInfo";
 import { LaunchLinks } from "./components/LaunchLinks";
 import { LaunchChart } from "./components/LaunchChart";
 import { TwitterIcon, TelegramIcon, WebsiteIcon } from "@/icons";
+import { LaunchPrice } from "./components/LaunchPrice";
 
 export function LaunchHeader({
   avatarSrc,
@@ -18,6 +19,10 @@ export function LaunchHeader({
   telegramLink,
   websiteLink,
   getLaunchLink,
+  showPrice,
+  launchAddress,
+  timings,
+  version
 }: LaunchHeaderProps) {
 
   const linksArray: LaunchHeaderInfoProps[] = [
@@ -58,6 +63,12 @@ export function LaunchHeader({
       />
 
       {showBIO && <LaunchLinks linksArray={linksArray} getLaunchLink={getLaunchLink}/>}
+
+      {showPrice && <LaunchPrice
+        launchAddress={launchAddress || ""}
+        timings={timings}
+        version={version}
+      />}
 
       {showChart && (
         <LaunchChart />

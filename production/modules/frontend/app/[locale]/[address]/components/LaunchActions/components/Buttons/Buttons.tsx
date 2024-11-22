@@ -44,8 +44,9 @@ export function Buttons({
               variantSize="regular16"
             />
           </CustomButton>
-        ) : launchData && (whitelistStatus ||( ticketBalance && ticketBalance > 0 )) ? (
-          <ContributeInput 
+          // isSuccess === true claim
+        ) : launchData && (whitelistStatus || (ticketBalance && ticketBalance > 0)) ? ( // WL PHASE
+          <ContributeInput
             launchAddress={launchData.address}
             timings={launchData.timings}
           />
@@ -70,6 +71,9 @@ export function Buttons({
             </Grid>
           </CustomButton>
         )}
+
+        {/* todo: public phase */}
+        {/* PUBLIC PHASE */}
       </Grid>
     </LoadingWrapper>
   );

@@ -23,7 +23,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
   async function onClickRefundHandler() {
     try {
       const transaction = TxRequestBuilder.refundMessage(
-        GlobalVersions.V1,
+        extendedBalance.,
         {
           launchAddress: "",
           isCreator: "" === "",

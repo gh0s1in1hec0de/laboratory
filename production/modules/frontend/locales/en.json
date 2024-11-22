@@ -326,7 +326,8 @@
 		"noLaunchError": "Oops, Launch not found... Return to the main page and try again.",
 		"fetchError": "Oops, something went wrong... Please reload the page or try again later.",
 		"holdersLabel": "holders",
-		"collectedLabel": "TON collected",	
+		"collectedLabel": "TON collected",
+		"price": "Price",
 		"contribute": {
 			"title": "Contribute",
 			"connectWallet": "Connect your wallet to start.",

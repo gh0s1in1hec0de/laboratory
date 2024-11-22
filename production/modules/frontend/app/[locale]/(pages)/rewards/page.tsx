@@ -40,13 +40,6 @@ export default function Rewards() {
         tabs={REWARDS_TABS}
       />
 
-      {/* <RewardsList
-        extendedBalances={extendedBalances}
-        isLoading={isLoading}
-        errorText={errorText}
-        rewardPools={rewardPools}
-      /> */}
-      
       {selectedTab === RewardsTabsValues.CLAIMS ? (
         <RewardsList
           extendedBalances={extendedBalances}
@@ -55,12 +48,17 @@ export default function Rewards() {
           rewardPools={rewardPools}
         />
       ) : !rewardBalances ? (
-        <Label
-          label={t("noRewardBalances")}
-          variantColor="gray"
-          textAlign="center"
-          variantSize="regular16"
-        />
+        <Grid
+          container
+          width="100%"
+          justifyContent="center"
+        >
+          <Label
+            label={t("noRewardBalances")}
+            variantColor="gray"
+            variantSize="regular16"
+          />
+        </Grid>
       ) : rewardBalances?.map((reward, index) => (
         <Grid 
           key={index}

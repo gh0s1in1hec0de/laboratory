@@ -13,6 +13,7 @@ import { LaunchInfo } from "./components/LaunchInfo";
 import { RewardsInfo } from "./components/RewardsInfo";
 import { useCurrentLaunch } from "./hooks/useCurrentLaunch";
 import { CurrentLaunchPageProps } from "./types";
+import { TonProvider } from "@/providers/ton";
 
 export default function CurrentLaunch({
   params: { address }
@@ -51,31 +52,39 @@ export default function CurrentLaunch({
       >
         <BgLight />
 
-        <LaunchHeader
-          avatarSrc={launchData?.metadata.image}
-          symbol={launchData?.metadata.symbol}
-          name={launchData?.metadata.name}
-          holders={launchData?.activeHolders}
-          telegramLink={launchData?.telegramLink}
-          xLink={launchData?.xLink}
-          websiteLink={launchData?.website}
-          getLaunchLink={getLaunchLink}
-          showHolders
-          showBIO
-        />
+        {launchData && (
+          <TonProvider>
+            <LaunchHeader
+              avatarSrc={launchData?.metadata.image}
+              symbol={launchData?.metadata.symbol}
+              name={launchData?.metadata.name}
+              holders={launchData?.activeHolders}
+              telegramLink={launchData?.telegramLink}
+              xLink={launchData?.xLink}
+              websiteLink={launchData?.website}
+              launchAddress={launchData?.address}
+              timings={launchData?.timings}
+              getLaunchLink={getLaunchLink}
+              version={launchData?.version}
+              showHolders
+              showBIO
+              showPrice
+            />
+        
+            <LaunchActions
+              launchData={launchData}
+            />
 
-        <LaunchActions
-          launchData={launchData}
-        />
+            {launchData && <CurrentWave timings={launchData.timings} />}
 
-        {launchData && <CurrentWave timings={launchData.timings} />}
+            <RewardsInfo address={launchData?.address ?? ""} />
 
-        <RewardsInfo address={launchData?.address ?? ""} />
-
-        <LaunchInfo
-          launchData={launchData}
-          showRefund={!!balance}
-        />
+            <LaunchInfo
+              launchData={launchData}
+              showRefund={!!balance}
+            />
+          </TonProvider>
+        )}
       </Grid>
     </LoadingWrapper>
   );
