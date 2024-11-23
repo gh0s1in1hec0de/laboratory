@@ -71,7 +71,7 @@ async function validateEndedPendingLaunches() {
                 mode: SendMode.PAY_GAS_SEPARATELY,
                 outMsg: internal_relaxed({
                     to: launchAddressParsed,
-                    value: toNano("0.1"),
+                    value: toNano("0.05"),
                     body: beginCell()
                         .storeUint(TokensLaunchOps.ClaimOpn, OP_LENGTH)
                         .storeUint(queryId, QUERY_ID_LENGTH)
@@ -142,7 +142,7 @@ async function createPoolsForNewJettons() {
             mode: SendMode.PAY_GAS_SEPARATELY,
             outMsg: internal_relaxed({
                 to: Address.parse(address),
-                value: toNano("0.1"),
+                value: toNano("0.05"),
                 body: beginCell()
                     .storeUint(TokensLaunchOps.ClaimOpn, OP_LENGTH)
                     .storeUint(queryId, QUERY_ID_LENGTH)

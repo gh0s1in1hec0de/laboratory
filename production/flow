@@ -1,0 +1,38 @@
+1. Если у нас по таймеру WHITELIST/PUBLIC - отображаем страницу покупки с кнопками contribute
+c соответствующими вызовами wl/public покупки
+2.
+
+if (phase === SalePhase.WHITELIST) {
+    contribute - wl buy
+}
+if (phase === SalePhase.PUBLIC) {
+    contribute - public buy
+}
+if (phase === SalePhase.ENDED) {
+    if (is_successful === null) {
+        оракул еще не успел присвоить категорию лаунчу, я бы отобразил какую то
+        страничку законченного лаунча типо listing process, но заменил слова на Please, wait...
+
+        total_tons_collected > total_tons_treshold - Это значит лаунч успешный, у нас есть оба поля
+        Так что можно добавить вот так внутри этого:
+        if(total_tons_collected > total_tons_treshold) {
+            Deploying jetton...
+        } else {
+            Страница рефанда
+        }
+    } else if (is_successful === false) {
+        Страница рефанда
+    } else if (is_successful === true) {
+        if (postDeployEnrollmentStats === null) {
+            Оракул только определил категорию лаунча, но не задеплоил жеттон и пул
+            Deploying jetton...
+        }
+        if (postDeployEnrollmentStats !== null & dexData === null) {
+            Жеттон задеплоен, так что тут пишем
+            Deploying pool...
+        }
+        if (postDeployEnrollmentStats !== null & dexData !== null) {
+            Пул задеплоен, отображаем ту страничку со ссылками на дедаст и график
+        }
+    }
+}

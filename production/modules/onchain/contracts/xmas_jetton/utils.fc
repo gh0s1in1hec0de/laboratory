@@ -1,8 +1,8 @@
 #include "../workchain.fc";
 #include "op_codes.fc";
 
-const START = 1732212300;
-const END = 1763748300;
+const START = 1732428013;
+const END = 1732860013;
 
 cell pack_jetton_wallet_data(int balance, slice owner_address, slice jetton_master_address) inline {
     return begin_cell()

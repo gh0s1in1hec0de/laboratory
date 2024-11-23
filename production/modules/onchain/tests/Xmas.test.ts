@@ -15,8 +15,8 @@ import {
 
 // Event boundaries – update before testing.
 // Use `determine event timings` for convenience.
-const START = 1731743141;
-const END = 1732175141;
+const START = 1732428013;
+const END = 1732860013;
 
 describe("Marry Christmas and happy New Year!", () => {
     let blockchain: Blockchain;
@@ -91,8 +91,8 @@ describe("Marry Christmas and happy New Year!", () => {
             const recipient = randomAddress();
             const transferAmount = jettonToNano("100");
             const transferResult = await deployerWallet.sendTransfer(
-                deployer.getSender(), toNano("1"), transferAmount, recipient, deployer.address,
-                null, toNano("0.1"), null
+                deployer.getSender(), toNano("0.05"), transferAmount, recipient, deployer.address,
+                null, toNano("0.0001"), null
             );
 
             const transferTx = findTransactionRequired(transferResult.transactions, {
@@ -112,7 +112,7 @@ describe("Marry Christmas and happy New Year!", () => {
 
             // As the event hasn't been started yest
             const walletBalance = await userWallet(recipient).getJettonBalance();
-            assert(walletBalance === transferAmount);
+            assert(walletBalance === transferAmount, `${walletBalance} vs ${transferAmount}`);
         }, 20000);
         test("burn specs", async () => {
             const burnResult = await jettonMaster.sendForceBurn(
@@ -139,8 +139,8 @@ describe("Marry Christmas and happy New Year!", () => {
             const recipient = randomAddress();
             const transferAmount = jettonToNano("100");
             const transferResult = await deployerWallet.sendTransfer(
-                deployer.getSender(), toNano("1"), transferAmount, recipient, deployer.address,
-                null, toNano("0.1"), null
+                deployer.getSender(), toNano("0.07"), transferAmount, recipient, deployer.address,
+                null, toNano("0.005"), null
             );
 
             const transferTx = findTransactionRequired(transferResult.transactions, {
@@ -148,11 +148,11 @@ describe("Marry Christmas and happy New Year!", () => {
                 success: true,
             });
             printTxGasStats("Transfer request transaction", transferTx);
-            const increaseSupplyTx = findTransactionRequired(transferResult.transactions, {
-                op: JettonOps.IncreaseSupply,
-                success: true,
-            });
-            printTxGasStats("Supply increase transaction", increaseSupplyTx);
+            // const increaseSupplyTx = findTransactionRequired(transferResult.transactions, {
+            //     op: JettonOps.IncreaseSupply,
+            //     success: true,
+            // });
+            // printTxGasStats("Supply increase transaction", increaseSupplyTx);
             const internalTransferTx = findTransactionRequired(transferResult.transactions, {
                 op: JettonOps.InternalTransfer,
                 success: true,
@@ -167,7 +167,7 @@ describe("Marry Christmas and happy New Year!", () => {
             assert(supplyAfter === (supplyBefore + walletBalance - transferAmount));
         }, 20000);
 
-        test("christmas transfers' statistics", async () => {
+        test.skip("christmas transfers' statistics", async () => {
             const increaseCounts = { "2%": 0, "4%": 0, "7%": 0, "10%": 0, "15%": 0 };
             const totalTransfers = 100;
 

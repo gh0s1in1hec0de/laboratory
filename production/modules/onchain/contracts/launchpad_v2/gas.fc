@@ -91,11 +91,12 @@ int get_balance_update_gas_cost() inline_ref {
     + calculate_user_vault_min_storage_fee(TWO_MONTHS);
 }
 
+const ONCHAIN_FEE = 2;
 ;;; Returns purified value and operational needs
 (int, int) validate_value(int total, int fee) impure inline_ref {
     throw_if(error::not_enough_gas, fee > total);
     int extra = total - fee;
-    int purified = muldiv(extra, 99, 100);
+    int purified = muldiv(extra, 100 - ONCHAIN_FEE, 100);
     throw_unless(error::balance_lack, purified > 0);
     return (purified, extra - purified);
 }

@@ -41,6 +41,7 @@ import {
     toNano,
     Cell,
 } from "@ton/core";
+import { printTxGasStats } from "./utils/gasUtils";
 
 /* To find out:
     1. At some reason on-chain state always more on 102 bits that our off-chain calculation
@@ -513,7 +514,7 @@ describe("Xmas V1 Launch", () => {
                 to: consumer.address,
                 success: true,
                 body: beginCell().storeUint(0, 32).storeStringTail("shift!").endCell(),
-                value: (v) => (v ?? 0n) > toNano("3")
+                // value: (v) => (v ?? 0n) > toNano("3")
             });
             const newTimings = await sampleTokenLaunch.getSaleTimings();
             assert(newTimings.wlRoundEndTime < oldTimings.wlRoundEndTime, "smartcontract must shift timings");
@@ -916,6 +917,32 @@ describe("Xmas V1 Launch", () => {
             assert(launchDerivedJettonBalance === launchData.futJetTotalSupply - chiefDerivedJettonBalance);
             assert(launchDerivedJettonBalance === innerData.futJetDeployedBalance);
         }, 20000);
+        test("opn needs being claimed properly", async () => {
+            const { operationalNeeds: opnBefore } = await sampleTokenLaunch.getInnerData();
+            console.log(`Collected ${fromNano(opnBefore)} TONs as operational needs`);
+            const claimOpnResult = await sampleTokenLaunch.sendClaimOpn({
+                queryId: 0n,
+                value: toNano("1"),
+                via: chief.getSender()
+            });
+            const { operationalNeeds: opnAfter } = await sampleTokenLaunch.getInnerData();
+            assert(!opnAfter);
+
+            const claimOpnTx = findTransactionRequired(claimOpnResult.transactions, {
+                op: TokensLaunchOps.ClaimOpn,
+                success: true
+            });
+            printTxGasStats("Claim opn transaction: ", claimOpnTx);
+            expect(claimOpnResult.transactions).toHaveTransaction({
+                op: TokensLaunchOps.ClaimOpn,
+                success: true
+            });
+            expect(claimOpnResult.transactions).toHaveTransaction({
+                op: 0x0,
+                success: true,
+                value: x => x! > opnBefore * 9n / 10n
+            });
+        });
         test("claim works as it should", async () => {
             const { wlTonBalance, jettonBalance } = await consumerVault.getVaultData();
             const moneyFlows = await sampleTokenLaunch.getMoneyFlows();

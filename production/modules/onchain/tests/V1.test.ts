@@ -1082,6 +1082,32 @@ describe("V1", () => {
             assert(launchDerivedJettonBalance === launchData.futJetTotalSupply - chiefDerivedJettonBalance);
             assert(launchDerivedJettonBalance === innerData.futJetDeployedBalance);
         }, 20000);
+        test("opn needs being claimed properly", async () => {
+            const { operationalNeeds: opnBefore } = await sampleTokenLaunch.getInnerData();
+            console.log(`Collected ${fromNano(opnBefore)} TONs as operational needs`);
+            const claimOpnResult = await sampleTokenLaunch.sendClaimOpn({
+                queryId: 0n,
+                value: toNano("1"),
+                via: chief.getSender()
+            });
+            const { operationalNeeds: opnAfter } = await sampleTokenLaunch.getInnerData();
+            assert(!opnAfter);
+
+            const claimOpnTx = findTransactionRequired(claimOpnResult.transactions, {
+                op: TokensLaunchOps.ClaimOpn,
+                success: true
+            });
+            printTxGasStats("Claim opn transaction: ", claimOpnTx);
+            expect(claimOpnResult.transactions).toHaveTransaction({
+                op: TokensLaunchOps.ClaimOpn,
+                success: true
+            });
+            expect(claimOpnResult.transactions).toHaveTransaction({
+                op: 0x0,
+                success: true,
+                value: x => x! > opnBefore * 9n / 10n
+            });
+        });
         test("claim works as it should", async () => {
             const { wlTonBalance, jettonBalance } = await consumerVault.getVaultData();
             const moneyFlows = await sampleTokenLaunch.getMoneyFlows();

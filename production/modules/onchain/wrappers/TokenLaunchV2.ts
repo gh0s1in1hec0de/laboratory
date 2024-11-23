@@ -157,6 +157,18 @@ export class TokenLaunchV2 implements Contract {
         });
     }
 
+    async sendClaimOpn(provider: ContractProvider, sendMessageParams: SendMessageParams) {
+        const { queryId, via, value } = sendMessageParams;
+
+        const body = beginCell()
+            .storeUint(TokensLaunchOps.ClaimOpn, OP_LENGTH)
+            .storeUint(queryId, QUERY_ID_LENGTH)
+            .endCell();
+        await provider.internal(via, {
+            value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
+        });
+    }
+
     async getLaunchData(provider: ContractProvider): Promise<LaunchData> {
         let { stack } = await provider.get("get_launch_data", []);
         return {

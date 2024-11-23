@@ -7,11 +7,12 @@ import { fees } from "../fees";
 // 10k TON
 export const MAX_WL_ROUND_TON_LIMIT = 10000n * toNano("1");
 export const PERCENTAGE_DENOMINATOR = 100000n;
+export const ONCHAIN_FEE = 2n;
 
 export function validateValueMock(total: Coins, fee: Coins): { purified: Coins, opn: Coins } {
     assert(fee < total, "not enough gas");
     const extra = total - fee;
-    const purified = extra * 99n / 100n;
+    const purified = extra * (100n - ONCHAIN_FEE) / 100n;
     assert(purified > 0, "balance lack");
     return { purified, opn: extra - purified };
 }
