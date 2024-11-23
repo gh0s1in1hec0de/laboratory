@@ -15,8 +15,8 @@ import {
 
 // Event boundaries – update before testing.
 // Use `determine event timings` for convenience.
-const START = 1732428013;
-const END = 1732860013;
+const START = 1732543616;
+const END = 1732975616;
 
 describe("Marry Christmas and happy New Year!", () => {
     let blockchain: Blockchain;
@@ -61,7 +61,7 @@ describe("Marry Christmas and happy New Year!", () => {
     }, 20000);
 
     // Change constants to actual values before testing
-    test.skip("determine event timings", () => console.info(blockchain.now! + 2 * 86400, blockchain.now! + 7 * 86400));
+    test("determine event timings", () => console.info(blockchain.now! + 2 * 86400, blockchain.now! + 7 * 86400));
 
     describe("standard functions", () => {
         test("minting jettons", async () => {
@@ -91,7 +91,7 @@ describe("Marry Christmas and happy New Year!", () => {
             const recipient = randomAddress();
             const transferAmount = jettonToNano("100");
             const transferResult = await deployerWallet.sendTransfer(
-                deployer.getSender(), toNano("0.05"), transferAmount, recipient, deployer.address,
+                deployer.getSender(), toNano("0.1"), transferAmount, recipient, deployer.address,
                 null, toNano("0.0001"), null
             );
 
@@ -99,7 +99,7 @@ describe("Marry Christmas and happy New Year!", () => {
                 op: JettonOps.Transfer,
                 success: true,
             });
-            printTxGasStats("Transfer request transaction", transferTx);
+            printTxGasStats("Common transfer request transaction", transferTx);
             expect(transferResult.transactions).not.toHaveTransaction({
                 op: JettonOps.IncreaseSupply,
                 success: true
@@ -108,7 +108,7 @@ describe("Marry Christmas and happy New Year!", () => {
                 op: JettonOps.InternalTransfer,
                 success: true,
             });
-            printTxGasStats("Internal transfer transaction", internalTransferTx);
+            printTxGasStats("Common internal transfer transaction", internalTransferTx);
 
             // As the event hasn't been started yest
             const walletBalance = await userWallet(recipient).getJettonBalance();
@@ -148,11 +148,11 @@ describe("Marry Christmas and happy New Year!", () => {
                 success: true,
             });
             printTxGasStats("Transfer request transaction", transferTx);
-            // const increaseSupplyTx = findTransactionRequired(transferResult.transactions, {
-            //     op: JettonOps.IncreaseSupply,
-            //     success: true,
-            // });
-            // printTxGasStats("Supply increase transaction", increaseSupplyTx);
+            const increaseSupplyTx = findTransactionRequired(transferResult.transactions, {
+                op: JettonOps.IncreaseSupply,
+                success: true,
+            });
+            printTxGasStats("Supply increase transaction", increaseSupplyTx);
             const internalTransferTx = findTransactionRequired(transferResult.transactions, {
                 op: JettonOps.InternalTransfer,
                 success: true,

@@ -46,10 +46,10 @@ const BURN_NOTIFICATION_CELLS = 1; ;; body always in ref
 ;;resulting gas consumption is printed to the console.
 
 ;;- `SEND_TRANSFER_GAS_CONSUMPTION` [/sandbox_tests/Pool.test.ts#L853](L853)
-const SEND_TRANSFER_GAS_CONSUMPTION    = 8710;
+const SEND_TRANSFER_GAS_CONSUMPTION    = 10000;
 
 ;;- `RECEIVE_TRANSFER_GAS_CONSUMPTION` [/sandbox_tests/Pool.test.ts#L862](L862)
-const RECEIVE_TRANSFER_GAS_CONSUMPTION = 9895;
+const RECEIVE_TRANSFER_GAS_CONSUMPTION = 10000;
 
 ;;- `SEND_BURN_GAS_CONSUMPTION` [/sandbox_tests/Pool.test.ts#L1154](L1154)
 const SEND_BURN_GAS_CONSUMPTION    = 7300;
@@ -82,8 +82,8 @@ int forward_init_state_overhead() inline {
     forward_init_state_overhead() + ;; additional fwd fees related to initstate in iternal_transfer
     get_compute_fee(MY_WORKCHAIN, SEND_TRANSFER_GAS_CONSUMPTION) +
 
-    ;; get_forward_fee(MY_WORKCHAIN, INCREASE_SUPPLY_MESSAGE_BITS, INCREASE_SUPPLY_MESSAGE_CELLS) +
-    ;; get_compute_fee(MY_WORKCHAIN, INCREASE_SUPPLY_GAS_CONSUMTION) +
+    get_forward_fee(MY_WORKCHAIN, INCREASE_SUPPLY_MESSAGE_BITS, INCREASE_SUPPLY_MESSAGE_CELLS) +
+    get_compute_fee(MY_WORKCHAIN, INCREASE_SUPPLY_GAS_CONSUMTION) +
 
     get_compute_fee(MY_WORKCHAIN, RECEIVE_TRANSFER_GAS_CONSUMPTION) +
     calculate_jetton_wallet_min_storage_fee());
