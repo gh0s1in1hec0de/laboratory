@@ -97,7 +97,8 @@ export function useCreateToken() {
           totalSupply: jettonToNano(values.totalSupply),
           platformSharePct: toPct(values.marketingSupportEnabled ? values.marketingSupportValue : 0),
           metadata: {
-            uri: `https://ipfs.io/ipfs/${metadataJsonCID}`
+            // uri: `https://ipfs.io/ipfs/${metadataJsonCID}`
+            uri: `https://storage.starton.pro/ipfs/${metadataJsonCID}`
           },
           startTime: Math.floor(Date.now() / 1000) + 60,
           maybePackedConfig: null,

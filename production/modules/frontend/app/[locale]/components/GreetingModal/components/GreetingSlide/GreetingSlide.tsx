@@ -59,7 +59,7 @@ export function GreetingSlide({ item, index, closeBanner }: GreetingSlideProps) 
         <CustomButton
           fullWidth
           onClick={closeBanner}
-          padding="6px"
+          padding="10px"
         >
           <Label
             label={t("Banners.greeting.closeButton")}

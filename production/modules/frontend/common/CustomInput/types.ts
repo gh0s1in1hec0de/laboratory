@@ -11,5 +11,6 @@ export interface CustomInputProps {
   errorText?: string;
   disabled?: boolean;
   fullWidth?: boolean;
+  disableBigFloat?: boolean;
 }
 

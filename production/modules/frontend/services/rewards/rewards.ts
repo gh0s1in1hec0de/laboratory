@@ -1,7 +1,13 @@
+import type { 
+  GetAmountRequest,
+  GetRewardJettonBalancesRequest, 
+  GetRewardJettonBalancesResponse, 
+  GetRewardPoolsRequest, 
+  GetRewardPoolsResponse 
+} from "starton-periphery";
 import { dispenserService } from "@/api";
 import { REWARDS_ERROR } from "@/errors";
 import { REWARDS_ROUTES } from "@/routes";
-import type { GetRewardPoolsRequest, GetRewardPoolsResponse } from "starton-periphery";
 import { Address } from "@ton/core";
 
 async function getRewardPools({
@@ -25,6 +31,44 @@ async function getRewardPools({
   }
 }
 
+async function getRewardBalances({
+  userAddress
+}: GetRewardJettonBalancesRequest): Promise<GetRewardJettonBalancesResponse> {
+  try {
+    const { data } = await dispenserService.get<GetRewardJettonBalancesResponse>(REWARDS_ROUTES.GetRewardBalances, {
+      params: {
+        userAddress: Address.parse(userAddress).toRawString()
+      }
+    });
+
+    return data;
+  } catch (error) {
+    console.error(REWARDS_ERROR.GetRewardBalances, error);
+    throw error;
+  }
+}
+
+async function getClaimAllRewards({
+  userAddress,
+  tokenLaunch
+}: GetAmountRequest): Promise<string> {
+  try {
+    const { data } = await dispenserService.get<string>(REWARDS_ROUTES.ClaimAllRewards, {
+      params: {
+        userAddress: Address.parse(userAddress).toRawString(),
+        ...(tokenLaunch ? { tokenLaunch: Address.parse(tokenLaunch).toRawString() } : {}),
+      }
+    });
+
+    return data;
+  } catch (error) {
+    console.error(REWARDS_ERROR.ClaimAllRewards, error);
+    throw error;
+  }
+}
+
 export const rewardsService = {
   getRewardPools,
+  getRewardBalances,
+  getClaimAllRewards
 };

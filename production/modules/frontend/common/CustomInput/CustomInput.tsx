@@ -19,11 +19,25 @@ export function CustomInput({
   errorText,
   disabled,
   fullWidth = true,
+  disableBigFloat = false,
 }: CustomInputProps) {
   const t = useTranslations("");
 
   function handleChangeValue(e: ChangeEvent<HTMLInputElement>) {
-    onChange(e.target.value);
+    let value = e.target.value;
+
+    if (disableBigFloat && type === "number") {
+      value = value.replace(/[^0-9.,]/g, "");
+      const [integer, decimal] = value.split(".");
+
+      if (decimal && decimal.length > 3) {
+        value = `${integer}.${decimal.slice(0, 3)}`;
+      }
+      
+      // value = value.split(/[.,]/)[0];
+    }
+
+    onChange(value);
   }
 
   return (

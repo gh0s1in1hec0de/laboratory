@@ -15,21 +15,21 @@ export function TokenBody({
   timings,
   version,
 }: TokenBodyProps) {
+  const t = useTranslations("Token.currentToken");
   const {
     amount,
     setAmount,
     onClickBuyTokens,
-    isValidAmount,
-    getAmountError,
     errorText,
     isLoading,
+    amountOut,
+    creatorMaxTons,
   } = useBuyToken({
     supply,
     launchAddress,
     timings,
     version,
   });
-  const t = useTranslations("Token.currentToken");
 
   return (
     <Grid
@@ -75,8 +75,7 @@ export function TokenBody({
                 size="grow"
               >
                 <Label
-                  // label={`${Number(creatorFutJetLeft) <= 0 ? 0 : creatorFutJetLeft} $${symbol || "UNKNWN"}`}
-                  label={`${Number(amount) <= 0 ? 0 : amount} $${symbol || "UNKNWN"}`}
+                  label={`${Number(amount) <= 0 ? 0 : amountOut} $${symbol || "UNKNWN"}`}
                   variantSize="regular14"
                   variantColor="white"
                   cropped
@@ -86,7 +85,7 @@ export function TokenBody({
           </Grid>
         ) : (
           <Label
-            label={t("subtitle")}
+            label={`${t("subtitle")} (${creatorMaxTons} TON)`}
             variantSize="regular16"
             variantColor="gray"
           />
@@ -100,7 +99,7 @@ export function TokenBody({
         type="number"
         fullWidth
         disabled={isLoading}
-        errorText={getAmountError()}
+        disableBigFloat
         endAdornment={(
           <Label
             label={t("amountInput.currency")}
@@ -118,7 +117,7 @@ export function TokenBody({
           <CustomButton
             padding="10px"
             onClick={onClickBuyTokens}
-            disabled={!isValidAmount || isLoading}
+            disabled={isLoading}
           >
             <Label
               label={isLoading ? t("buyButton.loading") : t("buyButton.label")}

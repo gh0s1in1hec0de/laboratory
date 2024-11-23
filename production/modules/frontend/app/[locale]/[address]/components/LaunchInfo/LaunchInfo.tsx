@@ -12,6 +12,7 @@ import { TonProvider } from "@/providers/ton";
 
 export function LaunchInfo({
   launchData,
+  showRefund = false,
 }: LaunchInfoProps) {
   const t = useTranslations("CurrentLaunch.info");
 
@@ -98,7 +99,7 @@ export function LaunchInfo({
         </Grid>
       </MainBox>
       
-      {!launchData?.isSuccessful && (
+      {showRefund && (
         <TonProvider>
           <RefundButton launchData={launchData} />
         </TonProvider>

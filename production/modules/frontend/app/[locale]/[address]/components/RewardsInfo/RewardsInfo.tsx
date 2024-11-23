@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { useLaunchRewards } from "./hooks/useLaunchRewards";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
 import type { RewardsInfoProps } from "./types";
-import { RewardCard } from "./components/RewardCard";
+import { RewardCard } from "@/components/RewardCard";
 import { Fragment } from "react";
 
 export function RewardsInfo({ address }: RewardsInfoProps) {
@@ -86,7 +86,7 @@ export function RewardsInfo({ address }: RewardsInfoProps) {
                   ) : (
                     Object.entries(rewardsData).map(([key, rewardPools]) => (
                       <Fragment key={`top-${key}`}>
-                        {rewardPools.slice(0, 2).map((rewardPool, index) => (
+                        {rewardPools.slice(0, 3).map((rewardPool, index) => (
                           <RewardCard
                             key={`${rewardPool.rewardJetton}-${index}`}
                             rewardPool={rewardPool}
@@ -121,7 +121,7 @@ export function RewardsInfo({ address }: RewardsInfoProps) {
                       >
                         {rewardsData && Object.entries(rewardsData).map(([key, rewardPools]) => (
                           <Fragment key={`top-${key}`}>
-                            {rewardPools.slice(2).map((rewardPool, index) => (
+                            {rewardPools.slice(3).map((rewardPool, index) => (
                               <RewardCard
                                 key={`${rewardPool.rewardJetton}-${index}`}
                                 rewardPool={rewardPool}

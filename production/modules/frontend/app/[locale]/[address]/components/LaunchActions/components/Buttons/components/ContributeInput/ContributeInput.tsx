@@ -4,18 +4,17 @@ import { useTranslations } from "next-intl";
 import { Label } from "@/common/Label";
 import { CustomButton } from "@/common/CustomButton";
 import { useContributeInput } from "./hooks/useContributeInput";
+import { ContributeInputProps } from "./types";
 
-export function ContributeInput({ launchAddress }: { launchAddress: string }) {
+export function ContributeInput({ launchAddress, timings }: ContributeInputProps) {
   const t = useTranslations("CurrentLaunch.contribute");
   const {
     amount,
     setAmount,
-    isValidAmount,
-    getAmountError,
     isLoading,
     errorText,
     onClickBuyTokens,
-  } = useContributeInput(launchAddress);
+  } = useContributeInput(launchAddress, timings);
 
   return (
     <Grid 
@@ -30,7 +29,7 @@ export function ContributeInput({ launchAddress }: { launchAddress: string }) {
         type="number"
         fullWidth
         disabled={isLoading}
-        errorText={getAmountError()}
+        disableBigFloat
         endAdornment={(
           <Label
             label={t("amountInput.currency")}
@@ -54,13 +53,14 @@ export function ContributeInput({ launchAddress }: { launchAddress: string }) {
         fullWidth
         padding="10px"
         onClick={onClickBuyTokens}
-        disabled={!isValidAmount || isLoading}
+        disabled={isLoading}
       >
         <Label
           label={isLoading ? t("startButton.loading") : t("startButton.label")}
           variantSize="regular16"
         />
       </CustomButton>
+    
     </Grid>
   );
 }

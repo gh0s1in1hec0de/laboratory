@@ -3,4 +3,5 @@ export enum REWARDS_ROUTES {
   GetRewardAmount = "/rewards/get-amount",
   GetRewardPositions = "/rewards/get-reward-positions",
   GetRewardBalances = "/rewards/get-reward-balances",
+  ClaimAllRewards = "/rewards/get-amount",
 }

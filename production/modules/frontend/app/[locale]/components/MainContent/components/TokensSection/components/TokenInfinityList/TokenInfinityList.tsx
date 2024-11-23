@@ -44,11 +44,13 @@ export function TokenInfinityList({
       container
       size="grow"
       flexDirection="column"
+      flex={1}
     >
       <Grid
         container
         size="grow"
         flexDirection="column"
+        flex={1}
         gap={0.5}
       >
         {launchesData.launchesChunk.map((launch) => (

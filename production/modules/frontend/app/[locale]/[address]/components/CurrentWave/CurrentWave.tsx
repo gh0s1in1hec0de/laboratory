@@ -33,7 +33,7 @@ export function CurrentWave({ timings }: CurrentWaveProps) {
           <Grid size="grow" container key={index}>
             <LinearProgress
               variant="determinate"
-              value={calculateProgress(stage.stage)} // Рассчитанное значение прогресса
+              value={calculateProgress(stage.stage)}
               classes={{
                 bar: styles.bar,
                 root: styles.root,

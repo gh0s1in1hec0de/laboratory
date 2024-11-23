@@ -18,25 +18,29 @@ export function CurrentToken({ launchData }: CurrentTokenProps) {
     >
       <BgLight />
 
-      <LaunchHeader
-        avatarSrc={launchData?.metadata.image}
-        symbol={launchData?.metadata.symbol}
-        name={launchData?.metadata.name}
-      />
+      {launchData && (
+        <>
+          <LaunchHeader
+            avatarSrc={launchData.metadata.image}
+            symbol={launchData.metadata.symbol}
+            name={launchData.metadata.name}
+          />
 
-      <TonProvider>
-        <TokenBody
-          supply={launchData?.totalSupply}
-          symbol={launchData?.metadata.symbol}
-          launchAddress={launchData?.address}
-          timings={launchData?.timings}
-          version={launchData?.version}
-        />
-      </TonProvider>
+          <TonProvider>
+            <TokenBody
+              supply={launchData.totalSupply}
+              symbol={launchData.metadata.symbol}
+              launchAddress={launchData.address}
+              timings={launchData.timings}
+              version={launchData.version}
+            />
+          </TonProvider>
 
-      <LaunchTimer
-        initialSeconds={getCurrentSalePhase(launchData?.timings).nextPhaseIn}
-      />
+          <LaunchTimer
+            initialSeconds={getCurrentSalePhase(launchData.timings).nextPhaseIn}
+          />
+        </>
+      )}
     </Grid>
   );
 }
