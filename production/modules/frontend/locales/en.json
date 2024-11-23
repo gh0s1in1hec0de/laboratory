@@ -335,6 +335,7 @@
 			"fetchError": "Oops, something went wrong... Please reload the page or try again later.",
 			"getStarTicket": "Get Star Ticket",
 			"ended": "Launch is ended",
+			"listingInProgress": "Listing in progress. Please wait...",
 			"amountInput": {
 				"placeholder": "Indicate the number of TON",
 				"currency": "TON",

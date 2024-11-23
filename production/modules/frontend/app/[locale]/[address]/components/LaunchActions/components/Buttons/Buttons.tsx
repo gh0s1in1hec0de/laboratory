@@ -9,6 +9,7 @@ import { ArrowUpRightIcon } from "@/icons";
 import { ContributeInput } from "./components/ContributeInput";
 import { SalePhase } from "starton-periphery";
 import { useLaunchActions } from "./hooks/useLaunchActions";
+import { GetTicketsButton } from "./components/GetTicketsButton";
 
 export function Buttons({
   launchData,
@@ -20,6 +21,7 @@ export function Buttons({
     errorText,
     ticketBalance,
     phase,
+    renderContent,
   } = useLaunchActions(launchData);
 
   return (
@@ -27,7 +29,14 @@ export function Buttons({
       isLoading={isLoading}
       skeleton={<ConnectButtonSkeleton fullWidth />}
     >
-      {errorText && <Label label={errorText} variantSize="regular14" variantColor="red" />}
+      {errorText && (
+        <Label
+          label={errorText}
+          variantSize="regular14"
+          variantColor="red"
+        />
+      )}
+
       <Grid
         container
         width="100%"
@@ -51,29 +60,14 @@ export function Buttons({
             timings={launchData.timings}
           />
         ) : (
-          <CustomButton
-            fullWidth
-            padding="10px"
-            background="gray"
-          >
-            <Grid 
-              container
-              gap={1}
-              alignItems="center"
-              justifyContent="center"
-            >
-              <ArrowUpRightIcon />
-              <Label
-                label={t("getStarTicket")}
-                variantSize="regular16"
-                offUserSelect
-              />
-            </Grid>
-          </CustomButton>
+          <GetTicketsButton />
         )}
 
         {/* todo: public phase */}
         {/* PUBLIC PHASE */}
+
+
+        {renderContent()}
       </Grid>
     </LoadingWrapper>
   );
