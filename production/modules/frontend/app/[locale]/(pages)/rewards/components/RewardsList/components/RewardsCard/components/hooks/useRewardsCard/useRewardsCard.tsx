@@ -16,6 +16,7 @@ import { useTonConnectUI } from "@tonconnect/ui-react";
 import { useState, useTransition } from "react";
 import { PAGES } from "@/constants";
 import { useRouter } from "next/navigation";
+import { Address } from "@ton/core";
 
 export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
   const t = useTranslations("Rewards");
@@ -32,7 +33,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
       const transaction = TxRequestBuilder.refundMessage(
         extendedBalance.version,
         {
-          launchAddress: extendedBalance.tokenLaunch,
+          launchAddress: Address.parse(extendedBalance.tokenLaunch).toRawString(),
           isCreator: Boolean(extendedBalance.isCreator),
         }
       );

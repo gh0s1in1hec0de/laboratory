@@ -13,7 +13,6 @@ export function useCurrentLaunch(address: string) {
   const [errorText, setErrorText] = useState("");
   const t = useTranslations("CurrentLaunch");
 
-
   async function getBalance() {
     try {
       const response = await userService.getBalances({

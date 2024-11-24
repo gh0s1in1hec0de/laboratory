@@ -333,9 +333,16 @@
 			"connectWallet": "Connect your wallet to start.",
 			"needStarTicket": "You need star ticket to join Star club wave or join this launch in public wave.",
 			"fetchError": "Oops, something went wrong... Please reload the page or try again later.",
+			"refundError": "Refund error",
+			"claimError": "Claim error",
 			"getStarTicket": "Get Star Ticket",
 			"ended": "Launch is ended",
 			"listingInProgress": "Listing in progress. Please wait...",
+			"deployingJetton": "Deploying jetton...",
+			"deployingPool": "Deploying pool...",
+			"refund": "Refund",
+			"swap": "Swap on DeDust",
+			"chart": "Watch Chart",
 			"amountInput": {
 				"placeholder": "Indicate the number of TON",
 				"currency": "TON",
@@ -354,7 +361,7 @@
 			}
 		},
 		"wave": {
-			"title": "Current Wave",
+			"title": "Current Wave 🌊",
 			"starClubStage": "Star Club",
 			"publicStage": "Public",
 			"listingStage": "Listing",

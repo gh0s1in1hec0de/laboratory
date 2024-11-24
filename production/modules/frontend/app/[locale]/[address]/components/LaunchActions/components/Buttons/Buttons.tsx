@@ -1,26 +1,16 @@
-import Grid from "@mui/material/Grid2";
-import { CustomButton } from "@/common/CustomButton";
 import { Label } from "@/common/Label";
-import { useTranslations } from "next-intl";
-import { ButtonsProps } from "./types";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
 import { ConnectButtonSkeleton } from "@/components/CustomConnectButton";
-import { ArrowUpRightIcon } from "@/icons";
-import { ContributeInput } from "./components/ContributeInput";
-import { SalePhase } from "starton-periphery";
+import Grid from "@mui/material/Grid2";
 import { useLaunchActions } from "./hooks/useLaunchActions";
-import { GetTicketsButton } from "./components/GetTicketsButton";
+import { ButtonsProps } from "./types";
 
 export function Buttons({
   launchData,
 }: ButtonsProps) {
-  const t = useTranslations("CurrentLaunch.contribute");
-  const { 
+  const {
     isLoading,
-    whitelistStatus,
     errorText,
-    ticketBalance,
-    phase,
     renderContent,
   } = useLaunchActions(launchData);
 
@@ -41,32 +31,6 @@ export function Buttons({
         container
         width="100%"
       >
-        {phase === SalePhase.ENDED ? (
-          <CustomButton
-            fullWidth
-            padding="10px"
-            background="gray"
-            addHover={false}
-          >
-            <Label
-              label={t("ended")}
-              variantSize="regular16"
-            />
-          </CustomButton>
-          // isSuccess === true claim
-        ) : launchData && (whitelistStatus || (ticketBalance && ticketBalance > 0)) ? ( // WL PHASE
-          <ContributeInput
-            launchAddress={launchData.address}
-            timings={launchData.timings}
-          />
-        ) : (
-          <GetTicketsButton />
-        )}
-
-        {/* todo: public phase */}
-        {/* PUBLIC PHASE */}
-
-
         {renderContent()}
       </Grid>
     </LoadingWrapper>
