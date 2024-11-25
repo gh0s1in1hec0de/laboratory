@@ -11,12 +11,13 @@ server:
 
 oracle:
   chief:
+    fallback_vault: ""
+    maybe_height:
     address: ""
     mnemonic: ""
   cores:
     - address: ""
-      height: null
-      force_height: false
+      maybe_height: null
       version: "V1"
   network: "testnet"
   api:

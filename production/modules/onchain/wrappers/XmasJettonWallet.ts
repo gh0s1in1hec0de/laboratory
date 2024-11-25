@@ -77,12 +77,12 @@ export class XmasJettonWallet implements Contract {
         forwardPayload: Cell | null) {
 
         return beginCell().storeUint(JettonOps.Transfer, 32).storeUint(0, 64) // op, queryId
-            .storeCoins(jetton_amount)
-            .storeAddress(to)
-            .storeAddress(responseAddress)
-            .storeMaybeRef(customPayload)
-            .storeCoins(forward_ton_amount)
-            .storeMaybeRef(forwardPayload)
+            .storeCoins(jetton_amount) // 124
+            .storeAddress(to) // ~267
+            .storeAddress(responseAddress) // ~267
+            .storeMaybeRef(customPayload) // 0
+            .storeCoins(forward_ton_amount) // 124
+            .storeMaybeRef(forwardPayload) // 0
             .endCell();
     }
 

@@ -10,7 +10,7 @@ import type {
 
 export async function connectCallerWallet(
     { address, }: ConnectCallerWalletRequest
-): Promise<Caller | string> {
+): Promise<Caller> {
     const res = await db.connectWallet(address);
     if (!res) throw new CommonServerError(400, "User already exists");
     return res;

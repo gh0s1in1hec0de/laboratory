@@ -3,7 +3,7 @@
 
 const ONE_TON = 1000000000;
 
-const MIN_STORAGE_DURATION = 5 * 365 * 24 * 3600; ;; 5 years
+const MIN_STORAGE_DURATION = 1 * 365 * 24 * 3600; ;; 1 year
 
 ;;# Precompiled constants
 ;;

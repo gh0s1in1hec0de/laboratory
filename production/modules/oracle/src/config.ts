@@ -7,13 +7,14 @@ type Config = {
     mode: AppMode,
     oracle: {
         chief: {
+            fallback_vault: string,
+            maybe_height: bigint | null,
             address: string,
             mnemonic: string,
         },
         cores: {
             address: string,
-            height: bigint | null,
-            force_height: boolean,
+            maybe_height: bigint | null,
             version: GlobalVersions,
         }[],
         network: Network,

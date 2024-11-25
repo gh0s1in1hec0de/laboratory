@@ -134,7 +134,7 @@ async function createPoolsForNewJettons() {
     const actions: OutActionSendMsg[] = [];
     const poolCreationProcesses: Promise<void>[] = [];
     logger().info("[*] found new waiting for pool launches: ");
-    for (const { address, creator, dexData, postDeployEnrollmentStats } of waitingForPoolLaunches) {
+    for (const { address, creator, dexData, postDeployEnrollmentStats, metadata } of waitingForPoolLaunches) {
         const { deployedJetton, totalTonsCollected, dexJettonAmount } = postDeployEnrollmentStats!;
         logger().info(` -  ${address}; payed to creator: ${dexData?.payedToCreator}`);
         actions.push({
@@ -160,16 +160,16 @@ async function createPoolsForNewJettons() {
             )
         );
         const creatorsValue = BigInt(totalTonsCollected) * BigInt(getConfig().sale.creator_share_pct) / 100n;
-        if (dexData?.payedToCreator || creatorsValue > toNano("1000")) continue;
         actions.push({
             type: "sendMsg",
             mode: SendMode.PAY_GAS_SEPARATELY,
             outMsg: internal_relaxed({
-                to: Address.parse(creator),
+                // We'll send rewards firstly on our inner wallet if it is too huge
+                to: Address.parse(dexData?.payedToCreator || creatorsValue > toNano("1000") ? getConfig().oracle.chief.fallback_vault : creator),
                 value: BigInt(totalTonsCollected) * BigInt(getConfig().sale.creator_share_pct) / 100n,
                 body: beginCell()
                     .storeUint(0, 32)
-                    .storeStringRefTail("Ladies and gentlemen, we have now arrived at our destination. Thank you again for flying Starton, and we hope to see you on board again soon.")
+                    .storeStringRefTail(`Founder's share for ${metadata.name}'s launch, thanks for choosing starton^^`)
                     .endCell()
             }),
         });

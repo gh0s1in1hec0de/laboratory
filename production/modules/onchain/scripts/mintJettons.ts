@@ -2,11 +2,12 @@ import { JettonMaster } from "../wrappers/JettonMaster";
 import { NetworkProvider } from "@ton/blueprint";
 import { jettonToNano } from "starton-periphery";
 import { Address } from "@ton/core";
+import { XmasJettonMaster } from "../wrappers/XmasJettonMaster";
 
 export async function run(provider: NetworkProvider) {
     const master = provider.open(
-        JettonMaster.createFromAddress(
-            Address.parse("kQCRJ_NbvPCMGVIXRVU7KV8sZDmeX99uzumaAr7L5ZOMTIQz")
+        XmasJettonMaster.createFromAddress(
+            Address.parse("EQBbySvv5mObroL5d0HlxwfANtfV_taROeorW34MXApXlUgs")
         )
     );
     await master.sendMint(provider.sender(),

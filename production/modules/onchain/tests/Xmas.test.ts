@@ -91,7 +91,7 @@ describe("Marry Christmas and happy New Year!", () => {
             const recipient = randomAddress();
             const transferAmount = jettonToNano("100");
             const transferResult = await deployerWallet.sendTransfer(
-                deployer.getSender(), toNano("0.1"), transferAmount, recipient, deployer.address,
+                deployer.getSender(), toNano("0.05"), transferAmount, recipient, deployer.address,
                 null, toNano("0.0001"), null
             );
 
@@ -139,7 +139,7 @@ describe("Marry Christmas and happy New Year!", () => {
             const recipient = randomAddress();
             const transferAmount = jettonToNano("100");
             const transferResult = await deployerWallet.sendTransfer(
-                deployer.getSender(), toNano("0.07"), transferAmount, recipient, deployer.address,
+                deployer.getSender(), toNano("0.05"), transferAmount, recipient, deployer.address,
                 null, toNano("0.005"), null
             );
 

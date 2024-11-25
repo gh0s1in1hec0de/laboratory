@@ -44,7 +44,7 @@ export async function run(provider: NetworkProvider) {
         )
     );
     ui.write(`Expected core address: ${core.address}`);
-    await core.sendDeploy({ via: provider.sender(), value: toNano("2") });
+    await core.sendDeploy({ via: provider.sender(), value: toNano("1") });
     ui.write("Transaction sent");
 
 }
