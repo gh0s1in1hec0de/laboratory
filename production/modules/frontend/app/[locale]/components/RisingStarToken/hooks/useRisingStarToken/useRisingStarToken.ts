@@ -1,10 +1,13 @@
-import { useState, useEffect , useTransition } from "react";
+import { useState, useEffect , useTransition, MouseEvent } from "react";
 import { GetRisingStarResponse } from "starton-periphery";
 import { launchService } from "@/services";
 import { getErrorText, getErrorStatus } from "@/utils";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
+import { useToggle } from "@/hooks";
+
 export function useRisingStarToken() {
+  const [isOpenDrawer, toggleOpenDrawer] = useToggle(false);
   const [tokenData, setTokenData] = useState<GetRisingStarResponse>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
@@ -13,10 +16,14 @@ export function useRisingStarToken() {
   const locale = useLocale();
   const [isPending, startTransition] = useTransition();
 
-  function handleRedirectToLaunch() {
-    startTransition(() => {
-      router.push(`/${locale}/${tokenData?.address}`);
-    });
+  function handleRedirectToLaunch(event: MouseEvent<HTMLDivElement>) {
+    event.stopPropagation();
+    
+    if (!isOpenDrawer) {
+      startTransition(() => {
+        router.push(`/${locale}/${tokenData?.address}`);
+      });
+    }
   }
 
   useEffect(() => {
@@ -44,6 +51,8 @@ export function useRisingStarToken() {
     errorText,
     tokenData,
     isPending,
-    handleRedirectToLaunch
+    handleRedirectToLaunch,
+    isOpenDrawer,
+    toggleOpenDrawer,
   };
 }

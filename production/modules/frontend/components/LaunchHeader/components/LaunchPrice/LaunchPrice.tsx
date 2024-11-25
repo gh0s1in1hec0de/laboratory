@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useLaunchPrice } from "./hooks/useLaunchPrice";
 import { LaunchPriceProps } from "./types";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
+import { LaunchPriceSkeleton } from "./components/LaunchPriceSkeleton";
 
 export function LaunchPrice({
   launchAddress,
@@ -20,9 +21,11 @@ export function LaunchPrice({
     version
   });
 
-  // todo: add skeleton
   return (
-    <LoadingWrapper isLoading={isLoading}>
+    <LoadingWrapper 
+      isLoading={isLoading}
+      skeleton={<LaunchPriceSkeleton/>}
+    >
       <Grid 
         container
         gap={0.5}

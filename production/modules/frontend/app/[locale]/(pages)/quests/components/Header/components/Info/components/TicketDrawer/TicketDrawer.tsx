@@ -25,7 +25,7 @@ export function TicketDrawer() {
         label={t("tooltip")}
         padding="4px 12px"
         style={{ marginLeft: "auto", cursor: "pointer" }}
-        rounded
+        rounded="xs"
       />
 
       <CustomDrawer

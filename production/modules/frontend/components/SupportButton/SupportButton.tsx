@@ -10,36 +10,41 @@ export function SupportButton({
 }: SupportButtonProps) {
   const t = useTranslations("SupportButton");
 
+  function handleClick() {
+    window.open("https://www.youtube.com/watch?v=HgaNGeTFs7E", "_blank");
+  }
+
   return (
-    <Grid 
+    <Grid
       container
       gap={1.5}
       width="100%"
     >
       {withLabel && (
         <Grid container size={12} justifyContent="center">
-          <Label 
-            label={t("title")} 
-            variantSize="regular16" 
+          <Label
+            label={t("title")}
+            variantSize="regular16"
           />
         </Grid>
       )}
-      
-      <CustomButton 
+
+      <CustomButton
+        onClick={handleClick}
         background="gray"
         padding="10px 0"
         fullWidth
       >
-        <Grid 
+        <Grid
           container
           gap={1}
           alignItems="center"
           justifyContent="center"
         >
           <ArrowUpRightIcon />
-          <Label 
-            label={t("buttonLabel")} 
-            variantSize="medium16" 
+          <Label
+            label={t("buttonLabel")}
+            variantSize="medium16"
             offUserSelect
           />
         </Grid>

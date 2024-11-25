@@ -83,7 +83,12 @@ export function RedirectButtons() {
         </Grid>
       </Grid>
 
-      <TicketBalance description={t("balanceDescription")} />
+      <TicketBalance
+        description={t("balanceDescription")}
+        rounded="full"
+        showRedirectButton
+        padding="8px 8px 8px 28px"
+      />
     </LoadingWrapper>
   );
 }

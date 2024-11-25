@@ -204,14 +204,14 @@ export const DRAWER_SEVENTH_LIST_DATA: ListData[] = [
         isCursive: false,
         variantSize: "regular14",
       },
-      {
-        id: "22",
-        text: "Top.waveLaunchDrawer.seventhListParagraph.description4",
-        isBold: false,
-        isHighlight: false,
-        isCursive: false,
-        variantSize: "regular14",
-      },
     ],
+  },
+  {
+    id: "22",
+    text: "Top.waveLaunchDrawer.seventhListParagraph.text2",
+    isBold: false,
+    isHighlight: true,
+    isCursive: false,
+    variantSize: "regular14",
   },
 ];

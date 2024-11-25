@@ -7,8 +7,6 @@ import { useTranslations } from "next-intl";
 import { ManageButtons } from "./components/ManageButtons";
 import { FILTER_DRAWER_SORT_BY_OPTIONS, FILTER_DRAWER_SORT_ORDER_OPTIONS } from "./constants";
 import { FilterDrawerProps } from "./types";
-import { useToggle } from "@/hooks";
-import { InfoBlock } from "@/components/InfoBlock";
 
 export function FilterDrawer({
   isOpenDrawer,

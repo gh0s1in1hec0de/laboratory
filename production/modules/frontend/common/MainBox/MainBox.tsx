@@ -5,14 +5,13 @@ import { IconButton } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useTranslations } from "next-intl";
 import styles from "./MainBox.module.scss";
-import { MainBoxBgColor, MainBoxProps } from "./types";
+import { MainBoxBgColor, MainBoxProps, MainBoxRounded } from "./types";
 
 export function MainBox({
   className,
   children,
   bgColor = MainBoxBgColor.Transparent,
-  rounded = false,
-  roundedXl = false,
+  rounded = MainBoxRounded.None,
   fullWidth = false,
   showMoreRewards = false,
   isOpen = false,
@@ -28,11 +27,9 @@ export function MainBox({
       className={classNames(
         styles.mainBox,
         {
-          [styles.rounded]: rounded,
-          [styles.roundedXl]: roundedXl,
           [styles.fullWidth]: fullWidth
         },
-        [styles[bgColor], className]
+        [styles[bgColor], styles[rounded], className]
       )}
       paddingY={showMoreRewards ? 0 : paddingY}
       paddingX={showMoreRewards ? 0 : paddingX}

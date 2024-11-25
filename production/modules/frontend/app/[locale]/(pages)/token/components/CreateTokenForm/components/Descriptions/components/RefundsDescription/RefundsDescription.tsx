@@ -1,10 +1,17 @@
+import { DrawerParagraph } from "@/common/CustomDrawer";
 import { Label } from "@/common/Label";
 import { ArrowIcon } from "@/icons";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import Grid from "@mui/material/Grid2";
 import { motion } from "framer-motion";
-import styles from "./RefundsDescription.module.scss";
 import { useTranslations } from "next-intl";
+import {
+  DRAWER_FIRST_TEXT_DATA,
+  DRAWER_FOURTH_TEXT_DATA,
+  DRAWER_SECOND_TEXT_DATA,
+  DRAWER_THIRD_TEXT_DATA,
+} from "./constants";
+import styles from "./RefundsDescription.module.scss";
 
 export function RefundsDescription() {
   const t = useTranslations("Token.descriptions.refunds");
@@ -55,7 +62,14 @@ export function RefundsDescription() {
                     gap={1}
                     flexDirection="column"
                   >
-                    {/* TODO: Add refunds description */}
+                    <DrawerParagraph data={DRAWER_FIRST_TEXT_DATA} />
+                    <DrawerParagraph data={DRAWER_SECOND_TEXT_DATA} />
+                    <DrawerParagraph
+                      data={DRAWER_THIRD_TEXT_DATA}
+                      inBox
+                      paddingTop={1}
+                    />
+                    <DrawerParagraph data={DRAWER_FOURTH_TEXT_DATA} />
                   </Grid>
                 </motion.div>
               )}

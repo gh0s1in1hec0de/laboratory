@@ -34,7 +34,7 @@ export function LaunchInfo({
       />
 
       <MainBox
-        rounded
+        rounded="xs"
         paddingX={1.5}
         paddingY={2}
         gap={2}

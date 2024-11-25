@@ -10,6 +10,7 @@ import { LoadingWrapper } from "@/common/LoadingWrapper";
 import type { RewardsInfoProps } from "./types";
 import { RewardCard } from "@/components/RewardCard";
 import { Fragment } from "react";
+import { RewardsInfoSkeleton } from "./components/RewardsInfoSkeleton";
 
 export function RewardsInfo({ address }: RewardsInfoProps) {
   const t = useTranslations("CurrentLaunch.rewards");
@@ -19,9 +20,11 @@ export function RewardsInfo({ address }: RewardsInfoProps) {
     errorText
   } = useLaunchRewards(address);
 
-  // todo: add skeleton
   return (
-    <LoadingWrapper isLoading={isLoading}>
+    <LoadingWrapper 
+      isLoading={isLoading}
+      skeleton={<RewardsInfoSkeleton />}
+    >
       <Grid
         container
         flexDirection="column"
@@ -55,7 +58,7 @@ export function RewardsInfo({ address }: RewardsInfoProps) {
             {({ open }) => (
               <MainBox
                 container
-                rounded
+                rounded="xs"
                 alignItems="center"
                 size={12}
                 paddingY={3}

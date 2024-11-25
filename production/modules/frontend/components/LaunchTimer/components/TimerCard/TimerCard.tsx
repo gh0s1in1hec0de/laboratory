@@ -12,7 +12,7 @@ export function TimerCard({
       alignItems="center"
       paddingY={1}
       paddingX={0.5}
-      rounded
+      rounded="xs"
       minWidth="70px"
     >
       <Label

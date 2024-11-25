@@ -41,7 +41,7 @@
 		"risingStarTitle": "⭐️ Rising Star",
 		"starClubButton": "Star Club",
 		"topTokensTitle": "Top Tokens",
-		"waveLaunchButton": "Wave Launch",
+		"waveLaunchButton": "WaveLaunch",
 		"waveLaunchCloseButton": "Got it!",
 		"searchPlaceholder": "Search",
 		"commonError": "Oops, something went wrong... Please reload the page or try again later.",
@@ -129,21 +129,21 @@
 				"text1": "Users can refund their invested TON if they change their mind, and get rewards for participating in Wavelaunch"
 			},
 			"fifthListParagraph": {
-				"text1": "StartON provides marketing assistance for 0.5% and 1.5% of your token's saplay"
+				"text1": "StartON provides marketing assistance for 0.5% and 1.5% of your token's supply"
 			},
 			"sixthListParagraph": {
 				"text1": "Standard tokenomics of your token for Wavelaunch:",
-				"description1": "– 25% - for Founder",
-				"description2": "– 17.5% - for WL Club",
-				"description3": "– 37.5% - for Public Stage",
-				"description4": "– 20% - for listing on DEX"
+				"description1": "- 25% - for Founder",
+				"description2": "- 17.5% - for WL Club",
+				"description3": "- 37.5% - for Public Stage",
+				"description4": "- 20% - for listing on DEX"
 			},
 			"seventhListParagraph": {
 				"text1": "Distribution of collected funds in TON:",
-				"description1": "– 52% goes to DEX",
-				"description2": "– 38% goes to funders",
-				"description3": "– 8% to provide referral system",
-				"description4": "– 2% StartON commission."
+				"description1": "- 55% goes to DEX",
+				"description2": "- 42% goes to funders",
+				"description3": "- 3% StartON commission.",
+				"text2": "* There're other options for Influencers' Support users"
 			}
 		}
 	},
@@ -248,7 +248,7 @@
 		},
 		"urlInput": {
 			"label": "Social media",
-			"description": "You can provide social media links to improve your token conversion",
+			"description": "You can provide social media links to improve your token conversion 👇",
 			"placeholder": "Insert link",
 			"adornments": {
 				"telegram": "Telegram",
@@ -265,11 +265,49 @@
 			"tabs": {
 				"first": "0,5%",
 				"second": "1,5%"
+			},
+			"drawer": {
+				"firstParagraph": {
+					"text1": "Marketing support"
+				},
+				"secondParagraph": {
+					"text1": "We support your tokens!"
+				},
+				"thirdParagraph": {
+					"text1": "Marketing support is provided to token teams that have donated 0.5% or 1.5% of their token's total issuance to the StartON launchpad."
+				},
+				"firstListParagraph": {
+					"text1": "Includes, but is not limited to:",
+					"description1": "- Telegram Ads",
+					"description2": "- TWA Ads",
+					"description3": "- Help with community building and marketing strategy",
+					"description4": "- Influencer posts, Stories",
+					"description5": "- Posts from StartON partners",
+					"description6": "- Funding"
+				},
+				"fourthParagraph": {
+					"text1": "Contact us if you'd like to learn more!"
+				}
 			}
 		},
 		"influencerSupportCheckbox": {
 			"label": "Influencer support",
-			"description": "If you choose to support an influencer, please contact us on Telegram"
+			"description": "If you choose to support an influencer, please contact us on Telegram",
+			"drawer": {
+				"closeButtonLabel": "Got it!",
+				"firstParagraph": {
+					"text1": "Influencer support"
+				},
+				"secondParagraph": {
+					"text1": "Support by Opinion Leaders!"
+				},
+				"thirdParagraph": {
+					"text1": "Influencers or Key Opinion Leaders are marketing support for tokens running on StartON."
+				},
+				"fourthParagraph": {
+					"text1": "Choose to donate 1.5% of your total supply to be able to get support from the people who have your target audience in focus!"
+				}
+			}
 		},
 		"decimals": {
 			"errors": {
@@ -279,19 +317,45 @@
 		},
 		"descriptions": {
 			"waveLaunch": {
-				"title": "Wave Launch"
-			},
-			"rewards": {
-				"title": "Rewards"
+				"title": "WaveLaunch"
 			},
 			"refunds": {
-				"title": "Refunds"
+				"title": "Refunds",
+				"firstParagraph": {
+					"text1": "Users can ",
+					"text2": "refund ",
+					"text3": "all contributed TONs before the listing process begins."
+				},
+				"secondParagraph": {
+					"text1": "But they can't sell at a rising price."
+				},
+				"thirdParagraph": {
+					"text1": "This is an anti-gambling system so that everyone can make money wisely and not on FOMO."
+				},
+				"fourthParagraph": {
+					"text1": "Users ",
+					"text2": "will not get the rewards ",
+					"text3": "for their contribution and will lose the opportunity to get them again in this Wavelaunch ",
+					"text4": "if they issue a refund even once."
+				}
+			},
+			"rewards": {
+				"title": "Rewards",
+				"firstParagraph": {
+					"text1": "Users receive rewards for any investment in your token."
+				},
+				"secondParagraph": {
+					"text1": "Once Wavelaunch is over, the user clicks Claim to claim all their rewards along with their tokens! More investment - more rewards."
+				},
+				"thirdParagraph": {
+					"text1": "You can contact us if you want to add more tokens to the rewards pool!"
+				}
 			}
 		},
 		"submitButton": {
 			"label": "Create",
 			"loading": "Creating...",
-			"description": "* Сheck the data is correct - you can edit the description and links to social networks only once!",
+			"description": "* Сheck if the data is correct - you can edit the description and links to social networks only once!",
 			"creatingError": "Oops, something went wrong when creating the token... Please reload the page or try again later."
 		},
 		"polling": {
@@ -328,6 +392,7 @@
 		"holdersLabel": "holders",
 		"collectedLabel": "TON collected",
 		"price": "Price",
+		"successCopy": "Link copied!",
 		"contribute": {
 			"title": "Contribute",
 			"connectWallet": "Connect your wallet to start.",
@@ -388,7 +453,28 @@
 			"refundButton": {
 				"label": "Refund",
 				"loading": "Refunding...",
-				"error": "Refund error"
+				"error": "Refund error",
+				"drawer": {
+					"approveButtons": {
+						"title": "Are you sure?",
+						"yes": "Yes",
+						"no": "No"
+					},
+					"firstParagraph": {
+						"text1": "Be aware!"
+					},
+					"secondParagraph": {
+						"text1": "Your rewards:"
+					},
+					"firstListParagraph": {
+						"text1": "You will lose these rewards if you make a refund!"
+					},
+					"secondListParagraph": {
+						"text1": "You ",
+						"text2": "won’t be able to get rewards afterwards ",
+						"text3": "if you change your mind!"
+					}
+				}
 			}
 		},
 		"timer": {
@@ -440,6 +526,23 @@
 		"infoBlock": {
 			"title": "What is it",
 			"closeButton": "Got it!"
+		},
+		"drawer": {
+			"firstParagraph": {
+				"text1": "Rewards"
+			},
+			"secondParagraph": {
+				"text1": "How to get rewards for participating?"
+			},
+			"thirdParagraph": {
+				"text1": "Contribute TON to any token you like!"
+			},
+			"fourthParagraph": {
+				"text1": "Once Wavelaunch is over, click Claim to claim your rewards along with the tokens!"
+			},
+			"fifthParagraph": {
+				"text1": "More contribution - more rewards!"
+			}
 		},
 		"view": {
 			"title": "View all:",

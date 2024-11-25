@@ -1,0 +1,9 @@
+.redirectButton {
+  background-color: var(--orange-regular);
+  padding: 20px;
+  border-radius: 999px;
+
+  &:hover {
+    background-color: var(--orange-regular);
+  }
+}

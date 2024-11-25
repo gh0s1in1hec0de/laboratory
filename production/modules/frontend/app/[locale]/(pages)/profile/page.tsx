@@ -19,7 +19,6 @@ export default function Profile() {
         <LangSwitcher />
       </TonProvider>
 
-
       <TonProvider>
         <CustomConnectButton
           successChildren={<RedirectButtons />}

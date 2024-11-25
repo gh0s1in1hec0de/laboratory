@@ -7,21 +7,22 @@ import IconButton from "@mui/material/IconButton";
 import { MARKETING_SUPPORT_TABS } from "./constants";
 import { useMarketingSupportInfo } from "./hooks/useMarketingSupportInfo";
 import { useTranslations } from "next-intl";
-
 import { useFormikContext } from "formik";
 import { CreateTokenFormFields } from "../../hooks/useCreateToken";
+import { MarketingSupportDrawer } from "./components/MarketingSupportDrawer";
 
 export function MarketingSupportInfo() {
   const t = useTranslations("Token.marketingSupportCheckbox");
   const { isSubmitting } = useFormikContext<CreateTokenFormFields>();
-
   const {
     marketingSupportValue,
     marketingSupportEnabled,
     handleMarketingSupportTabsChange,
     handleMarketingSupportEnabledChange,
+    isOpenDrawer,
+    toggleOpenDrawer,
   } = useMarketingSupportInfo();
-
+  
   return (
     <Grid
       container
@@ -46,10 +47,15 @@ export function MarketingSupportInfo() {
               offUserSelect
             />
 
-            <IconButton onClick={() => { }} sx={{ padding: 0 }}>
+            <IconButton onClick={toggleOpenDrawer} sx={{ padding: 0 }}>
               <QuestionIcon color="var(--orange-regular)" />
             </IconButton>
           </Grid>
+
+          <MarketingSupportDrawer
+            isOpenDrawer={isOpenDrawer}
+            toggleOpenDrawer={toggleOpenDrawer}
+          />
 
           <FormikCustomSwitch
             name="marketingSupportEnabled"

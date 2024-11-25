@@ -13,7 +13,6 @@ export function DropdownButton({
   return (
     <CustomButton 
       as="div"
-      onClick={() => {}}
       padding={fullWidth ? "10px" : "6px 30px 6px 10px"}
       fullWidth={fullWidth}
     >

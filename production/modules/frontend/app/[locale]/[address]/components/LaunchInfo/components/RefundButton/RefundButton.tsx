@@ -6,6 +6,7 @@ import { useRefound } from "./hooks/useRefound";
 import { localStorageWrapper } from "@/utils";
 import type { RefundButtonProps } from "./types";
 import { CustomConnectButton } from "@/components/CustomConnectButton";
+import { RefundDrawer } from "./components/RefundDrawer";
 
 export function RefundButton({
   launchData,
@@ -15,6 +16,8 @@ export function RefundButton({
     onClickRefund,
     isLoading,
     errorText,
+    isOpenDrawer,
+    toggleOpenDrawer,
   } = useRefound({
     launchData,
     userAddress: localStorageWrapper.get("address") ?? "",
@@ -49,7 +52,7 @@ export function RefundButton({
             background="red"
             padding="10px"
             fullWidth
-            onClick={onClickRefund}
+            onClick={toggleOpenDrawer}
           >
             <Label
               label={isLoading ? t("loading") : t("label")}
@@ -57,6 +60,12 @@ export function RefundButton({
             />
           </CustomButton>
         )}
+      />
+
+      <RefundDrawer
+        isOpenDrawer={isOpenDrawer}
+        toggleOpenDrawer={toggleOpenDrawer}
+        onClickRefund={onClickRefund}
       />
     </Grid>
   );

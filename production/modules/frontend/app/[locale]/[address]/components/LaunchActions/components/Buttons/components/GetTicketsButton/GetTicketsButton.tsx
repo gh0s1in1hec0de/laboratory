@@ -1,31 +1,49 @@
-import { useTranslations } from "next-intl";
-import Grid from "@mui/material/Grid2";
 import { CustomButton } from "@/common/CustomButton";
-import { ArrowUpRightIcon } from "@/icons";
 import { Label } from "@/common/Label";
+import { LoadingWrapper } from "@/common/LoadingWrapper";
+import { ArrowUpRightIcon } from "@/icons";
+import Grid from "@mui/material/Grid2";
+import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { PAGES } from "@/constants";
 
 export function GetTicketsButton() {
   const t = useTranslations("CurrentLaunch.contribute");
+  const router = useRouter();
+  const locale = useLocale();
+  const [isPending, startTransition] = useTransition();
+
+  function handleClick() {
+    startTransition(() => {
+      router.push(`/${locale}/${PAGES.Quests}`);
+    });
+  }
 
   return (
-    <CustomButton
-      fullWidth
-      padding="10px"
-      background="gray"
+    <LoadingWrapper
+      isLoading={isPending}
     >
-      <Grid 
-        container
-        gap={1}
-        alignItems="center"
-        justifyContent="center"
+      <CustomButton
+        fullWidth
+        padding="10px"
+        background="gray"
+        onClick={handleClick}
       >
-        <ArrowUpRightIcon />
-        <Label
-          label={t("getStarTicket")}
-          variantSize="regular16"
-          offUserSelect
-        />
-      </Grid>
-    </CustomButton>
+        <Grid
+          container
+          gap={1}
+          alignItems="center"
+          justifyContent="center"
+        >
+          <ArrowUpRightIcon />
+          <Label
+            label={t("getStarTicket")}
+            variantSize="regular16"
+            offUserSelect
+          />
+        </Grid>
+      </CustomButton>
+    </LoadingWrapper>
   );
 }

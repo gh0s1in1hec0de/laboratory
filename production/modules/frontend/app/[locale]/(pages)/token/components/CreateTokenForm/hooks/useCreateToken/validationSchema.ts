@@ -39,8 +39,14 @@ const testTotalSupply = Yup.string()
     (value) => value !== undefined && parseFloat(value) >= MIN_TOTAL_SUPPLY_LENGTH
   );
 
-const testUrl = Yup.string()
+const testTelegramUrl = Yup.string()
+  .nullable();
+
+const testWebsiteUrl = Yup.string()
   .matches(MASKS.url, "Token.urlInput.errors.invalid")
+  .nullable();
+
+const testTwitterUrl = Yup.string()
   .nullable();
 
 const testMarketingSupportValue = Yup.mixed<MarketingSupportTabsValues>()
@@ -56,9 +62,9 @@ const testDecimals = Yup.string()
   
 export const getValidationSchema = () => {
   const schema: YupShape<CreateTokenFormFields> = {
-    x: testUrl,
-    telegram: testUrl,
-    website: testUrl,
+    x: testTwitterUrl,
+    telegram: testTelegramUrl,
+    website: testWebsiteUrl,
     name: testName,
     description: testDescription,
     symbol: testSymbol,

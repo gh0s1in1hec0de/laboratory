@@ -14,17 +14,22 @@ import { SupplyInfo } from "./components/SupplyInfo";
 import { UploadImage } from "./components/UploadImage";
 import { CREATE_TOKEN_FORM_ID } from "./constants";
 import { getValidationSchema, initialValues, useCreateToken } from "./hooks/useCreateToken";
+import { CustomToast } from "@/common/CustomToast";
+import { CreateTokenFormSkeleton } from "./components/CreateTokenFormSkeleton";
 
 export function CreateTokenForm() {
   const {
     isLoadingPage,
     onSubmitForm,
     errorText,
+    isErrorToast,
+    toggleIsErrorToast,
   } = useCreateToken();
 
   return (
     <LoadingWrapper
       isLoading={isLoadingPage}
+      skeleton={<CreateTokenFormSkeleton/>}
     >
       <Formik
         initialValues={initialValues}
@@ -38,32 +43,6 @@ export function CreateTokenForm() {
             gap={3}
             paddingTop={3}
           >
-            {/* todo add toasts */}
-            {/* <Snackbar
-              open={openToast}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              // autoHideDuration={6000}
-              sx={{
-                justifyContent: "space-between",
-              }}
-              onClose={handleCloseToast}
-              message={errorText}
-              action={(
-                <>
-                  <IconButton
-                    style={{
-                      marginLeft: "auto",
-                    }}
-                    size="small"
-                    aria-label="close"
-                    color="inherit"
-                    onClick={handleCloseToast}
-                  >
-                    <CloseIcon fontSize="small" />
-                  </IconButton>
-                </>
-              )}
-            /> */}
             <UploadImage />
             <MetadataInfo />
             <SupplyInfo />
@@ -71,14 +50,12 @@ export function CreateTokenForm() {
             <MarketingSupportInfo />
             <InfluencerSupportInfo />
             <Descriptions />
-            {errorText && (
-              <Label
-                label={errorText}
-                variantSize="regular14"
-                variantColor="red"
-                offUserSelect
-              />
-            )}
+            <CustomToast
+              open={isErrorToast}
+              text={errorText || ""}
+              severity="error"
+              toggleOpen={toggleIsErrorToast}
+            />
             <SubmitButton />
           </Grid>
         </Form>

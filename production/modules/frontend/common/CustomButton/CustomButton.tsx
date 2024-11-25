@@ -4,6 +4,7 @@ import { forwardRef } from "react";
 import styles from "./CustomButton.module.scss";
 import { useCustomButton } from "./hooks/useCustomButton/useCustomButton";
 import { ButtonBackground, ButtonBorderColor, CustomButtonProps } from "./types";
+
 export const CustomButton = forwardRef<HTMLButtonElement, CustomButtonProps>(
   function CustomButton({
     disabled,

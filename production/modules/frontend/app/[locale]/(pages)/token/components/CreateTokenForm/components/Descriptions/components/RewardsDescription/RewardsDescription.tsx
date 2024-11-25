@@ -5,6 +5,8 @@ import Grid from "@mui/material/Grid2";
 import { motion } from "framer-motion";
 import styles from "./RewardsDescription.module.scss";
 import { useTranslations } from "next-intl";
+import { DRAWER_FIRST_TEXT_DATA, DRAWER_THIRD_TEXT_DATA, DRAWER_SECOND_TEXT_DATA } from "./constants";
+import { DrawerParagraph } from "@/common/CustomDrawer";
 
 export function RewardsDescription() {
   const t = useTranslations("Token.descriptions.rewards");
@@ -55,7 +57,19 @@ export function RewardsDescription() {
                     gap={1}
                     flexDirection="column"
                   >
-                    {/* TODO: Add rewards description */}
+                    <Grid
+                      container
+                      gap={1}
+                      flexDirection="column"
+                    >
+                      <DrawerParagraph data={DRAWER_FIRST_TEXT_DATA} />
+                      <DrawerParagraph data={DRAWER_SECOND_TEXT_DATA} />
+                      <DrawerParagraph
+                        data={DRAWER_THIRD_TEXT_DATA}
+                        inBox
+                        paddingTop={1}
+                      />
+                    </Grid>
                   </Grid>
                 </motion.div>
               )}

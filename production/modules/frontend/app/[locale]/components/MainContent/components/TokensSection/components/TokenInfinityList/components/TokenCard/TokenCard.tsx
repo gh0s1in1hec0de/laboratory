@@ -75,6 +75,7 @@ export function TokenCard({
           <AdditionalInfo 
             holders={launch.activeHolders || 0} 
             timings={launch.timings}
+            isSuccessful={launch.isSuccessful}
           />
         </Grid>
 

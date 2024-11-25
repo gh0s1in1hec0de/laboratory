@@ -24,7 +24,7 @@ export function DrawerParagraph({
           padding="4px 12px"
           gap="2px"
           bgColor="orange" 
-          rounded
+          rounded="xs"
           width="fit-content"
         >
           {data.map((item) => (

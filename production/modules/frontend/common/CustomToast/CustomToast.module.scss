@@ -1,0 +1,17 @@
+.alertRoot {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.colorSuccess {
+  background-color: var(--green-extra-dark);
+  color: var(--green-regular);
+  padding: 4px 8px 4px 8px !important;
+}
+
+.colorError {
+  background-color: var(--red-extra-dark);
+  color: var(--red-regular);
+  padding: 4px 8px 4px 8px !important;
+}

@@ -8,12 +8,18 @@ export enum MainBoxBgColor {
   Green = "green",
 }
 
+export enum MainBoxRounded {
+  None = "none",
+  Xs = "xs",
+  Xl = "xl",
+  Full = "full",
+}
+
 export interface MainBoxProps extends Grid2Props {
   children: ReactNode;
   bgColor?: `${MainBoxBgColor}`;
   className?: string;
-  rounded?: boolean;
-  roundedXl?: boolean;
+  rounded?: `${MainBoxRounded}`;
   fullWidth?: boolean;
   showMoreRewards?: boolean;
   isOpen?: boolean;

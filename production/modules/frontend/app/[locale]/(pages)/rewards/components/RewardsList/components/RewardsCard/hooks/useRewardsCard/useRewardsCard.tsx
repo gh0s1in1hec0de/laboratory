@@ -74,7 +74,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
           alignItems="center"
           bgColor="green"
           padding="4px 10px"
-          rounded
+          rounded="xs"
         >
           <Label
             label="Creator"
@@ -91,7 +91,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
           alignItems="center"
           bgColor="gray"
           padding="4px 10px"
-          rounded
+          rounded="xs"
         >
           <Label
             label="Star Club"
@@ -109,7 +109,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
           gap="2px"
           bgColor="orange"
           padding="4px 10px"
-          rounded
+          rounded="xs"
         >
           <Label
             label="Public"
@@ -126,7 +126,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
           alignItems="center"
           bgColor="orange"
           padding="4px 10px"
-          rounded
+          rounded="xs"
         >
           <Label
             label="Ended"

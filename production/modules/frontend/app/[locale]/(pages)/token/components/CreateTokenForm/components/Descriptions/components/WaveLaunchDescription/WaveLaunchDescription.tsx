@@ -89,7 +89,7 @@ export function WaveLaunchDescription() {
                     <DrawerList data={DRAWER_FOURTH_LIST_DATA} />
                     <DrawerList data={DRAWER_FIFTH_LIST_DATA} />
                     <DrawerList data={DRAWER_SIXTH_LIST_DATA} />
-                    <DrawerList data={DRAWER_SEVENTH_LIST_DATA} />
+                    <DrawerList data={DRAWER_SEVENTH_LIST_DATA} highlightColor="gray" />
                   </Grid>
                 </motion.div>
               )}

@@ -4,36 +4,51 @@ import { TicketsIcon } from "@/icons";
 import Grid from "@mui/material/Grid2";
 import { useTranslations } from "next-intl";
 import { Balance } from "./components/Balance";
+import { RedirectButton } from "./components/RedirectButton";
+import { TicketBalanceProps } from "./types";
 
-export function TicketBalance({ description }: { description?: string }) {
+export function TicketBalance({
+  description,
+  rounded,
+  showRedirectButton = false,
+  padding = "16px 12px"
+}: TicketBalanceProps) {
   const t = useTranslations("Tasks.header");
-  
+
   return (
-    <MainBox 
+    <MainBox
       container
       gap="2px"
-      padding="16px 12px"
+      padding={padding}
       flexDirection="column"
       fullWidth
-      rounded
-      bgColor="transparent" 
+      rounded={rounded}
+      bgColor="transparent"
     >
-      <Grid 
-        container 
+      <Grid
+        container
         size="grow"
         alignItems="center"
         gap={1}
       >
-        <TicketsIcon />
-        <Balance />
-      </Grid>
+        <Grid container gap={1} size="grow" flexDirection="column">
+          <Grid container gap={1} alignItems="center">
+            <TicketsIcon />
+            <Balance />
+          </Grid>
 
-      <Label 
-        label={description || t("balance")} 
-        variantSize="regular14" 
-        variantColor="gray"
-        offUserSelect
-      />
+          <Label
+            label={description || t("balance")}
+            variantSize="regular14"
+            variantColor="gray"
+            offUserSelect
+          />
+        </Grid>
+
+        {showRedirectButton && (
+          <RedirectButton />
+        )}
+      </Grid>
     </MainBox>
   );
 }

@@ -14,6 +14,7 @@ import { RewardsInfo } from "./components/RewardsInfo";
 import { useCurrentLaunch } from "./hooks/useCurrentLaunch";
 import { CurrentLaunchPageProps } from "./types";
 import { TonProvider } from "@/providers/ton";
+import { CurrentLaunchSkeleton } from "./components/CurrentLaunchSkeleton";
 
 export default function CurrentLaunch({
   params: { address }
@@ -38,10 +39,10 @@ export default function CurrentLaunch({
     );
   }
 
-  // todo: add skeleton
   return (
     <LoadingWrapper
       isLoading={isLoading || localStorageWrapper.get(CALLER_ADDRESS) === null}
+      skeleton={<CurrentLaunchSkeleton />}
     >
       <Grid
         container

@@ -9,11 +9,12 @@ import { useTranslations } from "next-intl";
 import {
   jettonFromNano
 } from "starton-periphery";
-import { useRewardsCard } from "./components/hooks/useRewardsCard";
+import { useRewardsCard } from "./hooks/useRewardsCard";
 import { LaunchInfo } from "./components/LaunchInfo";
 import styles from "./RewardsCard.module.scss";
 import { RewardsCardProps } from "./types";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
+
 export function RewardsCard({
   extendedBalance,
   rewardPool,
@@ -32,7 +33,7 @@ export function RewardsCard({
   return (
     <LoadingWrapper isLoading={isPending}>
       <MainBox
-        rounded
+        rounded="xs"
         padding={1.5}
         gap={1}
       >

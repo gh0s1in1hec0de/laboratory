@@ -1,10 +1,17 @@
 "use client";
 
-import { CustomDrawer } from "@/common/CustomDrawer";
+import { CustomDrawer, DrawerParagraph } from "@/common/CustomDrawer";
 import { useToggle } from "@/hooks";
 import Grid from "@mui/material/Grid2";
 import { useTranslations } from "next-intl";
 import { InfoBlock } from "@/components/InfoBlock";
+import { 
+  DRAWER_FIRST_TEXT_DATA, 
+  DRAWER_SECOND_TEXT_DATA, 
+  DRAWER_THIRD_TEXT_DATA, 
+  DRAWER_FOURTH_TEXT_DATA, 
+  DRAWER_FIFTH_TEXT_DATA 
+} from "./constants";
 
 export function RewardsDrawer() {
   const t = useTranslations("Rewards.infoBlock");
@@ -17,7 +24,7 @@ export function RewardsDrawer() {
         label={t("title")}
         padding="4px 12px"
         style={{ marginLeft: "auto", cursor: "pointer" }}
-        rounded
+        rounded="xs"
       />
 
       <CustomDrawer
@@ -31,7 +38,16 @@ export function RewardsDrawer() {
           gap={1}
           flexDirection="column"
         >
-          123
+          <DrawerParagraph data={DRAWER_FIRST_TEXT_DATA} />
+          <DrawerParagraph data={DRAWER_SECOND_TEXT_DATA} />
+          <DrawerParagraph 
+            data={DRAWER_THIRD_TEXT_DATA} 
+            inBox 
+            paddingTop={1} 
+            paddingBottom={1}
+          />
+          <DrawerParagraph data={DRAWER_FOURTH_TEXT_DATA} />
+          <DrawerParagraph data={DRAWER_FIFTH_TEXT_DATA} />
         </Grid>
       </CustomDrawer>
     </>

@@ -1,10 +1,18 @@
 .mainBox {
-	&.rounded {
+	&.none {
+		border-radius: 0;
+	}
+
+	&.xs {
 		border-radius: 14px;
 	}
 
-	&.roundedXl {
+	&.xl {
 		border-radius: 28px;
+	}
+
+	&.full {
+		border-radius: 999px;
 	}
 
 	&.fullWidth {

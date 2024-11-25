@@ -15,7 +15,9 @@ export function RisingStarToken() {
     errorText,
     tokenData,
     isPending,
-    handleRedirectToLaunch
+    handleRedirectToLaunch,
+    isOpenDrawer,
+    toggleOpenDrawer,
   } = useRisingStarToken();
   const t = useTranslations("Top");
 
@@ -23,7 +25,7 @@ export function RisingStarToken() {
     <LoadingWrapper isLoading={isPending}>
       <MainBox
         container
-        roundedXl
+        rounded="xl"
         fullWidth
         position="relative"
         minHeight="80px"
@@ -34,7 +36,10 @@ export function RisingStarToken() {
         onClick={handleRedirectToLaunch}
         style={{ cursor: "pointer" }}
       >
-        <StarClubDrawer />
+        <StarClubDrawer
+          isOpenDrawer={isOpenDrawer}
+          toggleOpenDrawer={toggleOpenDrawer}
+        />
 
         <Grid
           container

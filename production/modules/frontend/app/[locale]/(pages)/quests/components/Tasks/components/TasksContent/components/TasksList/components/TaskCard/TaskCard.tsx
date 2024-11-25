@@ -11,7 +11,7 @@ export function TaskCard({ task }: TaskCardProps) {
       {({ open }) => (
         <MainBox 
           container
-          rounded 
+          rounded="xs"
           alignItems="center"
           size={12}
         >

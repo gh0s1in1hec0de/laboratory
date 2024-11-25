@@ -4,11 +4,13 @@ import { useState } from "react";
 import { TxRequestBuilder } from "starton-periphery";
 import type { UseRefoundProps } from "./types";
 import { useTranslations } from "next-intl";
+import { useToggle } from "@/hooks";
 
 export function useRefound({
   launchData,
   userAddress,
 }: UseRefoundProps) {
+  const [isOpenDrawer, toggleOpenDrawer] = useToggle(false);
   const [isLoading, setIsLoading] = useState(false);
   const [tonConnectUI] = useTonConnectUI();
   const [errorText, setErrorText] = useState<string>("");
@@ -40,5 +42,7 @@ export function useRefound({
     onClickRefund,
     isLoading,
     errorText,
+    isOpenDrawer,
+    toggleOpenDrawer,
   };
 }

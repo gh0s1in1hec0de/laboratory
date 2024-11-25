@@ -32,45 +32,47 @@ export function CustomDrawer({
           paper: styles.paper,
         }}
       >
-        <Grid 
-          container 
-          columns={{ xs: 10 }} 
-          justifyContent="center" 
-          width="100%"
-        >
-          <Container>
-            <Grid
-              container
-              paddingY="12px"
-              width="100%"
-              justifyContent="center"
-            >
-              <Box className={styles.button} />
-            </Grid>
-
-            <Grid 
-              container 
-              width="100%"
-              paddingBottom="20px"
-            >
-              {children}
-            </Grid>
-
-            {closeButtonLabel ? (
-              <CustomButton 
-                onClick={onClose}
-                padding="10px 0"
-                fullWidth
+        <div onClick={(e) => e.stopPropagation()} style={{ height: "100%", width: "100%" }}>
+          <Grid
+            container
+            columns={{ xs: 10 }}
+            justifyContent="center"
+            width="100%"
+          >
+            <Container>
+              <Grid
+                container
+                paddingY="12px"
+                width="100%"
+                justifyContent="center"
               >
-                <Label 
-                  label={closeButtonLabel} 
-                  variantSize="regular14" 
-                  offUserSelect
-                />
-              </CustomButton>
-            ) : customCloseButton}
-          </Container>
-        </Grid>
+                <Box className={styles.button} />
+              </Grid>
+
+              <Grid
+                container
+                width="100%"
+                paddingBottom="20px"
+              >
+                {children}
+              </Grid>
+
+              {closeButtonLabel ? (
+                <CustomButton
+                  onClick={onClose}
+                  padding="10px 0"
+                  fullWidth
+                >
+                  <Label
+                    label={closeButtonLabel}
+                    variantSize="regular14"
+                    offUserSelect
+                  />
+                </CustomButton>
+              ) : customCloseButton}
+            </Container>
+          </Grid>
+        </div>
       </SwipeableDrawer>
     </Portal>
   );

@@ -7,6 +7,7 @@ import { Label } from "@/common/Label";
 import { useTranslations } from "next-intl";
 import { TonProvider } from "@/providers/ton";
 import { RewardsListProps } from "./types";
+import { RewardsListSkeleton } from "./components/RewardsListSkeleton";
 
 export function RewardsList({
   extendedBalances,
@@ -19,6 +20,7 @@ export function RewardsList({
   return (
     <LoadingWrapper
       isLoading={isLoading}
+      skeleton={<RewardsListSkeleton/>}
     >
       <Grid
         container

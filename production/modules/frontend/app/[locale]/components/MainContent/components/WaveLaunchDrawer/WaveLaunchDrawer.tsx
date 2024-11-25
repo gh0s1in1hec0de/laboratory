@@ -30,7 +30,7 @@ export function WaveLaunchDrawer() {
         label={t("waveLaunchButton")}
         padding="4px 12px"
         style={{ marginLeft: "auto", cursor: "pointer" }}
-        rounded
+        rounded="xs"
       />
 
       <CustomDrawer
@@ -46,7 +46,6 @@ export function WaveLaunchDrawer() {
         >
           <DrawerParagraph 
             data={DRAWER_FIRST_TEXT_DATA}
-            highlightColor="orange"
           />
           <DrawerParagraph data={DRAWER_SECOND_TEXT_DATA} />
           <DrawerList 
@@ -74,7 +73,7 @@ export function WaveLaunchDrawer() {
           <DrawerList data={DRAWER_FOURTH_LIST_DATA} />
           <DrawerList data={DRAWER_FIFTH_LIST_DATA} />
           <DrawerList data={DRAWER_SIXTH_LIST_DATA} />
-          <DrawerList data={DRAWER_SEVENTH_LIST_DATA} />
+          <DrawerList data={DRAWER_SEVENTH_LIST_DATA} highlightColor="gray" />
         </Grid>
       </CustomDrawer>
     </>

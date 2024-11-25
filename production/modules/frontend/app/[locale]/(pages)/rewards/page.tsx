@@ -11,8 +11,9 @@ import { useRewardsList } from "./hooks/useRewardsList";
 import { Label } from "@/common/Label";
 import { useTranslations } from "next-intl";
 import { RewardBalancesList } from "./components/RewardBalancesList";
-import { CustomButton } from "@/common/CustomButton";
 import { TonProvider } from "@/providers/ton";
+import { LoadingWrapper } from "@/common/LoadingWrapper";
+import { RewardsSkeleton } from "./components/RewardsSkeleton";
 
 export default function Rewards() {
   const t = useTranslations("Rewards");
@@ -26,47 +27,52 @@ export default function Rewards() {
   } = useRewardsList({ selectedTab });
 
   return (
-    <Grid
-      container
-      width="100%"
-      gap={1.5}
+    <LoadingWrapper 
+      isLoading={isLoading}
+      skeleton={<RewardsSkeleton/>}
     >
-      <RewardsHeader />
+      <Grid
+        container
+        width="100%"
+        gap={1.5}
+      >
+        <RewardsHeader />
 
-      <CustomTabs 
-        variant="transparentOutline"
-        selectedTab={selectedTab}
-        onChange={setSelectedTab}
-        disabled={isLoading}
-        tabs={REWARDS_TABS}
-      />
-
-      {selectedTab === RewardsTabsValues.CLAIMS ? (
-        <RewardsList
-          extendedBalances={extendedBalances}
-          isLoading={isLoading}
-          errorText={errorText}
-          rewardPools={rewardPools}
+        <CustomTabs 
+          variant="transparentOutline"
+          selectedTab={selectedTab}
+          onChange={setSelectedTab}
+          disabled={isLoading}
+          tabs={REWARDS_TABS}
         />
-      ) : !rewardBalances ? (
-        <Grid
-          container
-          width="100%"
-          justifyContent="center"
-        >
-          <Label
-            label={t("noRewardBalances")}
-            variantColor="gray"
-            variantSize="regular16"
+
+        {selectedTab === RewardsTabsValues.CLAIMS ? (
+          <RewardsList
+            extendedBalances={extendedBalances}
+            isLoading={isLoading}
+            errorText={errorText}
+            rewardPools={rewardPools}
           />
-        </Grid>
-      ) : (
-        <TonProvider>
-          <RewardBalancesList
-            rewardBalances={rewardBalances}
-          />
-        </TonProvider>
-      )}
-    </Grid>
+        ) : !rewardBalances ? (
+          <Grid
+            container
+            width="100%"
+            justifyContent="center"
+          >
+            <Label
+              label={t("noRewardBalances")}
+              variantColor="gray"
+              variantSize="regular16"
+            />
+          </Grid>
+        ) : (
+          <TonProvider>
+            <RewardBalancesList
+              rewardBalances={rewardBalances}
+            />
+          </TonProvider>
+        )}
+      </Grid>
+    </LoadingWrapper>
   );
 }

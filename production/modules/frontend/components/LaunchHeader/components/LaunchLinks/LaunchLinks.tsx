@@ -3,13 +3,23 @@ import { LaunchLinksProps } from "./types";
 import { MainBox } from "@/common/MainBox";
 import { IconButton } from "@mui/material";
 import { ShareIcon } from "@/icons";
+import { CustomToast } from "@/common/CustomToast";
+import { useToggle } from "@/hooks";
+import { useTranslations } from "next-intl";
 
 export function LaunchLinks({ linksArray, getLaunchLink }: LaunchLinksProps) {
+  const [openToast, toggleOpenToast] = useToggle(false);
+  const t = useTranslations("CurrentLaunch");
 
-  function onClick(link?: string) {
+  function onClickLaunchLink(link?: string) {
     if (link) {
       window.open(link, "_blank");
     }
+  }
+
+  function onClickCopyLink() {
+    getLaunchLink?.();
+    toggleOpenToast();
   }
 
   return (
@@ -21,10 +31,10 @@ export function LaunchLinks({ linksArray, getLaunchLink }: LaunchLinksProps) {
         <IconButton
           key={index}
           disabled={!link}
-          onClick={() => onClick(link)}
+          onClick={() => onClickLaunchLink(link)}
         >
           <MainBox
-            roundedXl
+            rounded="xl"
             paddingX={2}
             paddingY={1.5}
           >
@@ -33,16 +43,22 @@ export function LaunchLinks({ linksArray, getLaunchLink }: LaunchLinksProps) {
         </IconButton>
       ))}
 
-      {/* todo: add success copy */}
-      <IconButton onClick={() => getLaunchLink?.()}>
+      <IconButton onClick={onClickCopyLink}>
         <MainBox
-          roundedXl
+          rounded="xl"
           paddingX={2}
           paddingY={1.5}
         >
           <ShareIcon />
         </MainBox>
       </IconButton>
+
+      <CustomToast
+        open={openToast}
+        toggleOpen={toggleOpenToast}
+        text={t("successCopy")}
+        severity="success"
+      />
     </Grid>
   );
 }

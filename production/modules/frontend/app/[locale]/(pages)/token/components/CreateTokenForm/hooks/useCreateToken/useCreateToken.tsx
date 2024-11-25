@@ -10,11 +10,13 @@ import { useTonConnectUI } from "@tonconnect/ui-react";
 import { LAUNCH_ERROR } from "@/errors/launch/launch";
 import { CALLER_ADDRESS, PAGES } from "@/constants";
 import { localStorageWrapper } from "@/utils";
+import { useToggle } from "@/hooks";
 
 export function useCreateToken() {
   const t = useTranslations("Token.submitButton");
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [errorText, setErrorText] = useState<string | null>(null);
+  const [isErrorToast, toggleIsErrorToast] = useToggle(false);
   const [tonConnectUI] = useTonConnectUI();
   const router = useRouter();
   const locale = useLocale();
@@ -78,16 +80,12 @@ export function useCreateToken() {
         decimals: values.decimals,
       };
 
-      // Qmb4Yjspwz3gVq371wvVN9hqzzAoopzv5W1yS49qdTJJ7f
       const metadataJsonCID = await launchService.saveMetadata({
         links,
         image: values.image,
         metadata,
         influencerSupport: values.influencerSupport,
       });
-      // const metadataJsonCID = "Qmb4Yjspwz3gVq371wvVN9hqzzAoopzv5W1yS49qdTJJ7f";
-      // console.log("metadataJsonCID", metadataJsonCID);
-
 
       const transaction = TxRequestBuilder.createLaunch(
         {
@@ -110,6 +108,7 @@ export function useCreateToken() {
       router.replace(`/${locale}/${PAGES.Token}/${PAGES.TokenPolling}?meta=${metadataJsonCID}`);
     } catch (error) {
       setErrorText(getErrorText(error, t("creatingError")));
+      toggleIsErrorToast();
     } finally {
       setSubmitting(false);
     }
@@ -119,5 +118,7 @@ export function useCreateToken() {
     isLoadingPage,
     onSubmitForm,
     errorText,
+    isErrorToast,
+    toggleIsErrorToast,
   };
 }

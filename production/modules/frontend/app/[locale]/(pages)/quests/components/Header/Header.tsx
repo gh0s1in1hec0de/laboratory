@@ -19,7 +19,7 @@ export function Header() {
 
       <TonProvider>
         <CustomConnectButton 
-          successChildren={<TicketBalance />}
+          successChildren={<TicketBalance rounded="xs" />}
           fullWidth
         />
       </TonProvider>
