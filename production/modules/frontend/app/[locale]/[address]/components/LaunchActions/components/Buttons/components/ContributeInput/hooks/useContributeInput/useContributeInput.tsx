@@ -5,19 +5,17 @@ import { SalePhase, TxRequestBuilder, TokenLaunchTimings, getCurrentSalePhase } 
 import { toNano } from "@ton/core";
 import { useTonConnectUI } from "@tonconnect/ui-react";
 
-export function useContributeInput(launchAddress: string, timings: TokenLaunchTimings) {
+export function useContributeInput(launchAddress: string, isWhitelist: boolean, isPublic: boolean) {
   const t = useTranslations("CurrentLaunch.contribute.amountInput");
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorText, setErrorText] = useState("");
   const [tonConnectUI] = useTonConnectUI();
 
-  const { phase } = getCurrentSalePhase(timings);
-
   async function onClickBuyTokens() {
     try {
       setIsLoading(true);
-      if (phase === SalePhase.WHITELIST) {
+      if (isWhitelist) {
         const transaction = TxRequestBuilder.whitelistPurchaseV1Message(
           {
             launchAddress,
@@ -25,9 +23,10 @@ export function useContributeInput(launchAddress: string, timings: TokenLaunchTi
           },
         );
         await tonConnectUI.sendTransaction(transaction, { modals: "all" });
+        return;
       }
 
-      if (phase === SalePhase.PUBLIC) {
+      if (isPublic) {
         const transaction = TxRequestBuilder.publicPurchaseMessage(
           {
             launchAddress,
@@ -35,7 +34,10 @@ export function useContributeInput(launchAddress: string, timings: TokenLaunchTi
           },
         );
         await tonConnectUI.sendTransaction(transaction, { modals: "all" });
+        return;
       }
+
+      return;
     } catch (error) {
       setErrorText(getErrorText(error, t("errors.buyingError")));
     } finally {
@@ -49,6 +51,5 @@ export function useContributeInput(launchAddress: string, timings: TokenLaunchTi
     isLoading,
     errorText,
     onClickBuyTokens,
-    phase
   };
 }

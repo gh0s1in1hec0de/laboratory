@@ -37,7 +37,7 @@ export function useBuyToken({ launchAddress, version }: UseBuyTokenProps) {
     (async () => {
       try {
         const tonClient = new TonClient4({
-          endpoint: await getHttpV4Endpoint({ network: process.env.NEXT_PUBLIC_NETWORK_TESTNET as Network }),
+          endpoint: await getHttpV4Endpoint({ network: process.env.NEXT_PUBLIC_NETWORK as Network }),
         });
 
         const {

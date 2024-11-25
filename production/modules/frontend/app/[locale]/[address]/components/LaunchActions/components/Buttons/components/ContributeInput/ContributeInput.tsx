@@ -1,12 +1,16 @@
-import Grid from "@mui/material/Grid2";
-import { CustomInput } from "@/common/CustomInput";
-import { useTranslations } from "next-intl";
-import { Label } from "@/common/Label";
 import { CustomButton } from "@/common/CustomButton";
+import { CustomInput } from "@/common/CustomInput";
+import { Label } from "@/common/Label";
+import Grid from "@mui/material/Grid2";
+import { useTranslations } from "next-intl";
 import { useContributeInput } from "./hooks/useContributeInput";
 import { ContributeInputProps } from "./types";
 
-export function ContributeInput({ launchAddress, timings }: ContributeInputProps) {
+export function ContributeInput({
+  launchAddress,
+  isPublic = false,
+  isWhitelist = false
+}: ContributeInputProps) {
   const t = useTranslations("CurrentLaunch.contribute");
   const {
     amount,
@@ -14,10 +18,10 @@ export function ContributeInput({ launchAddress, timings }: ContributeInputProps
     isLoading,
     errorText,
     onClickBuyTokens,
-  } = useContributeInput(launchAddress, timings);
+  } = useContributeInput(launchAddress, isPublic, isWhitelist);
 
   return (
-    <Grid 
+    <Grid
       container
       gap={1.5}
       width="100%"
@@ -60,7 +64,7 @@ export function ContributeInput({ launchAddress, timings }: ContributeInputProps
           variantSize="regular16"
         />
       </CustomButton>
-    
+
     </Grid>
   );
 }

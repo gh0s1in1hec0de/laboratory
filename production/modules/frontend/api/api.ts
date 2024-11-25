@@ -7,19 +7,19 @@ const getContentType = () => ({
 });
 
 export const managerService = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_MANAGER_DEV}/api`,
+  baseURL: `${process.env.NEXT_PUBLIC_MODE === "dev" ? process.env.NEXT_PUBLIC_MANAGER_DEV : process.env.NEXT_PUBLIC_MANAGER_PROD}/api`,
   withCredentials: true,
   headers: getContentType(),
 });
 
 export const oracleService = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_ORACLE_DEV}/api`,
+  baseURL: `${process.env.NEXT_PUBLIC_MODE === "dev" ? process.env.NEXT_PUBLIC_ORACLE_DEV : process.env.NEXT_PUBLIC_ORACLE_PROD}/api`,
   withCredentials: true,
   headers: getContentType(),
 });
 
 export const dispenserService = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_DISPENSER_DEV}/api`,
+  baseURL: `${process.env.NEXT_PUBLIC_MODE === "dev" ? process.env.NEXT_PUBLIC_DISPENSER_DEV : process.env.NEXT_PUBLIC_DISPENSER_PROD}/api`,
   withCredentials: true,
   headers: getContentType(),
 });

@@ -96,22 +96,34 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
     }
   }
 
+  function onClickRedirectRoDeDust (masterAddress: string) {
+    window.open(`https://dedust.io/swap/TON/${Address.parse(masterAddress).toString()}`, "_blank");
+  }
+
   function renderContent() {
-    if (phase === SalePhase.WHITELIST || phase === SalePhase.PUBLIC) {
+    if (phase === SalePhase.WHITELIST) {
       return launchData && (whitelistStatus || (ticketBalance && ticketBalance > 0)) ? (
         <ContributeInput
           launchAddress={launchData.address}
-          timings={launchData.timings}
+          isWhitelist={true}
         />
       ) : (
         <GetTicketsButton />
       );
     }
-  
+
+    if (phase === SalePhase.PUBLIC && launchData) {
+      return (
+        <ContributeInput
+          launchAddress={launchData.address}
+          isPublic={true}
+        />
+      );
+    }
+
     if (phase === SalePhase.ENDED) {
       if (launchData?.isSuccessful === null) {
-        // Оракул еще не присвоил категорию
-        return launchData?.totalTonsCollected > launchData?.minTonTreshold ? (
+        return (
           <CustomButton
             fullWidth
             padding="10px"
@@ -120,24 +132,36 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
           >
             <Label label={t("deployingJetton")} variantSize="regular16" />
           </CustomButton>
-        ) : (
-          <CustomConnectButton
-            fullWidth
-            showDropdown={false}
-            successChildren={(
-              <CustomButton
-                fullWidth
-                padding="10px"
-                background="red"
-                onClick={onClickRefundHandler}
-              >
-                <Label label={t("refund")} variantSize="regular16" />
-              </CustomButton>
-            )}
-          />
         );
+
+        // // Оракул еще не присвоил категорию
+        // return launchData?.totalTonsCollected > launchData?.minTonTreshold ? (
+        //   <CustomButton
+        //     fullWidth
+        //     padding="10px"
+        //     background="gray"
+        //     addHover={false}
+        //   >
+        //     <Label label={t("deployingJetton")} variantSize="regular16" />
+        //   </CustomButton>
+        // ) : (
+        //   <CustomConnectButton
+        //     fullWidth
+        //     showDropdown={false}
+        //     successChildren={(
+        //       <CustomButton
+        //         fullWidth
+        //         padding="10px"
+        //         background="red"
+        //         onClick={onClickRefundHandler}
+        //       >
+        //         <Label label={t("refund")} variantSize="regular16" />
+        //       </CustomButton>
+        //     )}
+        //   />
+        // );
       }
-  
+
       if (launchData?.isSuccessful === false) {
         // Лаунч неуспешен, показываем рефанд
         return (
@@ -157,7 +181,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
           />
         );
       }
-  
+
       if (launchData?.isSuccessful === true) {
         // Лаунч успешен
         if (launchData?.postDeployEnrollmentStats === null) {
@@ -173,7 +197,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
             </CustomButton>
           );
         }
-  
+
         if (launchData?.postDeployEnrollmentStats && !launchData?.dexData) {
           // Жеттон задеплоен, пул еще нет
           return (
@@ -187,7 +211,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
             </CustomButton>
           );
         }
-  
+
         if (launchData?.postDeployEnrollmentStats && launchData?.dexData) {
           // Пул задеплоен, показываем ссылки на swap и chart
           return (
@@ -206,12 +230,13 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
                   </CustomButton>
                 )}
               />
-  
+
               <Grid container gap={1} width="100%">
                 <Grid size="grow">
                   <CustomButton
                     fullWidth
                     padding="10px 0px"
+                    onClick={()=> onClickRedirectRoDeDust(launchData.postDeployEnrollmentStats?.deployedJetton.masterAddress || "")}
                     background="gray"
                   >
                     <Grid
@@ -225,7 +250,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
                     </Grid>
                   </CustomButton>
                 </Grid>
-  
+
                 <Grid size="grow">
                   <CustomButton
                     fullWidth
@@ -249,10 +274,10 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
         }
       }
     }
-    
+
     return "it`s absolute meowable case";
   }
-  
+
 
   return {
     isLoading,

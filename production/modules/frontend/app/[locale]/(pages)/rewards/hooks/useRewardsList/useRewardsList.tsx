@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { RewardsTabsValues } from "../../types";
 import { UseRewardsListProps } from "./types";
 import { CALLER_ADDRESS } from "@/constants";
+import { Address } from "@ton/core";
 
 export function useRewardsList({ selectedTab }: UseRewardsListProps) {
   const [rewardBalances, setRewardBalances] = useState<GetRewardJettonBalancesResponse>(null);
@@ -22,8 +23,8 @@ export function useRewardsList({ selectedTab }: UseRewardsListProps) {
   async function fetchClaims() {
     try {
       const response = await userService.getBalances({
-        user: localStorageWrapper.get(CALLER_ADDRESS),
-        // user: "0:2dd16bb9a506382fa6b54ca661e44c3ef40c3bd776088995f94db50a44b44ad2",
+        user: Address.parse(localStorageWrapper.get(CALLER_ADDRESS)).toRawString(),
+        // user: "0:90713b498b124c68028f71ac1b94a9ec5c32e09778e419e344ad370734d3a177",
       });
 
       if (!response) {
@@ -47,8 +48,8 @@ export function useRewardsList({ selectedTab }: UseRewardsListProps) {
   async function fetchRewards() {
     try {
       const response = await rewardsService.getRewardBalances({
-        userAddress: localStorageWrapper.get(CALLER_ADDRESS),
-        // userAddress: "0:2dd16bb9a506382fa6b54ca661e44c3ef40c3bd776088995f94db50a44b44ad2",
+        userAddress: Address.parse(localStorageWrapper.get(CALLER_ADDRESS)).toRawString(),
+        // userAddress: Address.parse("0:90713b498b124c68028f71ac1b94a9ec5c32e09778e419e344ad370734d3a177").toRawString(),
       });
 
       setRewardBalances(response);

@@ -18,8 +18,8 @@ export function useRewardBalancesList() {
       setIsLoading(true);
       
       const response = await rewardsService.getClaimAllRewards({
-        userAddress: localStorageWrapper.get(CALLER_ADDRESS),
-        // userAddress: Address.parse("0:2dd16bb9a506382fa6b54ca661e44c3ef40c3bd776088995f94db50a44b44ad2").toRawString(),
+        userAddress: Address.parse(localStorageWrapper.get(CALLER_ADDRESS)).toRawString(),
+        // userAddress: Address.parse("0:062c4f50c92ab0927d58347e0e2105c10e0e6156f267d4cec530ecc9e25da9f1").toRawString(),
       });
       
       const transaction = TxRequestBuilder.claimRewardsMessage(
