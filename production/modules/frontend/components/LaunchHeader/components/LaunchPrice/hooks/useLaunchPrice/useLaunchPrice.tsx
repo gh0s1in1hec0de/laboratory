@@ -7,8 +7,6 @@ import {
   MoneyFlows,
   Network,
   SalePhase,
-  SyntheticReserves,
-  WlPhaseLimits
 } from "starton-periphery";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import { Address } from "@ton/core";
@@ -87,13 +85,12 @@ export function useLaunchPrice({
 
     const jettons = getAmountOut(
       version,
-      phase === SalePhase.WHITELIST ? SalePhase.WHITELIST : phase === SalePhase.PUBLIC ? SalePhase.PUBLIC : SalePhase.CREATOR,
-      phase === SalePhase.WHITELIST ? { wlRoundFutJetLimit, wlRoundTonLimit } : phase === SalePhase.PUBLIC ? { syntheticJetReserve, syntheticTonReserve } : { } as WlPhaseLimits | SyntheticReserves,
+      phase === SalePhase.CREATOR ? SalePhase.CREATOR : phase === SalePhase.WHITELIST ? SalePhase.WHITELIST : SalePhase.PUBLIC,
+      phase === SalePhase.PUBLIC ? { syntheticJetReserve, syntheticTonReserve } : { wlRoundFutJetLimit, wlRoundTonLimit },
     );
 
     setPrice(calculatePrice(jettons));
   }, [configData, version, phase]);
-
 
   return {
     price,

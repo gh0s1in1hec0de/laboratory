@@ -20,7 +20,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "StartON - Safest TON Launchpad",
+  title: "StartON — Best rewarding launchpad",
   description: "StartON — the ultimate community-powered launchpad with a game-changing Wavelaunch system offering up to 100% refunds. Discover innovative tokens, engage in seamless trading, and enjoy top-tier security with StartON.",
   // openGraph: {
   //   title: "StartON - The Safest TON Launchpad",

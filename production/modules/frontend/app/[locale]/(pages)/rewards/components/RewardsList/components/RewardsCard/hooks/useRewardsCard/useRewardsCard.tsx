@@ -1,24 +1,36 @@
+import { CustomButton } from "@/common/CustomButton";
+import { Label } from "@/common/Label";
+import { MainBox } from "@/common/MainBox";
+import { PAGES } from "@/constants";
+import { ArrowUpRightIcon } from "@/icons";
+import { formatTime, getErrorText } from "@/utils";
+import Grid from "@mui/material/Grid2";
+import { getHttpV4Endpoint } from "@orbs-network/ton-access";
+import { Address } from "@ton/core";
+import { TonClient4 } from "@ton/ton";
+import { useTonConnectUI } from "@tonconnect/ui-react";
+import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
 import {
   ExtendedUserBalance,
-  getCurrentSalePhase,
-  SalePhase,
+  GetConfigResponse,
   GlobalVersions,
+  MoneyFlows,
+  Network,
+  SalePhase,
   TxRequestBuilder,
+  calculateUserRewardAmount,
+  getApproximateClaimAmount,
+  getContractData,
+  getCurrentSalePhase,
+  RewardPool,
+  JettonMetadata
 } from "starton-periphery";
-import { formatTime, getErrorText } from "@/utils";
-import { MainBox } from "@/common/MainBox";
-import { Label } from "@/common/Label";
-import { useTranslations, useLocale } from "next-intl";
-import { ArrowUpRightIcon } from "@/icons";
-import { CustomButton } from "@/common/CustomButton";
-import Grid from "@mui/material/Grid2";
-import { useTonConnectUI } from "@tonconnect/ui-react";
-import { useState, useTransition } from "react";
-import { PAGES } from "@/constants";
-import { useRouter } from "next/navigation";
-import { Address } from "@ton/core";
 
-export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
+export function useRewardsCard(extendedBalance: ExtendedUserBalance, rewardPool?: (RewardPool & {
+  metadata: JettonMetadata;
+})[]) {
   const t = useTranslations("Rewards");
   const { phase, nextPhaseIn } = getCurrentSalePhase(extendedBalance.timings);
   const { days, hours, minutes } = formatTime(nextPhaseIn || 0);
@@ -27,6 +39,107 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const locale = useLocale();
+  const [configData, setConfigData] = useState<GetConfigResponse & MoneyFlows | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [displayValue, setDisplayValue] = useState<bigint>();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const tonClient = new TonClient4({
+          endpoint: await getHttpV4Endpoint({ network: process.env.NEXT_PUBLIC_NETWORK as Network }),
+        });
+
+        const {
+          creatorFutJetLeft,
+          creatorFutJetPriceReversed,
+          wlRoundFutJetLimit,
+          wlRoundTonLimit,
+          syntheticTonReserve,
+          syntheticJetReserve,
+          futJetDexAmount,
+          futJetPlatformAmount,
+          minTonForSaleSuccess,
+          creatorFutJetBalance,
+          publicRoundFutJetSold,
+          pubRoundFutJetLimit,
+          totalTonsCollected,
+          wlRoundTonInvestedTotal,
+        } = (await getContractData(
+          "All",
+          tonClient,
+          // Address.parse("0:91b0b2deb5276bc2030315d3c650b0366138bc9ea8e1b10f1eade54271369b67")
+          Address.parse(extendedBalance.tokenLaunch),
+        )) as GetConfigResponse & MoneyFlows;
+
+        setConfigData({
+          wlRoundFutJetLimit,
+          wlRoundTonLimit,
+          creatorFutJetLeft,
+          creatorFutJetPriceReversed,
+          creatorFutJetBalance,
+          publicRoundFutJetSold,
+          pubRoundFutJetLimit,
+          totalTonsCollected,
+          wlRoundTonInvestedTotal,
+          futJetDexAmount,
+          futJetPlatformAmount,
+          minTonForSaleSuccess,
+          syntheticTonReserve,
+          syntheticJetReserve,
+        });
+
+      } catch (error) {
+        console.error("Error fetching config data (getContractData):", error);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (configData) {
+        const res = getApproximateClaimAmount(
+          {
+            creatorFutJetBalance: configData.creatorFutJetBalance,
+            publicRoundFutJetSold: configData.publicRoundFutJetSold,
+            syntheticJetReserve: configData.syntheticJetReserve,
+            syntheticTonReserve: configData.syntheticTonReserve,
+            totalTonsCollected: configData.totalTonsCollected,
+            wlRoundTonInvestedTotal: configData.wlRoundTonInvestedTotal,
+          },
+          {
+            creatorFutJetBalance: configData.creatorFutJetBalance,
+            creatorFutJetLeft: configData.creatorFutJetLeft,
+            creatorFutJetPriceReversed: configData.creatorFutJetPriceReversed,
+            futJetDexAmount: configData.futJetDexAmount,
+            futJetPlatformAmount: configData.futJetPlatformAmount,
+            minTonForSaleSuccess: configData.minTonForSaleSuccess,
+            pubRoundFutJetLimit: configData.pubRoundFutJetLimit,
+            wlRoundFutJetLimit: configData.wlRoundFutJetLimit,
+            wlRoundTonLimit: configData.wlRoundTonLimit
+          },
+          {
+            jettons: extendedBalance.jettons,
+            whitelistTons: extendedBalance.whitelistTons
+          },
+          extendedBalance.isCreator
+        );
+
+        let res2: bigint = 0n;
+
+        rewardPool?.map((item) => {
+          res2 += calculateUserRewardAmount(BigInt(res), BigInt(extendedBalance.totalSupply), BigInt(item.rewardAmount));
+        });
+
+        setDisplayValue(res2);
+      }
+    } catch (error) {
+      console.error("Error in getApproximateClaimAmount:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [configData]);
+
 
   async function onClickRefundHandler() {
     try {
@@ -60,7 +173,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
   }
 
   async function onClickContributeHandler() {
-    startTransition(() => { 
+    startTransition(() => {
       router.push(`/${locale}/${PAGES.Quests}`);
     });
   }
@@ -151,9 +264,9 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
           fullWidth
           onClick={onClickClaimHandler}
         >
-          <Label 
-            label={t("claim")} 
-            variantSize="medium16" 
+          <Label
+            label={t("claim")}
+            variantSize="medium16"
             offUserSelect
           />
         </CustomButton>
@@ -166,9 +279,9 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
           fullWidth
           onClick={onClickRefundHandler}
         >
-          <Label 
-            label={t("refund")} 
-            variantSize="medium16" 
+          <Label
+            label={t("refund")}
+            variantSize="medium16"
             offUserSelect
           />
         </CustomButton>
@@ -181,16 +294,16 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
           fullWidth
           onClick={onClickContributeHandler}
         >
-          <Grid 
+          <Grid
             container
             gap={1}
             alignItems="center"
             justifyContent="center"
           >
             <ArrowUpRightIcon />
-            <Label 
-              label={t("contributeMore")} 
-              variantSize="medium16" 
+            <Label
+              label={t("contributeMore")}
+              variantSize="medium16"
               offUserSelect
             />
           </Grid>
@@ -199,7 +312,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
     }
   }
 
-  return { 
+  return {
     days,
     hours,
     minutes,
@@ -207,5 +320,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
     renderButton,
     errorText,
     isPending,
+    isLoading,
+    displayValue
   };
 }

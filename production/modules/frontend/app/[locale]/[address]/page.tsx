@@ -15,6 +15,7 @@ import { useCurrentLaunch } from "./hooks/useCurrentLaunch";
 import { CurrentLaunchPageProps } from "./types";
 import { TonProvider } from "@/providers/ton";
 import { CurrentLaunchSkeleton } from "./components/CurrentLaunchSkeleton";
+import { Address } from "@ton/core";
 
 export default function CurrentLaunch({
   params: { address }
@@ -82,7 +83,7 @@ export default function CurrentLaunch({
 
             <LaunchInfo
               launchData={launchData}
-              showRefund={!!balance}
+              showRefund={!!balance || Address.parse(launchData.creator).toRawString() === localStorageWrapper.get(CALLER_ADDRESS)}
             />
           </TonProvider>
         )}

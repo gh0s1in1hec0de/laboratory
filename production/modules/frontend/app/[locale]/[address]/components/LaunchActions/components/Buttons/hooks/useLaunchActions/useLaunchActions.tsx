@@ -1,8 +1,9 @@
 import { CustomButton } from "@/common/CustomButton";
 import { Label } from "@/common/Label";
+import { CustomConnectButton } from "@/components/CustomConnectButton";
 import { CALLER_ADDRESS } from "@/constants";
 import { ArrowUpRightIcon } from "@/icons";
-import { launchService, userService } from "@/services";
+import { userService } from "@/services";
 import { getErrorText, localStorageWrapper } from "@/utils";
 import Grid from "@mui/material/Grid2";
 import { Address } from "@ton/core";
@@ -17,9 +18,9 @@ import {
   TokenLaunchTimings,
   TxRequestBuilder,
 } from "starton-periphery";
-import { ContributeInput } from "../../components/ContributeInput";
+import { WhitelistBuyInput } from "../../components/WhitelistBuyInput";
+import { PublicBuyInput } from "../../components/PublicBuyInput";
 import { GetTicketsButton } from "../../components/GetTicketsButton";
-import { CustomConnectButton } from "@/components/CustomConnectButton";
 
 export function useLaunchActions(launchData: GetCertainLaunchResponse) {
   const [isLoading, setIsLoading] = useState(true);
@@ -49,13 +50,13 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
         const ticketBalance = await userService.getTicketBalance();
         setTicketBalance(ticketBalance);
 
-        if (ticketBalance > 0) {
-          await launchService.postBuyWl({
-            callerAddress,
-            launchAddress: launchData?.address ?? "",
-          });
-          return;
-        }
+        // if (ticketBalance > 0) {
+        //   await launchService.postBuyWl({
+        //     callerAddress,
+        //     launchAddress: launchData?.address ?? "",
+        //   });
+        //   return;
+        // }
       } catch (error) {
         setErrorText(getErrorText(error, t("fetchError")));
       } finally {
@@ -96,27 +97,25 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
     }
   }
 
-  function onClickRedirectRoDeDust (masterAddress: string) {
+  function onClickRedirectRoDeDust(masterAddress: string) {
     window.open(`https://dedust.io/swap/TON/${Address.parse(masterAddress).toString()}`, "_blank");
   }
 
   function renderContent() {
     if (phase === SalePhase.WHITELIST) {
       return launchData && (whitelistStatus || (ticketBalance && ticketBalance > 0)) ? (
-        <ContributeInput
+        <WhitelistBuyInput
           launchAddress={launchData.address}
-          isWhitelist={true}
         />
       ) : (
         <GetTicketsButton />
       );
     }
 
-    if (phase === SalePhase.PUBLIC && launchData) {
+    if (launchData && phase === SalePhase.PUBLIC) {
       return (
-        <ContributeInput
+        <PublicBuyInput
           launchAddress={launchData.address}
-          isPublic={true}
         />
       );
     }
@@ -236,7 +235,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
                   <CustomButton
                     fullWidth
                     padding="10px 0px"
-                    onClick={()=> onClickRedirectRoDeDust(launchData.postDeployEnrollmentStats?.deployedJetton.masterAddress || "")}
+                    onClick={() => onClickRedirectRoDeDust(launchData.postDeployEnrollmentStats?.deployedJetton.masterAddress || "")}
                     background="gray"
                   >
                     <Grid

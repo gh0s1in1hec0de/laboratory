@@ -1,7 +1,6 @@
 import { Label } from "@/common/Label";
 import { MainBox } from "@/common/MainBox";
 import { RewardBlock } from "./components/RewardBlock";
-import { RewardCard } from "@/components/RewardCard";
 import { ArrowIcon } from "@/icons";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import Grid from "@mui/material/Grid2";
@@ -15,6 +14,7 @@ import { LaunchInfo } from "./components/LaunchInfo";
 import styles from "./RewardsCard.module.scss";
 import { RewardsCardProps } from "./types";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
+import Skeleton from "@mui/material/Skeleton";
 
 export function RewardsCard({
   extendedBalance,
@@ -29,7 +29,9 @@ export function RewardsCard({
     renderButton,
     errorText,
     isPending,
-  } = useRewardsCard(extendedBalance);
+    isLoading,
+    displayValue
+  } = useRewardsCard(extendedBalance, rewardPool);
 
   return (
     <LoadingWrapper isLoading={isPending}>
@@ -49,15 +51,26 @@ export function RewardsCard({
           width="100%"
           justifyContent="space-between"
         >
-          <Label
-            label={t("jettonsToClaimTitle")}
-            variantSize="regular14"
-            variantColor="gray"
-          />
-          <Label
-            label={jettonFromNano(extendedBalance.jettons)}
-            variantSize="regular14"
-          />
+          {isLoading ? (
+            <Skeleton
+              sx={{ bgcolor: "var(--skeleton-color)" }}
+              variant="rounded"
+              width="100%"
+              height="50px"
+            />
+          ) : (
+            <>
+              <Label
+                label={t("jettonsToClaimTitle")}
+                variantSize="regular14"
+                variantColor="gray"
+              />
+              <Label
+                label={jettonFromNano(displayValue || 0)}
+                variantSize="regular14"
+              />
+            </>
+          )}
         </Grid>
 
         <Grid container size={12} paddingTop={0.5}>

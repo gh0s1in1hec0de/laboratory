@@ -3,14 +3,12 @@ import { CustomInput } from "@/common/CustomInput";
 import { Label } from "@/common/Label";
 import Grid from "@mui/material/Grid2";
 import { useTranslations } from "next-intl";
-import { useContributeInput } from "./hooks/useContributeInput";
-import { ContributeInputProps } from "./types";
+import { useWhitelistInput } from "./hooks/useWhitelistInput";
+import { WhitelistBuyInputProps } from "./types";
 
-export function ContributeInput({
+export function WhitelistBuyInput({
   launchAddress,
-  isPublic = false,
-  isWhitelist = false
-}: ContributeInputProps) {
+}: WhitelistBuyInputProps) {
   const t = useTranslations("CurrentLaunch.contribute");
   const {
     amount,
@@ -18,12 +16,12 @@ export function ContributeInput({
     isLoading,
     errorText,
     onClickBuyTokens,
-  } = useContributeInput(launchAddress, isPublic, isWhitelist);
+  } = useWhitelistInput(launchAddress);
 
   return (
     <Grid
       container
-      gap={1.5}
+      gap={1.45}
       width="100%"
     >
       <CustomInput
@@ -64,7 +62,6 @@ export function ContributeInput({
           variantSize="regular16"
         />
       </CustomButton>
-
     </Grid>
   );
 }
