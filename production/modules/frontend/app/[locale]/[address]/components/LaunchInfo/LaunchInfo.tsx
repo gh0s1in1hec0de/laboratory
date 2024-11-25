@@ -9,14 +9,18 @@ import { CopyIcon } from "@/icons";
 import { RefundButton } from "./components/RefundButton";
 import { jettonFromNano } from "starton-periphery";
 import { TonProvider } from "@/providers/ton";
+import { useToggle } from "@/hooks";
+import { CustomToast } from "@/common/CustomToast";
 
 export function LaunchInfo({
   launchData,
   showRefund = false,
 }: LaunchInfoProps) {
   const t = useTranslations("CurrentLaunch.info");
+  const [openToast, toggleOpenToast] = useToggle(false);
 
   function onClickCopyAddress() {
+    toggleOpenToast();
     navigator.clipboard.writeText(launchData?.address ?? "");
   }
 
@@ -86,7 +90,6 @@ export function LaunchInfo({
             />
           </Grid>
 
-          {/* todo: add success copy */}
           <IconButton
             onClick={onClickCopyAddress}
             sx={{
@@ -96,6 +99,13 @@ export function LaunchInfo({
           >
             <CopyIcon />
           </IconButton>
+
+          <CustomToast
+            open={openToast}
+            toggleOpen={toggleOpenToast}
+            text={t("successCopy")}
+            severity="success"
+          />
         </Grid>
       </MainBox>
       

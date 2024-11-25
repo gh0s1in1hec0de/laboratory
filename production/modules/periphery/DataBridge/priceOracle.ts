@@ -82,15 +82,17 @@ export function getPublicAmountOut(
 export function getApproximateClaimAmount(
     { publicRoundFutJetSold, wlRoundTonInvestedTotal, creatorFutJetBalance }: MoneyFlows,
     { pubRoundFutJetLimit, wlRoundFutJetLimit }: GetConfigResponse,
-    share: { wlTons: Coins, jettons: Coins },
+    // StoredUserBalance
+    share: { whitelistTons: Coins, jettons: Coins },
+    // isCreator ExtendedUserBalance
     isCreator: boolean = false
 ): Coins {
     let futJetRecipientTotalAmount = share.jettons;
-    if (share.wlTons > 0) {
+    if (share.whitelistTons > 0n) {
         const publicRemainings = pubRoundFutJetLimit - publicRoundFutJetSold;
         const wlRoundFurJetFinalAmount = wlRoundFutJetLimit + publicRemainings;
 
-        const jettonWlShare = wlRoundFurJetFinalAmount * share.wlTons / wlRoundTonInvestedTotal;
+        const jettonWlShare = wlRoundFurJetFinalAmount * share.whitelistTons / wlRoundTonInvestedTotal;
         futJetRecipientTotalAmount += jettonWlShare;
     }
     if (isCreator) futJetRecipientTotalAmount += creatorFutJetBalance;
@@ -105,10 +107,14 @@ export function getApproximateClaimAmount(
  * @param rewardPoolSupply - Total amount of reward jettons in the pool.
  * @returns The calculated reward amount as a bigint.
  */
+// jettonFromNano
 export function calculateUserRewardAmount(
+    // getApproximateClaimAmount
     userClaimAmount: Coins,
+    // totalSupply => ExtendedUserBalance
     launchSupply: Coins,
+    // MappedRewardPools => rewardAmount
     rewardPoolSupply: Coins
-): bigint {
+): Coins {
     return userClaimAmount * rewardPoolSupply / launchSupply;
 }

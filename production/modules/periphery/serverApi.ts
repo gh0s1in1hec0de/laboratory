@@ -65,7 +65,7 @@ export type ExtendedUserBalance = (StoredUserBalance & {
     metadata: JettonMetadata,
     totalSupply: Coins,
     isSuccessful: boolean | null,
-    isCreator: RawAddressString,
+    isCreator: boolean,
 });
 export type MappedUserBalances = {
     [tokenLaunch: RawAddressString]: ExtendedUserBalance

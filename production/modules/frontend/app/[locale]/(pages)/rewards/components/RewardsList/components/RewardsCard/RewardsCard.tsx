@@ -1,5 +1,6 @@
 import { Label } from "@/common/Label";
 import { MainBox } from "@/common/MainBox";
+import { RewardBlock } from "./components/RewardBlock";
 import { RewardCard } from "@/components/RewardCard";
 import { ArrowIcon } from "@/icons";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
@@ -149,9 +150,10 @@ export function RewardsCard({
                       paddingTop={2}
                     >
                       {rewardPool?.map((reward, index) => (
-                        <RewardCard
+                        <RewardBlock
                           key={index}
                           rewardPool={reward}
+                          extendedBalance={extendedBalance}
                         />
                       ))}
                     </Grid>

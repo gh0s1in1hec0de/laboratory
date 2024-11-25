@@ -1,13 +1,19 @@
+import { CustomAvatar } from "@/common/CustomAvatar";
 import { Label } from "@/common/Label";
 import Grid from "@mui/material/Grid2";
-import { CustomAvatar } from "@/common/CustomAvatar";
-import { jettonFromNano } from "starton-periphery";
+import {
+  jettonFromNano
+} from "starton-periphery";
 import { RewardCardProps } from "./types";
 
-export function RewardCard({ rewardPool }: RewardCardProps) {
+export function RewardCard({
+  rewardPool,
+}: RewardCardProps) {
+
+
   return (
-    <Grid 
-      container 
+    <Grid
+      container
       width="100%"
       alignItems="center"
     >
