@@ -430,6 +430,8 @@
 			"starClubStage": "Star Club",
 			"publicStage": "Public",
 			"listingStage": "Listing",
+			"failed": "😔 Этот Wavelaunch не прошел",
+			"listingEnded": "👏 Процесс листинга DEX завершен",
 			"now": "сейчас",
 			"waiting": "ждем...",
 			"prev": "прошло"

@@ -77,7 +77,7 @@ export default function CurrentLaunch({
               launchData={launchData}
             />
 
-            {launchData && <CurrentWave timings={launchData.timings} />}
+            {launchData && <CurrentWave launchData={launchData} />}
 
             <RewardsInfo address={launchData.address} />
 

@@ -429,6 +429,8 @@
 			"title": "Current Wave 🌊",
 			"starClubStage": "Star Club",
 			"publicStage": "Public",
+			"failed": "😔 This Wavelaunch has failed",
+			"listingEnded": "👏 DEX listing process ended",
 			"listingStage": "Listing",
 			"now": "now",
 			"waiting": "waiting...",

@@ -125,13 +125,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance, rewardPool?
           extendedBalance.isCreator
         );
 
-        let res2: bigint = 0n;
-
-        rewardPool?.map((item) => {
-          res2 += calculateUserRewardAmount(BigInt(res), BigInt(extendedBalance.totalSupply), BigInt(item.rewardAmount));
-        });
-
-        setDisplayValue(res2);
+        setDisplayValue(res);
       }
     } catch (error) {
       console.error("Error in getApproximateClaimAmount:", error);

@@ -50,13 +50,6 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
         const ticketBalance = await userService.getTicketBalance();
         setTicketBalance(ticketBalance);
 
-        // if (ticketBalance > 0) {
-        //   await launchService.postBuyWl({
-        //     callerAddress,
-        //     launchAddress: launchData?.address ?? "",
-        //   });
-        //   return;
-        // }
       } catch (error) {
         setErrorText(getErrorText(error, t("fetchError")));
       } finally {
@@ -78,7 +71,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
 
       await tonConnectUI.sendTransaction(transaction, { modals: "all" });
     } catch (error) {
-      setErrorText(getErrorText(error, t("refundError")));
+      // setErrorText(getErrorText(error, t("refundError")));
     }
   }
 
@@ -93,7 +86,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
 
       await tonConnectUI.sendTransaction(transaction, { modals: "all" });
     } catch (error) {
-      setErrorText(getErrorText(error, t("claimError")));
+      // setErrorText(getErrorText(error, t("claimError")));
     }
   }
 
@@ -132,33 +125,6 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
             <Label label={t("deployingJetton")} variantSize="regular16" />
           </CustomButton>
         );
-
-        // // Оракул еще не присвоил категорию
-        // return launchData?.totalTonsCollected > launchData?.minTonTreshold ? (
-        //   <CustomButton
-        //     fullWidth
-        //     padding="10px"
-        //     background="gray"
-        //     addHover={false}
-        //   >
-        //     <Label label={t("deployingJetton")} variantSize="regular16" />
-        //   </CustomButton>
-        // ) : (
-        //   <CustomConnectButton
-        //     fullWidth
-        //     showDropdown={false}
-        //     successChildren={(
-        //       <CustomButton
-        //         fullWidth
-        //         padding="10px"
-        //         background="red"
-        //         onClick={onClickRefundHandler}
-        //       >
-        //         <Label label={t("refund")} variantSize="regular16" />
-        //       </CustomButton>
-        //     )}
-        //   />
-        // );
       }
 
       if (launchData?.isSuccessful === false) {
