@@ -1,6 +1,5 @@
 "use client";
 
-import { Label } from "@/common/Label";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
 import Grid from "@mui/material/Grid2";
 import { Form, Formik } from "formik";
@@ -16,14 +15,18 @@ import { CREATE_TOKEN_FORM_ID } from "./constants";
 import { getValidationSchema, initialValues, useCreateToken } from "./hooks/useCreateToken";
 import { CustomToast } from "@/common/CustomToast";
 import { CreateTokenFormSkeleton } from "./components/CreateTokenFormSkeleton";
+import { useTranslations } from "next-intl";
 
 export function CreateTokenForm() {
+  const t = useTranslations("Token.submitButton");
   const {
     isLoadingPage,
     onSubmitForm,
     errorText,
     isErrorToast,
     toggleIsErrorToast,
+    isSuccessToast,
+    toggleIsSuccessToast,
   } = useCreateToken();
 
   return (
@@ -51,10 +54,10 @@ export function CreateTokenForm() {
             <InfluencerSupportInfo />
             <Descriptions />
             <CustomToast
-              open={isErrorToast}
-              text={errorText || ""}
-              severity="error"
-              toggleOpen={toggleIsErrorToast}
+              open={isErrorToast || isSuccessToast}
+              text={isErrorToast ? errorText || "" : t("success")}
+              severity={isErrorToast ? "error" : "success"}
+              toggleOpen={isErrorToast ? toggleIsErrorToast : toggleIsSuccessToast}
             />
             <SubmitButton />
           </Grid>

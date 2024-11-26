@@ -2,7 +2,7 @@ import { getErrorText } from "@/utils/getErrorText";
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { FormikHelpers } from "formik";
-import { CreateTokenFormFields, MarketingSupportTabsValues } from "./types";
+import { CreateTokenFormFields } from "./types";
 import { launchService } from "@/services";
 import { jettonToNano, toPct, TxRequestBuilder } from "starton-periphery";
 import { useRouter } from "next/navigation";
@@ -17,29 +17,15 @@ export function useCreateToken() {
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [errorText, setErrorText] = useState<string | null>(null);
   const [isErrorToast, toggleIsErrorToast] = useToggle(false);
+  const [isSuccessToast, toggleIsSuccessToast] = useToggle(false);
   const [tonConnectUI] = useTonConnectUI();
   const router = useRouter();
   const locale = useLocale();
-
-  // todo add toasts
-  // const [openToast, setOpenToast] = useState(false);
-
-  // const handleCloseToast = (
-  //   event: React.SyntheticEvent | Event,
-  //   reason?: SnackbarCloseReason,
-  // ) => {
-  //   if (reason === "clickaway") {
-  //     return;
-  //   }
-
-  //   setOpenToast(false);
-  // };
-
+  const creator = localStorageWrapper.get(CALLER_ADDRESS);
+  
   useEffect(() => {
     (async () => {
-      try {
-        const creator = localStorageWrapper.get(CALLER_ADDRESS);
-        
+      try {        
         if (creator) {
           const tokenLaunch = await launchService.getCurrentToken({
             creator,
@@ -105,7 +91,9 @@ export function useCreateToken() {
 
       await tonConnectUI.sendTransaction(transaction, { modals: "all" });
 
-      router.replace(`/${locale}/${PAGES.Token}/${PAGES.TokenPolling}?meta=${metadataJsonCID}`);
+      toggleIsSuccessToast();
+      router.replace(`/${locale}/${PAGES.Token}/${PAGES.TokenPolling}?creator=${creator}`);
+      // router.replace(`/${locale}/${PAGES.Token}/${PAGES.TokenPolling}?meta=${metadataJsonCID}`);
     } catch (error) {
       setErrorText(getErrorText(error, t("creatingError")));
       toggleIsErrorToast();
@@ -120,5 +108,7 @@ export function useCreateToken() {
     errorText,
     isErrorToast,
     toggleIsErrorToast,
+    isSuccessToast,
+    toggleIsSuccessToast,
   };
 }

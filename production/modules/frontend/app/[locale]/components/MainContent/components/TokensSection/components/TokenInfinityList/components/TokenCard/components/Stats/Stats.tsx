@@ -3,6 +3,7 @@ import { CircularProgress } from "@mui/material";
 import { Label } from "@/common/Label";
 import { StatsProps } from "./types";
 import styles from "./Stats.module.scss";
+import { formatNumber } from "@/utils";
 
 export function Stats({
   collected,
@@ -39,7 +40,7 @@ export function Stats({
       />
 
       <Label
-        label={`${collected} / ${max}`}
+        label={`${formatNumber(collected)} / ${formatNumber(max)}`}
         variantSize="regular12"
         variantColor="gray"
         offUserSelect

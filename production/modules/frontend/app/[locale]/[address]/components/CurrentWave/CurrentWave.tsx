@@ -136,14 +136,14 @@ export function CurrentWave({ launchData }: CurrentWaveProps) {
                   root: styles.root,
                 }}
               />
-              <Grid container flexDirection="column">
+              <Grid container flexDirection="column" paddingTop={1}>
                 <Label
                   label={t(stage.label)}
                   variantSize={currentPhase === stage.stage ? "medium16" : "regular16"}
                   variantColor={currentPhase === stage.stage ? "orange" : "gray"}
                 />
                 <Label
-                  label={t(stage.label)}
+                  label={getStageLabel(stage.stage)}
                   variantSize="regular14"
                   variantColor="gray"
                 />

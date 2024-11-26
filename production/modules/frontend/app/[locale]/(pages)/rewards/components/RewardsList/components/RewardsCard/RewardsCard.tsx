@@ -31,7 +31,7 @@ export function RewardsCard({
     isPending,
     isLoading,
     displayValue
-  } = useRewardsCard(extendedBalance, rewardPool);
+  } = useRewardsCard(extendedBalance);
 
   return (
     <LoadingWrapper isLoading={isPending}>
@@ -66,7 +66,7 @@ export function RewardsCard({
                 variantColor="gray"
               />
               <Label
-                label={jettonFromNano(displayValue || 0)}
+                label={displayValue ? jettonFromNano(displayValue) : t("dontHaveBalance")}
                 variantSize="regular14"
               />
             </>

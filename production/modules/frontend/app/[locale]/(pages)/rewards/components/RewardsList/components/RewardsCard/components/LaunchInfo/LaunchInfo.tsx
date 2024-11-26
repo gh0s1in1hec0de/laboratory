@@ -5,6 +5,7 @@ import { StarIcon } from "@/icons/common/StarIcon/StarIcon";
 import { ExtendedUserBalance } from "starton-periphery";
 import { fromNano } from "@ton/core";
 import { useTranslations } from "next-intl";
+import { formatNumber } from "@/utils";
 
 export function LaunchInfo(balance: ExtendedUserBalance) {
   const t = useTranslations("Rewards");
@@ -65,7 +66,7 @@ export function LaunchInfo(balance: ExtendedUserBalance) {
             <StarIcon color="var(--white-regular)" />
 
             <Label
-              label={`${fromNano(balance.whitelistTons) + fromNano(balance.publicTons)} ${t("ton")}`}
+              label={`${formatNumber(Number(fromNano(balance.whitelistTons + balance.publicTons)))} ${t("ton")}`}
               variantSize="regular14"
               offUserSelect 
             />

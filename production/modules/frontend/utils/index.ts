@@ -8,3 +8,4 @@ export * from "./getErrorText";
 export * from "./toCamelCase";
 export * from "./toSnakeCase";
 export * from "./getErrorStatus";
+export * from "./formatFloatNumber";

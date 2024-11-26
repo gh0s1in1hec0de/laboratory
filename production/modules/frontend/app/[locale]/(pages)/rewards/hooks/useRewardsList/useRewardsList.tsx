@@ -5,7 +5,6 @@ import {
 } from "starton-periphery";
 import { rewardsService, userService } from "@/services";
 import { getErrorText, localStorageWrapper } from "@/utils";
-import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { RewardsTabsValues } from "../../types";
 import { UseRewardsListProps } from "./types";
@@ -18,13 +17,13 @@ export function useRewardsList({ selectedTab }: UseRewardsListProps) {
   const [rewardPools, setRewardPools] = useState<GetRewardPoolsResponse>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
-  const t = useTranslations("Rewards");
+  // const t = useTranslations("Rewards");
 
   async function fetchClaims() {
     try {
       const response = await userService.getBalances({
         user: Address.parse(localStorageWrapper.get(CALLER_ADDRESS)).toRawString(),
-        // user: "0:90713b498b124c68028f71ac1b94a9ec5c32e09778e419e344ad370734d3a177",
+        // user: Address.parse("0:34f865f73d2a4dde43c42056ba0fd2c61d8590ef5c745699eb7e23f861f338e5").toRawString(),
       });
 
       if (!response) {
@@ -39,7 +38,8 @@ export function useRewardsList({ selectedTab }: UseRewardsListProps) {
 
       setRewardPools(rewardPools);
     } catch (error) {
-      setErrorText(getErrorText(error, t("fetchingError")));
+      console.error("Error in fetch balances and pools:", error);
+      // setErrorText(getErrorText(error, t("fetchingError")));
     } finally {
       setIsLoading(false);
     }
@@ -49,12 +49,13 @@ export function useRewardsList({ selectedTab }: UseRewardsListProps) {
     try {
       const response = await rewardsService.getRewardBalances({
         userAddress: Address.parse(localStorageWrapper.get(CALLER_ADDRESS)).toRawString(),
-        // userAddress: Address.parse("0:90713b498b124c68028f71ac1b94a9ec5c32e09778e419e344ad370734d3a177").toRawString(),
+        // userAddress: Address.parse("0:34f865f73d2a4dde43c42056ba0fd2c61d8590ef5c745699eb7e23f861f338e5").toRawString(),
       });
 
       setRewardBalances(response);
     } catch (error) {
-      setErrorText(getErrorText(error, t("fetchingError")));
+      console.error("Error in fetch rewards:", error);
+      // setErrorText(getErrorText(error, t("fetchingError")));
     } finally {
       setIsLoading(false);
     }

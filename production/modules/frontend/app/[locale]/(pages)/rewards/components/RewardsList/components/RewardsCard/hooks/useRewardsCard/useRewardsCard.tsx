@@ -15,22 +15,16 @@ import { useEffect, useState, useTransition } from "react";
 import {
   ExtendedUserBalance,
   GetConfigResponse,
-  GlobalVersions,
   MoneyFlows,
   Network,
   SalePhase,
   TxRequestBuilder,
-  calculateUserRewardAmount,
   getApproximateClaimAmount,
   getContractData,
   getCurrentSalePhase,
-  RewardPool,
-  JettonMetadata
 } from "starton-periphery";
 
-export function useRewardsCard(extendedBalance: ExtendedUserBalance, rewardPool?: (RewardPool & {
-  metadata: JettonMetadata;
-})[]) {
+export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
   const t = useTranslations("Rewards");
   const { phase, nextPhaseIn } = getCurrentSalePhase(extendedBalance.timings);
   const { days, hours, minutes } = formatTime(nextPhaseIn || 0);
@@ -41,7 +35,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance, rewardPool?
   const locale = useLocale();
   const [configData, setConfigData] = useState<GetConfigResponse & MoneyFlows | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [displayValue, setDisplayValue] = useState<bigint>();
+  const [displayValue, setDisplayValue] = useState<bigint | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -154,9 +148,9 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance, rewardPool?
   async function onClickClaimHandler() {
     try {
       const transaction = TxRequestBuilder.claimMessage(
-        GlobalVersions.V1,
+        extendedBalance.version,
         {
-          launchAddress: "",
+          launchAddress: Address.parse(extendedBalance.tokenLaunch).toRawString(),
         }
       );
 
@@ -168,7 +162,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance, rewardPool?
 
   async function onClickContributeHandler() {
     startTransition(() => {
-      router.push(`/${locale}/${PAGES.Quests}`);
+      router.push(`/${locale}/${PAGES.Top}/${Address.parse(extendedBalance.tokenLaunch).toRawString()}`);
     });
   }
 

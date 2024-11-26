@@ -353,6 +353,7 @@
 			}
 		},
 		"submitButton": {
+			"success": "Token created successfully!",
 			"label": "Create",
 			"loading": "Creating...",
 			"description": "* Сheck if the data is correct - you can edit the description and links to social networks only once!",
@@ -508,7 +509,7 @@
 		}
 	},
 	"Rewards":{
-		"title": "All your rewards",
+		"title": "Your rewards",
 		"myContribution": "My Contribution",
 		"jettonsToClaimTitle": "Jettons to claim",
 		"stage": "Stage:",
@@ -520,6 +521,7 @@
 		"claims": "Claims",
 		"refund": "Refund",
 		"rewards": "Rewards",
+		"dontHaveBalance": "Can't calculate",
 		"refundError": "Refund error",
 		"claimError": "Claim error",
 		"claimAllError": "Claim all error",
