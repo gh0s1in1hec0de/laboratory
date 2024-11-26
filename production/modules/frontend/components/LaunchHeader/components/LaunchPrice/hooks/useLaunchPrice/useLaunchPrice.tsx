@@ -86,7 +86,7 @@ export function useLaunchPrice({
     const jettons = getAmountOut(
       version,
       phase === SalePhase.CREATOR ? SalePhase.CREATOR : phase === SalePhase.WHITELIST ? SalePhase.WHITELIST : SalePhase.PUBLIC,
-      phase === SalePhase.PUBLIC ? { syntheticJetReserve, syntheticTonReserve } : { wlRoundFutJetLimit, wlRoundTonLimit },
+      phase === SalePhase.PUBLIC || phase === SalePhase.ENDED ? { syntheticJetReserve, syntheticTonReserve } : { wlRoundFutJetLimit, wlRoundTonLimit },
     );
 
     setPrice(calculatePrice(jettons));
