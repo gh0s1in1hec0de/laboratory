@@ -19,7 +19,7 @@ export const fees: Record<GlobalVersions, PrecalculatedFees> = {
         wlPurchase: 17_000_000n,
         pubPurchase: 17_000_000n,
         refund: 30_000_000n,
-        claim: 70_000_000n
+        claim: 100_000_000n
     },
     [GlobalVersions.V2]: {
         creatorBuyout: 5_699_600n,
@@ -27,7 +27,7 @@ export const fees: Record<GlobalVersions, PrecalculatedFees> = {
         wlPurchase: 125_767_625n,
         pubPurchase: 17_841_625n,
         refund: 30_000_000n,
-        claim: 70_000_000n
+        claim: 100_000_000n
     }
 };
 

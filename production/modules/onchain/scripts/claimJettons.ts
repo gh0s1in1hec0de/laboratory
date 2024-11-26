@@ -12,7 +12,7 @@ export async function run(provider: NetworkProvider) {
 
     const tokenLaunchInstance =
         (V === GlobalVersions.V1 ? TokenLaunchV1 : TokenLaunchV2).createFromAddress(
-            Address.parse("kQBWnmGq5CRmYbMw_sJKqodg2LsiY0_K73uGu-q2K-TSH1u6")
+            Address.parse("0:abec535475215784d06d0746fad51db844c3debef583e4d12e2f837aed6f2eb5")
         );
     checkVersionMatch(V, tokenLaunchInstance);
     const tokenLaunch = provider.open(tokenLaunchInstance);

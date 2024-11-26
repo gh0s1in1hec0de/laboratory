@@ -1192,7 +1192,7 @@ describe("V2", () => {
             const queryId = 1n;
 
             const expectedJettonAmount = getApproximateClaimAmount(
-                moneyFlows, config, { wlTons: wlTonBalance ?? 0n, jettons: jettonBalance ?? 0n }
+                moneyFlows, config, { whitelistTons: wlTonBalance ?? 0n, jettons: jettonBalance ?? 0n }
             );
             const claimRequestResult = await sampleTokenLaunch.sendJettonClaimRequest({
                 queryId,
