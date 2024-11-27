@@ -1,12 +1,14 @@
 import { 
   GetConfigResponse, 
+  GlobalVersions, 
   MAX_WL_ROUND_TON_LIMIT, 
   Network, 
   SalePhase, 
   TxRequestBuilder, 
+  fees, 
   getAmountOut, 
   getContractData, 
-  jettonFromNano 
+  jettonFromNano,
 } from "starton-periphery";
 import { getErrorText } from "@/utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
@@ -122,7 +124,7 @@ export function useBuyToken({ launchAddress, version }: UseBuyTokenProps) {
       const transaction = TxRequestBuilder.creatorBuyoutMessage(
         {
           launchAddress: launchAddress,
-          amount: toNano(amount).toString(),
+          amount: toNano(amount + fees[GlobalVersions.V1].creatorBuyout).toString(),
         },
       );
 
