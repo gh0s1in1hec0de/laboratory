@@ -119,6 +119,10 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
           extendedBalance.isCreator
         );
 
+        console.log("jetton", extendedBalance.jettons);
+        console.log("whitelistTons", extendedBalance.whitelistTons);
+        console.log("getApproximateClaimAmount", res);
+
         setDisplayValue(res);
       }
     } catch (error) {
