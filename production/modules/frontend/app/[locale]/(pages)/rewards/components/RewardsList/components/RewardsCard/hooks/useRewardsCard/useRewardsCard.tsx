@@ -139,7 +139,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
         }
       );
 
-      await tonConnectUI.sendTransaction(transaction, { modals: "all" });
+      await tonConnectUI.sendTransaction(transaction, { modals: ["error"] });
     } catch (error) {
       setErrorText(getErrorText(error, t("refundError")));
     }
@@ -154,7 +154,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
         }
       );
 
-      await tonConnectUI.sendTransaction(transaction, { modals: "all" });
+      await tonConnectUI.sendTransaction(transaction, { modals: ["error"] });
     } catch (error) {
       setErrorText(getErrorText(error, t("claimError")));
     }
