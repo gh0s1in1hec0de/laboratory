@@ -113,15 +113,11 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
             wlRoundTonLimit: configData.wlRoundTonLimit
           },
           {
-            jettons: extendedBalance.jettons,
-            whitelistTons: extendedBalance.whitelistTons
+            jettons: BigInt(extendedBalance.jettons),
+            whitelistTons: BigInt(extendedBalance.whitelistTons)
           },
           extendedBalance.isCreator
         );
-
-        console.log("jetton", extendedBalance.jettons);
-        console.log("whitelistTons", extendedBalance.whitelistTons);
-        console.log("getApproximateClaimAmount", res);
 
         setDisplayValue(res);
       }

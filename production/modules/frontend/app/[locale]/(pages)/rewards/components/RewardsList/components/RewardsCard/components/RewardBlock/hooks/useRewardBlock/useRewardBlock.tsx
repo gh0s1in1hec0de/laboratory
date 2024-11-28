@@ -1,9 +1,4 @@
 import {
-  ExtendedUserBalance,
-  getCurrentSalePhase,
-  SalePhase,
-  GlobalVersions,
-  TxRequestBuilder,
   GetConfigResponse,
   MoneyFlows,
   Network,
@@ -100,15 +95,13 @@ export function useRewardBlock({
             wlRoundTonLimit: configData.wlRoundTonLimit
           },
           {
-            jettons: extendedBalance.jettons,
-            whitelistTons: extendedBalance.whitelistTons
+            jettons: BigInt(extendedBalance.jettons),
+            whitelistTons: BigInt(extendedBalance.whitelistTons)
           },
           extendedBalance.isCreator
         );
 
         const res2 = calculateUserRewardAmount(BigInt(res), BigInt(extendedBalance.totalSupply), BigInt(rewardPool.rewardAmount));
-        
-        console.log(res2);
 
         setDisplayValue(res2);
       }

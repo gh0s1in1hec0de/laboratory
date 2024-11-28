@@ -61,7 +61,7 @@ export function getApproximateWlAmountOut(
     return wlRoundFutJetLimit * purifiedValue / (purifiedValue + wlRoundTonLimit);
 }
 
-export function getCurrentWlRate({ wlRoundFutJetLimit }: GetConfigResponse, { wlRoundTonInvestedTotal }: MoneyFlows): number {
+export function getCurrentWlRate(wlRoundFutJetLimit: Coins, wlRoundTonInvestedTotal: Coins): number {
     return Number(fromNano(wlRoundTonInvestedTotal)) / Number(jettonFromNano(wlRoundFutJetLimit));
 }
 

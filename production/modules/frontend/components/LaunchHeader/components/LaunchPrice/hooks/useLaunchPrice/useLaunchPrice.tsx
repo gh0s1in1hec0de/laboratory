@@ -7,6 +7,7 @@ import {
   MoneyFlows,
   Network,
   SalePhase,
+  getCurrentWlRate
 } from "starton-periphery";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
 import { Address } from "@ton/core";
@@ -81,19 +82,30 @@ export function useLaunchPrice({
   useEffect(() => {
     if (!configData) return;
 
-    const { wlRoundFutJetLimit, wlRoundTonLimit, syntheticTonReserve, syntheticJetReserve } = configData;
+    const { wlRoundFutJetLimit, syntheticTonReserve, syntheticJetReserve, wlRoundTonInvestedTotal } = configData;
 
-    const jettons = getAmountOut(
-      version,
-      phase === SalePhase.CREATOR ? SalePhase.CREATOR : phase === SalePhase.WHITELIST ? SalePhase.WHITELIST : SalePhase.PUBLIC,
-      phase === SalePhase.PUBLIC || phase === SalePhase.ENDED ? { syntheticJetReserve, syntheticTonReserve } : { wlRoundFutJetLimit, wlRoundTonLimit },
-    );
+    if (phase === SalePhase.PUBLIC || phase === SalePhase.ENDED) {
+      const jettons = getAmountOut(
+        version,
+        SalePhase.PUBLIC,
+        { syntheticJetReserve, syntheticTonReserve },
+      );
 
-    setPrice(calculatePrice(jettons));
+      setPrice(calculatePrice(jettons));
+    }
+
+    if (phase === SalePhase.WHITELIST) {
+      const price = getCurrentWlRate(
+        wlRoundFutJetLimit,
+        wlRoundTonInvestedTotal
+      );
+
+      setPrice(price);
+    }
   }, [configData, version, phase]);
 
   return {
     price,
     isLoading,
-  };  
+  };
 }
