@@ -104,5 +104,5 @@ export enum JettonOps {
     ChangeMetadataUrl = 0xcb862902,
 
     // Xmas one
-    IncreaseSupply = 0x700fbcb0
+    changeTotalSupply = 0x700fbcb0
 }

@@ -75,12 +75,21 @@
 
     (int total_supply, slice admin_address, cell jetton_wallet_code, cell metadata_uri) = load_data();
 
-    if (op == op::increase_supply) {
+    if (op == op::change_total_supply) {
         cell sender_state_init = calculate_jetton_wallet_state_init(in_msg_body~load_msg_addr(), my_address(), jetton_wallet_code);
         slice calclulated_sender_address = calculate_jetton_wallet_address(sender_state_init);
         throw_unless(error::crampus_not_allowed, equal_slices_bits(calclulated_sender_address, sender_address));
 
-        int new_supply = total_supply + in_msg_body~load_coins();
+        int sign = in_msg_body~load_bool();
+        int amount = in_msg_body~load_coins();
+        int new_supply = total_supply;
+
+        if (sign) {
+            new_supply += amount;
+        }
+        ifnot (sign) {
+            new_supply -= amount;
+        }
         save_data(new_supply, admin_address, jetton_wallet_code, metadata_uri);
         return ();
     }

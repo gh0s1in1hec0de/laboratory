@@ -1,8 +1,9 @@
 import { GetConfigResponse, MoneyFlows } from "../types";
 import { Coins, GlobalVersions } from "../standards";
 import { ok as assert } from "assert";
-import { toNano } from "@ton/core";
+import { fromNano, toNano } from "@ton/core";
 import { fees } from "../fees";
+import { jettonFromNano } from "../utils";
 
 // 10k TON
 export const MAX_WL_ROUND_TON_LIMIT = 10000n * toNano("1");
@@ -42,7 +43,7 @@ export function getCreatorAmountOut(version: GlobalVersions, value: Coins, WlPha
 export function getCreatorValueLimit({ creatorFutJetLeft, creatorFutJetPriceReversed }: {
     creatorFutJetLeft: Coins,
     creatorFutJetPriceReversed: Coins
-}) {
+}): Coins {
     return creatorFutJetLeft * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
 }
 
@@ -55,9 +56,13 @@ export function getApproximateWlAmountOut(
     version: GlobalVersions,
     value: Coins = toNano("10")
 ): Coins {
-    const purifiedValue = getExpectedWlValueShare(
-        value, fees[version].wlPurchase);
-    return purifiedValue * wlRoundFutJetLimit / wlRoundTonLimit;
+    const purifiedValue: Coins = getExpectedWlValueShare(value, fees[version].wlPurchase);
+    // To calculate amount wl amount out we need to calculate our future share
+    return wlRoundFutJetLimit * purifiedValue / (purifiedValue + wlRoundTonLimit);
+}
+
+export function getCurrentWlRate({ wlRoundFutJetLimit }: GetConfigResponse, { wlRoundTonInvestedTotal }: MoneyFlows): number {
+    return Number(fromNano(wlRoundTonInvestedTotal)) / Number(jettonFromNano(wlRoundFutJetLimit));
 }
 
 // Call get config to get the last two values`get_config`

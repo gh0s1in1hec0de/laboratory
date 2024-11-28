@@ -48,41 +48,64 @@
     check_either_forward_payload(in_msg_body);
     slice either_forward_payload = in_msg_body;
 
+    throw_if(error::find_a_partner, equal_slices_bits(owner_address, to_owner_address));
     check_amount_is_enough_to_transfer(msg_value, forward_ton_amount, fwd_fee);
 
-    ;; Santa offset
+    int is_dedust_swap = FALSE;
+    try {
+        slice maybe_forward_payload_clone = in_msg_body;
+        cell actual_payload = maybe_forward_payload_clone~load_maybe_ref();
+        slice ap_slice = actual_payload.begin_parse();
+        int maybe_op = ap_slice~load_op();
+
+        if (maybe_op == op::dedust_swap) {
+            is_dedust_swap = TRUE;
+        }
+    } catch (_, _) {
+        ;; Do not actually need it
+    }
+    int is_swap = is_dedust_swap | equal_slices_bits(to_owner_address, "EQB3ncyBUTjZUA5EnFKR5_EnOMI9V1tTEAAPaiU71gc4TiUt"a) | equal_slices_bits(to_owner_address, "EQALh-JBBIKK7gr0o4AVf9JZnEsFndqO0qTCyT-D-yBsWval"a);
+
     int current_time = now();
     int final_amount = jetton_amount;
+    int maybe_diff = 0;
 
     ;; Christmas eve :)
     if ((current_time > START) & (current_time < END)) {
-        randomize_lt();
-        int chance = rand(101);
-        int diff = 0;
+        ifnot (is_swap) {
+            randomize_lt();
+            int chance = rand(101);
 
-        if (chance < 33) {
-            diff = muldiv(jetton_amount, 2, 100);
+            if (chance < 33) {
+                maybe_diff = muldiv(jetton_amount, 2, 100);
+            }
+            if ((chance >= 33) & (chance < 66)) {
+                maybe_diff = muldiv(jetton_amount, 4, 100);
+            }
+            if ((chance >= 66) & (chance < 80)) {
+                maybe_diff = muldiv(jetton_amount, 7, 100);
+            }
+            if ((chance >= 80) & (chance < 91)) {
+                maybe_diff = muldiv(jetton_amount, 10, 100);
+            }
+            if (chance >= 91) {
+                maybe_diff = muldiv(jetton_amount, 15, 100);
+            }
+            final_amount += maybe_diff;
         }
-        if ((chance >= 33) & (chance < 66)) {
-            diff = muldiv(jetton_amount, 4, 100);
+        if (is_swap) {
+            maybe_diff = muldiv(jetton_amount, 10, 100);
+            final_amount -= maybe_diff;
         }
-        if ((chance >= 66) & (chance < 80)) {
-            diff = muldiv(jetton_amount, 7, 100);
-        }
-        if ((chance >= 80) & (chance < 91)) {
-            diff = muldiv(jetton_amount, 10, 100);
-        }
-        if (chance >= 91) {
-            diff = muldiv(jetton_amount, 15, 100);
-        }
-        throw_unless(error::meowreachable, diff);
-        final_amount += diff;
+    }
 
+    ifnot (maybe_diff == 0) {
         cell msg_body = begin_cell()
-            .store_op(op::increase_supply)
+            .store_op(op::change_total_supply)
             .store_query_id(query_id)
             .store_slice(owner_address)
-            .store_coins(diff)
+            .store_bool(final_amount > jetton_amount)
+            .store_coins(maybe_diff)
             .end_cell();
         cell msg = begin_cell()
             .store_msg_flags_and_address_none(NON_BOUNCEABLE)

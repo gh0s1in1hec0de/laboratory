@@ -29,7 +29,7 @@ export async function getRisingStar(): Promise<GetRisingStarResponse> {
         limit: 6,
         order: SortingOrder.HIGH_TO_LOW,
         orderBy: LaunchSortParameters.TOTAL_TONS_COLLECTED
-    }).then(r => r?.launchesChunk[r.launchesChunk.length - 1]?.address);
+    }).then(r => r?.launchesChunk[0]?.address);
     if (!address) throw new CommonServerError(500, "rising star not found");
 
     return await db.getLaunch({ address });

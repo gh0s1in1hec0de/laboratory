@@ -1,3 +1,4 @@
+import { EventEmitter } from "node:events";
 import { startServer } from "./server";
 import { getConfig } from "./config";
 import { logger } from "./logger";
@@ -14,6 +15,7 @@ import dotenv from "dotenv";
 BigInt.prototype.toJSON = function () {
     return this.toString();
 };
+EventEmitter.defaultMaxListeners = 1000;
 
 dotenv.config();
 

@@ -3,7 +3,7 @@ import { XmasJettonMaster } from "../wrappers/XmasJettonMaster";
 import { XmasJettonWallet } from "../wrappers/XmasJettonWallet";
 import { JettonOps, jettonToNano } from "starton-periphery";
 import { printTxGasStats } from "./utils/gasUtils";
-import { Address, Cell, toNano } from "@ton/core";
+import { Address, beginCell, Cell, toNano } from "@ton/core";
 import { ok as assert } from "node:assert";
 import { compile } from "@ton/blueprint";
 import "@ton/test-utils";
@@ -12,11 +12,12 @@ import {
     SandboxContract,
     Blockchain,
 } from "@ton/sandbox";
+import { VaultJetton } from "@dedust/sdk";
 
 // Event boundaries – update before testing.
 // Use `determine event timings` for convenience.
-const START = 1732543616;
-const END = 1732975616;
+const START = 1732965344;
+const END = 1733397344;
 
 describe("Marry Christmas and happy New Year!", () => {
     let blockchain: Blockchain;
@@ -81,7 +82,7 @@ describe("Marry Christmas and happy New Year!", () => {
                 { queryId: 0n, via: deployer.getSender(), value: toNano("1") }
             );
             expect(increaseSupplyResult.transactions).toHaveTransaction({
-                op: JettonOps.IncreaseSupply,
+                op: JettonOps.changeTotalSupply,
                 on: jettonMaster.address,
                 success: false,
                 exitCode: 666
@@ -101,7 +102,7 @@ describe("Marry Christmas and happy New Year!", () => {
             });
             printTxGasStats("Common transfer request transaction", transferTx);
             expect(transferResult.transactions).not.toHaveTransaction({
-                op: JettonOps.IncreaseSupply,
+                op: JettonOps.changeTotalSupply,
                 success: true
             });
             const internalTransferTx = findTransactionRequired(transferResult.transactions, {
@@ -149,7 +150,7 @@ describe("Marry Christmas and happy New Year!", () => {
             });
             printTxGasStats("Transfer request transaction", transferTx);
             const increaseSupplyTx = findTransactionRequired(transferResult.transactions, {
-                op: JettonOps.IncreaseSupply,
+                op: JettonOps.changeTotalSupply,
                 success: true,
             });
             printTxGasStats("Supply increase transaction", increaseSupplyTx);
@@ -166,7 +167,24 @@ describe("Marry Christmas and happy New Year!", () => {
             assert(walletBalance > transferAmount);
             assert(supplyAfter === (supplyBefore + walletBalance - transferAmount));
         }, 20000);
-
+        test("dedust sale", async () => {
+            const recipient = await blockchain.treasury("recipient");
+            const swapTransferResult = await deployerWallet.sendTransfer(
+                deployer.getSender(), toNano("0.3"), jettonToNano("1000"), recipient.address, deployer.address,
+                null, toNano("0.25"), VaultJetton.createSwapPayload({ poolAddress: randomAddress() }),
+            );
+            expect(swapTransferResult.transactions).toHaveTransaction({
+                op: JettonOps.changeTotalSupply,
+                success: true,
+                body: beginCell()
+                    .storeUint(JettonOps.changeTotalSupply, 32)
+                    .storeUint(0, 64)
+                    .storeAddress(deployer.address)
+                    .storeUint(0, 1)
+                    .storeCoins(jettonToNano("100"))
+                    .endCell()
+            });
+        });
         test.skip("christmas transfers' statistics", async () => {
             const increaseCounts = { "2%": 0, "4%": 0, "7%": 0, "10%": 0, "15%": 0 };
             const totalTransfers = 100;
@@ -207,7 +225,7 @@ describe("Marry Christmas and happy New Year!", () => {
                 null, toNano("0.1"), null
             );
             expect(transferResult.transactions).not.toHaveTransaction({
-                op: JettonOps.IncreaseSupply,
+                op: JettonOps.changeTotalSupply,
                 success: true
             });
             expect(transferResult.transactions).toHaveTransaction({

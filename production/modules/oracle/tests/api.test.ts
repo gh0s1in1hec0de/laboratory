@@ -81,7 +81,7 @@ describe("launch sorter", () => {
     // });
 
     test("clean database", async () => {
-        await cleanDatabase(client, ["callers", "earnings_per_period", "tasks", "users_tasks_relations"]);
+        await cleanDatabase(client, ["callers", "earnings_per_period", "tasks", "users_tasks_relations", "top_token_launch_config"]);
     });
     test("synthetic launch jettons", async () => {
         for (let i = 0; i < 5; i++) {

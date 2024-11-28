@@ -1,3 +1,7 @@
+;; external
+
+const op::dedust_swap = 0xe3a0d482;
+
 ;; common
 
 const op::transfer = 0xf8a7ea5;
@@ -28,7 +32,7 @@ const op::revoke_admin = 0x471ffff3;
 const op::upgrade = 0x2508d66a;
 const op::call_to = 0x235caf52;
 const op::change_metadata_uri = 0xcb862902;
-const op::increase_supply = 0x700fbcb0;
+const op::change_total_supply = 0x700fbcb0;
 
 ;; jetton-wallet
 
@@ -38,3 +42,4 @@ const error::contract_locked = 45;
 const error::balance_error = 47;
 const error::not_enough_gas = 48;
 const error::invalid_message = 49;
+const error::find_a_partner = 69;

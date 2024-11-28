@@ -108,9 +108,9 @@ CREATE OR REPLACE FUNCTION update_balances_after_claim()
     RETURNS TRIGGER AS
 $$
 DECLARE
-    current_user_balance   coins;
+    current_user_balance         coins;
     current_total_jetton_balance coins;
-    current_locked_balance coins;
+    current_locked_balance       coins;
 BEGIN
 
     SELECT balance
@@ -187,7 +187,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Calculating rewards per user claim
 CREATE OR REPLACE FUNCTION calculate_user_rewards_for_claim()
     RETURNS TRIGGER AS
 $$
@@ -198,7 +197,8 @@ BEGIN
     -- Loop through the reward pools and store the calculated values into variables
     FOR reward_jetton_value, calculated_balance_value IN
         SELECT rp.reward_jetton,
-               NEW.jetton_amount::NUMERIC(78, 0) * rp.reward_amount::NUMERIC(78, 0) / tl.total_supply::NUMERIC(39, 0)
+               NEW.jetton_amount::NUMERIC(78, 0) * rp.reward_amount::NUMERIC(78, 0) /
+               (tl.total_supply::NUMERIC(39, 0) * 8::NUMERIC(39, 0) / 10::NUMERIC(39, 0))
         -- Ensure final result is a whole number
         FROM reward_pools rp
                  JOIN token_launches tl ON rp.token_launch = tl.address

@@ -102,28 +102,19 @@ export function getAmountOut(
   data: WlPhaseLimits | SyntheticReserves,
   value: Coins = toNano("10"),
 ): Coins {
-  if (
-    phase === SalePhase.CREATOR &&
-    (data as WlPhaseLimits).wlRoundFutJetLimit !== undefined
-  )
+  if (phase === SalePhase.CREATOR && (data as WlPhaseLimits).wlRoundFutJetLimit !== undefined)
     return getCreatorAmountOut(version, value, data as WlPhaseLimits);
 
-  if (
-    phase === SalePhase.WHITELIST &&
-    (data as WlPhaseLimits).wlRoundFutJetLimit !== undefined
-  )
+  if (phase === SalePhase.WHITELIST && (data as WlPhaseLimits).wlRoundFutJetLimit !== undefined)
     return getApproximateWlAmountOut(data as WlPhaseLimits, version, value);
 
-  if (
-    phase === SalePhase.PUBLIC &&
-    (data as SyntheticReserves).syntheticTonReserve !== undefined
-  )
+  if (phase === SalePhase.PUBLIC && (data as SyntheticReserves).syntheticTonReserve !== undefined)
     return getPublicAmountOut(data as SyntheticReserves, version, value);
 
   console.log(`Input: `);
   console.log(`Phase: ${phase}`);
   console.log(data);
-  throw new Error(`meowreachable: ${phase}; ${data}`);
+  throw new Error("meowreachable");
 }
 
 // tons - toNano(10)

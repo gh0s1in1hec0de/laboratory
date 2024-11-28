@@ -1,9 +1,10 @@
+import { EventEmitter } from "node:events";
 import { scanForRequests } from "./oracle";
 import { startServer } from "./server";
 import { getConfig } from "./config";
+import { Address } from "@ton/ton";
 import { logger } from "./logger";
 import dotenv from "dotenv";
-import { Address } from "@ton/ton";
 import * as db from "./db";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -11,6 +12,7 @@ import * as db from "./db";
 BigInt.prototype.toJSON = function () {
     return this.toString();
 };
+EventEmitter.defaultMaxListeners = 1000;
 
 dotenv.config();
 logger().debug(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_USER} | ${process.env.POSTGRES_PASSWORD}`);

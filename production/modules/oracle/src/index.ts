@@ -1,6 +1,7 @@
 import { handleCoreUpdates, spawnNewLaunchesScanners, chiefScanning } from "./oracle";
-import { getConfig } from "./config";
+import { EventEmitter } from "node:events";
 import { startServer } from "./server";
+import { getConfig } from "./config";
 import { Address } from "@ton/ton";
 import { greeting } from "./utils";
 import { logger } from "./logger";
@@ -12,6 +13,7 @@ import * as db from "./db";
 BigInt.prototype.toJSON = function () {
     return this.toString();
 };
+EventEmitter.defaultMaxListeners = 1000;
 
 dotenv.config();
 greeting();

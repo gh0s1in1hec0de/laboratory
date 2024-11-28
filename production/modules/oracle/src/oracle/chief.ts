@@ -18,7 +18,7 @@ import {
     jettonFromNano,
     type DexData,
     type Coins,
-    delay,
+    delay, type RawAddressString,
 } from "starton-periphery";
 
 export async function chiefScanning() {
@@ -160,12 +160,13 @@ async function createPoolsForNewJettons() {
             )
         );
         const creatorsValue = BigInt(totalTonsCollected) * BigInt(getConfig().sale.creator_share_pct) / 100n;
+        const recipient = (dexData?.payedToCreator || creatorsValue > toNano("1000")) ? getConfig().oracle.chief.fallback_vault : creator;
         actions.push({
             type: "sendMsg",
             mode: SendMode.PAY_GAS_SEPARATELY,
             outMsg: internal_relaxed({
                 // We'll send rewards firstly on our inner wallet if it is too huge
-                to: Address.parse(dexData?.payedToCreator || creatorsValue > toNano("1000") ? getConfig().oracle.chief.fallback_vault : creator),
+                to: Address.parse(recipient),
                 value: BigInt(totalTonsCollected) * BigInt(getConfig().sale.creator_share_pct) / 100n,
                 body: beginCell()
                     .storeUint(0, 32)
