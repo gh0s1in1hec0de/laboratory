@@ -9,12 +9,13 @@ import { formatNumber } from "@/utils";
 
 export function LaunchInfo(balance: ExtendedUserBalance) {
   const t = useTranslations("Rewards");
+  const totalTons = Number(fromNano(balance.whitelistTons)) + Number(fromNano(balance.publicTons));
 
   return(
     <>
       <CustomAvatar
         size="extraSmall"
-        src={balance.metadata.image ?? "https://icdn.lenta.ru/images/2024/03/18/12/20240318124428151/square_1280_828947c85a8838d217fe9fcc8b0a17ec.jpg"}
+        src={balance.metadata.image}
         alt="Rewards Token Logo"
       />
       
@@ -66,7 +67,7 @@ export function LaunchInfo(balance: ExtendedUserBalance) {
             <StarIcon color="var(--white-regular)" />
 
             <Label
-              label={`${formatNumber(Number(fromNano(balance.whitelistTons + balance.publicTons)))} ${t("ton")}`}
+              label={`${formatNumber(totalTons)} ${t("ton")}`}
               variantSize="regular14"
               offUserSelect 
             />

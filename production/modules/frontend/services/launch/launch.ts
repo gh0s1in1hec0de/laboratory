@@ -48,44 +48,44 @@ async function getCurrentToken({
 
     // todo delete this
     // return {
-    //   "id": 1,
-    //   "address": "0:5cd41b7c168725401bf7903d2ae23fb56b2c267af791bcf155b592f198cc0f7e",
-    //   "identifier": "EXM Example Token This is an example token description",
-    //   "creator": "0:a7e946a41455c1625b05ec8b4031e9863b5a6c01b569364ff8cb416ec9790457",
-    //   "version": "V1",
+    //   "id": 10,
+    //   "address": "0:4f9ce653babb9c1e90ea2b5fd5a83a12fa729a0e768dbfdc9c4bcde1160abb3f",
+    //   "identifier": "CHAD ChadCoin Only for the absolute Chads of crypto.",
+    //   "creator": "0:ef0d5d3ea8eae576bcb81b4550a5eb7f8e36579ca857b2178d97f675eec49731",
+    //   "version": "V2",
     //   "metadata": {
-    //     "uri": "https://ipfs.io/ipfs/QmVCMdxyudybb9vDefct1qU3DEZBhj3zhg3n9uM6EqGbN6",
-    //     "name": "Example Token",
-    //     "image": "https://ipfs.io/ipfs/Qmb4Yjspwz3gVq371wvVN9hqzzAoopzv5W1yS49qdTJJ7f",
-    //     "symbol": "EXM",
+    //     "uri": "https://random_uri_link_10",
+    //     "name": "ChadCoin",
+    //     "image": "https://cdn-icons-png.flaticon.com/128/2268/2268386.png",
+    //     "symbol": "CHAD",
     //     "decimals": "6",
-    //     "description": "This is an example token description"
+    //     "description": "Only for the absolute Chads of crypto."
     //   },
     //   "timings": {
-    //     "endTime": 1731684700,
-    //     "startTime": 1731628319,
-    //     "wlRoundEndTime": 1731651458,
-    //     "publicRoundEndTime": 1731674031,
-    //     "creatorRoundEndTime": 1731644202
+    //     "endTime": 1732804650,
+    //     "startTime": 1732752531,
+    //     "wlRoundEndTime": 1732774193,
+    //     "publicRoundEndTime": 1732798731,
+    //     "creatorRoundEndTime": 1732762389
     //   },
-    //   "totalSupply": 666666000000n,
-    //   "platformShare": 0.5,
-    //   "minTonTreshold": 1000000000000n,
-    //   "createdAt": 1731628019,
+    //   "totalSupply": BigInt(666666000000),
+    //   "platformShare": 1.5,
+    //   "minTonTreshold": BigInt(1000000000000),
+    //   "createdAt": 1732752231,
     //   "isSuccessful": null,
     //   "postDeployEnrollmentStats": null,
     //   "dexData": null,
-    //   "tokenLaunch": "0:5cd41b7c168725401bf7903d2ae23fb56b2c267af791bcf155b592f198cc0f7e",
-    //   "creatorTonsCollected": 1000000000n,
-    //   "wlTonsCollected": 0n,
-    //   "pubTonsCollected": 0n,
-    //   "totalTonsCollected": 1000000000n,
-    //   "onchainMetadataLink": "https://ipfs.io/ipfs/QmVCMdxyudybb9vDefct1qU3DEZBhj3zhg3n9uM6EqGbN6",
+    //   "tokenLaunch": "0:4f9ce653babb9c1e90ea2b5fd5a83a12fa729a0e768dbfdc9c4bcde1160abb3f",
+    //   "creatorTonsCollected": BigInt(1000000000),
+    //   "wlTonsCollected": BigInt(5000000000),
+    //   "pubTonsCollected": BigInt(0),
+    //   "totalTonsCollected": BigInt(6000000000),
+    //   "onchainMetadataLink": "https://random_uri_link_10",
     //   "telegramLink": "https://t.me/juicy_bitches",
     //   "xLink": "https://x.com/juicy_bitches",
     //   "website": "https://juicy_bitches.cia",
     //   "influencerSupport": true,
-    //   "activeHolders": 0
+    //   "activeHolders": 5
     // };
   } catch (error) {
     console.error(LAUNCH_ERROR.GetTokenLaunches, error);

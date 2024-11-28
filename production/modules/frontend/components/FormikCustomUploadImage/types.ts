@@ -4,7 +4,6 @@ export interface FormikCustomUploadImageProps {
   changeLabel: string;
   id: string;
   alt: string;
-  altImage?: string;
   disabled?: boolean;
 }
 

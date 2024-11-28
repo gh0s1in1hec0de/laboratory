@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { TxRequestBuilder } from "starton-periphery";
 
-export function useWhitelistInput(launchAddress: string) {
+export function useWhitelistInput(launchAddress: string, whitelistStatus: boolean | null) {
   const t = useTranslations("CurrentLaunch.contribute.amountInput");
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +21,7 @@ export function useWhitelistInput(launchAddress: string) {
 
       const ticketBalance = await userService.getTicketBalance();
 
-      if (ticketBalance > 0) {
+      if ((whitelistStatus === false || whitelistStatus === null) && ticketBalance > 0) {
         await launchService.postBuyWl({
           callerAddress: localStorageWrapper.get(CALLER_ADDRESS),
           launchAddress: Address.parse(launchAddress).toRawString(),

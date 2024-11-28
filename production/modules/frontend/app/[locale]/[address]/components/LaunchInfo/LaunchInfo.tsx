@@ -44,7 +44,7 @@ export function LaunchInfo({
         gap={2}
       >
         <Label
-          label={t("description")}
+          label={launchData?.metadata.description ?? ""}
           variantSize="regular16"
         />
         
@@ -80,7 +80,26 @@ export function LaunchInfo({
         <Grid 
           container
           width="100%"
+          flexDirection="column"
+          gap={1}
         >
+          <Grid container justifyContent="space-between">
+            <Label
+              label={t("address")}
+              variantSize="regular16"
+            />
+
+            <IconButton
+              onClick={onClickCopyAddress}
+              sx={{
+                minWidth: "50px",
+                padding: 0,
+              }}
+            >
+              <CopyIcon />
+            </IconButton>
+          </Grid>
+
           <Grid container size="grow">
             <Label
               label={launchData?.address ?? ""}
@@ -89,17 +108,7 @@ export function LaunchInfo({
               sx={{ wordBreak: "break-word" }}
             />
           </Grid>
-
-          <IconButton
-            onClick={onClickCopyAddress}
-            sx={{
-              minWidth: "50px",
-              padding: 0,
-            }}
-          >
-            <CopyIcon />
-          </IconButton>
-
+          
           <CustomToast
             open={openToast}
             toggleOpen={toggleOpenToast}

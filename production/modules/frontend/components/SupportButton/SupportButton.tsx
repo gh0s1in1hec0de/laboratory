@@ -11,7 +11,7 @@ export function SupportButton({
   const t = useTranslations("SupportButton");
 
   function handleClick() {
-    window.open("https://www.youtube.com/watch?v=HgaNGeTFs7E", "_blank");
+    window.open("https://t.me/sashabreak", "_blank");
   }
 
   return (

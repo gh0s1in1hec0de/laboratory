@@ -33,8 +33,8 @@ export function RisingStarToken() {
         paddingY={1.5}
         gap={2}
         width="100%"
-        onClick={handleRedirectToLaunch}
-        style={{ cursor: "pointer" }}
+        onClick={tokenData || errorText ? handleRedirectToLaunch : undefined}
+        style={{ cursor: tokenData || errorText ? "pointer" : "default" }}
       >
         <StarClubDrawer
           isOpenDrawer={isOpenDrawer}

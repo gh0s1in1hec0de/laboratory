@@ -32,7 +32,7 @@ export function LaunchActions({
         >
           <Grid size="grow">
             <Label
-              label={t("title")}
+              label={launchData?.isSuccessful === false ? t("refundTitle") : t("title")}
               variantSize="semiBold18"
               cropped
             />

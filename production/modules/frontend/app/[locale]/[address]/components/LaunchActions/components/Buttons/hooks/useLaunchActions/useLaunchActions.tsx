@@ -98,6 +98,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
     if (phase === SalePhase.WHITELIST) {
       return launchData && (whitelistStatus || (ticketBalance && ticketBalance > 0)) ? (
         <WhitelistBuyInput
+          whitelistStatus={whitelistStatus}
           launchAddress={launchData.address}
         />
       ) : (

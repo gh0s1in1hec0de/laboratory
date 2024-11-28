@@ -9,7 +9,6 @@ export function FormikCustomUploadImage({
   name,
   label,
   changeLabel,
-  altImage,
   id,
   alt,
   disabled,
@@ -50,7 +49,7 @@ export function FormikCustomUploadImage({
     >
       <CustomAvatar
         size="large"
-        src={previewUrl || altImage}
+        src={previewUrl}
         alt={alt}
       />
 

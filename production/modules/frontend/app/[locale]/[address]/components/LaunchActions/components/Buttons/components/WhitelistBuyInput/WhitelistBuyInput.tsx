@@ -7,6 +7,7 @@ import { useWhitelistInput } from "./hooks/useWhitelistInput";
 import { WhitelistBuyInputProps } from "./types";
 
 export function WhitelistBuyInput({
+  whitelistStatus,
   launchAddress,
 }: WhitelistBuyInputProps) {
   const t = useTranslations("CurrentLaunch.contribute");
@@ -16,7 +17,7 @@ export function WhitelistBuyInput({
     isLoading,
     errorText,
     onClickBuyTokens,
-  } = useWhitelistInput(launchAddress);
+  } = useWhitelistInput(launchAddress, whitelistStatus);
 
   return (
     <Grid

@@ -15,22 +15,22 @@ export function useConnectButton() {
   const [tonWalletAddress, setTonWalletAddress] = useState<string | null>(localStorageWrapper.get(CALLER_ADDRESS));
   const [error, setError] = useState<string | null>(null);
 
-  async function handleConnectWallet(address: string){
+  async function handleConnectWallet(address: string) {
     localStorageWrapper.set(CALLER_ADDRESS, address);
 
     try {
-      const { startParam } = retrieveLaunchParams();
-      await userService.postConnectWallet(address, Address.parse(startParam || "").toRawString());
+      await userService.postConnectWallet(address, localStorageWrapper.get(REFERRAL) || "");
       setTonWalletAddress(address);
       console.debug("Wallet connected!");
-    } catch(error){
-      await userService.postConnectWallet(address, decodeURIComponent(searchParams.get(REFERRAL) || ""));
-      setTonWalletAddress(address);
-      console.debug("Wallet connected!");
+    } catch (error) {
+      console.error(error);
+      // await userService.postConnectWallet(address, decodeURIComponent(searchParams.get(REFERRAL) || ""));
+      // setTonWalletAddress(address);
+      // console.debug("Wallet connected!");
     }
   }
 
-  async function handleDisconnectWallet(){
+  async function handleDisconnectWallet() {
     localStorageWrapper.remove(CALLER_ADDRESS);
     setTonWalletAddress(null);
     console.debug("Wallet disconnected!");
@@ -54,7 +54,7 @@ export function useConnectButton() {
     //   ["chat_type", "sender"],
     //   ["chat_instance", "8428209589180549439"],
     // ]).toString();
-    
+
     // mockTelegramEnv({
     //   themeParams: {
     //     accentTextColor: "#6ab2f2",
@@ -76,6 +76,18 @@ export function useConnectButton() {
     //   version: "7.2",
     //   platform: "tdesktop",
     // });
+
+    const referral = localStorageWrapper.get(REFERRAL);
+
+    if (!referral) {
+      try {
+        const { startParam } = retrieveLaunchParams();
+        localStorageWrapper.set(REFERRAL, startParam || "");
+      } catch (error) {
+        const referral = decodeURIComponent(searchParams.get(REFERRAL) || "");
+        localStorageWrapper.set(REFERRAL, referral);
+      }
+    }
 
     (async () => {
       try {

@@ -370,6 +370,7 @@
 		},
 		"currentToken": {
 			"title": "Contribute to your token",
+			"timerTitle": "Your token will appear in the list of launched tokens in:",
 			"subtitle": "Purchase up to 25% of the supply of your token",
 			"subtitle2": "You will get",
 			"buyButton": {
@@ -396,6 +397,7 @@
 		"successCopy": "Link copied!",
 		"contribute": {
 			"title": "Contribute",
+			"refundTitle": "Refund TON",
 			"connectWallet": "Connect your wallet to start.",
 			"needStarTicket": "You need star ticket to join Star club wave or join this launch in public wave.",
 			"fetchError": "Oops, something went wrong... Please reload the page or try again later.",
@@ -447,8 +449,8 @@
 		},
 		"info": {
 			"title": "Info",
-			"description": "Token description token description token description token description token",
 			"supply": "Total supply",
+			"address": "Contract address:",
 			"marketing": "Marketing support",
 			"influencer": "Influencer support",
 			"successCopy": "Address copied!",

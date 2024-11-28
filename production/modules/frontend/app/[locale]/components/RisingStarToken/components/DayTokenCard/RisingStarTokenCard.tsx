@@ -7,30 +7,23 @@ import { ProgressInfo } from "@/common/ProgressInfo";
 import { fromNano } from "@ton/core";
 import { Label } from "@/common/Label";
 import { RisingStarTokenCardProps } from "./types";
+import { useTranslations } from "next-intl";
 
 export function RisingStarTokenCard({
   isLoading,
   errorText,
   tokenData
 }: RisingStarTokenCardProps) {
-  // const [imageUrl, setImageUrl] = useState<string>("");
-  // const [isLoadingImg, setIsLoadingImg] = useState<boolean>(false);
-  
-  // useEffect(() => {
-  //   (async () => {
-  //     if (tokenData?.metadata.image) {
-  //       setIsLoadingImg(true);
-  //       const url = await fetchMaybeIpfsObjectWithFallback(tokenData.metadata.image);
-  //       setImageUrl(url);
-  //       setIsLoadingImg(false);
-  //     }
-  //   })();
-  // }, [tokenData?.metadata.image]);
+  const t = useTranslations("Top");
 
-  if (errorText && !tokenData) {
+  if (errorText || !tokenData) {
     return (
       <Grid container size={{ xs: 12 }} justifyContent="center">
-        <Label label={errorText} variantSize="medium14" variantColor="red" />
+        <Label
+          label={errorText || t("risingStarNotReachable")}
+          variantSize="medium14"
+          variantColor="red"
+        />
       </Grid>
     );
   }
@@ -47,8 +40,7 @@ export function RisingStarTokenCard({
       >
         <CustomAvatar
           size="medium"
-          // src={imageUrl}
-          src={tokenData?.metadata.image || "https://icdn.lenta.ru/images/2024/03/18/12/20240318124428151/square_1280_828947c85a8838d217fe9fcc8b0a17ec.jpg"}
+          src={tokenData?.metadata.image}
           alt="Rising Star Token"
         />
 

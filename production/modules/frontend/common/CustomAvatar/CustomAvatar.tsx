@@ -2,6 +2,7 @@ import { Avatar } from "@mui/material";
 import { CustomAvatarProps, CustomAvatarSize } from "./types";
 import { classNames } from "@/utils/classNames";
 import styles from "./CustomAvatar.module.scss";
+import defaultAvatar from "@/icons/defaultAvatar.svg";
 
 export function CustomAvatar({
   src,
@@ -10,7 +11,7 @@ export function CustomAvatar({
 }: CustomAvatarProps) {
   return (
     <Avatar
-      src={src}
+      src={src || defaultAvatar.src}
       alt={alt}
       classes={{
         root: classNames(styles.root, {}, [styles[size]]),

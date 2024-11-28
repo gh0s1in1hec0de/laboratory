@@ -6,7 +6,7 @@ export enum CustomAvatarSize {
 }
 
 export interface CustomAvatarProps {
-  src?: string;
+  src?: string | null;
   alt: string;
   size?: `${CustomAvatarSize}`;
 }

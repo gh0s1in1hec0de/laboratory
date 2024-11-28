@@ -6,8 +6,12 @@ import { getCurrentSalePhase } from "starton-periphery";
 import { TokenBody } from "./components/TokenBody";
 import { CurrentTokenProps } from "./types";
 import { TonProvider } from "@/providers/ton";
+import { Label } from "@/common/Label";
+import { useTranslations } from "next-intl";
 
 export function CurrentToken({ launchData }: CurrentTokenProps) {
+  const t = useTranslations("Token.currentToken");
+
   return (
     <Grid
       container
@@ -36,9 +40,21 @@ export function CurrentToken({ launchData }: CurrentTokenProps) {
             />
           </TonProvider>
 
-          <LaunchTimer
-            initialSeconds={getCurrentSalePhase(launchData.timings).nextPhaseIn}
-          />
+          <Grid 
+            container
+            flexDirection="column"
+            alignItems="center"
+            gap={1}
+          >
+            <Label
+              label={t("timerTitle")}
+              variantSize="regular16"    
+            />
+
+            <LaunchTimer
+              initialSeconds={getCurrentSalePhase(launchData.timings).nextPhaseIn}
+            />
+          </Grid>
         </>
       )}
     </Grid>
