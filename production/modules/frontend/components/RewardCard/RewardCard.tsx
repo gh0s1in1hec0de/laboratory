@@ -5,11 +5,13 @@ import {
   jettonFromNano
 } from "starton-periphery";
 import { RewardCardProps } from "./types";
+import { toCorrectAmount } from "@/utils";
+import { useLocale } from "next-intl";
 
 export function RewardCard({
   rewardPool,
 }: RewardCardProps) {
-
+  const locale = useLocale();
 
   return (
     <Grid
@@ -45,7 +47,9 @@ export function RewardCard({
         paddingX={1.5}
       >
         <Label
-          label={`${jettonFromNano(rewardPool.rewardAmount)} $${rewardPool.metadata.symbol ?? "UNKNWN"}`}
+          // todo: заменить если цены отъебнут
+          // label={`${jettonFromNano(rewardPool.rewardAmount)} $${rewardPool.metadata.symbol ?? "UNKNWN"}`}
+          label={`${toCorrectAmount({ amount: Number(jettonFromNano(rewardPool.rewardAmount)), locale: locale as "en" | "ru" })} $${rewardPool.metadata.symbol ?? "UNKNWN"}`}
           variantSize="regular14"
           variantColor="gray"
           cropped

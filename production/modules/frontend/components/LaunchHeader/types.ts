@@ -11,7 +11,6 @@ export interface LaunchHeaderProps {
   telegramLink?: string;
   websiteLink?: string;
   getLaunchLink?: () => void;
-  showChart?: boolean;
   showPrice?: boolean;
   launchAddress?: string;
   timings?: TokenLaunchTimings;

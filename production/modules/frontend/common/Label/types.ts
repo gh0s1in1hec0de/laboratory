@@ -37,4 +37,6 @@ export interface LabelProps extends TypographyProps {
   isBold?: boolean;
   isCursive?: boolean;
   cropped?: boolean;
+  customHref?: string;
+  target?: string;
 }

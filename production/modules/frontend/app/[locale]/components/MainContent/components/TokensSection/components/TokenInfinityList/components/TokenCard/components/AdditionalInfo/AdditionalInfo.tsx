@@ -1,9 +1,7 @@
-import { MainBox } from "@/common/MainBox";
 import { Label } from "@/common/Label";
 import { StarIcon } from "@/icons";
 import Grid from "@mui/material/Grid2";
 import { AdditionalInfoProps } from "./types";
-import { getCurrentSalePhase, SalePhase } from "starton-periphery";
 import { useTranslations } from "next-intl";
 import { useAdditionalInfo } from "./hooks/useAdditionalInfo";
 

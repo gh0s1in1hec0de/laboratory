@@ -20,6 +20,7 @@ export function LaunchInfoBox({
         variantSize="regular14"
         variantColor="gray"
         textAlign="center"
+        cropped
       />
             
       <Grid 

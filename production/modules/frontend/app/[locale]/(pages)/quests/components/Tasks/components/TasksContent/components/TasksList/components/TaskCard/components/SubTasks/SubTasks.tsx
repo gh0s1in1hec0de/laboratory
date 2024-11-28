@@ -3,8 +3,12 @@ import { SubTasksProps } from "./types";
 import Grid from "@mui/material/Grid2";
 import { QuestIcon } from "@/icons";
 import { Label } from "@/common/Label";
+import { Box } from "@mui/material";
+import { useSubTasks } from "./hooks/useSubTasks";
 
 export function SubTasks({ subTasks, open, disabled }: SubTasksProps) {
+  const { renderTextWithLinks } = useSubTasks(disabled);
+
   return (
     <motion.div
       initial={false}
@@ -50,13 +54,18 @@ export function SubTasks({ subTasks, open, disabled }: SubTasksProps) {
                 offUserSelect
                 disabled={disabled}
               />
-              <Label
+
+              <Box>
+                {renderTextWithLinks(subTask.description)}
+              </Box>
+
+              {/* <Label
                 label={subTask.description}
                 variantSize="regular14"
                 variantColor="gray"
                 offUserSelect
                 disabled={disabled}
-              />
+              /> */}
             </Grid>
           ))}
         </Grid>

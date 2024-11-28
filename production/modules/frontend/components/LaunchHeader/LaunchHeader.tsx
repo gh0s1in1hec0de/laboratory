@@ -3,7 +3,6 @@ import { LaunchHeaderInfoProps, LaunchHeaderProps } from "./types";
 import { CustomAvatar } from "@/common/CustomAvatar";
 import { MainInfo } from "./components/MainInfo";
 import { LaunchLinks } from "./components/LaunchLinks";
-import { LaunchChart } from "./components/LaunchChart";
 import { TwitterIcon, TelegramIcon, WebsiteIcon } from "@/icons";
 import { LaunchPrice } from "./components/LaunchPrice";
 
@@ -14,7 +13,6 @@ export function LaunchHeader({
   holders,
   showHolders,
   showBIO,
-  showChart,
   xLink,
   telegramLink,
   websiteLink,
@@ -70,10 +68,6 @@ export function LaunchHeader({
           timings={timings}
           version={version}
         />
-      )}
-
-      {showChart && (
-        <LaunchChart />
       )}
 
       <Grid container size={12} paddingTop={0.5}>

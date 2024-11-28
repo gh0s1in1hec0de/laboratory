@@ -221,25 +221,44 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
         </MainBox>
       );
     case SalePhase.ENDED:
-      return (
-        <MainBox
-          container
-          alignItems="center"
-          bgColor="orange"
-          padding="4px 10px"
-          rounded="xs"
-        >
-          <Label
-            label="Ended"
-            variantSize="regular14"
-            variantColor="red"
-            offUserSelect
-            cropped
-          />
-        </MainBox>
-      );
-    default:
-      return null;
+      if (extendedBalance.isSuccessful) {
+        return (
+          <MainBox
+            container
+            alignItems="center"
+            bgColor="green"
+            padding="4px 10px"
+            rounded="xs"
+          >
+            <Label
+              label="Successful"
+              variantSize="regular14"
+              variantColor="green"
+              offUserSelect
+              cropped
+            />
+          </MainBox>
+        );
+      } 
+      if (!extendedBalance.isSuccessful) {
+        return (
+          <MainBox
+            container
+            alignItems="center"
+            bgColor="orange"
+            padding="4px 10px"
+            rounded="xs"
+          >
+            <Label
+              label="Ended"
+              variantSize="regular14"
+              variantColor="red"
+              offUserSelect
+              cropped
+            />
+          </MainBox>
+        );
+      }
     }
   }
 
