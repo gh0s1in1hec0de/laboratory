@@ -23,7 +23,7 @@ export function useConnectButton() {
       setTonWalletAddress(address);
       console.debug("Wallet connected!");
     } catch (error) {
-      console.error(error);
+      console.error("Error connecting wallet: ", error);
       // await userService.postConnectWallet(address, decodeURIComponent(searchParams.get(REFERRAL) || ""));
       // setTonWalletAddress(address);
       // console.debug("Wallet connected!");
