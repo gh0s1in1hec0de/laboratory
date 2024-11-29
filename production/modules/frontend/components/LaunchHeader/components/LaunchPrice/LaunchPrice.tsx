@@ -5,8 +5,10 @@ import { useLaunchPrice } from "./hooks/useLaunchPrice";
 import { LaunchPriceProps } from "./types";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
 import { LaunchPriceSkeleton } from "./components/LaunchPriceSkeleton";
+import { ChartUpIcon, ChartDownIcon } from "@/icons";
 
 export function LaunchPrice({
+  tradingStats,
   launchAddress,
   timings,
   version
@@ -30,18 +32,35 @@ export function LaunchPrice({
         container
         gap={0.5}
         width="100%"
+        alignItems="center"
       >
-        <Label 
-          label={t("price")}
-          variantColor="gray"
-          variantSize="regular14"
-        />
-
-        <Grid container width="100%">
+        <Grid 
+          container
+          size="grow"
+          flexDirection="column"
+          gap={0.5}
+        >
           <Label 
-            label={`${price?.toFixed(10) ?? 0} TON`}
-            variantSize="semiBold18"
+            label={t("price")}
+            variantColor="gray"
+            variantSize="regular14"
           />
+
+          <Grid container size="grow">
+            <Label 
+              label={`${price?.toFixed(10) ?? 0} TON`}
+              variantSize="semiBold18"
+              cropped
+            />
+          </Grid>
+        </Grid>
+
+        <Grid container>
+          {tradingStats?.trend === "bullish" ? (
+            <ChartUpIcon />
+          ) : (
+            <ChartDownIcon />
+          )}
         </Grid>
       </Grid>
     </LoadingWrapper>

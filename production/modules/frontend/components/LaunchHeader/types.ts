@@ -1,4 +1,4 @@
-import { TokenLaunchTimings, GlobalVersions } from "starton-periphery";
+import { TokenLaunchTimings, GlobalVersions, LaunchTradingStats } from "starton-periphery";
 
 export interface LaunchHeaderProps {
   avatarSrc?: string;
@@ -15,6 +15,7 @@ export interface LaunchHeaderProps {
   launchAddress?: string;
   timings?: TokenLaunchTimings;
   version?: GlobalVersions;
+  tradingStats?: LaunchTradingStats;
 }
 
 export interface LaunchHeaderInfoProps {

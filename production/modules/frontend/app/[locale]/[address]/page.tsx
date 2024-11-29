@@ -68,6 +68,7 @@ export default function CurrentLaunch({
               timings={launchData.timings}
               getLaunchLink={getLaunchLink}
               version={launchData.version}
+              tradingStats={launchData.tradingStats}
               showHolders
               showBIO
               showPrice

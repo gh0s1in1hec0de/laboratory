@@ -38,6 +38,7 @@ export function InfluencerSupportInfo() {
           <Grid
             container
             gap={0.5}
+            size="grow"
             alignItems="center"
           >
             <Label

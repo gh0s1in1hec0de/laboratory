@@ -10,11 +10,11 @@ export function useRisingStarToken() {
   const [isOpenDrawer, toggleOpenDrawer] = useToggle(false);
   const [tokenData, setTokenData] = useState<GetRisingStarResponse>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [errorText, setErrorText] = useState("");
-  const t = useTranslations("Top");
   const router = useRouter();
   const locale = useLocale();
   const [isPending, startTransition] = useTransition();
+  const [errorText, setErrorText] = useState("");
+  // const t = useTranslations("Top");
 
   function handleRedirectToLaunch(event: MouseEvent<HTMLDivElement>) {
     event.stopPropagation();
@@ -30,16 +30,16 @@ export function useRisingStarToken() {
     (async () => {
       try {
         const data = await launchService.getRisingStar();
-        if (!data) setErrorText(t("risingStarNotFound"));
+        // if (!data) setErrorText(t("risingStarNotFound"));
         setTokenData(data);
       } catch (error) {
-        // todo
-        if (getErrorStatus(error) === 500) {
-          console.log(error);
-          // setErrorText(t("risingStarNotReachable"));
-        } else {
-          setErrorText(getErrorText(error, t("commonError")));
-        }
+        console.log(error);
+        // if (getErrorStatus(error) === 500) {
+        //   console.log(error);
+        //   // setErrorText(t("risingStarNotReachable"));
+        // } else {
+        //   setErrorText(getErrorText(error, t("commonError")));
+        // }
       } finally {
         setIsLoading(false);
       }

@@ -41,7 +41,7 @@ export function useCreateToken() {
         setIsLoadingPage(false);
       }
     })();
-  }, []);
+  }, [creator]);
 
   async function onSubmitForm(
     values: CreateTokenFormFields,

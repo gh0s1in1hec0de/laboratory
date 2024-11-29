@@ -53,6 +53,10 @@ async function getCurrentToken({
     //   "identifier": "CHAD ChadCoin Only for the absolute Chads of crypto.",
     //   "creator": "0:ef0d5d3ea8eae576bcb81b4550a5eb7f8e36579ca857b2178d97f675eec49731",
     //   "version": "V2",
+    //   "tradingStats": {
+    //     "trend": "bearish", // bullish && bearish
+    //     "delta": BigInt(100)
+    //   },
     //   "metadata": {
     //     "uri": "https://random_uri_link_10",
     //     "name": "ChadCoin",

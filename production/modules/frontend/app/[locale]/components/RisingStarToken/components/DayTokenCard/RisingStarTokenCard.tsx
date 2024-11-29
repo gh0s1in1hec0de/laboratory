@@ -16,7 +16,7 @@ export function RisingStarTokenCard({
 }: RisingStarTokenCardProps) {
   const t = useTranslations("Top");
 
-  if (errorText || !tokenData) {
+  if (errorText) {
     return (
       <Grid container size={{ xs: 12 }} justifyContent="center">
         <Label

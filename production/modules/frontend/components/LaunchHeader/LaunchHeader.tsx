@@ -20,7 +20,8 @@ export function LaunchHeader({
   showPrice,
   launchAddress,
   timings,
-  version
+  version,
+  tradingStats
 }: LaunchHeaderProps) {
 
   const linksArray: LaunchHeaderInfoProps[] = [
@@ -64,6 +65,7 @@ export function LaunchHeader({
 
       {showPrice && timings && version && (
         <LaunchPrice
+          tradingStats={tradingStats}
           launchAddress={launchAddress || ""}
           timings={timings}
           version={version}

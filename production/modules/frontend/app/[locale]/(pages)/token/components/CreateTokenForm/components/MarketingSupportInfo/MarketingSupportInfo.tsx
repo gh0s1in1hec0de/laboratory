@@ -29,7 +29,11 @@ export function MarketingSupportInfo() {
       width="100%"
       gap={1.5}
     >
-      <Grid container gap={0.5}>
+      <Grid
+        container
+        gap={0.5}
+        width="100%"
+      >
         <Grid
           container
           width="100%"

@@ -17,3 +17,5 @@ export { TwitterIcon } from "./TwitterIcon/TwitterIcon";
 export { ColonIcon } from "./ColonIcon/ColonIcon";
 export { CopyIcon } from "./CopyIcon/CopyIcon";
 export { ArrowDownDirectionIcon } from "./ArrowDownDirectionIcon/ArrowDownDirectionIcon";
+export { ChartUpIcon } from "./ChartUpIcon/ChartUpIcon";
+export { ChartDownIcon } from "./ChartDownIcon/ChartDownIcon";

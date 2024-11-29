@@ -30,17 +30,22 @@ export function GreetingModal() {
         container
         justifyContent="flex-end"
         paddingBottom={1}
-        onClick={closeBanner}
-        sx={{ cursor: "pointer" }}
         alignItems="center"
       >
-        <Label
-          label="Skip"
-          variantSize="regular14"
-          variantColor="gray"
-          offUserSelect
-        />
-        <ArrowRightIcon />
+        <Grid
+          container
+          alignItems="center"
+          onClick={closeBanner}
+          sx={{ cursor: "pointer" }}
+        >
+          <Label
+            label="Skip"
+            variantSize="regular14"
+            variantColor="gray"
+            offUserSelect
+          />
+          <ArrowRightIcon />
+        </Grid>
       </Grid>
 
       <Grid

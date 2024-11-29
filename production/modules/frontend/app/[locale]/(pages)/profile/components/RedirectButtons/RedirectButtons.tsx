@@ -38,7 +38,7 @@ export function RedirectButtons() {
             background="gray"
             padding="10px"
             fullWidth
-            onClick={() => handleRedirect(PAGES.Token)}
+            onClick={() => handleRedirect(PAGES.Top)}
           >
             <Grid
               container
