@@ -41,6 +41,7 @@ export type StringifiedCoins = string;
 export type PostDeployEnrollmentStats = {
     deployedJetton: { masterAddress: RawAddressString, ourWalletAddress: RawAddressString },
     totalTonsCollected: StringifiedCoins,
+    opnCollected?: StringifiedCoins,
     ourJettonAmount: StringifiedCoins,
     dexJettonAmount: StringifiedCoins,
 }

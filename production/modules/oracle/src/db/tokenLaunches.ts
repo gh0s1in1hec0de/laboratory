@@ -2,7 +2,7 @@ import type {
     GetLaunchesChunkRequest, GetLaunchesChunkResponse, ExtendedLaunch,
     Coins, DexData, PostDeployEnrollmentStats, LaunchMetadata,
     RawAddressString, LaunchBalance, GetCertainLaunchRequest,
-    TokenLaunchTimings, StoredTokenLaunch, UnixTimeSeconds,
+    TokenLaunchTimings, StoredTokenLaunch, UnixTimeSeconds, StringifiedCoins,
 } from "starton-periphery";
 import { LaunchSortParameters } from "starton-periphery";
 import type { SqlClient } from "./types";
@@ -199,13 +199,32 @@ export async function markLaunchAsFailed(address: RawAddressString, client?: Sql
     if (res.length !== 1) logger().error(`looks like launch ${address} wasn't marked as failed`);
 }
 
+export async function updateOpnCollected(
+    tokenLaunchAddress: RawAddressString,
+    opnCollectedValue: StringifiedCoins,
+    client?: SqlClient
+): Promise<void> {
+    const res = await (client ?? globalClient)`
+        UPDATE token_launches
+        SET post_deploy_enrollment_stats = jsonb_set(
+            post_deploy_enrollment_stats,
+            '{opnCollected}',
+            ${opnCollectedValue}::TEXT::JSONB,
+            TRUE
+        )
+        WHERE address = ${tokenLaunchAddress}
+        RETURNING 1;
+    `;
+    if (res.length !== 1) logger().error(`Failed to update opnCollected for ${tokenLaunchAddress}`);
+}
+
 export async function updatePostDeployEnrollmentStats(
     tokenLaunchAddress: RawAddressString, stats: PostDeployEnrollmentStats, client?: SqlClient
 ): Promise<void> {
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
         UPDATE token_launches
-        SET post_deploy_enrollment_stats = ${stats}::JSONB,
+        SET post_deploy_enrollment_stats = post_deploy_enrollment_stats || ${stats}::JSONB,
             is_successful                = TRUE
         WHERE address = ${tokenLaunchAddress}
         RETURNING 1;

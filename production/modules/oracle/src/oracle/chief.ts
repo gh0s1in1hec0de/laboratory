@@ -221,8 +221,19 @@ async function handleChiefUpdates() {
             const sender = inMsg.info.src;
             const value: Coins = inMsg.info.value.coins;
             const inMsgBody = inMsg.body.beginParse();
-            // We don't care about simple transfers
-            if (inMsgBody.remainingBits < (32 + 64)) continue;
+
+            // Registering opn stuff
+            if (inMsgBody.remainingBits < (32 + 64)) {
+                try {
+                    const preloadedOp = inMsgBody.loadUint(32);
+                    if (preloadedOp !== 0) continue;
+
+                    const comment = inMsgBody.loadStringTail();
+                    if (comment === "opn") logger().info(`new opn enrollment ${fromNano(value)} from token launch ${sender}`);
+                    await db.updateOpnCollected(sender.toRawString(), value.toString());
+                } catch (e) { /* empty */ }
+                continue;
+            }
             const { msgBodyData, op } = await loadOpAndQueryId(inMsgBody);
 
             if (op === 0x7362d09c) {
