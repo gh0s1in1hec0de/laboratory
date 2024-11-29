@@ -14,11 +14,15 @@ export function Label({
   isCursive = false,
   component = "p",
   cropped = false,
+  customHref,
+  target,
   ...props
 }: LabelProps) {
   return (
     <Typography 
       component={component}
+      href={customHref}
+      target={target}
       className={classNames(
         styles.label,
         { 

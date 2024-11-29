@@ -69,7 +69,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
         }
       );
 
-      await tonConnectUI.sendTransaction(transaction, { modals: "all" });
+      await tonConnectUI.sendTransaction(transaction, { modals: ["error"] });
     } catch (error) {
       // setErrorText(getErrorText(error, t("refundError")));
     }
@@ -84,7 +84,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
         }
       );
 
-      await tonConnectUI.sendTransaction(transaction, { modals: "all" });
+      await tonConnectUI.sendTransaction(transaction, { modals: ["error"] });
     } catch (error) {
       // setErrorText(getErrorText(error, t("claimError")));
     }
@@ -98,7 +98,6 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
     if (phase === SalePhase.WHITELIST) {
       return launchData && (whitelistStatus || (ticketBalance && ticketBalance > 0)) ? (
         <WhitelistBuyInput
-          whitelistStatus={whitelistStatus}
           launchAddress={launchData.address}
         />
       ) : (

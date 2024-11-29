@@ -8,6 +8,8 @@ import { RewardBlockProps } from "./types";
 import { useRewardBlock } from "./hooks/useRewardBlock";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
 import { RewardBlockSkeleton } from "./hooks/components/RewardBlockSkeleton";
+import { toCorrectAmount } from "@/utils";
+import { useLocale } from "next-intl";
 
 export function RewardBlock({
   rewardPool,
@@ -17,6 +19,7 @@ export function RewardBlock({
     displayValue,
     isLoading
   } = useRewardBlock({ rewardPool, extendedBalance });
+  const locale = useLocale();
 
   return (
     <LoadingWrapper 
@@ -56,7 +59,9 @@ export function RewardBlock({
           paddingX={1.5}
         >
           <Label
-            label={`${jettonFromNano(displayValue || 0)} $${rewardPool.metadata.symbol ?? "UNKNWN"}`}
+            // todo: заменить если цены отъебнут
+            // label={`${jettonFromNano(displayValue || 0)} $${rewardPool.metadata.symbol ?? "UNKNWN"}`}
+            label={`${toCorrectAmount({ amount: Number(jettonFromNano(displayValue || 0)), locale: locale as "en" | "ru" })} $${rewardPool.metadata.symbol ?? "UNKNWN"}`}
             variantSize="regular14"
             variantColor="gray"
             cropped

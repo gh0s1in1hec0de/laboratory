@@ -1,5 +1,5 @@
 import Grid from "@mui/material/Grid2";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Label } from "@/common/Label";
 import { MainBox } from "@/common/MainBox";
 import { LaunchInfoBox } from "./components/LaunchInfoBox";
@@ -11,6 +11,7 @@ import { jettonFromNano } from "starton-periphery";
 import { TonProvider } from "@/providers/ton";
 import { useToggle } from "@/hooks";
 import { CustomToast } from "@/common/CustomToast";
+import { toCorrectAmount } from "@/utils";
 
 export function LaunchInfo({
   launchData,
@@ -18,6 +19,7 @@ export function LaunchInfo({
 }: LaunchInfoProps) {
   const t = useTranslations("CurrentLaunch.info");
   const [openToast, toggleOpenToast] = useToggle(false);
+  const locale = useLocale();
 
   function onClickCopyAddress() {
     toggleOpenToast();
@@ -59,7 +61,9 @@ export function LaunchInfo({
         >
           <LaunchInfoBox
             label={t("supply")}
-            value={jettonFromNano(launchData?.totalSupply ?? 0n)}
+            // todo: заменить если цены отъебнут
+            // value={jettonFromNano(launchData?.totalSupply ?? 0n)}
+            value={toCorrectAmount({ amount: Number(jettonFromNano(launchData?.totalSupply ?? 0n)), locale: locale as "en" | "ru" })}
           />
 
           <LaunchInfoBox

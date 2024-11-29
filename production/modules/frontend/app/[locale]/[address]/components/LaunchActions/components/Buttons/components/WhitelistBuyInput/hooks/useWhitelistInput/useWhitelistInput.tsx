@@ -8,20 +8,25 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { TxRequestBuilder } from "starton-periphery";
 
-export function useWhitelistInput(launchAddress: string, whitelistStatus: boolean | null) {
+export function useWhitelistInput(launchAddress: string) {
   const t = useTranslations("CurrentLaunch.contribute.amountInput");
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorText, setErrorText] = useState("");
   const [tonConnectUI] = useTonConnectUI();
-
+  
   async function onClickBuyTokens() {
     try {
       setIsLoading(true);
 
+      const whitelistStatus = await userService.getWhitelistStatus({
+        callerAddress: localStorageWrapper.get(CALLER_ADDRESS),
+        tokenLaunch: launchAddress,
+      });
+
       const ticketBalance = await userService.getTicketBalance();
 
-      if ((whitelistStatus === false || whitelistStatus === null) && ticketBalance > 0) {
+      if (!whitelistStatus && ticketBalance > 0) {
         await launchService.postBuyWl({
           callerAddress: localStorageWrapper.get(CALLER_ADDRESS),
           launchAddress: Address.parse(launchAddress).toRawString(),
@@ -35,7 +40,7 @@ export function useWhitelistInput(launchAddress: string, whitelistStatus: boolea
         },
       );
       
-      await tonConnectUI.sendTransaction(transaction, { modals: "all" });
+      await tonConnectUI.sendTransaction(transaction, { modals: ["error"] });
     } catch (error) {
       setErrorText(getErrorText(error, t("errors.buyingError")));
     } finally {

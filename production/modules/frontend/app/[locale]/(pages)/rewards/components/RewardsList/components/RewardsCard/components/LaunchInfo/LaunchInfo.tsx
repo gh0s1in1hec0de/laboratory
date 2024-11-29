@@ -4,12 +4,14 @@ import { Label } from "@/common/Label";
 import { StarIcon } from "@/icons/common/StarIcon/StarIcon";
 import { ExtendedUserBalance } from "starton-periphery";
 import { fromNano } from "@ton/core";
-import { useTranslations } from "next-intl";
-import { formatNumber } from "@/utils";
+import { useTranslations, useLocale } from "next-intl";
+import { formatNumber, toCorrectAmount } from "@/utils";
 
 export function LaunchInfo(balance: ExtendedUserBalance) {
   const t = useTranslations("Rewards");
-  const totalTons = Number(fromNano(balance.whitelistTons)) + Number(fromNano(balance.publicTons));
+  const totalTons = Number(fromNano(654324312312321)) + Number(fromNano(34213125423434132));
+  console.log(totalTons);
+  const locale = useLocale();
 
   return(
     <>
@@ -67,7 +69,9 @@ export function LaunchInfo(balance: ExtendedUserBalance) {
             <StarIcon color="var(--white-regular)" />
 
             <Label
-              label={`${formatNumber(totalTons)} ${t("ton")}`}
+              // todo: заменить если цены отъебнут
+              // label={`${formatNumber(totalTons)} ${t("ton")}`}
+              label={`${toCorrectAmount({ amount: totalTons, fractionDigits: 3, locale: locale as "en" | "ru" })} ${t("ton")}`}
               variantSize="regular14"
               offUserSelect 
             />

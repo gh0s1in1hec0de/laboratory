@@ -89,7 +89,7 @@ export function useCreateToken() {
         },
       );
 
-      await tonConnectUI.sendTransaction(transaction, { modals: "all" });
+      await tonConnectUI.sendTransaction(transaction, { modals: ["error"] });
 
       toggleIsSuccessToast();
       router.replace(`/${locale}/${PAGES.Token}/${PAGES.TokenPolling}?creator=${creator}`);

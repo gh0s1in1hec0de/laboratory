@@ -21,7 +21,7 @@ export function usePublicBuy(launchAddress: string){
           amount: toNano(amount).toString(),
         },
       );
-      await tonConnectUI.sendTransaction(transaction, { modals: "all" });
+      await tonConnectUI.sendTransaction(transaction, { modals: ["error"] });
     } catch (error) {
       setErrorText(getErrorText(error, t("errors.buyingError")));
     } finally {

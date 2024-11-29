@@ -30,7 +30,7 @@ export function useRewardBalancesList() {
         },
       );
 
-      await tonConnectUI.sendTransaction(transaction, { modals: "all" });
+      await tonConnectUI.sendTransaction(transaction, { modals: ["error"] });
     } catch (error) {
       setErrorText(getErrorText(error, t("claimAllError")));
     } finally {

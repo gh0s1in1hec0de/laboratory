@@ -23,7 +23,7 @@ export function useRewardsList({ selectedTab }: UseRewardsListProps) {
     try {
       const response = await userService.getBalances({
         user: Address.parse(localStorageWrapper.get(CALLER_ADDRESS)).toRawString(),
-        // user: Address.parse("0:34f865f73d2a4dde43c42056ba0fd2c61d8590ef5c745699eb7e23f861f338e5").toRawString(),
+        // user: Address.parse("0:19345bffdf6ed4d4ddf0f567e36f1eaa256d0121e79a403a93c4a5f8de17e74f").toRawString(),
       });
 
       if (!response) {
@@ -49,7 +49,7 @@ export function useRewardsList({ selectedTab }: UseRewardsListProps) {
     try {
       const response = await rewardsService.getRewardBalances({
         userAddress: Address.parse(localStorageWrapper.get(CALLER_ADDRESS)).toRawString(),
-        // userAddress: Address.parse("0:34f865f73d2a4dde43c42056ba0fd2c61d8590ef5c745699eb7e23f861f338e5").toRawString(),
+        // userAddress: Address.parse("0:19345bffdf6ed4d4ddf0f567e36f1eaa256d0121e79a403a93c4a5f8de17e74f").toRawString(),
       });
 
       setRewardBalances(response);
