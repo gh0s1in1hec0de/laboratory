@@ -11,7 +11,7 @@ import {
 
 export async function storeUserAction(
     { actor, tokenLaunch, actionType, whitelistTons, publicTons, jettons, lt, timestamp, queryId }:
-        Omit<UserAction, "id">,
+    Omit<UserAction, "id">,
     client?: SqlClient
 ): Promise<void> {
     const res = await (client ?? globalClient)`
@@ -61,8 +61,7 @@ export async function storeUserClaim(
 }
 
 export async function getLastActionsForLaunch(
-    launchAddress: RawAddressString, from?: UnixTimeSeconds,
-    client?: SqlClient
+    launchAddress: RawAddressString, from?: UnixTimeSeconds, client?: SqlClient
 ): Promise<UserAction[] | null> {
     const c = client ?? globalClient;
     const res = await c<UserAction[]>`
@@ -70,7 +69,7 @@ export async function getLastActionsForLaunch(
         FROM user_actions
         WHERE token_launch = ${launchAddress} ${from ? c`AND timestamp > ${from}` : c``}
         ORDER BY timestamp DESC
-        LIMIT 50;
+        LIMIT 30;
     `;
     return res.length ? res : null;
 }

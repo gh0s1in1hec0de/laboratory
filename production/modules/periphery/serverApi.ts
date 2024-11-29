@@ -11,6 +11,7 @@ import type {
     LaunchBalance,
     RewardPool,
 } from "./Database";
+import { LaunchTrend } from "oracle/src/utils";
 
 // Manager API
 
@@ -40,7 +41,7 @@ export type GetCallerTasksResponse = {
 export type GetWhitelistStatusRequest = { tokenLaunch: RawAddressString, callerAddress: RawAddressString };
 
 // Oracle API
-
+export type LaunchTradingStats = { trend: LaunchTrend, delta: Coins };
 export type ExtendedLaunch = StoredTokenLaunch & LaunchBalance & Partial<LaunchMetadata> & { activeHolders: number };
 
 export type GetLaunchesChunkRequest = {
@@ -55,7 +56,7 @@ export type GetLaunchesChunkRequest = {
 export type GetLaunchesChunkResponse = { launchesChunk: ExtendedLaunch[], hasMore: boolean, };
 
 export type GetCertainLaunchRequest = { creator?: RawAddressString, address?: RawAddressString, metadataUri?: string };
-export type GetCertainLaunchResponse = ExtendedLaunch | null;
+export type GetCertainLaunchResponse = ExtendedLaunch & { tradingStats?: LaunchTradingStats };
 
 export type GetUserBalancesRequest = { user: RawAddressString, launch?: RawAddressString }
 

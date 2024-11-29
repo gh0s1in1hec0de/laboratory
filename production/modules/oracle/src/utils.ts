@@ -1,6 +1,59 @@
 import { logger } from "./logger";
+import type { LaunchTradingStats, UserAction, } from "starton-periphery";
 
-export async function maybeBruteforceOverload<T>(
+export enum LaunchTrend {
+    Bullish = "bullish",
+    Bearish = "bearish",
+}
+
+export function analyzeLaunchTrend(
+    userActions: UserAction[]
+): LaunchTradingStats | undefined {
+    if (!userActions.length) return undefined;
+
+    const { totalBuys, totalSells } = userActions.reduce(
+        (totals, action) => {
+            switch (action.actionType) {
+                case "whitelist_buy":
+                    totals.totalBuys += action.whitelistTons;
+                    break;
+                case "public_buy":
+                    totals.totalBuys += action.publicTons;
+                    break;
+                case "whitelist_refund":
+                    totals.totalSells += action.whitelistTons;
+                    break;
+                case "public_refund":
+                    totals.totalSells += action.publicTons;
+                    break;
+                case "total_refund":
+                    totals.totalSells += action.whitelistTons + action.publicTons + action.jettons;
+                    break;
+            }
+            return totals;
+        },
+        { totalBuys: BigInt(0), totalSells: BigInt(0) }
+    );
+    const delta = totalBuys - totalSells;
+    return { trend: delta > 0n ? LaunchTrend.Bullish : LaunchTrend.Bearish, delta };
+}
+
+export function greeting() {
+    console.log(`
+     .-')   .-') _     ('-.    _  .-')  .-') _                   .-') _  
+    ( OO ).(  OO) )   ( OO ).-( \\( -O )(  OO) )                 ( OO ) ) 
+   (_)---\\_/     '._  / . --. /,------./     '._ .-'),-----.,--./ ,--,'  
+   /    _ ||'--...__) | \\-.  \\ |   /\`. |'--...__( OO'  .-.  |   \\ |  |\\  
+   \\  :\` \`.'--.  .--.-'-'  |  ||  /  | '--.  .--/   |  | |  |    \\|  | ) 
+    '..\`''.)  |  |   \\| |_.'  ||  |_.' |  |  |  \\_) |  |\\|  |  .     |/  
+   .-._)   \\  |  |    |  .-.  ||  .  '.'  |  |    \\ |  | |  |  |\\    |   
+   \\       /  |  |    |  | |  ||  |\\  \\   |  |     \`'  '-'  |  | \\   |   
+    \`-----'   \`--'    \`--' \`--'\`--' '--'  \`--'       \`-----'\`--'  \`--'   
+                                                     by gh0s1in1hec0de
+ `);
+}
+
+export async function _maybeBruteforceOverload<T>(
     operation: Promise<T> | T,
     retries = 4,
     maxDelay = 12000
@@ -20,19 +73,4 @@ export async function maybeBruteforceOverload<T>(
         attempt += 1;
     }
     throw new Error(`operation TOTALLY SUCKED (${attempt} attempts)`);
-}
-
-export function greeting() {
-    console.log(`
-     .-')   .-') _     ('-.    _  .-')  .-') _                   .-') _  
-    ( OO ).(  OO) )   ( OO ).-( \\( -O )(  OO) )                 ( OO ) ) 
-   (_)---\\_/     '._  / . --. /,------./     '._ .-'),-----.,--./ ,--,'  
-   /    _ ||'--...__) | \\-.  \\ |   /\`. |'--...__( OO'  .-.  |   \\ |  |\\  
-   \\  :\` \`.'--.  .--.-'-'  |  ||  /  | '--.  .--/   |  | |  |    \\|  | ) 
-    '..\`''.)  |  |   \\| |_.'  ||  |_.' |  |  |  \\_) |  |\\|  |  .     |/  
-   .-._)   \\  |  |    |  .-.  ||  .  '.'  |  |    \\ |  | |  |  |\\    |   
-   \\       /  |  |    |  | |  ||  |\\  \\   |  |     \`'  '-'  |  | \\   |   
-    \`-----'   \`--'    \`--' \`--'\`--' '--'  \`--'       \`-----'\`--'  \`--'   
-                                                     by gh0s1in1hec0de
- `);
 }

@@ -28,7 +28,7 @@ export async function spawnNewLaunchesScanners() {
                 logger().info(` -  ${launch.address}`);
                 balancedTonClient.incrementActiveLaunchesAmount();
                 monitoredLaunches.add(launch.address);
-                handleTokenLaunchUpdates(launch);
+                handleTokenLaunchUpdates(launch).then();
                 await delay(1.5); // As we don't want all the api requests in the same moment
             }
             await delay(10);

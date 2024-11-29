@@ -1,9 +1,9 @@
 import { GetConfigResponse, MoneyFlows } from "../types";
 import { Coins, GlobalVersions } from "../standards";
-import { ok as assert } from "assert";
 import { fromNano, toNano } from "@ton/core";
-import { fees } from "../fees";
 import { jettonFromNano } from "../utils";
+import { ok as assert } from "assert";
+import { fees } from "../fees";
 
 // 10k TON
 export const MAX_WL_ROUND_TON_LIMIT = 10000n * toNano("1");

@@ -193,7 +193,7 @@ LIMIT 1;
 
 SELECT cron.schedule(
                'refresh_materialized_view',
-               '* * * * *', -- TODO Replace with '0 * * * *'
+               '0 * * * *',
                'REFRESH MATERIALIZED VIEW top_token_launch_by_actions'
        );
 
