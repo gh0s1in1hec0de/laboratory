@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import { LOCALES } from "@/constants";
 import "@/styles/globals.scss";
+import Script from "next/dist/client/script";
  
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,22 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
+      <head>
+        <Script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-X6L41C2856"
+        />
+        <Script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-X6L41C2856');
+            `,
+          }}
+        />
+      </head>
       <body className={`${manrope.variable} ${manrope.className}`}>
         <NextIntlClientProvider messages={messages}>
           <AppRouterCacheProvider options={{ key: "css", enableCssLayer: true }}>

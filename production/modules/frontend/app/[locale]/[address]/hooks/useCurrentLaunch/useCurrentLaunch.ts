@@ -8,7 +8,7 @@ import { CALLER_ADDRESS } from "@/constants";
 
 export function useCurrentLaunch(address: string) {
   const [balance, setBalance] = useState<GetUserBalancesResponse>(null);
-  const [launchData, setLaunchData] = useState<GetCertainLaunchResponse>(null);
+  const [launchData, setLaunchData] = useState<GetCertainLaunchResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
   const t = useTranslations("CurrentLaunch");
