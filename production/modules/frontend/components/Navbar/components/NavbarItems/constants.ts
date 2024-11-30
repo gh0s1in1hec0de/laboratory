@@ -5,29 +5,29 @@ export const NAVBAR_ITEMS: NavbarItemType[] = [
   {
     label: "Navbar.first",
     id: "1",
-    page: "quests",
+    page: "", // quests
     IconComponent: QuestsIcon,
   },
   {
-    label: "Navbar.second",
+    label: "Navbar.soon", // Navbar.second
     id: "2",
     page: "token",
     IconComponent: TokenIcon,
   },
   {
-    label: "Navbar.third",
+    label: "Navbar.soon", // Navbar.third
     id: "3",
-    page: "",
+    page: "top", // ""
     IconComponent: TopIcon,
   },
   {
-    label: "Navbar.fourth",
+    label: "Navbar.soon", // Navbar.fourth
     id: "4",
     page: "rewards",
     IconComponent: RewardsIcon,
   },
   {
-    label: "Navbar.fifth",
+    label: "Navbar.soon", // Navbar.fifth
     id: "5",
     page: "profile",
     IconComponent: ProfileIcon,

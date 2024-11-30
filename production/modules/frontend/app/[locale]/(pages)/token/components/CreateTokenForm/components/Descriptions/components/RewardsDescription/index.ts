@@ -1,1 +1,0 @@
-export { RewardsDescription } from "./RewardsDescription";

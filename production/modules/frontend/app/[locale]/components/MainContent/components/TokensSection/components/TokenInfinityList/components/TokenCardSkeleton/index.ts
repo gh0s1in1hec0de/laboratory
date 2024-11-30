@@ -1,1 +1,0 @@
-export { getSkeletons } from "./TokenCardSkeleton";

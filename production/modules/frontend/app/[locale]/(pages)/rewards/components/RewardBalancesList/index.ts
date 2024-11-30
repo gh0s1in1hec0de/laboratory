@@ -1,1 +1,0 @@
-export { RewardBalancesList } from "./RewardBalancesList";

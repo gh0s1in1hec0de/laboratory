@@ -1,1 +1,0 @@
-export { useRewardsCard } from "./useRewardsCard";

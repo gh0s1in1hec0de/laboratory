@@ -1,29 +1,26 @@
-import { Label } from "@/common/Label";
-import { CustomConnectButton } from "@/components/CustomConnectButton";
-import { TonProvider } from "@/providers/ton";
 import Grid from "@mui/material/Grid2";
-import { useTranslations } from "next-intl";
-import { CreateTokenButton } from "./components/CreateTokenButton";
+import { Info } from "./components/Info";
+import { TicketBalance } from "./components/TicketBalance";
+import { BgLight } from "@/common/BgLight";
+import { TonProvider } from "@/providers/ton";
+import { CustomConnectButton } from "@/components/CustomConnectButton";
 
 export function Header() {
-  const t = useTranslations("Top");
-
   return (
-    <Grid
-      container
-      justifyContent="space-between"
-      alignItems="center"
+    <Grid 
+      container 
+      position="relative" 
+      gap={2}
       width="100%"
     >
-      <Label
-        variantSize="semiBold24"
-        label={t("title")}
-      />
+      <BgLight />
+
+      <Info />
 
       <TonProvider>
-        <CustomConnectButton
-          successChildren={<CreateTokenButton />}
-          showDropdown={false}
+        <CustomConnectButton 
+          successChildren={<TicketBalance rounded="xs" />}
+          fullWidth
         />
       </TonProvider>
     </Grid>

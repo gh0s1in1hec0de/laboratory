@@ -1,1 +1,0 @@
-export { RewardsInfoSkeleton } from "./RewardsInfoSkeleton";

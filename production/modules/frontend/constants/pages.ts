@@ -1,10 +1,8 @@
 export enum PAGES {
+  Home = "",
   Quests = "quests",
   Token = "token",
-  TokenPolling = "token-polling",
-  CurrentToken = "current-token",
   Rewards = "rewards",
   Profile = "profile",
-  Top = "",
-  Banner = "banner",
+  Top = "top",
 }

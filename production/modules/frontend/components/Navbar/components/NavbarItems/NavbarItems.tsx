@@ -7,20 +7,17 @@ import { useLocale, useTranslations } from "next-intl";
 import { removeLocaleFromPath } from "@/utils";
 import { NAVBAR_ITEMS } from "./constants";
 import { NavbarItemType } from "./types";
-import { useTransition } from "react";
-import { LoadingWrapper } from "@/common/LoadingWrapper";
 
 export function NavbarItems() {
   const router = useRouter();
   const locale = useLocale();
   const pathname = usePathname();
   const t = useTranslations("");
-  const [isPending, startTransition] = useTransition();
 
   function handleClick(page: Pick<NavbarItemType, "page">) {
-    startTransition(() => {
+    if (page.page === "quests"){
       router.push(`/${locale}/${page.page}`);
-    });
+    }
   }
 
   function isActive(page: Pick<NavbarItemType, "page">) {
@@ -28,11 +25,11 @@ export function NavbarItems() {
   }
   
   return(
-    <LoadingWrapper isLoading={isPending}>
+    <>
       {NAVBAR_ITEMS.map(({ page, IconComponent, id, label }) => (
         <IconButton
           key={id}
-          style={{ padding: 0, cursor: "pointer" }}
+          style={{ padding: 0, cursor: `${page === "" ? "pointer" : "default"}`, opacity: `${page === "" ? 1 : 0.5}` }}
           onClick={() => handleClick({ page })}
         >
           <Box
@@ -52,6 +49,6 @@ export function NavbarItems() {
           </Box>
         </IconButton>
       ))}
-    </LoadingWrapper>
+    </>
   );
 }

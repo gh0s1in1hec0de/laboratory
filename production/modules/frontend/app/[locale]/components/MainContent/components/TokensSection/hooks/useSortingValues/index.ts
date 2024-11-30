@@ -1,1 +1,0 @@
-export { useSortingValues } from "./useSortingValues";

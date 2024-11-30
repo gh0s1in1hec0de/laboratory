@@ -1,2 +1,0 @@
-export { useMarketingSupportInfo } from "./useMarketingSupportInfo";
-

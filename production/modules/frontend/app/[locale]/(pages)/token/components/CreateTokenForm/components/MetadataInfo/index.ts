@@ -1,1 +1,0 @@
-export { MetadataInfo } from "./MetadataInfo";
