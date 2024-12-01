@@ -6,8 +6,8 @@ import { NextIntlClientProvider } from "next-intl";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import { LOCALES } from "@/constants";
 import "@/styles/globals.scss";
-import Script from "next/dist/client/script";
- 
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+
 export const dynamic = "force-dynamic";
 
 export function generateStaticParams() {
@@ -57,27 +57,23 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <head>
-        <Script
-          async
-          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GOOGLE_ANALYTIC_ID}`}
-        />
-        <Script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${process.env.NEXT_PUBLIC_GOOGLE_ANALYTIC_ID}');
-            `,
-          }}
-        />
+        <GoogleAnalytics />
       </head>
       <body className={`${manrope.variable} ${manrope.className}`}>
         <NextIntlClientProvider messages={messages}>
           <AppRouterCacheProvider options={{ key: "css", enableCssLayer: true }}>
+            <noscript>
+              <iframe
+                src={`https://www.googletagmanager.com/ns.html?id=${process.env.NEXT_PUBLIC_GOOGLE_ANALYTIC_ID}`}
+                height="0"
+                width="0"
+                style={{ display: "none", visibility: "hidden" }}
+              ></iframe>
+            </noscript>
             {children}
           </AppRouterCacheProvider>
         </NextIntlClientProvider>
+        {/* <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTIC_ID || ""} /> */}
       </body>
     </html>
   );
