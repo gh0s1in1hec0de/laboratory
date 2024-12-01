@@ -4,9 +4,14 @@ export
 POSTGRES_DB ?= default_db
 POSTGRES_USER ?= default_user
 POSTGRES_PASSWORD ?= default_password
-POSTGRES_HOST ?= localhost
 DOCKER_NETWORK = starlink
 PWD=$(shell pwd)
+POSTGRES_DATA_DIR := $(shell realpath ../postgres-data)
+
+show-envs:
+	echo POSTGRES_DB=$(POSTGRES_DB)
+	echo POSTGRES_USER=$(POSTGRES_USER)
+	echo POSTGRES_PASSWORD=$(POSTGRES_PASSWORD)
 
 # Build commands
 build-postgres:
@@ -24,14 +29,15 @@ build-dispenser:
 build-oracle:
 	docker build -t oracle -f oracle.Dockerfile .
 
+# Don't rename this container!
 run-database:
 	docker run -d \
-		--name st-database \
+		--name db \
 		--network $(DOCKER_NETWORK) \
-		-e POSTGRES_DB=$(DB_NAME) \
-		-e POSTGRES_USER=$(DB_USER) \
-		-e POSTGRES_PASSWORD=$(DB_PASSWORD) \
-		-v ../postgres-data:/var/lib/postgresql/data \
+		-e POSTGRES_DB=$(POSTGRES_DB) \
+		-e POSTGRES_USER=$(POSTGRES_USER) \
+		-e POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) \
+		-v $(POSTGRES_DATA_DIR)/postgres-data:/var/lib/postgresql/data \
 		-p 5432:5432 \
 		postgres-cron:latest
 
@@ -80,9 +86,6 @@ run-ipfs:
 		-p 8080:8080 \
 		-p 5010:5001 \
 		ipfs/kubo:latest
-
-docker run -d --name ipfs_node    -v /opt/ipfs/export:/export    -v /opt/ipfs/data:/data/ipfs    -p 4001:4001    -p 4001:4001/udp    -p 0.0.0.0:8080:8080    -p 0.0.0.0:5010:5010    ipfs/kubo:latest
-
 
 # Combined build commands
 build-all: build-postgres build-manager build-frontend build-dispenser build-oracle
