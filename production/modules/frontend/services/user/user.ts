@@ -39,7 +39,6 @@ async function getTasks(staged: boolean, address?: string): Promise<Task[]> {
     const response = await managerService.get<Task[]>(USER_ROUTES.GetTasks, {
       params: {
         ...(address ? { address: Address.parse(address).toRawString() } : {}),
-        // address: Address.parse(localStorageWrapper.get(CALLER_ADDRESS)).toRawString(),
         staged,
       },
     });
