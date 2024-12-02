@@ -34,11 +34,12 @@ async function getTicketBalance(): Promise<number> {
   }
 }
 
-async function getTasks(staged: boolean): Promise<Task[]> {
+async function getTasks(staged: boolean, address?: string): Promise<Task[]> {
   try {
     const response = await managerService.get<Task[]>(USER_ROUTES.GetTasks, {
       params: {
-        address: Address.parse(localStorageWrapper.get(CALLER_ADDRESS)).toRawString(),
+        ...(address ? { address: Address.parse(address).toRawString() } : {}),
+        // address: Address.parse(localStorageWrapper.get(CALLER_ADDRESS)).toRawString(),
         staged,
       },
     });
