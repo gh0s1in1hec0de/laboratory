@@ -18,7 +18,7 @@ export function useTasks({ selectedTab }: UseTasksProps) {
     setError("");
     setIsLoading(true);
     try {
-      const tasks = await userService.getTasks(selectedTab === TasksTabsValues.STAGED);
+      const tasks = await userService.getTasks(selectedTab === TasksTabsValues.STAGED, localStorageWrapper.get(CALLER_ADDRESS));
       setTasks(tasks);
     } catch (error) {
       setError("Error fetching tasks");
