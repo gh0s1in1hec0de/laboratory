@@ -2,7 +2,8 @@ import {
     TESTNET_FACTORY_ADDR, BURN_ADDR, DEFAULT_TIMEOUT, Network, delay,
     SUBWALLET_ID, type RawAddressString, type Coins, type DexData,
 } from "starton-periphery";
-import { balancedTonClient } from "../client.ts";
+import { JettonWalletMessageBuilder } from "../messageBuilder";
+import { balancedTonClient } from "../client";
 import { chiefWalletData } from "../highload";
 import { currentNetwork } from "../../config";
 import { Address, SendMode } from "@ton/ton";
@@ -10,7 +11,6 @@ import { logger } from "../../logger";
 import { toNano } from "@ton/core";
 import * as db from "../../db";
 import {
-    JettonWalletMessageBuilder,
     NativeVaultMessageBuilder,
     FactoryMessageBuilder,
 } from "./mesageBuilder";
@@ -25,7 +25,9 @@ import {
 } from "@dedust/sdk";
 
 // Highest pressure point on the api - 3 requests queue
-export async function createPoolForJetton(
+//
+// Creates dedust pool and all the necessary periphery for TON/Jetton pair.
+export async function createDedustPoolForJetton(
     jetton: { ourWalletAddress: RawAddressString, masterAddress: RawAddressString },
     targetBalances: [Coins, Coins],
     launchAddress: RawAddressString
@@ -170,7 +172,6 @@ export async function createPoolForJetton(
                         if (!newDexData.jettonVaultAddress) newDexData.jettonVaultAddress = jettonVaultContract.address.toRawString();
                         if (!newDexData.poolAddress) newDexData.poolAddress = poolContract.address.toRawString();
                     } else {
-                        logger().warn("triggered unreachable, mua!");
                         newDexData = {
                             jettonVaultAddress: jettonVaultContract.address.toRawString(),
                             poolAddress: poolContract.address.toRawString(),

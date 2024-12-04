@@ -1,6 +1,6 @@
 import { internal as internal_relaxed, beginCell, toNano, type MessageRelaxed, Cell } from "@ton/core";
 import { Asset, Factory, MAINNET_FACTORY_ADDR, type PoolType, VaultNative } from "@dedust/sdk";
-import { type Coins, JettonOps, Network, TESTNET_FACTORY_ADDR } from "starton-periphery";
+import { type Coins, Network, TESTNET_FACTORY_ADDR } from "starton-periphery";
 import { currentNetwork } from "../../config";
 import type { Address } from "@ton/ton";
 
@@ -72,36 +72,6 @@ export abstract class NativeVaultMessageBuilder {
                 .storeMaybeRef(rejectPayload)
                 .endCell(),
             value: amount + toNano("0.3"),
-        });
-    }
-}
-
-export abstract class JettonWalletMessageBuilder {
-    static transferMessage(
-        ourJettonWalletAddress: Address,
-        value: Coins,
-        params: {
-            to: Address,
-            jettonAmount: bigint,
-            responseAddress: Address | null,
-            queryId?: number | bigint,
-            customPayload?: Cell,
-            forwardTonAmount?: bigint,
-            forwardPayload?: Cell | null,
-        }
-    ) {
-        const { to, jettonAmount, responseAddress, queryId, customPayload, forwardTonAmount, forwardPayload } = params;
-        return internal_relaxed({
-            to: ourJettonWalletAddress,
-            body: beginCell().storeUint(JettonOps.Transfer, 32).storeUint(queryId ?? 0, 64)
-                .storeCoins(jettonAmount)
-                .storeAddress(to)
-                .storeAddress(responseAddress)
-                .storeMaybeRef(customPayload)
-                .storeCoins(forwardTonAmount ?? 0)
-                .storeMaybeRef(forwardPayload)
-                .endCell(),
-            value,
         });
     }
 }

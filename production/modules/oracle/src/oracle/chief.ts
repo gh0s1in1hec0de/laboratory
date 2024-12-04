@@ -1,5 +1,5 @@
 import { Address, fromNano, internal as internal_relaxed, type OutActionSendMsg, SendMode } from "@ton/ton";
-import { createPoolForJetton } from "./dedust";
+import { createDedustPoolForJetton } from "./dedust";
 import { beginCell, toNano } from "@ton/core";
 import { balancedTonClient } from "./client";
 import { chief, getConfig } from "../config";
@@ -150,7 +150,7 @@ async function createPoolsForNewJettons() {
             }),
         });
         poolCreationProcesses.push(
-            createPoolForJetton(
+            createDedustPoolForJetton(
                 {
                     ourWalletAddress: deployedJetton.ourWalletAddress,
                     masterAddress: deployedJetton.masterAddress,
