@@ -36,7 +36,7 @@ export function RedirectButtons() {
         >
           <CustomButton
             background="gray"
-            padding="10px"
+            padding="10px 0"
             fullWidth
             onClick={() => handleRedirect(PAGES.Top)}
           >
@@ -62,7 +62,7 @@ export function RedirectButtons() {
         >
           <CustomButton
             background="gray"
-            padding="10px"
+            padding="10px 0"
             fullWidth
             onClick={() => handleRedirect(PAGES.Rewards)}
           >

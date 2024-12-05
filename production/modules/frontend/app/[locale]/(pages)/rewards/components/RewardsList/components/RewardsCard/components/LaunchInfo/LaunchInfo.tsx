@@ -9,8 +9,8 @@ import { formatNumber, toCorrectAmount } from "@/utils";
 
 export function LaunchInfo(balance: ExtendedUserBalance) {
   const t = useTranslations("Rewards");
-  const totalTons = Number(fromNano(654324312312321)) + Number(fromNano(34213125423434132));
-  console.log(totalTons);
+  // const totalTons = Number(fromNano(5255500000000000)) + Number(fromNano(555550000000000));
+  const totalTons = Number(fromNano(balance.publicTons)) + Number(fromNano(balance.whitelistTons));
   const locale = useLocale();
 
   return(

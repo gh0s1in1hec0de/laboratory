@@ -15,6 +15,7 @@ import styles from "./RewardsCard.module.scss";
 import { RewardsCardProps } from "./types";
 import { LoadingWrapper } from "@/common/LoadingWrapper";
 import Skeleton from "@mui/material/Skeleton";
+import { formatTime } from "@/utils";
 
 export function RewardsCard({
   extendedBalance,
@@ -77,33 +78,63 @@ export function RewardsCard({
           <div style={{ width: "100%", height: "1px", backgroundColor: "var(--black-regular)" }} />
         </Grid>
 
-        <Grid
-          container
-          width="100%"
-          justifyContent="space-between"
-        >
-          <Grid container gap={0.5} alignItems="center">
-            <Label
-              label={t("stage")}
-              variantSize="regular14"
-              variantColor="gray"
-            />
+        {extendedBalance.isSuccessful ? (
+          (() => {
+            const { days, hours, minutes } = formatTime(extendedBalance.timings.endTime);
+            return (
+              <Grid
+                container
+                width="100%"
+                justifyContent="space-between"
+              >
+                <Grid container gap={0.5} alignItems="center">
+                  <Label
+                    label={t("claimUntil")}
+                    variantSize="regular14"
+                    variantColor="gray"
+                  />
+                </Grid>
+        
+                <Grid container>
+                  <Label
+                    label={`${days}d. ${hours}h. ${minutes}m.`}
+                    variantSize="regular14"
+                  />
+                </Grid>
+              </Grid>
+            );
+          })()
+        ) : (
+          <Grid
+            container
+            width="100%"
+            justifyContent="space-between"
+          >
+            <Grid container gap={0.5} alignItems="center">
+              <Label
+                label={t("stage")}
+                variantSize="regular14"
+                variantColor="gray"
+              />
 
-            {renderPhase()}
-          </Grid>
+              {renderPhase()}
+            </Grid>
 
-          <Grid container gap={0.5}>
-            <Label
-              label={t("remainingTime")}
-              variantSize="regular14"
-              variantColor="gray"
-            />
-            <Label
-              label={`${days}d. ${hours}h. ${minutes}m.`}
-              variantSize="regular14"
-            />
+            <Grid container gap={0.5}>
+              <Label
+                label={t("remainingTime")}
+                variantSize="regular14"
+                variantColor="gray"
+              />
+              <Label
+                label={`${days}d. ${hours}h. ${minutes}m.`}
+                variantSize="regular14"
+              />
+            </Grid>
           </Grid>
-        </Grid>
+        )}
+
+
 
         <Grid container size={12} paddingTop={0.5}>
           <div style={{ width: "100%", height: "1px", backgroundColor: "var(--black-regular)" }} />

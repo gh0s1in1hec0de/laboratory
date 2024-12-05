@@ -1,9 +1,11 @@
 import { CALLER_ADDRESS, REFERRAL } from "@/constants";
+import { useToggle } from "@/hooks";
 import { userService } from "@/services";
 import { getErrorText, localStorageWrapper } from "@/utils";
 import { initInitData, retrieveLaunchParams, useLaunchParams } from "@telegram-apps/sdk-react";
 import { Address } from "@ton/core";
 import { useIsConnectionRestored, useTonConnectUI } from "@tonconnect/ui-react";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
@@ -14,6 +16,9 @@ export function useConnectButton() {
   const [isPending, startTransition] = useTransition();
   const [tonWalletAddress, setTonWalletAddress] = useState<string | null>(localStorageWrapper.get(CALLER_ADDRESS));
   const [error, setError] = useState<string | null>(null);
+  const [openToast, toggleOpenToast] = useToggle();
+  const [toastText, setToastText] = useState("");
+  const t = useTranslations();
 
   async function handleConnectWallet(address: string) {
     localStorageWrapper.set(CALLER_ADDRESS, address);
@@ -97,7 +102,7 @@ export function useConnectButton() {
           await handleDisconnectWallet();
         }
       } catch (error) {
-        setError(getErrorText(error, "Quests.header.error"));
+        setError(getErrorText(error, "Tasks.header.error"));
       }
     })();
 
@@ -109,7 +114,7 @@ export function useConnectButton() {
           await handleDisconnectWallet();
         }
       } catch (error) {
-        setError(getErrorText(error, "Quests.header.error"));
+        setError(getErrorText(error, "Tasks.header.error"));
       }
     });
 
@@ -145,6 +150,8 @@ export function useConnectButton() {
 
   function handleCopyAddress(address: string) {
     navigator.clipboard.writeText(Address.parse(address).toRawString());
+    setToastText(t("Tasks.header.successCopyAddress"));
+    toggleOpenToast();
   }
 
   function handleCopyReferral(address: string) {
@@ -153,6 +160,9 @@ export function useConnectButton() {
       navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_FRONTEND_MINIAPP_URL}?startapp=${Address.parse(address).toString()}`);
     } catch (error) {
       navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_FRONTEND_BROWSER_URL}/?referral=${Address.parse(address).toRawString()}`);
+    } finally {
+      setToastText(t("Tasks.header.successCopyReferral"));
+      toggleOpenToast();
     }
   }
 
@@ -165,6 +175,9 @@ export function useConnectButton() {
     formatAddress,
     error,
     handleCopyAddress,
-    handleCopyReferral
+    handleCopyReferral,
+    openToast,
+    toggleOpenToast,
+    toastText
   };
 }

@@ -26,8 +26,6 @@ import {
 
 export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
   const t = useTranslations("Rewards");
-  const { phase, nextPhaseIn } = getCurrentSalePhase(extendedBalance.timings);
-  const { days, hours, minutes } = formatTime(nextPhaseIn || 0);
   const [errorText, setErrorText] = useState<string>("");
   const [tonConnectUI] = useTonConnectUI();
   const [isPending, startTransition] = useTransition();
@@ -36,6 +34,9 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
   const [configData, setConfigData] = useState<GetConfigResponse & MoneyFlows | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [displayValue, setDisplayValue] = useState<bigint | null>(null);
+
+  const { phase, nextPhaseIn } = getCurrentSalePhase(extendedBalance.timings);
+  const { days, hours, minutes } = formatTime(nextPhaseIn || 0);
 
   useEffect(() => {
     (async () => {
@@ -62,7 +63,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
         } = (await getContractData(
           "All",
           tonClient,
-          // Address.parse("0:91b0b2deb5276bc2030315d3c650b0366138bc9ea8e1b10f1eade54271369b67")
+          // Address.parse("0:0df3f01225907c46539c02c2fe9405b0816ec5c244a5119e37ed3c2ce00042b9")
           Address.parse(extendedBalance.tokenLaunch),
         )) as GetConfigResponse & MoneyFlows;
 

@@ -1,17 +1,18 @@
 "use client";
 
 import { CustomButton } from "@/common/CustomButton";
+import { CustomDropdown } from "@/common/CustomDropdown";
+import { CustomToast } from "@/common/CustomToast";
 import { Label } from "@/common/Label";
+import { LoadingWrapper } from "@/common/LoadingWrapper";
+import { useTranslations } from "next-intl";
+import { ConnectButtonSkeleton } from "./components/ConnectButtonSkeleton";
+import { DropdownButton } from "./components/DropdownButton";
 import { useConnectButton } from "./hooks/useConnectButton";
 import { CustomConnectButtonProps } from "./types";
-import { LoadingWrapper } from "@/common/LoadingWrapper";
-import { ConnectButtonSkeleton } from "./components/ConnectButtonSkeleton";
-import { useTranslations } from "next-intl";
-import { CustomDropdown } from "@/common/CustomDropdown";
-import { DropdownButton } from "./components/DropdownButton";
 
-export function CustomConnectButton({ 
-  successChildren, 
+export function CustomConnectButton({
+  successChildren,
   fullWidth,
   showDropdown = true,
 }: CustomConnectButtonProps) {
@@ -24,27 +25,30 @@ export function CustomConnectButton({
     connectionRestored,
     error,
     handleCopyAddress,
-    handleCopyReferral
+    handleCopyReferral,
+    openToast,
+    toggleOpenToast,
+    toastText
   } = useConnectButton();
   const t = useTranslations("Tasks.header");
 
   if (error) {
     return <Label label={error} variantSize="medium14" variantColor="red" />;
   }
-    
+
   return (
-    <LoadingWrapper 
+    <LoadingWrapper
       isLoading={isPending || !connectionRestored}
       skeleton={<ConnectButtonSkeleton fullWidth={fullWidth} />}
     >
       {tonWalletAddress ? (
         <>
           {showDropdown && (
-            <CustomDropdown 
+            <CustomDropdown
               fullWidth={fullWidth}
               Button={
-                <DropdownButton 
-                  smallAddress={formatAddress(tonWalletAddress)} 
+                <DropdownButton
+                  smallAddress={formatAddress(tonWalletAddress)}
                   fullWidth={fullWidth}
                 />
               }
@@ -64,7 +68,14 @@ export function CustomConnectButton({
               ]}
             />
           )}
-          
+
+          <CustomToast
+            open={openToast}
+            toggleOpen={toggleOpenToast}
+            text={toastText}
+            severity="success"
+          />
+
           {successChildren || null}
         </>
       ) : (

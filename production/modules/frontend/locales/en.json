@@ -149,6 +149,8 @@
 	},
 	"Tasks": {
 		"header": {
+			"successCopyAddress": "Address copied!",
+			"successCopyReferral": "Referral copied!",
 			"subtitle": "season",
 			"tooltip": "What is it",
 			"closeButton": "Got it!",
@@ -516,6 +518,7 @@
 		"jettonsToClaimTitle": "Jettons to claim",
 		"stage": "Stage:",
 		"remainingTime": "remaining",
+		"claimUntil": "Claim until:",
 		"contributeMore": "Contribute more",
 		"claim": "Claim",
 		"claimAll": "Claim all",
