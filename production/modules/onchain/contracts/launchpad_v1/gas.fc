@@ -21,9 +21,9 @@ const TWO_MONTHS = 60 * ONE_DAY;
 
 ;; Minimal fees
 ;; https://github.com/ton-blockchain/stablecoin-contract/blob/62f661d79012a259c0110dce611dafc31359be78/contracts/gas.fc#L14 (Actuallly 28627415, but rounded)
-const JETTON_MIN_TRANSFER_FEE = 70000000;
+const JETTON_MIN_TRANSFER_FEE = 50000000;
 ;; https://docs.ton.org/develop/smart-contracts/fees#fees-for-sending-ton
-const SIMPLE_TRANSFER_FEE = 6000000;
+const SIMPLE_TRANSFER_FEE =      6000000;
 
 ;; So I decided to round it just because I tired to change it evey time
 const CORE_STATE_BITS  = 50000;
@@ -43,6 +43,11 @@ const WITHDRAW_CONFIRMATION_MSG_BITS = 739;
 const WITHDRAW_CONFIRMATION_MSG_CELLS = 1; ;; ref body
 const BALANCE_UPDATE_BITS = 348;
 const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
+
+;; Fees
+const PURCHASE_FEE_PERCENT = 1;
+const REFUND_FEE_PERCENT = 3;
+const REFERRAL_PAYMENT_PERCENT = 5;
 
 ;; Gas
 ;; Gas constants are calculated in the main test suite.
@@ -91,48 +96,49 @@ int get_balance_update_gas_cost() inline_ref {
     + calculate_user_vault_min_storage_fee(TWO_MONTHS);
 }
 
-const ONCHAIN_FEE = 2;
 ;;; Returns purified value and operational needs
-(int, int) validate_value(int total, int fee) impure inline_ref {
+(int, int) validate_value(int total, int fee, int percent) impure inline_ref {
     throw_if(error::not_enough_gas, fee > total);
     int extra = total - fee;
-    int purified = muldiv(extra, 100 - ONCHAIN_FEE, 100);
+    int purified = muldiv(extra, 100 - percent, 100);
     throw_unless(error::balance_lack, purified > 0);
     return (purified, extra - purified);
 }
 
 ;; As we don't have any external calls, we accounting only code execution fees
-const CREATOR_BUYOUT_GAS_CONSUMPTION = 13938;
+const CREATOR_BUYOUT_GAS_CONSUMPTION = 14018;
 (int, int) check_amount_is_enough_for_creator_buyout(int msg_value) impure inline {
-    return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_BUYOUT_GAS_CONSUMPTION));
+    return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_BUYOUT_GAS_CONSUMPTION), PURCHASE_FEE_PERCENT);
 }
 
-const CREATOR_REFUND_GAS_CONSUMPTION = 15135;
+const CREATOR_REFUND_GAS_CONSUMPTION = 15215;
 (int, int) check_amount_is_enough_for_creator_refund(int msg_value) impure inline {
-    return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_REFUND_GAS_CONSUMPTION));
+    return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_REFUND_GAS_CONSUMPTION), REFUND_FEE_PERCENT);
 }
 
 ;; === Whitelist Purchase ===
-const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 20778;
+const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 21416;
 (int, int) check_amount_is_enough_for_wl_purchase(int msg_value) impure inline {
     return validate_value(
         msg_value,
-        get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION) + get_balance_update_gas_cost()
+        get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION) + get_balance_update_gas_cost(),
+        PURCHASE_FEE_PERCENT
     );
 }
 
 ;; === Public Purchase ===
-const PUB_PURCHASE_GAS_CONSUMPTION = 21402;
+const PUB_PURCHASE_GAS_CONSUMPTION = 21961;
 (int, int) check_amount_is_enough_for_public_purchase(int msg_value) impure inline {
     return validate_value(
         msg_value,
-        get_compute_fee(MY_WORKCHAIN, PUB_PURCHASE_GAS_CONSUMPTION) + get_balance_update_gas_cost()
+        get_compute_fee(MY_WORKCHAIN, PUB_PURCHASE_GAS_CONSUMPTION) + get_balance_update_gas_cost(),
+        PURCHASE_FEE_PERCENT
     );
 }
 
 ;; === Refund ===
 const REFUND_REQUEST_GAS_CONSUMPTION = 14356;
-const REFUND_CONFIRMATION_GAS_CONSUMPTION = 19305;
+const REFUND_CONFIRMATION_GAS_CONSUMPTION = 19541;
 () check_amount_is_enough_for_refund(int msg_value) impure inline {
     int required_gas =
     get_compute_fee(MY_WORKCHAIN, REFUND_REQUEST_GAS_CONSUMPTION)
@@ -147,7 +153,7 @@ const REFUND_CONFIRMATION_GAS_CONSUMPTION = 19305;
 const DEPLOY_JETTON_REQUEST_GAS_CONSUMPTION = 18000;
 const MINT_MSG_BITS = 1366;
 const MINT_MSG_CELLS = 3;
-const MINT_REQUEST_GAS_CONSUMPTION = 9000;
+const MINT_REQUEST_GAS_CONSUMPTION = 10000;
 const JETTONS_ENROLLMENT_ACCEPTANCE_GAS_CONSUMPTION = 20000;
 const JETTON_TRANSFER_TO_CHIEF_FORWARD_PAYLOAD_BITS = 248; ;; See token_launch/jetton_operating.fc
 const JETTON_TRANSFER_TO_CHIEF_FORWARD_PAYLOAD_CELLS = 1;
@@ -196,7 +202,7 @@ int get_claim_gas_cost() inline {
     + calculate_user_vault_min_storage_fee(TWO_MONTHS);
 }
 const CLAIM_REQUEST_GAS_CONSUMPTION = 15000;
-const CLAIM_CONFIRMATION_GAS_CONSUMPTION = 20000;
+const CLAIM_CONFIRMATION_GAS_CONSUMPTION = 21000;
 int check_amount_is_enough_for_jetton_claim(int msg_value) impure inline {
     int required_gas =
     get_compute_fee(MY_WORKCHAIN, CLAIM_REQUEST_GAS_CONSUMPTION)

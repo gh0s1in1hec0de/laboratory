@@ -8,19 +8,23 @@ import { DEX, pTON } from "@ston-fi/sdk";
 import { logger } from "../../logger";
 import * as db from "../../db";
 
+const STONFI_ROUTER_V2_1_ADDRESS = "kQALh-JBBIKK7gr0o4AVf9JZnEsFndqO0qTCyT-D-yBsWk0v";
+const STONFI_PTON_V2_1_ADDRESS = "kQACS30DNoUQ7NfApPvzh7eBmSZ9L4ygJ-lkNWtba8TQT-Px";
+
 export async function createStonfiPoolForJetton(
     jetton: { ourWalletAddress: RawAddressString, masterAddress: RawAddressString },
     targetBalances: [Coins, Coins],
     launchAddress: RawAddressString
 ) {
     try {
-        const router = await balancedTonClient.execute(c => c.open(new DEX.v1.Router()));
+        const router = await balancedTonClient.execute(c => c.open(DEX.v2_1.Router.create(STONFI_ROUTER_V2_1_ADDRESS)));
         const { keyPair, wallet, queryIdManager } = await chiefWalletData();
         const [depositLiquidityQID, lpBurnQID] = await Promise.all(
             [...Array(2).keys()].map(async () => await queryIdManager.getNextCached())
         );
         const dexData = (await db.getTokenLaunch(launchAddress))?.dexData;
-        const pTon = new pTON.v1();
+        const pTon = pTON.v2_1.create(STONFI_PTON_V2_1_ADDRESS);
+
         const pool = await balancedTonClient.execute(() => router.getPool(
             { token0: jetton.masterAddress, token1: pTon.address, }
         ));
@@ -119,7 +123,8 @@ export async function createStonfiPoolForJetton(
 
         const lpBurn = await balancedTonClient.execute(
             () => poolContract.getBurnTxParams(
-                { amount: lpTokenWalletData.balance, responseAddress: wallet.address }
+                // TODO Check twice
+                { amount: lpTokenWalletData.balance, userWalletAddress: wallet.address }
             )
         );
         await balancedTonClient.execute(() =>

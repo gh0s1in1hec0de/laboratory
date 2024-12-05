@@ -15,6 +15,8 @@ import {
     Coins
 } from "./standards";
 
+// TODO Add referrals
+
 /*
 * - Create launch
 * - Creator buyout

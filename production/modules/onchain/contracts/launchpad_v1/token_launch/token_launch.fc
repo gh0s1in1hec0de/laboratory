@@ -34,8 +34,6 @@
             return ();
         }
         handle_refund_confirmation(
-            query_id,
-            attached_value,
             sender_address,
             in_msg_body~load_coins(),
             in_msg_body~load_coins(),
@@ -51,7 +49,7 @@
     if (in_msg_body.slice_empty?() | in_msg_body.slice_bits() < 32) {
         return ();
     }
-    (int msg_flags, slice sender_address, int attached_value, int fwd_fee_from_in_msg) = extract_full_msg_data(in_msg_full);
+    (int msg_flags, slice sender_address, int attached_value, _) = extract_full_msg_data(in_msg_full);
     (int op, int query_id) = in_msg_body~load_op_and_query_id();
 
     load_data();
@@ -96,13 +94,13 @@
     }
     if (op == op::tl::wl_purchase) {
         raw_reserve(attached_value, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
-        handle_wl_purchase(query_id, attached_value, sender_address);
+        handle_wl_purchase(query_id, attached_value, in_msg_body~load_msg_addr(), sender_address);
         save_data();
         return ();
     }
     if (op == op::tl::public_purchase) {
         raw_reserve(attached_value, RESERVE_ALL_BUT_AMOUNT | RESERVE_BOUNCE_ON_ACTION_FAIL);
-        handle_public_purchase(query_id, attached_value, sender_address);
+        handle_public_purchase(query_id, attached_value, in_msg_body~load_msg_addr(), sender_address);
         save_data();
         return ();
     }
@@ -119,8 +117,6 @@
     }
     if (op == op::tl::refund_confirmation) {
         handle_refund_confirmation(
-            query_id,
-            attached_value,
             sender_address,
             in_msg_body~load_coins(),
             in_msg_body~load_coins(),

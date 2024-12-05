@@ -8,12 +8,14 @@ import { fees } from "../fees";
 // 10k TON
 export const MAX_WL_ROUND_TON_LIMIT = 10000n * toNano("1");
 export const PERCENTAGE_DENOMINATOR = 100000n;
-export const ONCHAIN_FEE = 2n;
+export const PURCHASE_FEE_PERCENT = 1n;
+export const REFUND_FEE_PERCENT = 3n;
+export const REFERRAL_PAYMENT_PERCENT = 5n;
 
-export function validateValueMock(total: Coins, fee: Coins): { purified: Coins, opn: Coins } {
+export function validateValueMock(total: Coins, fee: Coins, percent: bigint): { purified: Coins, opn: Coins } {
     assert(fee < total, "not enough gas");
     const extra = total - fee;
-    const purified = extra * (100n - ONCHAIN_FEE) / 100n;
+    const purified = extra * (100n - percent) / 100n;
     assert(purified > 0, "balance lack");
     return { purified, opn: extra - purified };
 }
@@ -35,7 +37,7 @@ export function getCreatorJettonPrice({ wlRoundFutJetLimit, wlRoundTonLimit }: W
 
 // Call get config to get the last two values`get_config`
 export function getCreatorAmountOut(version: GlobalVersions, value: Coins, WlPhaseLimits: WlPhaseLimits, expectedFee?: Coins): Coins {
-    const { purified } = validateValueMock(value, expectedFee ?? fees[version].creatorBuyout);
+    const { purified } = validateValueMock(value, expectedFee ?? fees[version].creatorBuyout, PURCHASE_FEE_PERCENT);
     const creatorJettonPrice = getCreatorJettonPrice(WlPhaseLimits);
     return purified * creatorJettonPrice / MAX_WL_ROUND_TON_LIMIT;
 }
@@ -47,10 +49,12 @@ export function getCreatorValueLimit({ creatorFutJetLeft, creatorFutJetPriceReve
     return creatorFutJetLeft * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
 }
 
-export function getExpectedWlValueShare(value: Coins, expectedFee: Coins): Coins {
-    return validateValueMock(value, expectedFee).purified;
+export function getExpectedWlValueShare(value: Coins, expectedFee: Coins, withReferral: boolean = false): Coins {
+    return validateValueMock(value, expectedFee, PURCHASE_FEE_PERCENT).purified
+        * (withReferral ? (100n - REFERRAL_PAYMENT_PERCENT) : 100n) / 100n;
 }
 
+// Include referral accounting
 export function getApproximateWlAmountOut(
     { wlRoundFutJetLimit, wlRoundTonLimit }: WlPhaseLimits,
     version: GlobalVersions,
@@ -75,10 +79,11 @@ export function getPublicAmountOut(
     reserves: SyntheticReserves,
     version: GlobalVersions,
     value: Coins = toNano("10"),
+    withReferral: boolean = false,
 ): Coins {
-    const { purified } = validateValueMock(value, fees[version].pubPurchase);
+    const { purified } = validateValueMock(value, fees[version].pubPurchase, PURCHASE_FEE_PERCENT);
     return getAmountOutMock(
-        purified,
+        !withReferral ? purified : purified * (100n - REFERRAL_PAYMENT_PERCENT) / 100n,
         reserves.syntheticTonReserve,
         reserves.syntheticJetReserve
     );

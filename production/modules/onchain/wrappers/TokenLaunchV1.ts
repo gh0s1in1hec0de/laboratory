@@ -35,21 +35,6 @@ export class TokenLaunchV1 implements Contract {
         return new TokenLaunchV1(contractAddress(workchain, init), init);
     }
 
-    /*
-    cell msg_body = begin_cell()
-        .store_op(op::tl::init)
-        .store_query_id(query_id)
-        .store_slice(token_launch_fut_jet_wallet_address)
-        .store_slice(fut_jet_master_address)
-        .end_cell();
-    cell msg = begin_cell()
-        .store_msg_flags_and_address_none(BOUNCEABLE)
-        .store_slice(token_launch_address)
-        .store_coins(msg_value)
-        .store_statinit_ref_and_body_ref(token_launch_stateinit, msg_body)
-        .end_cell();
-    */
-
     async sendInit(
         provider: ContractProvider,
         sendMessageParams: SendMessageParams,
@@ -93,24 +78,34 @@ export class TokenLaunchV1 implements Contract {
         });
     }
 
-    async sendWhitelistPurchase(provider: ContractProvider, sendMessageParams: SendMessageParams) {
+    async sendWhitelistPurchase(
+        provider: ContractProvider,
+        sendMessageParams: SendMessageParams,
+        maybeReferral: Address | null = null
+    ) {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
             .storeUint(TokensLaunchOps.WhitelistPurchase, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
+            .storeAddress(maybeReferral)
             .endCell();
         await provider.internal(via, {
             value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
         });
     }
 
-    async sendPublicPurchase(provider: ContractProvider, sendMessageParams: SendMessageParams) {
+    async sendPublicPurchase(
+        provider: ContractProvider,
+        sendMessageParams: SendMessageParams,
+        maybeReferral: Address | null = null
+    ) {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
             .storeUint(TokensLaunchOps.PublicPurchase, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
+            .storeAddress(maybeReferral)
             .endCell();
         await provider.internal(via, {
             value, sendMode: SendMode.PAY_GAS_SEPARATELY, body

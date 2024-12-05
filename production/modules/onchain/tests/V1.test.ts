@@ -4,10 +4,26 @@ import {
     FullFees, GasPrices, computeFwdFeesVerbose, getMsgPrices, computeStorageFee,
 } from "./utils";
 import {
-    BASECHAIN, getPublicAmountOut, getApproximateClaimAmount, packLaunchConfigV1ToCell,
-    PERCENTAGE_DENOMINATOR, getCreatorAmountOut, UserVaultOps, CoreOps, GlobalVersions,
-    MAX_WL_ROUND_TON_LIMIT, BalanceUpdateMode, LaunchConfigV1, getQueryId, toPct,
-    JETTON_MIN_TRANSFER_FEE, TokensLaunchOps, jettonFromNano, validateValueMock,
+    BASECHAIN,
+    getPublicAmountOut,
+    getApproximateClaimAmount,
+    packLaunchConfigV1ToCell,
+    PERCENTAGE_DENOMINATOR,
+    getCreatorAmountOut,
+    UserVaultOps,
+    CoreOps,
+    GlobalVersions,
+    MAX_WL_ROUND_TON_LIMIT,
+    BalanceUpdateMode,
+    LaunchConfigV1,
+    getQueryId,
+    toPct,
+    JETTON_MIN_TRANSFER_FEE,
+    TokensLaunchOps,
+    jettonFromNano,
+    validateValueMock,
+    REFUND_FEE_PERCENT,
+    PURCHASE_FEE_PERCENT, REFERRAL_PAYMENT_PERCENT,
 } from "starton-periphery";
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
@@ -461,7 +477,7 @@ describe("V1", () => {
 
             const value = toNano("30");
             const gasPrices = getGasPrices(blockchain.config, BASECHAIN);
-            const expectedFee = computeGasFee(gasPrices, 13938n); // Computed by printTxGasStats later
+            const _precomputedExpectedFee = computeGasFee(gasPrices, 14018n); // Computed by printTxGasStats later
 
             const buyoutTransactionResult = await sampleTokenLaunch.sendCreatorBuyout({
                 via: creator.getSender(), value, queryId: 0n
@@ -473,7 +489,7 @@ describe("V1", () => {
                 op: TokensLaunchOps.CreatorBuyout,
                 success: true,
             });
-            printTxGasStats("Creator buyout transaction:", buyoutTx);
+            const expectedFee = printTxGasStats("Creator buyout transaction:", buyoutTx);
 
             const tokenLaunchConfigAfter = await sampleTokenLaunch.getConfig();
             const tokenLaunchState = await sampleTokenLaunch.getMoneyFlows();
@@ -489,7 +505,7 @@ describe("V1", () => {
                 console.warn(`actual difference: ${fromNano(actualBalanceDifference)} (${actualBalanceDifference}) | expected difference: ${fromNano(precomputedBalanceDifference)} (${precomputedBalanceDifference})`);
             }
 
-            const expectedCreatorBalance = getCreatorAmountOut(GlobalVersions.V2, value, {
+            const expectedCreatorBalance = getCreatorAmountOut(GlobalVersions.V1, value, {
                     wlRoundFutJetLimit: BigInt(launchConfig.jetWlLimitPct) * sampleLaunchParams.totalSupply / PERCENTAGE_DENOMINATOR,
                     wlRoundTonLimit: launchConfig.tonLimitForWlRound
                 },
@@ -559,7 +575,7 @@ describe("V1", () => {
                 success: true,
             });
             const contractBalanceAfter = tokenLaunchContractInstance.balance;
-            const { purified } = validateValueMock(creatorTonsCollected, 0n);
+            const { purified } = validateValueMock(creatorTonsCollected, 0n, REFUND_FEE_PERCENT);
             const balanceDiff = (contractBalanceBefore - contractBalanceAfter) - purified;
             if (balanceDiff > 0) {
                 console.warn(`Balance diff after creator's refund: onchain ${fromNano(contractBalanceBefore - contractBalanceAfter)}; offchain ${fromNano(purified)}`);
@@ -615,6 +631,71 @@ describe("V1", () => {
                 blockchain.now! += 10;
             }
         }, 20000);
+        test("wl purchase with referral works correctly", async () => {
+            const [launchContractInstance, saleMoneyFlowBefore, innerDataBefore] = await Promise.all([
+                blockchain.getContract(sampleTokenLaunch.address), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData()
+            ]);
+            const contractBalanceBefore = launchContractInstance.balance;
+            const consumerWithReferral = await blockchain.treasury("consumer_with_referral");
+            const consumerWithReferralVault = blockchain.openContract(
+                UserVaultV1.createFromState({
+                    owner: consumerWithReferral.address,
+                    tokenLaunch: sampleTokenLaunch.address
+                }, userVaultCode)
+            );
+            const referral = await blockchain.treasury("referral");
+
+            const totalPurchaseValue = toNano("10");
+            const wlPurchaseResult = await sampleTokenLaunch.sendWhitelistPurchase({
+                queryId: BigInt(getQueryId()),
+                value: totalPurchaseValue,
+                via: consumerWithReferral.getSender()
+            }, referral.address);
+            const wlPurchaseTx = findTransactionRequired(wlPurchaseResult.transactions, {
+                op: TokensLaunchOps.WhitelistPurchase,
+                success: true
+            });
+            const wlPurchaseRequestComputeFee = printTxGasStats("Whitelist purchase with referral request transaction: ", wlPurchaseTx);
+            expect(wlPurchaseResult.transactions).toHaveTransaction({
+                op: UserVaultOps.balanceUpdate,
+                to: consumerWithReferralVault.address,
+                success: true
+            });
+
+            const totalFee = wlPurchaseRequestComputeFee + balanceUpdateCost;
+            const { purified } = validateValueMock(totalPurchaseValue, totalFee, PURCHASE_FEE_PERCENT);
+            const purifiedWithoutReferralShare = purified * (100n - REFERRAL_PAYMENT_PERCENT) / 100n;
+
+            // Referral payment should be there
+            expect(wlPurchaseResult.transactions).toHaveTransaction({
+                op: 0x0,
+                to: referral.address,
+                success: true,
+                body: beginCell().storeUint(0, 32).storeStringTail("r").endCell(),
+                // 4 as we spent some money on fee due to sending mode
+                value: (v) => (v ?? 0n) > purified * (REFERRAL_PAYMENT_PERCENT - 1n) / 100n
+            });
+
+            console.log(`Precomputed wl buy with referral total fee is equal to ${totalFee} (${fromNano(totalFee)} TON)`);
+
+            const contractBalanceAfter = launchContractInstance.balance;
+            const [consumerWithReferralVaultDataAfter, saleMoneyFlowAfter, innerDataAfter] = await Promise.all([
+                consumerWithReferralVault.getVaultData(), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData()
+            ]);
+
+            // Here we can be sure, that all the tons we had accounted really exists on contract's balance
+            const totalTonsIncrease = saleMoneyFlowAfter.totalTonsCollected - saleMoneyFlowBefore.totalTonsCollected;
+            const totalDifferenceAccounted = totalTonsIncrease + (innerDataAfter.operationalNeeds - innerDataBefore.operationalNeeds);
+            const totalActualDifference = contractBalanceAfter - contractBalanceBefore;
+            const divergence = totalDifferenceAccounted - totalActualDifference;
+
+            if (divergence) console.warn(`\"dead\" tons (wl buy): ${fromNano(divergence)} (${divergence})`);
+            assert(purifiedWithoutReferralShare <= consumerWithReferralVaultDataAfter.wlTonBalance!, `${fromNano(purifiedWithoutReferralShare)} vs ${fromNano(consumerWithReferralVaultDataAfter.wlTonBalance!)}`);
+            assert(
+                totalTonsIncrease === consumerWithReferralVaultDataAfter.wlTonBalance!,
+                `${fromNano(totalTonsIncrease)} vs ${fromNano(consumerWithReferralVaultDataAfter.wlTonBalance!)}`
+            );
+        }, 20000);
         test("wl purchase works correctly", async () => {
             const [launchContractInstance, saleMoneyFlowBefore, innerDataBefore] = await Promise.all([
                 blockchain.getContract(sampleTokenLaunch.address), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData()
@@ -638,7 +719,7 @@ describe("V1", () => {
                 success: true
             });
             const totalFee = wlPurchaseRequestComputeFee + balanceUpdateCost;
-            const { purified } = validateValueMock(totalPurchaseValue, totalFee);
+            const { purified } = validateValueMock(totalPurchaseValue, totalFee, PURCHASE_FEE_PERCENT);
             console.log(`Precomputed wl buy total fee is equal to ${totalFee} (${fromNano(totalFee)} TON)`);
 
             const contractBalanceAfter = launchContractInstance.balance;
@@ -654,7 +735,10 @@ describe("V1", () => {
 
             if (divergence) console.warn(`\"dead\" tons (wl buy): ${fromNano(divergence)} (${divergence})`);
             assert(purified <= consumerVaultDataAfter.wlTonBalance!, `${purified} vs ${consumerVaultDataAfter.wlTonBalance}`);
-            assert(totalTonsIncrease === consumerVaultDataAfter.wlTonBalance!, "inconsistent state");
+            assert(
+                totalTonsIncrease === consumerVaultDataAfter.wlTonBalance!,
+                `${fromNano(totalTonsIncrease)} vs ${fromNano(consumerVaultDataAfter.wlTonBalance!)}`
+            );
         }, 20000);
         test("wl limit cutoff works the proper way", async () => {
             const oldTimings = await sampleTokenLaunch.getSaleTimings();
@@ -732,6 +816,7 @@ describe("V1", () => {
         test("public buys work the proper way", async () => {
             const secondPublicBuyer = await blockchain.treasury("public_buyer_2");
             const launchContractInstance = await blockchain.getContract(sampleTokenLaunch.address);
+            const referral = await blockchain.treasury("referral");
 
             const [firstPublicBuyerVault, secondPublicBuyerVault] = await Promise.all(
                 [consumer, secondPublicBuyer].map((buyer) => {
@@ -749,7 +834,7 @@ describe("V1", () => {
                 queryId: 1n,
                 value: totalPurchaseValue,
                 via: consumer.getSender()
-            });
+            }, referral.address);
             const [saleMoneyFlowAfterFirstPublicBuy, configAfter] = await Promise.all([sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getConfig()]);
             assert(
                 (configBefore.creatorFutJetLeft + configBefore.pubRoundFutJetLimit) === configAfter.pubRoundFutJetLimit,
@@ -772,6 +857,13 @@ describe("V1", () => {
             printTxGasStats("Balance update (public purchase) transaction: ", balanceUpdatePub);
             const publicBuyFee = publicBuyRequestComputeFees + balanceUpdateCost;
             console.log(`Precomputed public buy total fee is equal to ${publicBuyFee} (${fromNano(publicBuyFee)} TON)`);
+            expect(firstPublicPurchaseResult.transactions).toHaveTransaction({
+                op: 0x0,
+                to: referral.address,
+                success: true,
+                body: beginCell().storeUint(0, 32).storeStringTail("r").endCell(),
+                // 4 as we spent some money on fee due to sending mode
+            });
 
             // Balance changes validation
             const saleMoneyFlowBeforeSecondPurchase = await sampleTokenLaunch.getMoneyFlows();
@@ -799,7 +891,7 @@ describe("V1", () => {
             const [firstPublicBuyerVaultData, secondPublicBuyerVaultData] = await Promise.all(
                 [firstPublicBuyerVault, secondPublicBuyerVault].map((buyer) => buyer.getVaultData())
             );
-            const { purified } = validateValueMock(totalPurchaseValue, publicBuyFee);
+            const { purified } = validateValueMock(totalPurchaseValue, publicBuyFee, PURCHASE_FEE_PERCENT);
             const amountOut = getPublicAmountOut({
                     syntheticTonReserve: saleMoneyFlowAfterFirstPublicBuy.syntheticTonReserve,
                     syntheticJetReserve: saleMoneyFlowAfterFirstPublicBuy.syntheticJetReserve
@@ -874,7 +966,7 @@ describe("V1", () => {
             const [consumerVaultStateAfterWlRef, saleMoneyFlowAfterWlRef, tokenLaunchInnerDataAfterWlRef] = await Promise.all([
                 consumerVault.getVaultData(), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData()
             ]);
-            const { purified, opn } = validateValueMock(valueToWithdraw, 0n);
+            const { purified, opn } = validateValueMock(valueToWithdraw, 0n, REFUND_FEE_PERCENT);
 
             const refundGasConsumption = refundCost(
                 refundRequestComputeFee,
