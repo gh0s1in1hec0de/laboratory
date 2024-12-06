@@ -21,7 +21,7 @@
 
        TLDR: amount of "nano"jettons per one nanoton (multiplied by custom precision)
     -}
-    int creator_jet_price_reversed = muldiv(wl_jet_limit * 2, MAX_WL_ROUND_TON_LIMIT, launch_conf::ton_limit_for_wl_round);
+    int creator_jet_price_reversed = muldiv(wl_jet_limit * 2, MAX_WL_ROUND_TON_LIMIT, launch_conf::min_ton_for_sale_success);
 
     cell general_state = begin_cell()
         .store_int(start_time, 32)
@@ -46,7 +46,7 @@
     cell public_round_state = begin_cell()
         .store_coins(pub_jet_limit)
         .store_coins(0)
-        .store_coins(wl_jet_limit)
+        .store_coins(pub_jet_limit)
         .store_coins(0)
         .store_int(
             start_time

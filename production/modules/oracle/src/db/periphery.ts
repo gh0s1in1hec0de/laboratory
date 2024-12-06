@@ -1,6 +1,7 @@
 import type { LamportTime, RawAddressString } from "starton-periphery";
 import type { SqlClient } from "./types";
 import { globalClient } from "./db";
+import { logger } from "../logger.ts";
 
 export async function setHeightForAddress(address: RawAddressString, height: LamportTime, force?: boolean, client?: SqlClient): Promise<void> {
     const c = client ?? globalClient;
@@ -40,5 +41,15 @@ export async function getLaunchWithTopActivity(client?: SqlClient) {
         res.map(({ tokenLaunch, actionCount }) =>
             ({ tokenLaunch, actionCount })
         )[0] : null;
+}
+
+export async function storeReferralPayment(launchAddress: RawAddressString, payee: RawAddressString, client?: SqlClient) {
+    const res = await (client ?? globalClient)`
+        INSERT INTO referral_payments (token_launch, payee)
+        VALUES (${launchAddress}, ${payee})
+        RETURNING 1
+    `;
+    if (res.length !== 1) logger().warn(`exactly 1 column must be created, got: ${res}`);
+
 }
 

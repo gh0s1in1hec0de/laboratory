@@ -1,69 +1,64 @@
-import {
-  parseGetConfigResponse,
-  parseMoneyFlows,
-} from "../chainMessageParsers";
+import { parseGetConfigResponse, parseMoneyFlows, } from "../chainMessageParsers";
 import { GetConfigResponse, MoneyFlows, TokenLaunchTimings } from "../types";
+import { jettonFromNano, UnixTimeSeconds } from "../utils";
 import { Coins, GlobalVersions } from "../standards";
 import { Address, fromNano, toNano } from "@ton/core";
-import { jettonFromNano, UnixTimeSeconds } from "../utils";
 import { TonClient4 } from "@ton/ton";
 import {
-  getApproximateWlAmountOut,
-  getCreatorAmountOut,
-  getCreatorJettonPrice,
-  getPublicAmountOut,
-  SyntheticReserves,
-  WlPhaseLimits,
+    CreatorPriceConfig,
+    getCreatorAmountOut,
+    getPublicAmountOut,
+    SyntheticReserves,
 } from "./priceOracle";
 
 export enum SalePhase {
-  NOT_STARTED = "NOT_STARTED",
-  CREATOR = "CREATOR",
-  WHITELIST = "WHITELIST",
-  PUBLIC = "PUBLIC",
-  ENDED = "ENDED",
+    NOT_STARTED = "NOT_STARTED",
+    CREATOR = "CREATOR",
+    WHITELIST = "WHITELIST",
+    PUBLIC = "PUBLIC",
+    ENDED = "ENDED",
 }
 
 export function getCurrentSalePhase(
-  timings: TokenLaunchTimings,
-  currentTime: UnixTimeSeconds = Math.floor(Date.now() / 1000),
+    timings: TokenLaunchTimings,
+    currentTime: UnixTimeSeconds = Math.floor(Date.now() / 1000),
 ): { phase: SalePhase; nextPhaseIn: UnixTimeSeconds | null } {
-  const {
-    startTime,
-    creatorRoundEndTime,
-    wlRoundEndTime,
-    publicRoundEndTime,
-    endTime,
-  } = timings;
+    const {
+        startTime,
+        creatorRoundEndTime,
+        wlRoundEndTime,
+        publicRoundEndTime,
+        endTime,
+    } = timings;
 
-  if (currentTime < startTime)
-    return {
-      phase: SalePhase.NOT_STARTED,
-      nextPhaseIn: startTime - currentTime,
-    };
+    if (currentTime < startTime)
+        return {
+            phase: SalePhase.NOT_STARTED,
+            nextPhaseIn: startTime - currentTime,
+        };
 
-  if (currentTime < creatorRoundEndTime)
-    return {
-      phase: SalePhase.CREATOR,
-      nextPhaseIn: creatorRoundEndTime - currentTime,
-    };
+    if (currentTime < creatorRoundEndTime)
+        return {
+            phase: SalePhase.CREATOR,
+            nextPhaseIn: creatorRoundEndTime - currentTime,
+        };
 
-  if (currentTime < wlRoundEndTime)
-    return {
-      phase: SalePhase.WHITELIST,
-      nextPhaseIn: wlRoundEndTime - currentTime,
-    };
+    if (currentTime < wlRoundEndTime)
+        return {
+            phase: SalePhase.WHITELIST,
+            nextPhaseIn: wlRoundEndTime - currentTime,
+        };
 
-  if (currentTime < publicRoundEndTime)
-    return {
-      phase: SalePhase.PUBLIC,
-      nextPhaseIn: publicRoundEndTime - currentTime,
-    };
+    if (currentTime < publicRoundEndTime)
+        return {
+            phase: SalePhase.PUBLIC,
+            nextPhaseIn: publicRoundEndTime - currentTime,
+        };
 
-  if (currentTime < endTime)
-    return { phase: SalePhase.ENDED, nextPhaseIn: endTime - currentTime };
+    if (currentTime < endTime)
+        return { phase: SalePhase.ENDED, nextPhaseIn: endTime - currentTime };
 
-  return { phase: SalePhase.ENDED, nextPhaseIn: null };
+    return { phase: SalePhase.ENDED, nextPhaseIn: null };
 }
 
 /**
@@ -91,39 +86,38 @@ export function getCurrentSalePhase(
  * @param phase - The sale phase (`SalePhase.CREATOR`, `SalePhase.WHITELIST`, or `SalePhase.PUBLIC`).
  * @param data - The data structure containing phase-specific parameters (`WlPhaseLimits` or `SyntheticReserves`).
  * @param value - The input value in TONs for which to calculate the estimated amount (default: `toNano("10")`).
+ * @param withReferral - !!invited_by of caller.
  * @returns The estimated amount of coins a participant will receive.
  * @throws Will throw an error if the phase or data does not match any expected combination.
  */
 // SyntheticReserves - public
 // WlPhaseLimits - whitelist
 export function getAmountOut(
-  version: GlobalVersions,
-  phase: SalePhase.CREATOR | SalePhase.WHITELIST | SalePhase.PUBLIC,
-  data: WlPhaseLimits | SyntheticReserves,
-  value: Coins = toNano("10"),
+    version: GlobalVersions,
+    phase: SalePhase.CREATOR | SalePhase.PUBLIC,
+    data: CreatorPriceConfig | SyntheticReserves,
+    value: Coins = toNano("10"),
+    withReferral: boolean = false,
 ): Coins {
-  if (phase === SalePhase.CREATOR && (data as WlPhaseLimits).wlRoundFutJetLimit !== undefined)
-    return getCreatorAmountOut(version, value, data as WlPhaseLimits);
+    if (phase === SalePhase.CREATOR && (data as CreatorPriceConfig).wlRoundFutJetLimit !== undefined)
+        return getCreatorAmountOut(version, value, data as CreatorPriceConfig);
 
-  if (phase === SalePhase.WHITELIST && (data as WlPhaseLimits).wlRoundFutJetLimit !== undefined)
-    return getApproximateWlAmountOut(data as WlPhaseLimits, version, value);
+    if (phase === SalePhase.PUBLIC && (data as SyntheticReserves).syntheticTonReserve !== undefined)
+        return getPublicAmountOut(data as SyntheticReserves, version, value, withReferral);
 
-  if (phase === SalePhase.PUBLIC && (data as SyntheticReserves).syntheticTonReserve !== undefined)
-    return getPublicAmountOut(data as SyntheticReserves, version, value);
-
-  console.log(`Input: `);
-  console.log(`Phase: ${phase}`);
-  console.log(data);
-  throw new Error("meowreachable");
+    console.log(`Input: `);
+    console.log(`Phase: ${phase}`);
+    console.log(data);
+    throw new Error("meowreachable");
 }
 
 // tons - toNano(10)
 // jettons - getAmountOut()
 export function calculatePrice(
-  jettons: Coins,
-  tons: Coins = toNano("10"),
+    jettons: Coins,
+    tons: Coins = toNano("10"),
 ): number {
-  return Number(fromNano(tons)) / Number(jettonFromNano(jettons));
+    return Number(fromNano(tons)) / Number(jettonFromNano(jettons));
 }
 
 /*
@@ -137,58 +131,58 @@ const tonClient = new TonClient4({
 */
 
 async function getSeqno(tonClient: TonClient4) {
-  return (await tonClient.getLastBlock()).last.seqno;
+    return (await tonClient.getLastBlock()).last.seqno;
 }
 
 async function getMoneyFlows(
-  tonClient: TonClient4,
-  contractAddress: Address,
-  seqno?: number,
+    tonClient: TonClient4,
+    contractAddress: Address,
+    seqno?: number,
 ): Promise<MoneyFlows> {
-  let { reader } = await tonClient.runMethod(
-    seqno ?? (await getSeqno(tonClient)),
-    contractAddress,
-    "get_money_flows",
-    [],
-  );
-  return parseMoneyFlows(reader);
+    let { reader } = await tonClient.runMethod(
+        seqno ?? (await getSeqno(tonClient)),
+        contractAddress,
+        "get_money_flows",
+        [],
+    );
+    return parseMoneyFlows(reader);
 }
 
 async function getConfig(
-  tonClient: TonClient4,
-  contractAddress: Address,
-  seqno?: number,
+    tonClient: TonClient4,
+    contractAddress: Address,
+    seqno?: number,
 ): Promise<GetConfigResponse> {
-  let { reader } = await tonClient.runMethod(
-    seqno ?? (await getSeqno(tonClient)),
-    contractAddress,
-    "get_config",
-    [],
-  );
-  return parseGetConfigResponse(reader);
+    let { reader } = await tonClient.runMethod(
+        seqno ?? (await getSeqno(tonClient)),
+        contractAddress,
+        "get_config",
+        [],
+    );
+    return parseGetConfigResponse(reader);
 }
 
 // mode: WHITELIST(STAR CLUB) - "Config" | PUBLIC - "MoneyFlows"
 export async function getContractData(
-  mode: "Config" | "MoneyFlows" | "All",
-  tonClient: TonClient4,
-  tokenLaunchAddress: Address,
-  seqno?: number,
+    mode: "Config" | "MoneyFlows" | "All",
+    tonClient: TonClient4,
+    tokenLaunchAddress: Address,
+    seqno?: number,
 ): Promise<GetConfigResponse | MoneyFlows | (GetConfigResponse & MoneyFlows)> {
-  const seqno_ = seqno ?? (await getSeqno(tonClient));
-  switch (mode) {
-    case "Config":
-      return await getConfig(tonClient, tokenLaunchAddress, seqno_);
-    case "MoneyFlows":
-      return await getMoneyFlows(tonClient, tokenLaunchAddress, seqno_);
-    case "All":
-      const [config, moneyFlows] = await Promise.all([
-        getConfig(tonClient, tokenLaunchAddress, seqno_),
-        getMoneyFlows(tonClient, tokenLaunchAddress, seqno_),
-      ]);
-      return {
-        ...config,
-        ...moneyFlows,
-      };
-  }
+    const seqno_ = seqno ?? (await getSeqno(tonClient));
+    switch (mode) {
+        case "Config":
+            return await getConfig(tonClient, tokenLaunchAddress, seqno_);
+        case "MoneyFlows":
+            return await getMoneyFlows(tonClient, tokenLaunchAddress, seqno_);
+        case "All":
+            const [config, moneyFlows] = await Promise.all([
+                getConfig(tonClient, tokenLaunchAddress, seqno_),
+                getMoneyFlows(tonClient, tokenLaunchAddress, seqno_),
+            ]);
+            return {
+                ...config,
+                ...moneyFlows,
+            };
+    }
 }

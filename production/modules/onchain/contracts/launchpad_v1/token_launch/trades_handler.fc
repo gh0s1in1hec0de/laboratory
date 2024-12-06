@@ -119,8 +119,9 @@
         public_round::const::fut_jet_limit += creator_round::fut_jet_left;
         creator_round::fut_jet_left = 0;
     }
-    if (public_round::synthetic_ton_reserve == 0) {
-        public_round::synthetic_ton_reserve = 10 * ONE_TON;
+    ;; Balancing numbers
+    if (public_round::synthetic_ton_reserve < (wl_round::const::ton_limit / 5)) {
+        public_round::synthetic_ton_reserve = wl_round::const::ton_limit / 5;
     }
     ;; `user_value_after_fee` is always more than 0
     (int accessible_user_value, int opn) = check_amount_is_enough_for_public_purchase(attached_value);

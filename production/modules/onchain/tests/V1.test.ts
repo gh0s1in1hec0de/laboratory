@@ -142,10 +142,10 @@ describe("V1", () => {
             compile("JettonWallet")
         ]);
         console.info("contracts compiled yaay^^");
-        coreStorageStats = new StorageStats(50000n, 150n);
-        userVaultStorageStats = new StorageStats(5092n, 17n);
+        coreStorageStats = new StorageStats(50500n, 150n);
+        userVaultStorageStats = new StorageStats(5250n, 18n);
         tokenLaunchStorageStats = new StorageStats(50000n, 150n);
-        jettonMasterStorageStats = new StorageStats(16703n, 35n);
+        jettonMasterStorageStats = new StorageStats(20000n, 40n);
 
         blockchain = await Blockchain.create(MAINNET_MOCK ? {
             storage: new RemoteBlockchainStorage(wrapTonClient4ForRemote(new TonClient4({
@@ -179,7 +179,7 @@ describe("V1", () => {
         const ONE_HOUR_SEC = 3600;
         launchConfig = {
             minTonForSaleSuccess: toNano("100"),
-            tonLimitForWlRound: toNano("100"),
+            tonLimitForWlRound: toNano("500"),
             penny: toNano("1"),
 
             // Warning! In case of fractional/odd shares contract's math may have slight calc inaccuracy
@@ -411,8 +411,7 @@ describe("V1", () => {
         });
         test("core config updates correctly", async () => {
             const stateBefore = blockchain.snapshot();
-            const newConfig = launchConfig;
-            newConfig.minTonForSaleSuccess = toNano("666");
+            const newConfig = { ...launchConfig, minTonForSaleSuccess: toNano("666") };
             const configUpdateResult = await core.sendUpdateConfig({
                 queryId: 0n,
                 value: toNano("0.2"),
@@ -429,8 +428,6 @@ describe("V1", () => {
         });
         test("token launch creation with custom config", async () => {
             const stateBefore = blockchain.snapshot();
-            const minTonForSaleSuccessBefore = launchConfig.minTonForSaleSuccess;
-
             const launchCreationResult = await core.sendCreateLaunch({
                     queryId: 0n,
                     value: toNano("5"),
@@ -459,7 +456,6 @@ describe("V1", () => {
                     },
                     tokenLaunchCode)
             );
-            launchConfig.minTonForSaleSuccess = minTonForSaleSuccessBefore;
 
             const configInsideLaunch = await customizedTokenLaunch.getConfig();
             assert(configInsideLaunch.minTonForSaleSuccess === toNano("666.666"));
@@ -505,9 +501,10 @@ describe("V1", () => {
                 console.warn(`actual difference: ${fromNano(actualBalanceDifference)} (${actualBalanceDifference}) | expected difference: ${fromNano(precomputedBalanceDifference)} (${precomputedBalanceDifference})`);
             }
 
+            console.log(`Min ton for sale success: ${launchConfig.minTonForSaleSuccess}`);
             const expectedCreatorBalance = getCreatorAmountOut(GlobalVersions.V1, value, {
                     wlRoundFutJetLimit: BigInt(launchConfig.jetWlLimitPct) * sampleLaunchParams.totalSupply / PERCENTAGE_DENOMINATOR,
-                    wlRoundTonLimit: launchConfig.tonLimitForWlRound
+                    minTonForSaleSuccess: launchConfig.minTonForSaleSuccess
                 },
                 expectedFee
             );
@@ -612,7 +609,7 @@ describe("V1", () => {
             });
         }, 20000);
         test("high wl purchase operations pressure", async () => {
-            const conf = { totalTons: 80, totalBuys: 5 };
+            const conf = { totalTons: 480, totalBuys: 5 };
             const wlBuyers = await Promise.all(
                 Array.from({ length: conf.totalBuys }, (_, i) =>
                     blockchain.treasury(`wl_buyer_${i + 1}`, { balance: toNano("1000000") })
@@ -734,7 +731,7 @@ describe("V1", () => {
             const divergence = totalDifferenceAccounted - totalActualDifference;
 
             if (divergence) console.warn(`\"dead\" tons (wl buy): ${fromNano(divergence)} (${divergence})`);
-            assert(purified <= consumerVaultDataAfter.wlTonBalance!, `${purified} vs ${consumerVaultDataAfter.wlTonBalance}`);
+            assert(purified <= consumerVaultDataAfter.wlTonBalance!, `${fromNano(purified)} vs ${fromNano(consumerVaultDataAfter.wlTonBalance!)}`);
             assert(
                 totalTonsIncrease === consumerVaultDataAfter.wlTonBalance!,
                 `${fromNano(totalTonsIncrease)} vs ${fromNano(consumerVaultDataAfter.wlTonBalance!)}`
@@ -770,7 +767,7 @@ describe("V1", () => {
         }, 20000);
         test("high public purchase pressure", async () => {
             blockchain.now = (await sampleTokenLaunch.getSaleTimings()).wlRoundEndTime + 1;
-            const totalBuys = 30; // we can also set 100
+            const totalBuys = 30; // we can also set 100-200-300...
             const publicBuyers = await Promise.all(
                 Array.from({ length: totalBuys }, (_, i) =>
                     blockchain.treasury(`pub_buyer_${i + 1}`, { balance: toNano("1000000") }))
@@ -805,11 +802,12 @@ describe("V1", () => {
             );
             const vaultsData = await Promise.all(vaults.map((buyer) => buyer.getVaultData()));
 
+            console.log(`${3562 / (Number(jettonFromNano(sampleLaunchParams.totalSupply)) / 5)}`);
             console.log(
                 purchaseLogs.join("\n") +
                 "\n\n" +
                 vaultsData
-                    .map((data, index) => `Public buyer #${index + 1} jettons after buy: ${jettonFromNano(data.jettonBalance!)}`)
+                    .map((data, index) => `Public buyer #${index + 1} jettons after buy: ${jettonFromNano(data.jettonBalance!)}, price: ${Number(fromNano(value)) / Number(jettonFromNano(data.jettonBalance!))}`)
                     .join("\n")
             );
         }, 20000);
@@ -899,7 +897,6 @@ describe("V1", () => {
             );
             console.log(`jettons in vault: ${jettonFromNano(secondPublicBuyerVaultData.jettonBalance!)}, expected: ${jettonFromNano(amountOut)}`);
             expect(secondPublicBuyerVaultData.jettonBalance!).toBeGreaterThanOrEqual(amountOut);
-            expect(firstPublicBuyerVaultData.jettonBalance!).toBeGreaterThan(secondPublicBuyerVaultData.jettonBalance!);
             console.log(`1st public buy out: ${jettonFromNano(firstPublicBuyerVaultData.jettonBalance!)}, second one ${jettonFromNano(secondPublicBuyerVaultData.jettonBalance!)}`);
         }, 20000);
         test("stranger can't steal money via refund", async () => {

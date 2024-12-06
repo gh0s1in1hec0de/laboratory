@@ -6,7 +6,7 @@ import { ok as assert } from "assert";
 import { fees } from "../fees";
 
 // 10k TON
-export const MAX_WL_ROUND_TON_LIMIT = 10000n * toNano("1");
+export const MAX_WL_ROUND_TON_LIMIT = 100000n * toNano("1");
 export const PERCENTAGE_DENOMINATOR = 100000n;
 export const PURCHASE_FEE_PERCENT = 1n;
 export const REFUND_FEE_PERCENT = 3n;
@@ -28,41 +28,32 @@ export function getAmountOutMock(amountIn: Coins, reserveIn: Coins, reserveOut: 
     return amountOut;
 }
 
-export type WlPhaseLimits = { wlRoundFutJetLimit: Coins, wlRoundTonLimit: Coins };
-
+export type CreatorPriceConfig = { wlRoundFutJetLimit: Coins, minTonForSaleSuccess: Coins };
 // === CREATOR ===
-export function getCreatorJettonPrice({ wlRoundFutJetLimit, wlRoundTonLimit }: WlPhaseLimits): Coins {
-    return wlRoundFutJetLimit * 2n * MAX_WL_ROUND_TON_LIMIT / wlRoundTonLimit;
+export function getCreatorJettonPrice(
+    { wlRoundFutJetLimit, minTonForSaleSuccess }: CreatorPriceConfig
+): Coins {
+    return wlRoundFutJetLimit * 2n * MAX_WL_ROUND_TON_LIMIT / minTonForSaleSuccess;
 }
 
 // Call get config to get the last two values`get_config`
-export function getCreatorAmountOut(version: GlobalVersions, value: Coins, WlPhaseLimits: WlPhaseLimits, expectedFee?: Coins): Coins {
+export function getCreatorAmountOut(
+    version: GlobalVersions, value: Coins, creatorPriceConfig: CreatorPriceConfig, expectedFee?: Coins
+): Coins {
     const { purified } = validateValueMock(value, expectedFee ?? fees[version].creatorBuyout, PURCHASE_FEE_PERCENT);
-    const creatorJettonPrice = getCreatorJettonPrice(WlPhaseLimits);
+    const creatorJettonPrice = getCreatorJettonPrice(creatorPriceConfig);
     return purified * creatorJettonPrice / MAX_WL_ROUND_TON_LIMIT;
 }
 
-export function getCreatorValueLimit({ creatorFutJetLeft, creatorFutJetPriceReversed }: {
-    creatorFutJetLeft: Coins,
-    creatorFutJetPriceReversed: Coins
-}): Coins {
+export function getCreatorValueLimit(
+    { creatorFutJetLeft, creatorFutJetPriceReversed }: { creatorFutJetLeft: Coins, creatorFutJetPriceReversed: Coins }
+): Coins {
     return creatorFutJetLeft * MAX_WL_ROUND_TON_LIMIT / creatorFutJetPriceReversed;
 }
 
 export function getExpectedWlValueShare(value: Coins, expectedFee: Coins, withReferral: boolean = false): Coins {
     return validateValueMock(value, expectedFee, PURCHASE_FEE_PERCENT).purified
         * (withReferral ? (100n - REFERRAL_PAYMENT_PERCENT) : 100n) / 100n;
-}
-
-// Include referral accounting
-export function getApproximateWlAmountOut(
-    { wlRoundFutJetLimit, wlRoundTonLimit }: WlPhaseLimits,
-    version: GlobalVersions,
-    value: Coins = toNano("10")
-): Coins {
-    const purifiedValue: Coins = getExpectedWlValueShare(value, fees[version].wlPurchase);
-    // To calculate amount wl amount out we need to calculate our future share
-    return wlRoundFutJetLimit * purifiedValue / (purifiedValue + wlRoundTonLimit);
 }
 
 export function getCurrentWlRate(wlRoundFutJetLimit: Coins, wlRoundTonInvestedTotal: Coins): number {

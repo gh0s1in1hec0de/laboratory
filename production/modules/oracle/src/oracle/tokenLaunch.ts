@@ -106,7 +106,6 @@ async function handleTokenLaunchUpdates(tokenLaunch?: StoredTokenLaunch, launchA
                     await db.updateLaunchBalance(launch.address, { creatorTonsCollected });
                 }
 
-                // Here we'll handle only DEPOSITING operations
                 for (const [, msg] of tx.outMessages) {
                     if (msg.info.type !== "internal") continue;
                     if (msg.info.bounced) continue;
@@ -137,6 +136,12 @@ async function handleTokenLaunchUpdates(tokenLaunch?: StoredTokenLaunch, launchA
                             case "crr": {
                                 logger().info(`launch ${launch.address}: creator has refunded his TONs`);
                                 await db.updateLaunchBalance(launch.address, { creatorTonsCollected: 0n });
+                                break;
+                            }
+                            case "r": {
+                                const recipient = msg.info.dest;
+                                logger().debug(`referral payment to ${recipient} on launch ${launch.address}`);
+                                await db.storeReferralPayment(launch.address, recipient.toRawString());
                                 break;
                             }
                             default:

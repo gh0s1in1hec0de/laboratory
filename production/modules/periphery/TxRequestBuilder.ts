@@ -15,8 +15,6 @@ import {
     Coins
 } from "./standards";
 
-// TODO Add referrals
-
 /*
 * - Create launch
 * - Creator buyout
@@ -92,12 +90,14 @@ export class TxRequestBuilder {
 
     // Should be called ONLY if user is whitelisted
     public static whitelistPurchaseV1Message(
-        { launchAddress, amount }: { launchAddress: string, amount: StringifiedCoins },
+        { launchAddress, amount, maybeReferral }:
+        { launchAddress: string, amount: StringifiedCoins, maybeReferral?: string },
         validUntil: number = Math.floor(Date.now() / 1000) + 90
     ): SendTransactionRequest {
         const body = beginCell()
             .storeUint(TokensLaunchOps.WhitelistPurchase, OP_LENGTH)
             .storeUint(getQueryId(), QUERY_ID_LENGTH)
+            .storeAddress(maybeReferral ? Address.parse(maybeReferral) : null)
             .endCell();
         return {
             validUntil,
@@ -146,16 +146,18 @@ export class TxRequestBuilder {
     }
 
     public static publicPurchaseMessage(
-        { launchAddress, amount, queryId = Math.floor(Date.now()), }: {
+        { launchAddress, amount, queryId = Math.floor(Date.now()), maybeReferral }: {
             launchAddress: string,
             queryId?: number,
-            amount: StringifiedCoins
+            amount: StringifiedCoins,
+            maybeReferral?: string
         },
         validUntil: number = Math.floor(Date.now() / 1000) + 90
     ): SendTransactionRequest {
         const body = beginCell()
             .storeUint(TokensLaunchOps.PublicPurchase, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
+            .storeAddress(maybeReferral ? Address.parse(maybeReferral) : null)
             .endCell();
         return {
             validUntil,
