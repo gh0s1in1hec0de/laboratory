@@ -5,7 +5,7 @@ import { StarIcon } from "@/icons/common/StarIcon/StarIcon";
 import { ExtendedUserBalance } from "starton-periphery";
 import { fromNano } from "@ton/core";
 import { useTranslations, useLocale } from "next-intl";
-import { formatNumber, toCorrectAmount } from "@/utils";
+import { toCorrectAmount } from "@/utils";
 
 export function LaunchInfo(balance: ExtendedUserBalance) {
   const t = useTranslations("Rewards");

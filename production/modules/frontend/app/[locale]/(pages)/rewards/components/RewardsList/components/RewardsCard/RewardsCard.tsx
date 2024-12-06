@@ -6,9 +6,7 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react
 import Grid from "@mui/material/Grid2";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import {
-  jettonFromNano
-} from "starton-periphery";
+import { jettonFromNano } from "starton-periphery";
 import { useRewardsCard } from "./hooks/useRewardsCard";
 import { LaunchInfo } from "./components/LaunchInfo";
 import styles from "./RewardsCard.module.scss";
@@ -81,6 +79,7 @@ export function RewardsCard({
         {extendedBalance.isSuccessful ? (
           (() => {
             const { days, hours, minutes } = formatTime(extendedBalance.timings.endTime);
+            
             return (
               <Grid
                 container
