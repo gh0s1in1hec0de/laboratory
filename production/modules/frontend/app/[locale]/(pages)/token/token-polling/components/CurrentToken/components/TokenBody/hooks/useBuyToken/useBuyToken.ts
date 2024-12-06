@@ -32,6 +32,7 @@ export function useBuyToken({ launchAddress, version }: UseBuyTokenProps) {
     creatorFutJetLeft: bigint;
     creatorFutJetPriceReversed: bigint;
     creatorMaxTons: string;
+    minTonForSaleSuccess: bigint;
   } | null>(null);
   const [amountOut, setAmountOut] = useState<string>("");
 
@@ -47,6 +48,7 @@ export function useBuyToken({ launchAddress, version }: UseBuyTokenProps) {
           creatorFutJetPriceReversed,
           wlRoundFutJetLimit,
           wlRoundTonLimit,
+          minTonForSaleSuccess
         } = (await getContractData(
           "Config",
           tonClient,
@@ -63,6 +65,7 @@ export function useBuyToken({ launchAddress, version }: UseBuyTokenProps) {
           creatorFutJetLeft,
           creatorFutJetPriceReversed,
           creatorMaxTons: fromNano(creatorMaxTons),
+          minTonForSaleSuccess,
         });
       } catch (error) {
         console.error("Error fetching config data (getContractData):", error);
@@ -73,12 +76,12 @@ export function useBuyToken({ launchAddress, version }: UseBuyTokenProps) {
   useEffect(() => {
     if (!configData || !amount || Number(amount) <= 0) return;
 
-    const { wlRoundFutJetLimit, wlRoundTonLimit } = configData;
+    const { wlRoundFutJetLimit, minTonForSaleSuccess } = configData;
 
     const result = getAmountOut(
       version,
       SalePhase.CREATOR,
-      { wlRoundFutJetLimit, wlRoundTonLimit },
+      { wlRoundFutJetLimit, minTonForSaleSuccess },
       toNano(amount)
     );
 
