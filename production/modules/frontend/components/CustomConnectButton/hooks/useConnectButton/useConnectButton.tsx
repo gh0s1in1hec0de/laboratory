@@ -18,7 +18,7 @@ export function useConnectButton() {
   const [error, setError] = useState<string | null>(null);
   const [openToast, toggleOpenToast] = useToggle();
   const [toastText, setToastText] = useState("");
-  const t = useTranslations();
+  const t = useTranslations("");
 
   async function handleConnectWallet(address: string) {
     localStorageWrapper.set(CALLER_ADDRESS, address);
@@ -29,7 +29,7 @@ export function useConnectButton() {
       console.debug("Wallet connected!");
     } catch (error) {
       console.error("Error connecting wallet: ", error);
-      // await userService.postConnectWallet(address, decodeURIComponent(searchParams.get(REFERRAL) || ""));
+      // await userService.postConnectWallet(address, decodeURIыComponent(searchParams.get(REFERRAL) || ""));
       // setTonWalletAddress(address);
       // console.debug("Wallet connected!");
     }
@@ -124,22 +124,26 @@ export function useConnectButton() {
   }, [tonConnectUI]);
 
   async function handleClickConnectButton() {
-    startTransition(async () => {
-      try {
-        await tonConnectUI.openModal();
-      } catch (error) {
-        console.error(error);
-      }
+    startTransition(() => {
+      (async () => {
+        try {
+          await tonConnectUI.openModal();
+        } catch (error) {
+          console.error(error);
+        }
+      })();
     });
   }
 
   async function handleClickDisconnectButton() {
-    startTransition(async () => {
-      try {
-        await tonConnectUI.disconnect();
-      } catch (error) {
-        console.error(error);
-      }
+    startTransition(() => {
+      (async () => {
+        try {
+          await tonConnectUI.disconnect();
+        } catch (error) {
+          console.error(error);
+        }
+      })();
     });
   }
 
