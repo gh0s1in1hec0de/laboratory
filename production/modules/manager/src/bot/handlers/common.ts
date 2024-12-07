@@ -123,3 +123,35 @@ export function isReadyTasksToDb(str: string): ValidationTasksToDbResult {
     return { validMap: mapTasks, errors };
 }
 
+interface ValidationUserAddressesResult {
+    validAddresses: string[],
+    errors: string[],
+}
+
+export function validateUserAddresses(input: string): ValidationUserAddressesResult {
+    const validAddresses: string[] = [];
+    const errors: string[] = [];
+
+    let index = 0;
+
+    for (const userAddress of input.split(",")) {
+        const trimmedAddress = userAddress.trim();
+
+        if (!trimmedAddress) {
+            errors.push(`Error in line ${index + 1}: empty address`);
+            index++;
+            continue;
+        }
+
+        try {
+            Address.parse(trimmedAddress);
+            validAddresses.push(trimmedAddress);
+        } catch (e) {
+            errors.push(`Error in line ${index + 1}: The address "${trimmedAddress}" looks more like shit`);
+        }
+
+        index++;
+    }
+
+    return { validAddresses, errors };
+}

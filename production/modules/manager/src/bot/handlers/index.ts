@@ -1,5 +1,6 @@
 export * from "./listRewardPoolsPrelude";
-export * from "./setTasksCompletions.ts";
+export * from "./setTasksCompletions";
+export * from "./setTicketsToUsers";
 export * from "./listRewardJettons";
 export * from "./listRewardPools";
 export * from "./setRewardJetton";

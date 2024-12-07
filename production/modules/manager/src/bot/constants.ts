@@ -34,6 +34,7 @@ export const initPaginationData: PaginationData = {
 };
 
 export enum Conversations {
+    setTicketsToUsers = "setTicketsToUsers",
     setTasksCompletions = "setTasksCompletions",
     createTask = "createTask",
     deleteTask = "deleteTask",
@@ -73,7 +74,10 @@ const replies = {
     deleteTasksCanceled: "Task deletion canceled successfully! ＼(￣▽￣)／\n\n<b>Want to continue?</b> Click /menu",
     invalidDeleteTasks: "Invalid <b>data</b> (￣ヘ￣).",
     noRewardJettons: "No reward jettons available (￣ヘ￣)",
-    noRewardPools: "Reward pools not found (￣ヘ￣)"
+    noRewardPools: "Reward pools not found (￣ヘ￣)",
+    setTicketsToUsers: "Please send the <b>Users Addresses</b> who will be allocated 1 ticket each \n(￣▽￣)ノ\n\nExample: <code>userAddress1, userAddress2, userAddress3</code>",
+    invalidSetTicketsToUsers: "Invalid <b>data</b> (￣ヘ￣).",
+    addTicketsSuccess: "Success! Tickets added! ＼(￣▽￣)／\n\n<b>Want to continue?</b> Click /menu.",
 };
 
 export function getReplyText(key: keyof typeof replies): string {
@@ -155,6 +159,7 @@ export async function getUnknownMsgReply(ctx: MyContext) {
  */
 export function getMenuKeyboard(): InlineKeyboard {
     return new InlineKeyboard()
+        .text("Set tickets to users", "set_tickets_to_users").row()
         .text("Set tasks completions", "set_tasks_completions").row()
         .text("List tasks", "list_tasks").row()
         .text("List token launches", "list_launches").row()
