@@ -4,5 +4,6 @@ export interface CustomConnectButtonProps {
   successChildren?: ReactNode;
   fullWidth?: boolean;
   showDropdown?: boolean;
+  copyReferralButton?: boolean;
 }
 
