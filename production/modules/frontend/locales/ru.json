@@ -149,6 +149,8 @@
 	},
 	"Tasks": {
 		"header": {
+			"successCopyAddress": "Адрес скопирован!",
+			"successCopyReferral": "Рефералка скопирована!",
 			"subtitle": "сезон",
 			"tooltip": "Что это",
 			"closeButton": "Все понятно!",
@@ -516,6 +518,7 @@
 		"jettonsToClaimTitle": "Можно забрать",
 		"stage": "Этап:",
 		"remainingTime": "осталось",
+		"claimUntil": "Забрать до:",
 		"contributeMore": "Внести больше",
 		"rewards": "Награды",
 		"claim": "Забрать",

@@ -4,6 +4,7 @@ import { TicketBalance } from "./components/TicketBalance";
 import { BgLight } from "@/common/BgLight";
 import { TonProvider } from "@/providers/ton";
 import { CustomConnectButton } from "@/components/CustomConnectButton";
+import { LangSwitcher } from "@/components/LangSwitcher";
 
 export function Header() {
   return (
@@ -14,6 +15,10 @@ export function Header() {
       width="100%"
     >
       <BgLight />
+
+      <TonProvider>
+        <LangSwitcher />
+      </TonProvider>
 
       <Info />
 
