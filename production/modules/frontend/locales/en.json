@@ -159,7 +159,7 @@
 			"tickets": "tickets",
 			"balance": "Your balance",
 			"copyAddress": "Copy Address",
-			"copyReferral": "Copy Referral",
+			"copyReferral": "Copy referral link",
 			"error": "Oops, something went wrong... Please reload the page or try again later.",
 			"drawer": {
 				"firstParagraph": {
