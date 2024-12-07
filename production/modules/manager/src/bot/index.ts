@@ -24,7 +24,8 @@ import {
     handleBotError,
     setRewardPool,
     createTask,
-    deleteTask
+    deleteTask,
+    setTicketsToUsers
 } from "./handlers";
 
 export type SessionData = {
@@ -52,6 +53,7 @@ export async function createBot(): Promise<Bot<MyContext>> {
     maybeBot.use(conversations());
     maybeBot.use(createConversation(listRewardPoolsPrelude));
     maybeBot.use(createConversation(setTasksCompletions));
+    maybeBot.use(createConversation(setTicketsToUsers));
     maybeBot.use(createConversation(setRewardJetton));
     maybeBot.use(createConversation(setRewardPool));
     maybeBot.use(createConversation(createTask));

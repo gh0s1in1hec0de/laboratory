@@ -97,6 +97,19 @@ export async function storeUserTaskRelations(
     return res.length ? res[0] : null;
 }
 
+export async function incrementUserTickets(
+    callerAddress: RawAddressString,
+    client?: SqlClient
+): Promise<UsersTasksRelations | null> {
+    const res = await (client ?? globalClient)<UsersTasksRelations[]>`
+        UPDATE callers
+        SET ticket_balance = ticket_balance + 1
+        WHERE address = ${callerAddress}
+        RETURNING *
+    `;
+    return res.length ? res[0] : null;
+}
+
 export async function storeTask(
     taskName: string,
     description: string,
