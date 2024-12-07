@@ -119,3 +119,21 @@ export function calculateUserRewardAmount(
 ): Coins {
     return userClaimAmount * rewardPoolSupply / launchSupply;
 }
+
+/**
+ * Reverts the calculation of the initial invested value from the final value.
+ * This function accounts for the possibility of a referral fee (0.95 factor)
+ * and a fixed launchpad fee (0.99 factor).
+ *
+ * @param y - The final value after applying fees.
+ * @param haveReferral - A boolean indicating if the referral fee was applied (default: false).
+ * @returns The initial invested value before fees were applied.
+ *
+ * The formula assumes the following operation:
+ * y = (x * 0.99) * 0.95 (if haveReferral is true) or y = x * 0.99 (if haveReferral is false).
+ */
+export function unwrapInitialValue(y: number, haveReferral: boolean = false): number {
+    const referralFactor = haveReferral ? 0.95 : 1;
+    const x = y / referralFactor / 0.99;
+    return x;
+}

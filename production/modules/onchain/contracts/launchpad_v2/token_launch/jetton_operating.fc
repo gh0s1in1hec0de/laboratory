@@ -55,7 +55,10 @@
     if (equal_slices_bits(sender_address, util_jet_wallet_address)) {
         raw_reserve(0, RESERVE_WITH_CONTRACT_BALANCE);
         if (jetton_amount == wl_round::const::util_jet_wl_pass_amount) {
-            handle_wl_purchase(query_id, attached_value, initiator);
+            cell whitelist_payload = maybe_payload~load_maybe_ref();
+            slice wp_slice = whitelist_payload.begin_parse();
+            slice maybe_referral = wp_slice~load_msg_addr();
+            handle_wl_purchase(query_id, attached_value, maybe_referral, initiator);
         } else {
             cell chargeback_msg = build_jetton_transfer_msg(
                 query_id,

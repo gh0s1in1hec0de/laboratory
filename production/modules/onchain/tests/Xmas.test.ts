@@ -1,10 +1,11 @@
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import { XmasJettonMaster } from "../wrappers/XmasJettonMaster";
 import { XmasJettonWallet } from "../wrappers/XmasJettonWallet";
+import { Address, beginCell, Cell, toNano } from "@ton/core";
 import { JettonOps, jettonToNano } from "starton-periphery";
 import { printTxGasStats } from "./utils/gasUtils";
-import { Address, beginCell, Cell, toNano } from "@ton/core";
 import { ok as assert } from "node:assert";
+import { VaultJetton } from "@dedust/sdk";
 import { compile } from "@ton/blueprint";
 import "@ton/test-utils";
 import {
@@ -12,12 +13,13 @@ import {
     SandboxContract,
     Blockchain,
 } from "@ton/sandbox";
-import { VaultJetton } from "@dedust/sdk";
 
 // Event boundaries – update before testing.
 // Use `determine event timings` for convenience.
-const START = 1732965344;
-const END = 1733397344;
+
+
+const START = 1733653286;
+const END = 1734085286;
 
 describe("Marry Christmas and happy New Year!", () => {
     let blockchain: Blockchain;
@@ -169,9 +171,13 @@ describe("Marry Christmas and happy New Year!", () => {
         }, 20000);
         test("dedust sale", async () => {
             const recipient = await blockchain.treasury("recipient");
+            const sendAmount = jettonToNano("1000");
+            const expectedTax = jettonToNano("100");
+            const dedustSwapPayload = VaultJetton.createSwapPayload({ poolAddress: randomAddress() });
+
             const swapTransferResult = await deployerWallet.sendTransfer(
-                deployer.getSender(), toNano("0.3"), jettonToNano("1000"), recipient.address, deployer.address,
-                null, toNano("0.25"), VaultJetton.createSwapPayload({ poolAddress: randomAddress() }),
+                deployer.getSender(), toNano("0.3"), sendAmount, recipient.address, deployer.address,
+                null, toNano("0.25"), dedustSwapPayload,
             );
             expect(swapTransferResult.transactions).toHaveTransaction({
                 op: JettonOps.changeTotalSupply,
@@ -181,7 +187,20 @@ describe("Marry Christmas and happy New Year!", () => {
                     .storeUint(0, 64)
                     .storeAddress(deployer.address)
                     .storeUint(0, 1)
-                    .storeCoins(jettonToNano("100"))
+                    .storeCoins(expectedTax)
+                    .endCell()
+            });
+            expect(swapTransferResult.transactions).toHaveTransaction({
+                op: JettonOps.InternalTransfer,
+                success: true,
+                body: beginCell()
+                    .storeUint(JettonOps.InternalTransfer, 32)
+                    .storeUint(0, 64)
+                    .storeCoins(sendAmount - expectedTax)
+                    .storeAddress(deployer.address)
+                    .storeAddress(deployer.address)
+                    .storeCoins(toNano("0.25"))
+                    .storeMaybeRef(dedustSwapPayload)
                     .endCell()
             });
         });

@@ -80,12 +80,17 @@ export class TokenLaunchV2 implements Contract {
         });
     }
 
-    async sendPublicPurchase(provider: ContractProvider, sendMessageParams: SendMessageParams) {
+    async sendPublicPurchase(
+        provider: ContractProvider,
+        sendMessageParams: SendMessageParams,
+        maybeReferral: Address | null = null
+    ) {
         const { queryId, via, value } = sendMessageParams;
 
         const body = beginCell()
             .storeUint(TokensLaunchOps.PublicPurchase, OP_LENGTH)
             .storeUint(queryId, QUERY_ID_LENGTH)
+            .storeAddress(maybeReferral)
             .endCell();
         await provider.internal(via, {
             value, sendMode: SendMode.PAY_GAS_SEPARATELY, body
@@ -230,10 +235,9 @@ export class TokenLaunchV2 implements Contract {
         const dexJetShare = BigInt(launchConfig.jetDexSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
         const platformShare = BigInt(platformSharePct) * totalSupply / PERCENTAGE_DENOMINATOR;
         const creatorBuybackJetLimit = totalSupply - (wlRoundFutJetLimit + pubJetLimit + dexJetShare + platformShare);
-        const creatorJetPrice = getCreatorJettonPrice({
-            wlRoundFutJetLimit,
-            wlRoundTonLimit: launchConfig.tonLimitForWlRound
-        });
+        const creatorJetPrice = getCreatorJettonPrice(
+            { wlRoundFutJetLimit, minTonForSaleSuccess: launchConfig.minTonForSaleSuccess }
+        );
 
         const generalState = beginCell()
             .storeInt(loadAtMax ? ThirtyTwoIntMaxValue : startTime, 32)
@@ -267,7 +271,7 @@ export class TokenLaunchV2 implements Contract {
         const pubRoundState = beginCell()
             .storeCoins(loadAtMax ? CoinsMaxValue : pubJetLimit)
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
-            .storeCoins(loadAtMax ? CoinsMaxValue : wlRoundFutJetLimit)
+            .storeCoins(loadAtMax ? CoinsMaxValue : pubJetLimit)
             .storeCoins(loadAtMax ? CoinsMaxValue : 0)
             .storeInt(
                 loadAtMax ? ThirtyTwoIntMaxValue : startTime

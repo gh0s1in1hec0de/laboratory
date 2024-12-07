@@ -97,10 +97,10 @@ int get_balance_update_gas_cost() inline_ref {
 }
 
 ;;; Returns purified value and operational needs
-(int, int) validate_value(int total, int fee, int percent) impure inline_ref {
+(int, int) validate_value(int total, int fee, int opn_size) impure inline_ref {
     throw_if(error::not_enough_gas, fee > total);
     int extra = total - fee;
-    int purified = muldiv(extra, 100 - percent, 100);
+    int purified = muldiv(extra, 100 - opn_size, 100);
     throw_unless(error::balance_lack, purified > 0);
     return (purified, extra - purified);
 }

@@ -4,26 +4,11 @@ import {
     FullFees, GasPrices, computeFwdFeesVerbose, getMsgPrices, computeStorageFee,
 } from "./utils";
 import {
-    BASECHAIN,
-    getPublicAmountOut,
-    getApproximateClaimAmount,
-    packLaunchConfigV1ToCell,
-    PERCENTAGE_DENOMINATOR,
-    getCreatorAmountOut,
-    UserVaultOps,
-    CoreOps,
-    GlobalVersions,
-    MAX_WL_ROUND_TON_LIMIT,
-    BalanceUpdateMode,
-    LaunchConfigV1,
-    getQueryId,
-    toPct,
-    JETTON_MIN_TRANSFER_FEE,
-    TokensLaunchOps,
-    jettonFromNano,
-    validateValueMock,
-    REFUND_FEE_PERCENT,
-    PURCHASE_FEE_PERCENT, REFERRAL_PAYMENT_PERCENT,
+    BalanceUpdateMode, TokensLaunchOps, LaunchConfigV1, UserVaultOps, CoreOps, GlobalVersions,
+    JETTON_MIN_TRANSFER_FEE, MAX_WL_ROUND_TON_LIMIT, PERCENTAGE_DENOMINATOR, BASECHAIN,
+    getPublicAmountOut, getApproximateClaimAmount, packLaunchConfigV1ToCell, toPct,
+    validateValueMock, jettonFromNano, getCreatorAmountOut, getQueryId,
+    PURCHASE_FEE_PERCENT, REFERRAL_PAYMENT_PERCENT, REFUND_FEE_PERCENT,
 } from "starton-periphery";
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
@@ -628,6 +613,50 @@ describe("V1", () => {
                 blockchain.now! += 10;
             }
         }, 20000);
+        test("wl purchase works correctly", async () => {
+            const [launchContractInstance, saleMoneyFlowBefore, innerDataBefore] = await Promise.all([
+                blockchain.getContract(sampleTokenLaunch.address), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData()
+            ]);
+            const contractBalanceBefore = launchContractInstance.balance;
+
+            const totalPurchaseValue = toNano("10");
+            const wlPurchaseResult = await sampleTokenLaunch.sendWhitelistPurchase({
+                queryId: BigInt(getQueryId()),
+                value: totalPurchaseValue,
+                via: consumer.getSender()
+            });
+            const wlPurchaseTx = findTransactionRequired(wlPurchaseResult.transactions, {
+                op: TokensLaunchOps.WhitelistPurchase,
+                success: true
+            });
+            const wlPurchaseRequestComputeFee = printTxGasStats("Whitelist purchase request transaction: ", wlPurchaseTx);
+            expect(wlPurchaseResult.transactions).toHaveTransaction({
+                op: UserVaultOps.balanceUpdate,
+                to: consumerVault.address,
+                success: true
+            });
+            const totalFee = wlPurchaseRequestComputeFee + balanceUpdateCost;
+            const { purified } = validateValueMock(totalPurchaseValue, totalFee, PURCHASE_FEE_PERCENT);
+            console.log(`Precomputed wl buy total fee is equal to ${totalFee} (${fromNano(totalFee)} TON)`);
+
+            const contractBalanceAfter = launchContractInstance.balance;
+            const [consumerVaultDataAfter, saleMoneyFlowAfter, innerDataAfter] = await Promise.all([
+                consumerVault.getVaultData(), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData()
+            ]);
+
+            // Here we can be sure, that all the tons we had accounted really exists on contract's balance
+            const totalTonsIncrease = saleMoneyFlowAfter.totalTonsCollected - saleMoneyFlowBefore.totalTonsCollected;
+            const totalDifferenceAccounted = totalTonsIncrease + (innerDataAfter.operationalNeeds - innerDataBefore.operationalNeeds);
+            const totalActualDifference = contractBalanceAfter - contractBalanceBefore;
+            const divergence = totalDifferenceAccounted - totalActualDifference;
+
+            if (divergence) console.warn(`\"dead\" tons (wl buy): ${fromNano(divergence)} (${divergence})`);
+            assert(purified <= consumerVaultDataAfter.wlTonBalance!, `${fromNano(purified)} vs ${fromNano(consumerVaultDataAfter.wlTonBalance!)}`);
+            assert(
+                totalTonsIncrease === consumerVaultDataAfter.wlTonBalance!,
+                `${fromNano(totalTonsIncrease)} vs ${fromNano(consumerVaultDataAfter.wlTonBalance!)}`
+            );
+        }, 20000);
         test("wl purchase with referral works correctly", async () => {
             const [launchContractInstance, saleMoneyFlowBefore, innerDataBefore] = await Promise.all([
                 blockchain.getContract(sampleTokenLaunch.address), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData()
@@ -691,50 +720,6 @@ describe("V1", () => {
             assert(
                 totalTonsIncrease === consumerWithReferralVaultDataAfter.wlTonBalance!,
                 `${fromNano(totalTonsIncrease)} vs ${fromNano(consumerWithReferralVaultDataAfter.wlTonBalance!)}`
-            );
-        }, 20000);
-        test("wl purchase works correctly", async () => {
-            const [launchContractInstance, saleMoneyFlowBefore, innerDataBefore] = await Promise.all([
-                blockchain.getContract(sampleTokenLaunch.address), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData()
-            ]);
-            const contractBalanceBefore = launchContractInstance.balance;
-
-            const totalPurchaseValue = toNano("10");
-            const wlPurchaseResult = await sampleTokenLaunch.sendWhitelistPurchase({
-                queryId: BigInt(getQueryId()),
-                value: totalPurchaseValue,
-                via: consumer.getSender()
-            });
-            const wlPurchaseTx = findTransactionRequired(wlPurchaseResult.transactions, {
-                op: TokensLaunchOps.WhitelistPurchase,
-                success: true
-            });
-            const wlPurchaseRequestComputeFee = printTxGasStats("Whitelist purchase request transaction: ", wlPurchaseTx);
-            expect(wlPurchaseResult.transactions).toHaveTransaction({
-                op: UserVaultOps.balanceUpdate,
-                to: consumerVault.address,
-                success: true
-            });
-            const totalFee = wlPurchaseRequestComputeFee + balanceUpdateCost;
-            const { purified } = validateValueMock(totalPurchaseValue, totalFee, PURCHASE_FEE_PERCENT);
-            console.log(`Precomputed wl buy total fee is equal to ${totalFee} (${fromNano(totalFee)} TON)`);
-
-            const contractBalanceAfter = launchContractInstance.balance;
-            const [consumerVaultDataAfter, saleMoneyFlowAfter, innerDataAfter] = await Promise.all([
-                consumerVault.getVaultData(), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData()
-            ]);
-
-            // Here we can be sure, that all the tons we had accounted really exists on contract's balance
-            const totalTonsIncrease = saleMoneyFlowAfter.totalTonsCollected - saleMoneyFlowBefore.totalTonsCollected;
-            const totalDifferenceAccounted = totalTonsIncrease + (innerDataAfter.operationalNeeds - innerDataBefore.operationalNeeds);
-            const totalActualDifference = contractBalanceAfter - contractBalanceBefore;
-            const divergence = totalDifferenceAccounted - totalActualDifference;
-
-            if (divergence) console.warn(`\"dead\" tons (wl buy): ${fromNano(divergence)} (${divergence})`);
-            assert(purified <= consumerVaultDataAfter.wlTonBalance!, `${fromNano(purified)} vs ${fromNano(consumerVaultDataAfter.wlTonBalance!)}`);
-            assert(
-                totalTonsIncrease === consumerVaultDataAfter.wlTonBalance!,
-                `${fromNano(totalTonsIncrease)} vs ${fromNano(consumerVaultDataAfter.wlTonBalance!)}`
             );
         }, 20000);
         test("wl limit cutoff works the proper way", async () => {
@@ -860,7 +845,6 @@ describe("V1", () => {
                 to: referral.address,
                 success: true,
                 body: beginCell().storeUint(0, 32).storeStringTail("r").endCell(),
-                // 4 as we spent some money on fee due to sending mode
             });
 
             // Balance changes validation

@@ -45,7 +45,7 @@
     general_state::total_tons_collected -= creators_tons;
     creator_round::fut_jet_balance = 0;
 
-    (int pur_val, int opn) = validate_value(creators_tons, 0);
+    (int pur_val, int opn) = validate_value(creators_tons, 0, REFUND_FEE_PERCENT);
     this::operational_needs += opn;
 
     cell refund_transfer = simple_transfer(this::const::creator_address, pur_val, "crr");
@@ -53,7 +53,7 @@
 }
 
 ;; We don't use error's here as we must not to stay with extra user's jettons after operation
-() handle_wl_purchase(int query_id, int attached_value, slice initiator) impure inline {
+() handle_wl_purchase(int query_id, int attached_value, slice maybe_referral, slice initiator) impure inline {
     ;; May be 0 by design
     (int accessible_user_value, int opn) = check_amount_is_enough_for_wl_purchase(attached_value);
     (_, _, slice util_jet_wallet_address, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
@@ -82,12 +82,15 @@
     );
     send_raw_message(return_jettons_msg, SEND_MODE_IGNORE_ERRORS);
 
+    int referral_not_provided = equal_slices_bits(maybe_referral, address_none());
+    int final_user_value = referral_not_provided ? accessible_user_value : muldiv(accessible_user_value, 100 - REFERRAL_PAYMENT_PERCENT, 100);
+    int maybe_referral_payment = referral_not_provided ? 0 : muldiv(accessible_user_value, REFERRAL_PAYMENT_PERCENT, 100);
 
     int remainings = 0;
-    if ((accessible_user_value + wl_round::ton_invested_total) > wl_round::const::ton_limit) {
+    if ((final_user_value + wl_round::ton_invested_total) > wl_round::const::ton_limit) {
         int accessible_amount = wl_round::const::ton_limit - wl_round::ton_invested_total;
-        remainings = accessible_user_value - accessible_amount;
-        accessible_user_value = accessible_amount;
+        remainings = final_user_value - accessible_amount;
+        final_user_value = accessible_amount;
 
         int timeshift = wl_round::const::end_time - now();
         if (timeshift > 120) {
@@ -96,8 +99,13 @@
         }
     }
 
-    general_state::total_tons_collected += accessible_user_value;
-    wl_round::ton_invested_total += accessible_user_value;
+    if ((~ referral_not_provided) & (maybe_referral_payment > SIMPLE_TRANSFER_FEE)) {
+        cell refferal_payment_msg = simple_transfer(maybe_referral, maybe_referral_payment, "r");
+        send_raw_message(refferal_payment_msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    }
+
+    general_state::total_tons_collected += final_user_value;
+    wl_round::ton_invested_total += final_user_value;
     this::operational_needs += opn;
     {-
        As out WL phase is fairlaunch - we have static amount of jettons to distribute
@@ -106,7 +114,7 @@
        WL round stats changes every time. Then synthetic reserves will continue to change in public round and
        this is the reason, why we don't use `ton_invested_total` for that purposes.
     -}
-    public_round::synthetic_ton_reserve += accessible_user_value;
+    public_round::synthetic_ton_reserve += final_user_value;
 
     ;; We attach value only for routong messages
     cell msg = build_balance_update_message(
@@ -115,7 +123,7 @@
         get_wl_purchase_gas_consumption() - JETTON_MIN_TRANSFER_FEE - get_compute_fee(MY_WORKCHAIN, WL_PURCHASE_REQUEST_GAS_CONSUMPTION),
         initiator,
         BALANCE_UPD_DEPOSIT_WL,
-        accessible_user_value,
+        final_user_value,
         0
     );
     send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
@@ -141,33 +149,44 @@
     send_raw_message(msg, SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
 }
 
-() handle_public_purchase(int query_id, int attached_value, slice sender_address) impure inline {
+() handle_public_purchase(int query_id, int attached_value, slice maybe_referral, slice sender_address) impure inline {
     throw_if(error::wrong_time, (now() < wl_round::const::end_time) | (now() >= public_round::const::end_time));
     ;; creator's round remainings flows into public round here once :)
     if (creator_round::fut_jet_left > 0) {
         public_round::const::fut_jet_limit += creator_round::fut_jet_left;
         creator_round::fut_jet_left = 0;
     }
-    if (public_round::synthetic_ton_reserve == 0) {
-        public_round::synthetic_ton_reserve = 10 * ONE_TON;
+    ;; Balancing price
+    if (public_round::synthetic_ton_reserve < (wl_round::const::ton_limit / 5)) {
+        public_round::synthetic_ton_reserve = wl_round::const::ton_limit / 5;
     }
     ;; `user_value_after_fee` is always more than 0
     (int accessible_user_value, int opn) = check_amount_is_enough_for_public_purchase(attached_value);
-    int res_jettons = get_amount_out(accessible_user_value, public_round::synthetic_ton_reserve, public_round::synthetic_jet_reserve);
+
+    int referral_not_provided = equal_slices_bits(maybe_referral, address_none());
+    int final_user_value = referral_not_provided ? accessible_user_value : muldiv(accessible_user_value, 100 - REFERRAL_PAYMENT_PERCENT, 100);
+    int maybe_referral_payment = referral_not_provided ? 0 : muldiv(accessible_user_value, REFERRAL_PAYMENT_PERCENT, 100);
+
+    int res_jettons = get_amount_out(final_user_value, public_round::synthetic_ton_reserve, public_round::synthetic_jet_reserve);
 
     throw_unless(error::unreachable, res_jettons >= 0);
     throw_unless(error::balance_overlimit, public_round::const::fut_jet_limit >= public_round::fut_jet_sold + res_jettons);
     (_, _, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
 
     ;; Taking care of our synthetic price controllers
-    public_round::synthetic_ton_reserve += accessible_user_value;
+    public_round::synthetic_ton_reserve += final_user_value;
     public_round::synthetic_jet_reserve -= res_jettons;
 
     general_state::fut_jet_inner_balance -= res_jettons;
     public_round::fut_jet_sold += res_jettons;
 
-    general_state::total_tons_collected += accessible_user_value;
+    general_state::total_tons_collected += final_user_value;
     this::operational_needs += opn;
+
+    if ((~ referral_not_provided) & (maybe_referral_payment > SIMPLE_TRANSFER_FEE)) {
+        cell refferal_payment_msg = simple_transfer(maybe_referral, maybe_referral_payment, "r");
+        send_raw_message(refferal_payment_msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
+    }
 
     ;; Here we attach precise amount of money - as all the remainings gone on ivenstment
     cell msg = build_balance_update_message(
@@ -176,7 +195,7 @@
         get_balance_update_gas_cost(),
         sender_address,
         BALANCE_UPD_DEPOSIT_PUB,
-        accessible_user_value,
+        final_user_value,
         res_jettons
     );
     send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
@@ -222,7 +241,7 @@
     }
 
     general_state::total_tons_collected -= tons_to_refund;
-    (int pur_val, int opn) = validate_value(tons_to_refund, 0);
+    (int pur_val, int opn) = validate_value(tons_to_refund, 0, REFUND_FEE_PERCENT);
     this::operational_needs += opn;
 
     ;; Here we reserve all the contract's money

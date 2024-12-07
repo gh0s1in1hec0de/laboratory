@@ -118,20 +118,29 @@ export class TxRequestBuilder {
             queryId?: number,
             amount: Coins
         },
-        { userAddress, userWalletAddress, jettonAmount }: {
+        {
+            userAddress,
+            userWalletAddress,
+            maybeReferral = null,
+            jettonAmount
+        }: {
             userAddress: Address,
+            maybeReferral: Address | null,
             userWalletAddress: Address,
             jettonAmount: Coins
         },
         validUntil: number = Math.floor(Date.now() / 1000) + 90
     ): SendTransactionRequest {
-        const body = beginCell().storeUint(JettonOps.Transfer, 32).storeUint(queryId ?? 0, 64)
+        const body = beginCell()
+            .storeUint(JettonOps.Transfer, 32)
+            .storeUint(queryId ?? 0, 64)
             .storeCoins(jettonAmount)
             .storeAddress(Address.parse(launchAddress))
             .storeAddress(userAddress)
             .storeMaybeRef(null)
             .storeCoins(BigInt(amount))
-            .storeMaybeRef(null)
+            // Forwarding referral to launch contract
+            .storeMaybeRef(beginCell().storeAddress(maybeReferral).endCell())
             .endCell();
         return {
             validUntil,

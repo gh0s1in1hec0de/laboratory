@@ -119,7 +119,7 @@
         public_round::const::fut_jet_limit += creator_round::fut_jet_left;
         creator_round::fut_jet_left = 0;
     }
-    ;; Balancing numbers
+    ;; Balancing price
     if (public_round::synthetic_ton_reserve < (wl_round::const::ton_limit / 5)) {
         public_round::synthetic_ton_reserve = wl_round::const::ton_limit / 5;
     }
