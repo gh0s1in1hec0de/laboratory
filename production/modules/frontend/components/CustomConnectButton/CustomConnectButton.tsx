@@ -10,11 +10,14 @@ import { ConnectButtonSkeleton } from "./components/ConnectButtonSkeleton";
 import { DropdownButton } from "./components/DropdownButton";
 import { useConnectButton } from "./hooks/useConnectButton";
 import { CustomConnectButtonProps } from "./types";
+import { CopyIcon } from "@/icons/common/CopyIcon/CopyIcon";
+import Grid from "@mui/material/Grid2";
 
 export function CustomConnectButton({
   successChildren,
   fullWidth,
   showDropdown = true,
+  copyReferralButton = false,
 }: CustomConnectButtonProps) {
   const {
     isPending,
@@ -57,16 +60,34 @@ export function CustomConnectButton({
                   label: "Tasks.header.copyAddress",
                   onClick: () => handleCopyAddress(tonWalletAddress),
                 },
-                {
+                ...(!copyReferralButton ? [{
                   label: "Tasks.header.copyReferral",
                   onClick: () => handleCopyReferral(tonWalletAddress),
-                },
+                }] : []),
                 {
                   label: "Tasks.header.disconnectWallet",
                   onClick: () => handleClickDisconnectButton(),
                 },
               ]}
             />
+          )}
+
+          {copyReferralButton && (
+            <CustomButton
+              padding="10px 0"
+              fullWidth={fullWidth}
+              onClick={() => handleCopyReferral(tonWalletAddress)}
+            >
+              <Grid
+                container
+                gap={1}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Label label={t("copyReferral")} variantSize="medium14" />
+                <CopyIcon />
+              </Grid>
+            </CustomButton>
           )}
 
           <CustomToast

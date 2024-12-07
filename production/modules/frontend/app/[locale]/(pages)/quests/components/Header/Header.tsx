@@ -21,6 +21,7 @@ export function Header() {
         <CustomConnectButton 
           successChildren={<TicketBalance rounded="xs" />}
           fullWidth
+          copyReferralButton
         />
       </TonProvider>
     </Grid>

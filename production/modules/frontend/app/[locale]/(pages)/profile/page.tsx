@@ -23,6 +23,7 @@ export default function Profile() {
         <CustomConnectButton
           successChildren={<RedirectButtons />}
           fullWidth
+          copyReferralButton
         />
       </TonProvider>
     </Grid>
