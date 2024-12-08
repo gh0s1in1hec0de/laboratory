@@ -27,7 +27,7 @@ export function analyzeLaunchTrend(
                     totals.totalSells += action.publicTons;
                     break;
                 case "total_refund":
-                    totals.totalSells += action.whitelistTons + action.publicTons + action.jettons;
+                    totals.totalSells += action.whitelistTons + action.publicTons;
                     break;
             }
             return totals;
