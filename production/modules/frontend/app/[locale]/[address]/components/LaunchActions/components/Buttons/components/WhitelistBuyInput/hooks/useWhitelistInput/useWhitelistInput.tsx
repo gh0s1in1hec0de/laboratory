@@ -1,4 +1,4 @@
-import { CALLER_ADDRESS, REFERRAL } from "@/constants";
+import { CALLER_ADDRESS } from "@/constants";
 import { launchService, userService } from "@/services";
 import { localStorageWrapper } from "@/utils";
 import { getErrorText } from "@/utils/getErrorText";
@@ -6,9 +6,9 @@ import { Address, toNano } from "@ton/core";
 import { useTonConnectUI } from "@tonconnect/ui-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { TxRequestBuilder } from "starton-periphery";
+import { Caller, TxRequestBuilder } from "starton-periphery";
 
-export function useWhitelistInput(launchAddress: string) {
+export function useWhitelistInput(launchAddress: string, callerData: Caller) {
   const t = useTranslations("CurrentLaunch.contribute.amountInput");
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +37,7 @@ export function useWhitelistInput(launchAddress: string) {
         {
           launchAddress,
           amount: toNano(amount).toString(),
-          maybeReferral: localStorageWrapper.get(REFERRAL),
+          maybeReferral: callerData.invitedBy || undefined,
         },
       );
       

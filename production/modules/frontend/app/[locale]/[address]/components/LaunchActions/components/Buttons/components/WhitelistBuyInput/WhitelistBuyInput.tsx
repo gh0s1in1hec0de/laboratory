@@ -10,7 +10,6 @@ export function WhitelistBuyInput({
   launchAddress,
   callerData,
 }: WhitelistBuyInputProps) {
-  console.log(callerData);
   const t = useTranslations("CurrentLaunch.contribute");
   const {
     amount,
@@ -18,7 +17,7 @@ export function WhitelistBuyInput({
     isLoading,
     errorText,
     onClickBuyTokens,
-  } = useWhitelistInput(launchAddress);
+  } = useWhitelistInput(launchAddress, callerData);
 
   return (
     <Grid

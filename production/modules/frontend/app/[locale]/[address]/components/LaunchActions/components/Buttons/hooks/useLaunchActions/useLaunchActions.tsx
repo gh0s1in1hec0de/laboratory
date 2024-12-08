@@ -99,6 +99,10 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
   }
 
   function renderContent() {
+    if (!callerData) {
+      return;
+    }
+
     if (phase === SalePhase.WHITELIST) {
       return launchData && (whitelistStatus || (ticketBalance && ticketBalance > 0)) ? (
         <WhitelistBuyInput

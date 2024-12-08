@@ -10,7 +10,6 @@ export function PublicBuyInput({
   launchAddress,
   callerData,
 }: PublicBuyInputProps) {
-  console.log(callerData);
   const t = useTranslations("CurrentLaunch.contribute");
   const {
     amount,
@@ -18,7 +17,7 @@ export function PublicBuyInput({
     isLoading,
     errorText,
     onClickBuyTokens,
-  } = usePublicBuy(launchAddress);
+  } = usePublicBuy(launchAddress, callerData);
 
   return (
     <Grid
