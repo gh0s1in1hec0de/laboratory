@@ -7,8 +7,10 @@ import { usePublicBuy } from "./hooks/usePublicBuy";
 import { PublicBuyInputProps } from "./types";
 
 export function PublicBuyInput({
-  launchAddress
+  launchAddress,
+  callerData,
 }: PublicBuyInputProps) {
+  console.log(callerData);
   const t = useTranslations("CurrentLaunch.contribute");
   const {
     amount,

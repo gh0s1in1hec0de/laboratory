@@ -9,7 +9,8 @@ import type {
     GetCallerTasksRequest,
     RawAddressString,
     Subtask,
-    Caller
+    Caller,
+    GetCallerRequest
 } from "starton-periphery";
 
 export async function connectCallerWallet(
@@ -77,4 +78,12 @@ export async function getWhitelistStatus(
     { tokenLaunch, callerAddress }: GetWhitelistStatusRequest
 ): Promise<boolean> {
     return db.checkWhitelistStatus(tokenLaunch, callerAddress);
+}
+
+export async function getCaller(
+    { address }: GetCallerRequest
+): Promise<Caller> {
+    const res = await db.getCaller(address);
+    if (res === null) throw new CommonServerError(400, `user with address not found: ${address}`);
+    return res;
 }

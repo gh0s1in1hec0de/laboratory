@@ -11,6 +11,7 @@ import { useTonConnectUI } from "@tonconnect/ui-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import {
+  Caller,
   GetCertainLaunchResponse,
   getCurrentSalePhase,
   GlobalVersions,
@@ -27,6 +28,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
   const [errorText, setErrorText] = useState("");
   const [whitelistStatus, setWhitelistStatus] = useState<boolean | null>(null);
   const [ticketBalance, setTicketBalance] = useState<number | null>(null);
+  const [callerData, setCallerData] = useState<Caller | null>(null);
   const [tonConnectUI] = useTonConnectUI();
   const t = useTranslations("CurrentLaunch.contribute");
 
@@ -50,6 +52,8 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
         const ticketBalance = await userService.getTicketBalance();
         setTicketBalance(ticketBalance);
 
+        const callerData = await userService.getCaller(callerAddress);
+        setCallerData(callerData);
       } catch (error) {
         setErrorText(getErrorText(error, t("fetchError")));
       } finally {
@@ -99,6 +103,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
       return launchData && (whitelistStatus || (ticketBalance && ticketBalance > 0)) ? (
         <WhitelistBuyInput
           launchAddress={launchData.address}
+          callerData={callerData}
         />
       ) : (
         <GetTicketsButton />
@@ -109,6 +114,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
       return (
         <PublicBuyInput
           launchAddress={launchData.address}
+          callerData={callerData}
         />
       );
     }

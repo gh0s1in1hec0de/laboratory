@@ -16,7 +16,9 @@ export type StoredUser = {
 
 export type Caller = {
     address: RawAddressString,
-    ticket_balance: number,
+    invitedBy: RawAddressString | null,
+    ticketBalance: number,
+    isBigBoss: boolean,
 }
 
 export type StoredTask = {

@@ -1,4 +1,4 @@
-import { CALLER_ADDRESS } from "@/constants";
+import { CALLER_ADDRESS, REFERRAL } from "@/constants";
 import { launchService, userService } from "@/services";
 import { localStorageWrapper } from "@/utils";
 import { getErrorText } from "@/utils/getErrorText";
@@ -37,6 +37,7 @@ export function useWhitelistInput(launchAddress: string) {
         {
           launchAddress,
           amount: toNano(amount).toString(),
+          maybeReferral: localStorageWrapper.get(REFERRAL),
         },
       );
       

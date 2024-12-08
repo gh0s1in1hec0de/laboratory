@@ -8,7 +8,9 @@ import { WhitelistBuyInputProps } from "./types";
 
 export function WhitelistBuyInput({
   launchAddress,
+  callerData,
 }: WhitelistBuyInputProps) {
+  console.log(callerData);
   const t = useTranslations("CurrentLaunch.contribute");
   const {
     amount,

@@ -15,7 +15,8 @@ CREATE TABLE callers
     caller_id      SERIAL UNIQUE,
     address        address PRIMARY KEY,
     invited_by     address  REFERENCES callers (address) ON DELETE SET NULL,
-    ticket_balance SMALLINT NOT NULL DEFAULT 0
+    ticket_balance SMALLINT NOT NULL DEFAULT 0,
+    is_big_boss    BOOLEAN  NOT NULL DEFAULT FALSE
 );
 
 -- Not referencing caller allow people accomplish tasks without logging in firstly

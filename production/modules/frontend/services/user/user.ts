@@ -4,7 +4,13 @@ import { USER_ERROR } from "@/errors";
 import { USER_ROUTES } from "@/routes";
 import { Task } from "@/types";
 import { localStorageWrapper } from "@/utils";
-import { GetWhitelistStatusRequest, GetUserBalancesRequest, GetUserBalancesResponse } from "starton-periphery";
+import { 
+  GetWhitelistStatusRequest,
+  GetUserBalancesRequest,
+  GetUserBalancesResponse,
+  Caller,
+  RawAddressString
+} from "starton-periphery";
 import { Address } from "@ton/core";
 
 async function postConnectWallet(address: string, referral?: string): Promise<void> {
@@ -88,10 +94,26 @@ async function getBalances({
   }
 }
 
+async function getCaller(address: RawAddressString): Promise<Caller> {
+  try {
+    const response = await managerService.get<Caller>(USER_ROUTES.GetCaller, {
+      params: {
+        address: Address.parse(address).toRawString(),
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error(USER_ERROR.GetBalances, error);
+    throw error;
+  }
+}
+
 export const userService = {
   postConnectWallet,
   getTicketBalance,
   getTasks,
   getWhitelistStatus,
   getBalances,
+  getCaller,
 };

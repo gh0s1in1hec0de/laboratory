@@ -18,3 +18,7 @@ export const GetWhitelistStatusSchema = t.Object({
     tokenLaunch: t.String(),
     callerAddress: t.String(),
 });
+
+export const GetCallerSchema = t.Object({
+    address: t.String(),
+});

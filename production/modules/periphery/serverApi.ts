@@ -40,6 +40,8 @@ export type GetCallerTasksResponse = {
 }
 export type GetWhitelistStatusRequest = { tokenLaunch: RawAddressString, callerAddress: RawAddressString };
 
+export type GetCallerRequest = { address: RawAddressString };
+
 // Oracle API
 export type LaunchTradingStats = { trend: LaunchTrend, delta: Coins };
 export type ExtendedLaunch = StoredTokenLaunch & LaunchBalance & Partial<LaunchMetadata> & { activeHolders: number };

@@ -1,4 +1,6 @@
+import { REFERRAL } from "@/constants";
 import { getErrorText } from "@/utils/getErrorText";
+import { localStorageWrapper } from "@/utils/storageWrapper";
 import { toNano } from "@ton/core";
 import { useTonConnectUI } from "@tonconnect/ui-react";
 import { useTranslations } from "next-intl";
@@ -19,6 +21,7 @@ export function usePublicBuy(launchAddress: string){
         {
           launchAddress,
           amount: toNano(amount).toString(),
+          maybeReferral: localStorageWrapper.get(REFERRAL),
         },
       );
       await tonConnectUI.sendTransaction(transaction, { modals: ["error"] });

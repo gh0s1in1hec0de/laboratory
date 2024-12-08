@@ -4,4 +4,5 @@ export enum USER_ROUTES {
   GetTasks = "/user/tasks",
   GetWhitelistStatus = "/user/whitelist-status",
   GetBalances = "/user/get-balances",
+  GetCaller = "/user/get-caller",
 }
