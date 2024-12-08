@@ -141,7 +141,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: StoredTokenLaunch, launchA
                             case "r": {
                                 const recipient = msg.info.dest;
                                 logger().debug(`referral payment to ${recipient} on launch ${launch.address}`);
-                                await db.storeReferralPayment(launch.address, recipient.toRawString());
+                                await db.storeReferralPayment(launch.address, recipient.toRawString(), msg.info.value.coins);
                                 break;
                             }
                             default:

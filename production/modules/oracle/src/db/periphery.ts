@@ -1,4 +1,4 @@
-import type { LamportTime, RawAddressString } from "starton-periphery";
+import type { Coins, LamportTime, RawAddressString } from "starton-periphery";
 import type { SqlClient } from "./types";
 import { globalClient } from "./db";
 import { logger } from "../logger.ts";
@@ -43,10 +43,11 @@ export async function getLaunchWithTopActivity(client?: SqlClient) {
         )[0] : null;
 }
 
-export async function storeReferralPayment(launchAddress: RawAddressString, payee: RawAddressString, client?: SqlClient) {
+export async function storeReferralPayment(
+    launchAddress: RawAddressString, payee: RawAddressString, value: Coins, client?: SqlClient) {
     const res = await (client ?? globalClient)`
-        INSERT INTO referral_payments (token_launch, payee)
-        VALUES (${launchAddress}, ${payee})
+        INSERT INTO referral_payments (token_launch, payee, value)
+        VALUES (${launchAddress}, ${payee}, ${value})
         RETURNING 1
     `;
     if (res.length !== 1) logger().warn(`exactly 1 column must be created, got: ${res}`);

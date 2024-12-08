@@ -107,7 +107,8 @@ CREATE TABLE launch_balances
 CREATE TABLE referral_payments
 (
     token_launch address REFERENCES token_launches (address),
-    payee        address
+    payee        address,
+    value        coins
 );
 
 CREATE OR REPLACE FUNCTION register_actor_fallback() RETURNS TRIGGER AS
