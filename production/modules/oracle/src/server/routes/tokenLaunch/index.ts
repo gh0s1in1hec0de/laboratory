@@ -30,6 +30,7 @@ export function TokenLaunchRoutes() {
                 try {
                     return await getCertainLaunch(query);
                 } catch (e) {
+                    console.log(e);
                     if (e instanceof CommonServerError) return error(e.code, e.message);
                     else return error(500, e);
                 }
