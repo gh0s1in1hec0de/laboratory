@@ -2,6 +2,7 @@ import { getMenuKeyboard, getReplyText } from "../constants";
 import type { CallbackQueryContext } from "grammy";
 import type { MyContext } from "../index";
 import { Address } from "@ton/core";
+import { Locales } from "starton-periphery";
 
 export async function handleEnterConversationCallback(
     ctx: CallbackQueryContext<MyContext>,
@@ -77,50 +78,55 @@ export function isReadyUsersTasksToDb(str: string): ValidationUsersTasksToDbResu
     return { validMap: mapAddressTasks, errors };
 }
 
-interface ValidationTasksToDbResult {
-    validMap: Map<string, string>,
-    errors: string[],
-}
+export type TaskParsingResult = {
+    tasksByLocale: Map<string, string>, // Map: Localed names -> Localed descriptions
+    errors: string[],  // List of validation errors
+};
 
-const mapTasks: Map<string, string> = new Map();
-
-export function isReadyTasksToDb(str: string): ValidationTasksToDbResult {
-    mapTasks.clear();
+export function parseTasksInputToMergedMap(input: string): TaskParsingResult {
+    const tasksByLocale = new Map<string, string>(); // Map for merged task names and descriptions
     const errors: string[] = [];
-    let index = 0;
 
-    for (const pair of str.split(/\r?\n/)) {
-        const [taskName, subtasks] = pair.split("|");
-        const trimmedTaskName = taskName?.trim();
-        const trimmedSubTasks = subtasks?.trim();
+    // Split the input into task blocks using "---" as the task separator
+    input.split(/---/).forEach((taskBlock, taskIndex) => {
+        const localizedNames: string[] = [];
+        const localizedDescriptions: string[] = [];
 
-        if (!trimmedTaskName) {
-            errors.push(`Error in line ${index + 1}: empty task name`);
-            continue;
+        const trimmedBlock = taskBlock.trim();
+        if (!trimmedBlock) {
+            errors.push(`Task block ${taskIndex + 1} is empty or invalid`);
+            return;
         }
 
-        if (!trimmedSubTasks) {
-            errors.push(`Error in line ${index + 1}: empty subtasks`);
-            continue;
+        // Match localized tasks
+        const matches = Array.from(trimmedBlock.matchAll(/(\w{2}):([^|]+)\|(.+?)(?=\s?%|$)/g));
+        if (matches.length === 0) {
+            errors.push(`No valid task data found in task block ${taskIndex + 1}`);
+            return;
         }
 
-        const subtaskArray = trimmedSubTasks.split("&");
-        if (subtaskArray.length % 2 !== 0 || subtaskArray.some(item => item.trim() === "")) {
-            errors.push(`Error in line ${index + 1}: subtask must have a name and description`);
-            continue;
+        for (const [, locale, taskName, taskDescription] of matches) {
+            const trimmedLocale = locale.trim(); // Avoid repeated trimming
+            if (!Object.values(Locales).includes(trimmedLocale as Locales)) {
+                errors.push(`Invalid locale '${trimmedLocale}' in task block ${taskIndex + 1}`);
+                continue;
+            }
+
+            // Collect localized task names and descriptions
+            localizedNames.push(`${trimmedLocale}:${taskName.trim()}`);
+            localizedDescriptions.push(`${trimmedLocale}:${taskDescription.trim()}`);
         }
 
-        if (mapTasks.has(trimmedTaskName)) {
-            const storedDescription = mapTasks.get(trimmedTaskName);
-            mapTasks.set(trimmedTaskName, `${storedDescription}&${subtaskArray.join("&")}`);
-        } else {
-            mapTasks.set(trimmedTaskName, subtaskArray.join("&"));
+        if (localizedNames.length === 0) {
+            errors.push(`No valid localized data in task block ${taskIndex + 1}`);
+            return;
         }
 
-        index++;
-    }
+        // Merge names and descriptions for this task and store in the map
+        tasksByLocale.set(localizedNames.join("%"), localizedDescriptions.join("%"));
+    });
 
-    return { validMap: mapTasks, errors };
+    return { tasksByLocale, errors };
 }
 
 interface ValidationUserAddressesResult {

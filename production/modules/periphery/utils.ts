@@ -98,3 +98,28 @@ export class CommonServerError extends Error {
 export function toSnakeCase(camelCaseStr: string) {
     return camelCaseStr.replace(/([A-Z])/g, "_$1").toLowerCase();
 }
+
+export enum Locales {
+    RU = "ru",
+    EN = "en"
+}
+
+export function parseLocaledText(text: string): Map<Locales, string> {
+    const localeMap = new Map<Locales, string>();
+    const parts = text.split('%');
+
+    for (const part of parts) {
+        const [locale, value] = part.split(':');
+        const trimmedLocale = locale.trim() as Locales;
+        const trimmedValue = value.trim();
+
+        if (!Object.values(Locales).includes(trimmedLocale)) {
+            throw new Error(`Invalid locale '${locale}' in localized text`);
+        }
+
+        localeMap.set(trimmedLocale, trimmedValue);
+    }
+
+    return localeMap;
+}
+
