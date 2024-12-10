@@ -100,13 +100,23 @@ export function CustomConnectButton({
           {successChildren || null}
         </>
       ) : (
-        <CustomButton
-          onClick={handleClickConnectButton}
-          padding={fullWidth ? "10px" : "6px 10px"}
-          fullWidth={fullWidth}
-        >
-          <Label label={t("connectWallet")} variantSize="medium14" />
-        </CustomButton>
+        <>
+          <CustomButton
+            onClick={handleClickConnectButton}
+            padding={fullWidth ? "10px" : "6px 10px"}
+            fullWidth={fullWidth}
+          >
+            <Label label={t("connectWallet")} variantSize="medium14" />
+          </CustomButton>
+        
+          {copyReferralButton && (
+            <Label 
+              label={t("connectWalletToReferral")}
+              variantSize="medium14"
+              variantColor="gray"
+            />
+          )}
+        </>
       )}
     </LoadingWrapper>
   );

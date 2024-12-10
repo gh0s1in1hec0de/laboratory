@@ -149,6 +149,7 @@
 	},
 	"Tasks": {
 		"header": {
+			"connectWalletToReferral": "* Подключите кошелек, чтобы получить вашу реферальную ссылку!",
 			"successCopyAddress": "Адрес скопирован!",
 			"successCopyReferral": "Рефералка скопирована!",
 			"subtitle": "сезон",
