@@ -207,11 +207,11 @@ export async function updateOpnCollected(
     const res = await (client ?? globalClient)`
         UPDATE token_launches
         SET post_deploy_enrollment_stats = jsonb_set(
-            post_deploy_enrollment_stats,
-            '{opnCollected}',
-            ${opnCollectedValue}::TEXT::JSONB,
-            TRUE
-        )
+                COALESCE(post_deploy_enrollment_stats, '{}'::JSONB),
+                '{opnCollected}',
+                ${opnCollectedValue}::TEXT::JSONB,
+                TRUE
+                                           )
         WHERE address = ${tokenLaunchAddress}
         RETURNING 1;
     `;
@@ -219,17 +219,19 @@ export async function updateOpnCollected(
 }
 
 export async function updatePostDeployEnrollmentStats(
-    tokenLaunchAddress: RawAddressString, stats: PostDeployEnrollmentStats, client?: SqlClient
+    tokenLaunchAddress: RawAddressString,
+    stats: PostDeployEnrollmentStats,
+    client?: SqlClient
 ): Promise<void> {
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
         UPDATE token_launches
-        SET post_deploy_enrollment_stats = post_deploy_enrollment_stats || ${stats}::JSONB,
+        SET post_deploy_enrollment_stats = COALESCE(post_deploy_enrollment_stats, '{}'::JSONB) || ${stats}::JSONB,
             is_successful                = TRUE
         WHERE address = ${tokenLaunchAddress}
         RETURNING 1;
     `;
-    if (res.length !== 1) logger().error(`looks like enrollment stats for ${tokenLaunchAddress} wasn't updated`);
+    if (res.length !== 1) logger().error(`Looks like enrollment stats for ${tokenLaunchAddress} weren't updated`);
 }
 
 export async function updateDexData(

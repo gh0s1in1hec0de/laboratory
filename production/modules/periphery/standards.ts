@@ -4,6 +4,9 @@ export type RawAddressString = string;
 export type LamportTime = bigint;
 export type Coins = bigint;
 
+export const STONFI_ROUTER_V2_1_ADDRESS = "kQALh-JBBIKK7gr0o4AVf9JZnEsFndqO0qTCyT-D-yBsWk0v";
+export const STONFI_PTON_V2_1_ADDRESS = "kQACS30DNoUQ7NfApPvzh7eBmSZ9L4ygJ-lkNWtba8TQT-Px";
+
 export const TESTNET_FACTORY_ADDR = Address.parse("EQAROb_l-1yGMKjPGUmc0tNjYOsXTKTsucXmhh2Fm9y98z7Y");
 export const BURN_ADDR = Address.parse("EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c");
 export const DEFAULT_SUB_WALLET = 698983191;

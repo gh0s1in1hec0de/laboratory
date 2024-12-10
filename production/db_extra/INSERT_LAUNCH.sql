@@ -1,3 +1,4 @@
+
 INSERT INTO token_launches (address,
                             identifier,
                             creator,

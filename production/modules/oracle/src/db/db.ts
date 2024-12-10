@@ -13,7 +13,7 @@ export async function createPostgresClient(): Promise<SqlClient> {
             database: process.env.POSTGRES_DB,
             username: process.env.POSTGRES_USER,
             password: process.env.POSTGRES_PASSWORD,
-            types: { bigint: postgres.BigInt, numeric: postgres.BigInt },
+            types: { bigint: postgres.BigInt },
             transform: postgres.camel,
             max: 10
         });

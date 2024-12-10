@@ -1,4 +1,5 @@
 import { Address, fromNano, internal as internal_relaxed, type OutActionSendMsg, SendMode } from "@ton/ton";
+import { createStonfiPoolForJetton } from "./stonfi";
 import { createDedustPoolForJetton } from "./dedust";
 import { beginCell, toNano } from "@ton/core";
 import { balancedTonClient } from "./client";
@@ -18,7 +19,7 @@ import {
     jettonFromNano,
     type DexData,
     type Coins,
-    delay, type RawAddressString,
+    delay,
 } from "starton-periphery";
 
 export async function chiefScanning() {
@@ -150,7 +151,7 @@ async function createPoolsForNewJettons() {
             }),
         });
         poolCreationProcesses.push(
-            createDedustPoolForJetton(
+            createStonfiPoolForJetton(
                 {
                     ourWalletAddress: deployedJetton.ourWalletAddress,
                     masterAddress: deployedJetton.masterAddress,

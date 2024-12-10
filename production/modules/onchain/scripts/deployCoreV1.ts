@@ -14,19 +14,18 @@ export async function run(provider: NetworkProvider) {
     const chief = Address.parse("0QCkmYN_RSz4qhhHEV3ralAbUfssRM59lqxbXeh5W5oCrYHO");
 
     // The app's code is its configuration - shout out to suckless.org folks
-    const FIVE_MIN = 300;
     const launchConfig: LaunchConfigV1 = {
         minTonForSaleSuccess: toNano("4"),
-        tonLimitForWlRound: toNano("4"),
+        tonLimitForWlRound: toNano("20"),
         penny: toNano("0.1"),
 
         jetWlLimitPct: toPct(18),
         jetPubLimitPct: toPct(38),
         jetDexSharePct: toPct(20),
 
-        creatorRoundDurationSec: FIVE_MIN,
-        wlRoundDurationSec: FIVE_MIN,
-        pubRoundDurationSec: FIVE_MIN,
+        creatorRoundDurationSec: 300,
+        wlRoundDurationSec: 360,
+        pubRoundDurationSec: 360,
     };
     const core = provider.open(
         CoreV1.createFromState(

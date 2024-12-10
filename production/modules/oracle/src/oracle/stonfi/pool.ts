@@ -1,15 +1,18 @@
-import type { Coins, DexData, RawAddressString } from "starton-periphery";
-import { SUBWALLET_ID, DEFAULT_TIMEOUT, delay, } from "starton-periphery";
-import { Address, type SenderArguments, SendMode } from "@ton/ton";
+import type { RawAddressString, DexData, Coins, } from "starton-periphery";
+import { type SenderArguments, Address, SendMode } from "@ton/ton";
 import { internal as internal_relaxed } from "@ton/core";
 import { balancedTonClient } from "../client";
 import { chiefWalletData } from "../highload";
 import { DEX, pTON } from "@ston-fi/sdk";
 import { logger } from "../../logger";
 import * as db from "../../db";
-
-const STONFI_ROUTER_V2_1_ADDRESS = "kQALh-JBBIKK7gr0o4AVf9JZnEsFndqO0qTCyT-D-yBsWk0v";
-const STONFI_PTON_V2_1_ADDRESS = "kQACS30DNoUQ7NfApPvzh7eBmSZ9L4ygJ-lkNWtba8TQT-Px";
+import {
+    STONFI_ROUTER_V2_1_ADDRESS,
+    STONFI_PTON_V2_1_ADDRESS,
+    DEFAULT_TIMEOUT,
+    SUBWALLET_ID,
+    delay,
+} from "starton-periphery";
 
 export async function createStonfiPoolForJetton(
     jetton: { ourWalletAddress: RawAddressString, masterAddress: RawAddressString },
