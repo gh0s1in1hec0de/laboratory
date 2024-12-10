@@ -149,6 +149,7 @@
 	},
 	"Tasks": {
 		"header": {
+			"connectWalletToReferral": "Connect wallet to get your referral link!",
 			"successCopyAddress": "Address copied!",
 			"successCopyReferral": "Referral copied!",
 			"subtitle": "season",

@@ -1,4 +1,4 @@
-import { CALLER_ADDRESS } from "@/constants";
+import { CALLER_ADDRESS, REFERRAL } from "@/constants";
 import { launchService, userService } from "@/services";
 import { localStorageWrapper } from "@/utils";
 import { getErrorText } from "@/utils/getErrorText";
@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Caller, TxRequestBuilder } from "starton-periphery";
 
-export function useWhitelistInput(launchAddress: string, callerData: Caller) {
+export function useWhitelistInput(launchAddress: string, callerData: Caller | null) {
   const t = useTranslations("CurrentLaunch.contribute.amountInput");
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +37,7 @@ export function useWhitelistInput(launchAddress: string, callerData: Caller) {
         {
           launchAddress,
           amount: toNano(amount).toString(),
-          maybeReferral: callerData.invitedBy || undefined,
+          maybeReferral: callerData?.invitedBy || localStorageWrapper.get(REFERRAL) || undefined,
         },
       );
       

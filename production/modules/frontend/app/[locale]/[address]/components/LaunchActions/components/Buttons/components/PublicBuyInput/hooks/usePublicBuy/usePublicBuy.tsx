@@ -1,11 +1,13 @@
+import { REFERRAL } from "@/constants";
 import { getErrorText } from "@/utils/getErrorText";
+import { localStorageWrapper } from "@/utils/storageWrapper";
 import { toNano } from "@ton/core";
 import { useTonConnectUI } from "@tonconnect/ui-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Caller, TxRequestBuilder } from "starton-periphery";
 
-export function usePublicBuy(launchAddress: string, callerData: Caller) {
+export function usePublicBuy(launchAddress: string, callerData: Caller | null) {
   const t = useTranslations("CurrentLaunch.contribute.amountInput");
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -19,7 +21,7 @@ export function usePublicBuy(launchAddress: string, callerData: Caller) {
         {
           launchAddress,
           amount: toNano(amount).toString(),
-          maybeReferral: callerData.invitedBy || undefined,
+          maybeReferral: callerData?.invitedBy || localStorageWrapper.get(REFERRAL) || undefined,
         },
       );
       await tonConnectUI.sendTransaction(transaction, { modals: ["error"] });
