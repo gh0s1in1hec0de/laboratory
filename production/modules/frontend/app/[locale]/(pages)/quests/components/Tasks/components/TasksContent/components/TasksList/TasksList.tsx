@@ -44,7 +44,7 @@ export function TasksList({
             offUserSelect
           />
         ) : tasks.map((task) => (
-          <TaskCard 
+          <TaskCard
             key={task.taskId}
             task={task}
           />

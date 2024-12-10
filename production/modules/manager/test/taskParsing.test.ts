@@ -14,6 +14,11 @@ ru:ФрэндТех|Описание задачи%en:FriendTech|Task description
 ---
 ru:Другая задача|Другое описание%en:Another task|Another description\
 `;
+            const input2 = `\
+            ru:taskName1|subtaskName1&subtaskDescription1%en:taskName1|subtaskName1&subtaskDescription1
+            ---
+            ru:Другая задача|Другое описание%en:Another task|Another description\
+            `;
             const result = parseTasksInputToMergedMap(input);
             expect(result.tasksByLocale.size).toBe(2);
             expect(result.tasksByLocale.get("ru:ФрэндТех%en:FriendTech"))
@@ -74,6 +79,7 @@ ru:ФрэндТех|Описание задачи%en:FriendTech|Task description
     describe("parseLocaledText", () => {
         test("parses valid localized text", async () => {
             const input = "ru:ФрэндТех%en:FriendTech";
+            const input2 = "ru:subtaskName1&subtaskDescription1%en:subtaskName1&subtaskDescription1";
             const result = parseLocaledText(input);
             expect(result.size).toBe(2);
             expect(result.get(Locales.RU)).toBe("ФрэндТех");

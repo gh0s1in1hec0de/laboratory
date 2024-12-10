@@ -1,4 +1,4 @@
-import { CommonServerError } from "starton-periphery";
+import { CommonServerError, parseLocaledText } from "starton-periphery";
 import { Address } from "@ton/core";
 import * as db from "../../../db";
 import type {
@@ -61,6 +61,7 @@ export async function getCallerTasks(
     const usersTasksRelations = address ? await db.getUsersTasksRelations(Address.parse(address).toRawString()) : null;
     return await Promise.all(
         tasksDb.map(async (task) => {
+            // task.description example: ru:subtaskName1&subtaskDescription1%en:subtaskName1&subtaskDescription1
             const subQuests = parseSubtasks(task.description);
             return {
                 taskId: task.taskId,

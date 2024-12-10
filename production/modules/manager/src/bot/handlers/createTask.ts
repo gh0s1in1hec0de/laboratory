@@ -1,6 +1,6 @@
 import { cancelConversationKeyboard, Conversations, getReplyText } from "../constants";
 import type { MyContext, MyConversation } from "..";
-import { isReadyTasksToDb } from "./common";
+import { parseTasksInputToMergedMap } from "./common";
 import { logger } from "../../logger";
 import * as db from "../../db";
 
@@ -13,7 +13,7 @@ export async function createTask(conversation: MyConversation, ctx: MyContext): 
     do {
         const { msg: { text } } = await conversation.waitFor("message:text");
 
-        const { validMap, errors } = isReadyTasksToDb(text);
+        const { tasksByLocale, errors } = parseTasksInputToMergedMap(text);
 
         if (errors.length) {
             await ctx.reply(getReplyText("invalidAddTasks") + "\n" + errors.join("\n"), {
@@ -24,7 +24,7 @@ export async function createTask(conversation: MyConversation, ctx: MyContext): 
         }
 
         try {
-            for (const [taskName, description] of validMap.entries()) {
+            for (const [taskName, description] of tasksByLocale.entries()) {
                 await db.storeTask(taskName, description);
             }
         } catch (e) {

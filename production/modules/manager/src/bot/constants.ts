@@ -64,7 +64,7 @@ const replies = {
     invalidAddUsersTasksRelations: "Invalid <b>data</b> (￣ヘ￣).",
     unknown: "I don't understand that command ╮(￣_￣)╭",
     addWalletsSuccess: "Success! Wallets added! ＼(￣▽￣)／\n\n<b>Want to continue?</b> Click /menu",
-    createTaskRequest: "Let's create a task!\nWhat should the task include? ╮(￣_￣)╭\n\n<b>Example:</b>\n<code>taskName1|subtaskName1&subtaskDescription1\ntaskName2|subtaskName2&subtaskDescription2</code>",
+    createTaskRequest: "Let's create a task!\nWhat should the task include? ╮(￣_￣)╭\n\n<b>Example:</b>\n<code>ru:taskName1|subtaskName1&subtaskDescription1%en:taskName1|subtaskName1&subtaskDescription1\n---\nru:taskName2|subtaskName2&subtaskDescription2%en:taskName2|subtaskName2&subtaskDescription2</code>",
     invalidAddTasks: "Invalid <b>data</b> (￣ヘ￣).",
     addTasksSuccess: "Success! Tasks added! ＼(￣▽￣)／\n\n<b>Want to continue?</b> Click /menu.",
     noTasks: "No tasks available (￣ヘ￣)",
