@@ -19,23 +19,31 @@ export function useTokenPolling() {
   async function pollingToken(creator?: string, metadataUri?: string) {
     try {
       while (!launchData) {
-        const data = await launchService.getCurrentToken({ creator, metadataUri });
-        
-        if (data) {
-          setLaunchData(data);
-
-          const { phase, nextPhaseIn } = getCurrentSalePhase(data.timings);
-
-          if (phase === SalePhase.NOT_STARTED && nextPhaseIn) {
-            setIsLaunchCreated(true);
-            await new Promise((resolve) => setTimeout(resolve, nextPhaseIn));
-            setIsLaunchCreated(false);
+        try {
+          const data = await launchService.getCurrentToken({ creator, metadataUri });
+  
+          if (data) {
+            setLaunchData(data);
+  
+            const { phase, nextPhaseIn } = getCurrentSalePhase(data.timings);
+  
+            if (phase === SalePhase.NOT_STARTED && nextPhaseIn) {
+              setIsLaunchCreated(true);
+              await new Promise((resolve) => setTimeout(resolve, nextPhaseIn));
+              setIsLaunchCreated(false);
+            }
+  
+            setIsLoading(false);
+            break;
           }
-
-          setIsLoading(false);
-          break;
+        } catch (error: any) {
+          if (error.response?.status === 500) {
+            console.warn("Server error (500). Retrying...");
+          } else {
+            throw error;
+          }
         }
-
+  
         await new Promise((resolve) => setTimeout(resolve, 5000));
       }
     } catch (error) {

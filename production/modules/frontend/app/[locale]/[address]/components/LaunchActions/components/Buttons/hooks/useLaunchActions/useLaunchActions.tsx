@@ -27,7 +27,6 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
   const [isLoading, setIsLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
   const [whitelistStatus, setWhitelistStatus] = useState<boolean | null>(null);
-  const [ticketBalance, setTicketBalance] = useState<number | null>(null);
   const [callerData, setCallerData] = useState<Caller | null>(null);
   const [tonConnectUI] = useTonConnectUI();
   const t = useTranslations("CurrentLaunch.contribute");
@@ -44,13 +43,6 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
           tokenLaunch: launchData?.address ?? "",
         });
         setWhitelistStatus(whitelistStatus);
-
-        if (whitelistStatus) {
-          return;
-        }
-
-        const ticketBalance = await userService.getTicketBalance();
-        setTicketBalance(ticketBalance);
 
         const callerData = await userService.getCaller(callerAddress);
         setCallerData(callerData);
@@ -100,7 +92,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
 
   function renderContent() {
     if (phase === SalePhase.WHITELIST) {
-      return launchData && (whitelistStatus || (ticketBalance && ticketBalance > 0)) ? (
+      return launchData && (whitelistStatus || (callerData?.ticketBalance && callerData?.ticketBalance > 0)) ? (
         <WhitelistBuyInput
           launchAddress={launchData.address}
           callerData={callerData}
@@ -120,21 +112,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
     }
 
     if (phase === SalePhase.ENDED) {
-      if (launchData?.isSuccessful === null) {
-        return (
-          <CustomButton
-            fullWidth
-            padding="10px"
-            background="gray"
-            addHover={false}
-          >
-            <Label label={t("deployingJetton")} variantSize="regular16" />
-          </CustomButton>
-        );
-      }
-
-      if (launchData?.isSuccessful === false) {
-        // Лаунч неуспешен, показываем рефанд
+      if (launchData?.isSuccessful === false || (launchData?.isSuccessful === null && launchData?.totalTonsCollected < launchData?.minTonTreshold)) {
         return (
           <CustomConnectButton
             fullWidth
@@ -243,6 +221,19 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
             </Grid>
           );
         }
+      }
+
+      if (launchData?.isSuccessful === null) {
+        return (
+          <CustomButton
+            fullWidth
+            padding="10px"
+            background="gray"
+            addHover={false}
+          >
+            <Label label={t("deployingJetton")} variantSize="regular16" />
+          </CustomButton>
+        );
       }
     }
 
