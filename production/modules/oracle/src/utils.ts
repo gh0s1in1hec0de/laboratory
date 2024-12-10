@@ -15,19 +15,19 @@ export function analyzeLaunchTrend(
         (totals, action) => {
             switch (action.actionType) {
                 case "whitelist_buy":
-                    totals.totalBuys += action.whitelistTons;
+                    totals.totalBuys += BigInt(action.whitelistTons);
                     break;
                 case "public_buy":
-                    totals.totalBuys += action.publicTons;
+                    totals.totalBuys += BigInt(action.publicTons);
                     break;
                 case "whitelist_refund":
-                    totals.totalSells += action.whitelistTons;
+                    totals.totalSells += BigInt(action.whitelistTons);
                     break;
                 case "public_refund":
-                    totals.totalSells += action.publicTons;
+                    totals.totalSells += BigInt(action.publicTons);
                     break;
                 case "total_refund":
-                    totals.totalSells += action.whitelistTons + action.publicTons;
+                    totals.totalSells += BigInt(action.whitelistTons) + BigInt(action.publicTons);
                     break;
             }
             return totals;

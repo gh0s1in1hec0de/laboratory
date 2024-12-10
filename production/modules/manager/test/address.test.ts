@@ -9,11 +9,12 @@ describe("Database", () => {
     test("Add mock data to the database", async () => {
         let isAddress = true;
         try {
-            Address.parse("0:57b14c1667a2bd7d7b3fce9a7450034fe7c3ced5da3607dd55bdeeea28283d19");
+            Address.parse("0QBXsUwWZ6K9fXs_zpp0UANP58PO1do2B91Vve7qKCg9GXWw");
         } catch (e) {
             isAddress = false;
         }
         console.log(`is address: ${isAddress}`);
+        console.log(Address.parse("0QBXsUwWZ6K9fXs_zpp0UANP58PO1do2B91Vve7qKCg9GXWw").toRawString());
     });
 
 });
