@@ -38,40 +38,19 @@ export async function getCallerTicketBalance(
     return res;
 }
 
-function parseSubtasks(description: string): Subtask[] {
-    const subtasks = description.split("&");
-    const result = [];
-
-    for (let i = 0; i < subtasks.length; i += 2) {
-        result.push({
-            name: subtasks[i],
-            description: subtasks[i + 1] || "",
-        });
-    }
-    return result;
-}
-
 export async function getCallerTasks(
     { staged, address }: GetCallerTasksRequest
-): Promise<GetCallerTasksResponse[]> {
+): Promise<GetCallerTasksResponse> {
     // Have mercy on our sinful souls, O Lord
-    const tasksDb = await db.getTasks(staged === "true");
-    if (!tasksDb) return [];
+    const tasks = await db.getTasks(staged === "true");
+    if (!tasks) return [];
 
     const usersTasksRelations = address ? await db.getUsersTasksRelations(Address.parse(address).toRawString()) : null;
-    return await Promise.all(
-        tasksDb.map(async (task) => {
-            // task.description example: ru:subtaskName1&subtaskDescription1%en:subtaskName1&subtaskDescription1
-            const subQuests = parseSubtasks(task.description);
-            return {
-                taskId: task.taskId,
-                name: task.name,
-                description: subQuests,
-                rewardTickets: task.rewardTickets,
-                createdAt: Number(task.createdAt),
-                completed: usersTasksRelations ? usersTasksRelations.some(relation => relation.taskId === task.taskId) : false,
-            };
-        })
+    return Promise.all(
+        tasks.map(task => ({
+            ...task,
+            completed: usersTasksRelations?.some(relation => relation.taskId === task.taskId) ?? false,
+        }))
     );
 }
 

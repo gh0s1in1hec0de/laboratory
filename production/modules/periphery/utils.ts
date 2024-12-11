@@ -1,8 +1,8 @@
 import { beginCell, fromNano, type Slice, toNano } from "@ton/core";
-import { TokenLaunchStorageV1 } from "./V1";
-import { TokenLaunchTimings } from "./types";
 import { OnchainMetadataStandard } from "./standards";
 import { DeprecatedTokenLaunchStorage } from "./D";
+import { TokenLaunchTimings } from "./types";
+import { TokenLaunchStorageV1 } from "./V1";
 import { ok as assert } from "assert";
 
 export type UnixTimeSeconds = number;
@@ -104,6 +104,7 @@ export enum Locales {
     EN = "en"
 }
 
+// Should be used for parsing localed tasks in database
 export function parseLocaledText(text: string): Map<Locales, string> {
     const localeMap = new Map<Locales, string>();
     const parts = text.split('%');
@@ -121,5 +122,19 @@ export function parseLocaledText(text: string): Map<Locales, string> {
     }
 
     return localeMap;
+}
+
+// When locale is chosen - use it to parse subtasks from description
+export type Subtask = { name: string, description: string };
+export function parseSubtasks(description: string): Subtask[] {
+    const subtasks = description.split("&");
+    const result = [];
+    for (let i = 0; i < subtasks.length; i += 2) {
+        result.push({
+            name: subtasks[i],
+            description: subtasks[i + 1] || "",
+        });
+    }
+    return result;
 }
 
