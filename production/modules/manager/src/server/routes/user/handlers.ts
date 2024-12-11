@@ -37,19 +37,6 @@ export async function getCallerTicketBalance(
     return res;
 }
 
-function parseSubtasks(description: string): Subtask[] {
-    const subtasks = description.split("&");
-    const result = [];
-
-    for (let i = 0; i < subtasks.length; i += 2) {
-        result.push({
-            name: subtasks[i],
-            description: subtasks[i + 1] || "",
-        });
-    }
-    return result;
-}
-
 export async function getCallerTasks(
     { staged, address }: GetCallerTasksRequest
 ): Promise<GetCallerTasksResponse> {

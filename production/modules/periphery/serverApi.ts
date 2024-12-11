@@ -10,6 +10,7 @@ import type {
     LaunchMetadata,
     LaunchBalance,
     RewardPool,
+    StoredTask,
 } from "./Database";
 import { LaunchTrend } from "oracle/src/utils";
 
@@ -30,14 +31,7 @@ export type GetCallerTicketBalanceRequest = { address: RawAddressString };
 
 export type Subtask = { name: string, description: string };
 export type GetCallerTasksRequest = { address?: RawAddressString, staged: string };
-export type GetCallerTasksResponse = {
-    taskId: number,
-    name: string,
-    description: Subtask[],
-    rewardTickets: number,
-    createdAt: number,
-    completed: boolean,
-}
+export type GetCallerTasksResponse = (StoredTask & { completed: boolean })[];
 export type GetWhitelistStatusRequest = { tokenLaunch: RawAddressString, callerAddress: RawAddressString };
 
 // Oracle API
