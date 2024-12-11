@@ -4,8 +4,12 @@ import { TaskCardProps } from "./types";
 import { SubTasks } from "./components/SubTasks";
 import { TaskInfo } from "./components/TaskInfo";
 import styles from "./TaskCard.module.scss";
+import { useLocale } from "next-intl";
+import { Locales, parseLocaledText } from "starton-periphery";
 
 export function TaskCard({ task }: TaskCardProps) {
+  const locale = useLocale();
+
   return (
     <Disclosure>
       {({ open }) => (
@@ -20,7 +24,7 @@ export function TaskCard({ task }: TaskCardProps) {
             className={styles.button}
           >
             <TaskInfo 
-              title={task.name}
+              title={parseLocaledText(task.name).get(locale as Locales) || task.name}
               completed={task.completed}
               reward={task.rewardTickets}
               open={open}
@@ -31,7 +35,7 @@ export function TaskCard({ task }: TaskCardProps) {
           <DisclosurePanel static style={{ width: "100%" }}>
             {({ open }) => (
               <SubTasks 
-                subTasks={task.description} 
+                subTasks={parseLocaledText(task.description).get(locale as Locales) || task.description} 
                 open={open} 
                 disabled={task.completed}
               />

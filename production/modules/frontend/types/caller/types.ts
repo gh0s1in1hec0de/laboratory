@@ -6,7 +6,7 @@ export interface Subtask {
 export interface Task {
   taskId: number;
   name: string;
-  description: Subtask[];
+  description: string;
   rewardTickets: number;
   staged: boolean;
   completed: boolean;
