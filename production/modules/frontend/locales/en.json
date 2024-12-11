@@ -361,7 +361,7 @@
 			"loading": "Creating...",
 			"description": "* Сheck if the data is correct - you can edit the description and links to social networks only once!",
 			"creatingError": "Oops, something went wrong when creating the token... Please reload the page or try again later.",
-			"disableText": "You are not a big boss"
+			"disableText": "Will be available later"
 		},
 		"polling": {
 			"noLaunchData": "Oops, something went wrong... Please reload the page or try again later.",
