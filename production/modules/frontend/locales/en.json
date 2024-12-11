@@ -413,7 +413,7 @@
 			"deployingJetton": "Deploying jetton...",
 			"deployingPool": "Deploying pool...",
 			"refund": "Refund",
-			"swap": "Swap on DeDust",
+			"swap": "Swap on StonFi",
 			"chart": "Watch Chart",
 			"amountInput": {
 				"placeholder": "Indicate the number of TON",

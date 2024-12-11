@@ -413,7 +413,7 @@
 			"deployingJetton": "Развертывание токена...",
 			"deployingPool": "Развертывание пула...",
 			"refund": "Возврат средств",
-			"swap": "Обмен на DeDust",
+			"swap": "Обмен на StonFi",
 			"chart": "Посмотреть график",
 			"amountInput": {
 				"placeholder": "Укажите количество TON",
