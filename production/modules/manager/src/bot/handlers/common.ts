@@ -2,6 +2,7 @@ import { getMenuKeyboard, getReplyText } from "../constants";
 import type { CallbackQueryContext } from "grammy";
 import type { MyContext } from "../index";
 import { Address } from "@ton/core";
+import { Locales } from "starton-periphery";
 
 export async function handleEnterConversationCallback(
     ctx: CallbackQueryContext<MyContext>,
@@ -121,6 +122,57 @@ export function isReadyTasksToDb(str: string): ValidationTasksToDbResult {
     }
 
     return { validMap: mapTasks, errors };
+}
+
+export type TaskParsingResult = {
+    tasksByLocale: Map<string, string>, // Map: Localed names -> Localed descriptions
+    errors: string[],  // List of validation errors
+};
+
+export function parseTasksInputToMergedMap(input: string): TaskParsingResult {
+    const tasksByLocale = new Map<string, string>(); // Map for merged task names and descriptions
+    const errors: string[] = [];
+
+    // Split the input into task blocks using "---" as the task separator
+    input.split(/---/).forEach((taskBlock, taskIndex) => {
+        const localizedNames: string[] = [];
+        const localizedDescriptions: string[] = [];
+
+        const trimmedBlock = taskBlock.trim();
+        if (!trimmedBlock) {
+            errors.push(`Task block ${taskIndex + 1} is empty or invalid`);
+            return;
+        }
+
+        // Match localized tasks
+        const matches = Array.from(trimmedBlock.matchAll(/(\w{2}):([^|]+)\|(.+?)(?=\s?%|$)/g));
+        if (matches.length === 0) {
+            errors.push(`No valid task data found in task block ${taskIndex + 1}`);
+            return;
+        }
+
+        for (const [, locale, taskName, taskDescription] of matches) {
+            const trimmedLocale = locale.trim(); // Avoid repeated trimming
+            if (!Object.values(Locales).includes(trimmedLocale as Locales)) {
+                errors.push(`Invalid locale '${trimmedLocale}' in task block ${taskIndex + 1}`);
+                continue;
+            }
+
+            // Collect localized task names and descriptions
+            localizedNames.push(`${trimmedLocale}:${taskName.trim()}`);
+            localizedDescriptions.push(`${trimmedLocale}:${taskDescription.trim()}`);
+        }
+
+        if (localizedNames.length === 0) {
+            errors.push(`No valid localized data in task block ${taskIndex + 1}`);
+            return;
+        }
+
+        // Merge names and descriptions for this task and store in the map
+        tasksByLocale.set(localizedNames.join("%"), localizedDescriptions.join("%"));
+    });
+
+    return { tasksByLocale, errors };
 }
 
 interface ValidationUserAddressesResult {
