@@ -99,6 +99,11 @@ export function toSnakeCase(camelCaseStr: string) {
     return camelCaseStr.replace(/([A-Z])/g, "_$1").toLowerCase();
 }
 
+export enum Locales {
+    RU = "ru",
+    EN = "en"
+}
+
 // Should be used for parsing localed tasks in database
 export function parseLocaledText(text: string): Map<Locales, string> {
     const localeMap = new Map<Locales, string>();
