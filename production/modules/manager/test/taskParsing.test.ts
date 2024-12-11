@@ -106,4 +106,41 @@ ru::ФрэндТех|Описание задачи%en::FriendTech|Task descripti
             expect(result.get(Locales.EN)).toBe("FriendTech");
         });
     });
+
+    describe("parseLocaledText with complex message", () => {
+        test("parses complex message with multiple parts", async () => {
+            const input = "\
+ru::X Hunters|Подпишитесь на @StartonX в X media&[Вот здесь!](https://x.com/startonX)&Liker&Поставьте лайк 3 постам StartonX в X&Reply King&Ответьте на [пост SOON](https://x.com/startonX/status/1866404332947570906) своим кошельком!%en::X Hunters|Follow @StartonX on X media&[Here it is!](https://x.com/startonX)&Liker&Like at least 3 StartonX posts on X&Reply King&Reply to [SOON post](https://x.com/startonX/status/1866404332947570906) with your wallet!\
+";
+            const result = parseLocaledText(input);
+
+            expect(result.size).toBe(2);
+            expect(result.get(Locales.RU)).toBe(
+                "X Hunters|Подпишитесь на @StartonX в X media&[Вот здесь!](https://x.com/startonX)&Liker&Поставьте лайк 3 постам StartonX в X&Reply King&Ответьте на [пост SOON](https://x.com/startonX/status/1866404332947570906) своим кошельком!"
+            );
+            expect(result.get(Locales.EN)).toBe(
+                "X Hunters|Follow @StartonX on X media&[Here it is!](https://x.com/startonX)&Liker&Like at least 3 StartonX posts on X&Reply King&Reply to [SOON post](https://x.com/startonX/status/1866404332947570906) with your wallet!"
+            );
+        });
+
+        test("handles invalid locale with complex message", async () => {
+            const input = "\
+xx::X Hunters|Invalid locale example%en::X Hunters|Follow @StartonX on X media&[Here it is!](https://x.com/startonX)&Liker&Like at least 3 StartonX posts on X&Reply King&Reply to [SOON post](https://x.com/startonX/status/1866404332947570906) with your wallet!\
+";
+            expect(() => parseLocaledText(input)).toThrow("Invalid locale 'xx' in localized text");
+        });
+
+        test("handles single locale in complex message", async () => {
+            const input = "\
+ru::X Hunters|Подпишитесь на @StartonX в X media&[Вот здесь!](https://x.com/startonX)&Liker&Поставьте лайк 3 постам StartonX в X&Reply King&Ответьте на [пост SOON](https://x.com/startonX/status/1866404332947570906) своим кошельком!\
+";
+            const result = parseLocaledText(input);
+
+            expect(result.size).toBe(1);
+            expect(result.get(Locales.RU)).toBe(
+                "X Hunters|Подпишитесь на @StartonX в X media&[Вот здесь!](https://x.com/startonX)&Liker&Поставьте лайк 3 постам StartonX в X&Reply King&Ответьте на [пост SOON](https://x.com/startonX/status/1866404332947570906) своим кошельком!"
+            );
+        });
+    });
+
 });

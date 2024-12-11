@@ -33,6 +33,51 @@ export async function handleCancelConversationCallback(
     });
 }
 
+interface ValidationUsersTasksToDbResult {
+    validMap: Map<string, string[]>,
+    errors: string[],
+}
+
+const mapAddressTasks: Map<string, string[]> = new Map();
+
+export function isReadyUsersTasksToDb(str: string): ValidationUsersTasksToDbResult {
+    mapAddressTasks.clear();
+    const errors: string[] = [];
+
+    let index = 0;
+
+    for (const pair of str.split(",")) {
+        const [userAddress, taskId] = pair.split("|");
+
+        const trimmedAddress = userAddress?.trim();
+        const trimmedId = taskId?.trim();
+
+        if (!trimmedAddress) {
+            errors.push(`Error in line ${index + 1}: empty address`);
+            continue;
+        }
+        try {
+            // As isAddress doesn't work the proper way with raw addresses :) Good job Ton!
+            Address.parse(trimmedAddress);
+        } catch (e) {
+            errors.push(`Error in line ${index + 1}: The address looks more like shit`);
+            continue;
+        }
+        if (!trimmedId) {
+            errors.push(`Error in line ${index + 1}: empty task id`);
+            continue;
+        }
+
+        mapAddressTasks.set(trimmedAddress, [
+            ...(mapAddressTasks.get(trimmedAddress) ?? []),
+            trimmedId
+        ]);
+        index++;
+    }
+
+    return { validMap: mapAddressTasks, errors };
+}
+
 export type TaskParsingResult = {
     tasksByLocale: Map<string, string>, // Map: Localed names -> Localed descriptions
     errors: string[],  // List of validation errors
