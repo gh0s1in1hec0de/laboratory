@@ -59,14 +59,6 @@ export function SubTasks({ subTasks, open, disabled }: SubTasksProps) {
               <Box>
                 {renderTextWithLinks(subTask.description)}
               </Box>
-
-              {/* <Label
-                label={subTask.description}
-                variantSize="regular14"
-                variantColor="gray"
-                offUserSelect
-                disabled={disabled}
-              /> */}
             </Grid>
           ))}
         </Grid>
