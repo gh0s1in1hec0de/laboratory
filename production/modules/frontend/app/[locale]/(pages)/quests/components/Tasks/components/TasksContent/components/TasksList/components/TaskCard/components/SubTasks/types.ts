@@ -1,7 +1,6 @@
-import { Subtask } from "@/types";
 
 export interface SubTasksProps {
-  subTasks: Subtask[];
+  subTasks: string;
   open: boolean;
   disabled: boolean;
 }

@@ -48,7 +48,7 @@ export function LaunchPrice({
 
           <Grid container size="grow">
             <Label 
-              label={`${price?.toFixed(10) ?? 0} TON`}
+              label={`~${price?.toFixed(10) ?? 0} TON`}
               variantSize="semiBold18"
               cropped
             />

@@ -12,6 +12,7 @@ export function useSubTasks(disabled: boolean) {
       if (match.index > lastIndex) {
         parts.push(
           <Label
+            key={match.index}
             component="span"
             variantSize="regular14"
             variantColor="gray"
@@ -24,6 +25,7 @@ export function useSubTasks(disabled: boolean) {
   
       parts.push(
         <Label
+          key={match.index + 1}
           component="a"
           customHref={match[2]}
           target="_blank"
@@ -41,6 +43,7 @@ export function useSubTasks(disabled: boolean) {
     if (lastIndex < text.length) {
       parts.push(
         <Label
+          key={lastIndex + 2}
           component="span"
           variantSize="regular14"
           variantColor="gray"
