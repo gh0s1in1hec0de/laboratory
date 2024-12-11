@@ -160,6 +160,7 @@ async function createPoolsForNewJettons() {
                 address
             )
         );
+        if (dexData?.payedToCreator) continue;
         const creatorsValue = BigInt(totalTonsCollected) * BigInt(getConfig().sale.creator_share_pct) / 100n;
         const recipient = (dexData?.payedToCreator || creatorsValue > toNano("1000")) ? getConfig().oracle.chief.fallback_vault : creator;
         actions.push({
@@ -189,14 +190,7 @@ async function createPoolsForNewJettons() {
         );
         for (const { address, dexData } of waitingForPoolLaunches) {
             if (dexData?.payedToCreator) continue;
-            let newDexData: DexData;
-            if (dexData) {
-                newDexData = dexData;
-                newDexData.payedToCreator = true;
-            } else {
-                newDexData = { addedLiquidity: false, payedToCreator: true };
-            }
-            await db.updateDexData(address, newDexData);
+            await db.updateDexData(address, { payedToCreator: true });
         }
     } catch (e) {
         logger().error("failed to send actions to wallet with error", e);
@@ -230,9 +224,12 @@ async function handleChiefUpdates() {
                     if (preloadedOp !== 0) continue;
 
                     const comment = inMsgBody.loadStringTail();
-                    if (comment === "opn") logger().info(`new opn enrollment ${fromNano(value)} from token launch ${sender}`);
-                    await db.updateOpnCollected(sender.toRawString(), value.toString());
-                } catch (e) { /* empty */ }
+                    if (comment === "opn") {
+                        logger().info(`new opn enrollment ${fromNano(value)} from token launch ${sender}`);
+                        await db.updateOpnCollected(sender.toRawString(), value.toString());
+                    }
+                } catch (e) { /* empty */
+                }
                 continue;
             }
             const { msgBodyData, op } = await loadOpAndQueryId(inMsgBody);

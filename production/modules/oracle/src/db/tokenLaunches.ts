@@ -234,17 +234,20 @@ export async function updatePostDeployEnrollmentStats(
     if (res.length !== 1) logger().error(`Looks like enrollment stats for ${tokenLaunchAddress} weren't updated`);
 }
 
+// Function to update DexData, including "payedToCreator" field
 export async function updateDexData(
-    tokenLaunchAddress: RawAddressString, dexData: DexData, client?: SqlClient
+    tokenLaunchAddress: RawAddressString,
+    dexData: Partial<DexData>,
+    client?: SqlClient
 ): Promise<void> {
     // @ts-expect-error just postgres typechecking nonsense
     const res = await (client ?? globalClient)`
         UPDATE token_launches
-        SET dex_data = ${dexData}
+        SET dex_data = COALESCE(dex_data, '{}'::JSONB) || ${dexData}::JSONB
         WHERE address = ${tokenLaunchAddress}
         RETURNING 1;
     `;
-    if (res.length !== 1) logger().error(`looks like dexdata for ${tokenLaunchAddress} wasn't updated`);
+    if (res.length !== 1) logger().error(`Failed to update dex data for ${tokenLaunchAddress}`);
 }
 
 export async function updateLaunchBalance(tokenLaunchAddress: RawAddressString, params: {

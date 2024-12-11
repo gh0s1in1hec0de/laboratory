@@ -36,7 +36,6 @@ export async function createDedustPoolForJetton(
         const queryId = Math.floor(Date.now() / 1000);
         logger().info(`[*] pool deployment process started for jetton ${jetton.masterAddress} (query id ${queryId}); god bless it...`);
 
-        const dexData = (await db.getTokenLaunch(launchAddress))?.dexData;
         const { keyPair, wallet, queryIdManager } = await chiefWalletData();
         const [deployVaultQID, createPoolQID, depositLiquidityQID, lpBurnQID] = await Promise.all(
             [...Array(5).keys()].map(async () => await queryIdManager.getNextCached())
@@ -164,22 +163,11 @@ export async function createDedustPoolForJetton(
                 const [reserve1, reserve2] = await balancedTonClient.execute(() => poolContract.getReserves(), true);
                 if (reserve1 > 0n && reserve2 > 0n) {
                     logger().info(`liquidity deposit [${reserve1}, ${reserve2}] confirmed for ${jetton.masterAddress} (launch ${launchAddress}, pool ${poolContract.address})`);
-
-                    let newDexData: DexData;
-                    if (dexData) {
-                        newDexData = dexData;
-                        newDexData.addedLiquidity = true;
-                        if (!newDexData.jettonVaultAddress) newDexData.jettonVaultAddress = jettonVaultContract.address.toRawString();
-                        if (!newDexData.poolAddress) newDexData.poolAddress = poolContract.address.toRawString();
-                    } else {
-                        newDexData = {
-                            jettonVaultAddress: jettonVaultContract.address.toRawString(),
-                            poolAddress: poolContract.address.toRawString(),
-                            payedToCreator: false,
-                            addedLiquidity: true,
-                        };
-                    }
-                    await db.updateDexData(launchAddress, newDexData);
+                    await db.updateDexData(launchAddress,  {
+                        jettonVaultAddress: jettonVaultContract.address.toRawString(),
+                        poolAddress: poolContract.address.toRawString(),
+                        addedLiquidity: true,
+                    });
                     break;
                 }
                 if (!(reserve1 || reserve2)) {

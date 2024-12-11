@@ -1,6 +1,7 @@
-import type { RawAddressString, DexData, Coins, } from "starton-periphery";
+import { type RawAddressString, type DexData, type Coins, BURN_ADDR, } from "starton-periphery";
 import { type SenderArguments, Address, SendMode } from "@ton/ton";
-import { internal as internal_relaxed } from "@ton/core";
+import { internal as internal_relaxed, toNano } from "@ton/core";
+import { JettonWalletMessageBuilder } from "../messageBuilder";
 import { balancedTonClient } from "../client";
 import { chiefWalletData } from "../highload";
 import { DEX, pTON } from "@ston-fi/sdk";
@@ -18,14 +19,13 @@ export async function createStonfiPoolForJetton(
     jetton: { ourWalletAddress: RawAddressString, masterAddress: RawAddressString },
     targetBalances: [Coins, Coins],
     launchAddress: RawAddressString
-) {
+): Promise<void> {
     try {
         const router = await balancedTonClient.execute(c => c.open(DEX.v2_1.Router.create(STONFI_ROUTER_V2_1_ADDRESS)));
         const { keyPair, wallet, queryIdManager } = await chiefWalletData();
         const [depositLiquidityQID, lpBurnQID] = await Promise.all(
             [...Array(2).keys()].map(async () => await queryIdManager.getNextCached())
         );
-        const dexData = (await db.getTokenLaunch(launchAddress))?.dexData;
         const pTon = pTON.v2_1.create(STONFI_PTON_V2_1_ADDRESS);
 
         const pool = await balancedTonClient.execute(() => router.getPool(
@@ -52,21 +52,10 @@ export async function createStonfiPoolForJetton(
                 // Update stats and terminate the cycle
                 if (reserve0 > 0n && reserve1 > 0n) {
                     logger().info(`[stonfi] liquidity deposit [${reserve0}, ${reserve1}] confirmed for ${jetton.masterAddress} (launch ${launchAddress}, pool ${poolContract.address})`);
-
-                    let newDexData: DexData;
-                    if (dexData) {
-                        newDexData = dexData;
-                        newDexData.addedLiquidity = true;
-                        if (!newDexData.poolAddress) newDexData.poolAddress = poolContract.address.toRawString();
-                    } else {
-                        newDexData = {
-                            jettonVaultAddress: "deployed to stonfi, no vault",
-                            poolAddress: poolContract.address.toRawString(),
-                            payedToCreator: false,
-                            addedLiquidity: true,
-                        };
-                    }
-                    await db.updateDexData(launchAddress, newDexData);
+                    await db.updateDexData(launchAddress, {
+                        poolAddress: poolContract.address.toRawString(),
+                        addedLiquidity: true,
+                    });
                     break;
                 }
                 // Pool is empty - sending the
@@ -121,20 +110,22 @@ export async function createStonfiPoolForJetton(
         const lpTokenWallet = await balancedTonClient.execute(
             () => poolContract.getJettonWallet({ ownerAddress: wallet.address })
         );
-        const lpTokenWalletContract = await balancedTonClient.execute(c => c.open(lpTokenWallet));
-        const lpTokenWalletData = await balancedTonClient.execute(() => lpTokenWalletContract.getWalletData());
+        const lpWalletContract = await balancedTonClient.execute(c => c.open(lpTokenWallet));
+        const lpBalance = await balancedTonClient.execute(() => lpWalletContract.getBalance());
 
-        const lpBurn = await balancedTonClient.execute(
-            () => poolContract.getBurnTxParams(
-                // TODO Check twice
-                { amount: lpTokenWalletData.balance, userWalletAddress: wallet.address }
-            )
-        );
+        if (!lpBalance) return;
+        const lpJettonsBurnMessage = JettonWalletMessageBuilder.transferMessage(
+            lpWalletContract.address, toNano("0.5"), {
+                to: BURN_ADDR,
+                jettonAmount: lpBalance,
+                responseAddress: wallet.address,
+                queryId: 0,
+            });
         await balancedTonClient.execute(() =>
             wallet.sendExternalMessage(keyPair.secretKey, {
                 createdAt: Math.floor((Date.now() / 1000) - 10),
                 queryId: lpBurnQID,
-                message: internal_relaxed(lpBurn),
+                message: lpJettonsBurnMessage,
                 mode: SendMode.PAY_GAS_SEPARATELY,
                 subwalletId: SUBWALLET_ID,
                 timeout: DEFAULT_TIMEOUT
