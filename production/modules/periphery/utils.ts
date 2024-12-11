@@ -98,3 +98,37 @@ export class CommonServerError extends Error {
 export function toSnakeCase(camelCaseStr: string) {
     return camelCaseStr.replace(/([A-Z])/g, "_$1").toLowerCase();
 }
+
+// Should be used for parsing localed tasks in database
+export function parseLocaledText(text: string): Map<Locales, string> {
+    const localeMap = new Map<Locales, string>();
+    const parts = text.split('%');
+
+    for (const part of parts) {
+        const [locale, value] = part.split(':');
+        const trimmedLocale = locale.trim() as Locales;
+        const trimmedValue = value.trim();
+
+        if (!Object.values(Locales).includes(trimmedLocale)) {
+            throw new Error(`Invalid locale '${locale}' in localized text`);
+        }
+
+        localeMap.set(trimmedLocale, trimmedValue);
+    }
+
+    return localeMap;
+}
+
+// When locale is chosen - use it to parse subtasks from description
+export type Subtask = { name: string, description: string };
+export function parseSubtasks(description: string): Subtask[] {
+    const subtasks = description.split("&");
+    const result = [];
+    for (let i = 0; i < subtasks.length; i += 2) {
+        result.push({
+            name: subtasks[i],
+            description: subtasks[i + 1] || "",
+        });
+    }
+    return result;
+}

@@ -52,24 +52,17 @@ function parseSubtasks(description: string): Subtask[] {
 
 export async function getCallerTasks(
     { staged, address }: GetCallerTasksRequest
-): Promise<GetCallerTasksResponse[]> {
+): Promise<GetCallerTasksResponse> {
     // Have mercy on our sinful souls, O Lord
-    const tasksDb = await db.getTasks(staged === "true");
-    if (!tasksDb) return [];
+    const tasks = await db.getTasks(staged === "true");
+    if (!tasks) return [];
 
     const usersTasksRelations = address ? await db.getUsersTasksRelations(Address.parse(address).toRawString()) : null;
-    return await Promise.all(
-        tasksDb.map(async (task) => {
-            const subQuests = parseSubtasks(task.description);
-            return {
-                taskId: task.taskId,
-                name: task.name,
-                description: subQuests,
-                rewardTickets: task.rewardTickets,
-                createdAt: Number(task.createdAt),
-                completed: usersTasksRelations ? usersTasksRelations.some(relation => relation.taskId === task.taskId) : false,
-            };
-        })
+    return Promise.all(
+        tasks.map(task => ({
+            ...task,
+            completed: usersTasksRelations?.some(relation => relation.taskId === task.taskId) ?? false,
+        }))
     );
 }
 
