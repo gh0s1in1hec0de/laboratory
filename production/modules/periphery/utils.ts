@@ -4,6 +4,7 @@ import { TokenLaunchTimings } from "./types";
 import { OnchainMetadataStandard } from "./standards";
 import { DeprecatedTokenLaunchStorage } from "./D";
 import { ok as assert } from "assert";
+import { Subtask } from "./serverApi";
 
 export type UnixTimeSeconds = number;
 
@@ -125,7 +126,6 @@ export function parseLocaledText(text: string): Map<Locales, string> {
 }
 
 // When locale is chosen - use it to parse subtasks from description
-export type Subtask = { name: string, description: string };
 export function parseSubtasks(description: string): Subtask[] {
     const subtasks = description.split("&");
     const result = [];
