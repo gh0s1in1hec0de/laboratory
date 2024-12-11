@@ -105,25 +105,29 @@ export enum Locales {
 }
 
 // Should be used for parsing localed tasks in database
-export function parseLocaledText(text: string): Map<Locales, string> {
-    const localeMap = new Map<Locales, string>();
-    const parts = text.split('%');
+export function parseLocaledText(input: string): Map<string, string> {
+    const result = new Map<string, string>();
+
+    // Split the input by '%', which separates locales
+    const parts = input.split('%').map(part => part.trim());
 
     for (const part of parts) {
-        const [locale, value] = part.split(':');
-        const trimmedLocale = locale.trim() as Locales;
-        const trimmedValue = value.trim();
+        // Match locale and text using `::`, allowing for spaces around them
+        const match = part.match(/^\s*(\w{2})\s*::\s*(.+)\s*$/);
+        if (!match) {
+            throw new Error(`Invalid localized text format: ${part}`);
+        }
 
-        if (!Object.values(Locales).includes(trimmedLocale)) {
+        const [, locale, text] = match;
+        if (!Object.values(Locales).includes(locale as Locales)) {
             throw new Error(`Invalid locale '${locale}' in localized text`);
         }
 
-        localeMap.set(trimmedLocale, trimmedValue);
+        result.set(locale, text.trim());
     }
 
-    return localeMap;
+    return result;
 }
-
 // When locale is chosen - use it to parse subtasks from description
 export type Subtask = { name: string, description: string };
 export function parseSubtasks(description: string): Subtask[] {

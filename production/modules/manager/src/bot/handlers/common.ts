@@ -99,7 +99,7 @@ export function parseTasksInputToMergedMap(input: string): TaskParsingResult {
         }
 
         // Match localized tasks
-        const matches = Array.from(trimmedBlock.matchAll(/(\w{2}):([^|]+)\|(.+?)(?=\s?%|$)/g));
+        const matches = Array.from(trimmedBlock.matchAll(/(\w{2})::([^|]+)\|(.+?)(?=\s?%|$)/g));
         if (matches.length === 0) {
             errors.push(`No valid task data found in task block ${taskIndex + 1}`);
             return;
@@ -113,8 +113,8 @@ export function parseTasksInputToMergedMap(input: string): TaskParsingResult {
             }
 
             // Collect localized task names and descriptions
-            localizedNames.push(`${trimmedLocale}:${taskName.trim()}`);
-            localizedDescriptions.push(`${trimmedLocale}:${taskDescription.trim()}`);
+            localizedNames.push(`${trimmedLocale}::${taskName.trim()}`);
+            localizedDescriptions.push(`${trimmedLocale}::${taskDescription.trim()}`);
         }
 
         if (localizedNames.length === 0) {

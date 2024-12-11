@@ -10,43 +10,43 @@ describe("Task Parsing", () => {
     describe("parseTasksInputToMergedMap", () => {
         test("parses valid input with multiple tasks", async () => {
             const input = `\
-ru:ФрэндТех|Описание задачи%en:FriendTech|Task description
+ru::ФрэндТех|Описание задачи%en::FriendTech|Task description
 ---
-ru:Другая задача|Другое описание%en:Another task|Another description\
+ru::Другая задача|Другое описание%en::Another task|Another description\
 `;
             const input2 = `\
-            ru:taskName1|subtaskName1&subtaskDescription1%en:taskName1|subtaskName1&subtaskDescription1
+            ru::taskName1|subtaskName1&subtaskDescription1%en::taskName1|subtaskName1&subtaskDescription1
             ---
-            ru:Другая задача|Другое описание%en:Another task|Another description\
+            ru::Другая задача|Другое описание%en::Another task|Another description\
             `;
             const result = parseTasksInputToMergedMap(input);
             expect(result.tasksByLocale.size).toBe(2);
-            expect(result.tasksByLocale.get("ru:ФрэндТех%en:FriendTech"))
-                .toBe("ru:Описание задачи%en:Task description");
-            expect(result.tasksByLocale.get("ru:Другая задача%en:Another task"))
-                .toBe("ru:Другое описание%en:Another description");
+            expect(result.tasksByLocale.get("ru::ФрэндТех%en::FriendTech"))
+                .toBe("ru::Описание задачи%en::Task description");
+            expect(result.tasksByLocale.get("ru::Другая задача%en::Another task"))
+                .toBe("ru::Другое описание%en::Another description");
             expect(result.errors.length).toBe(0);
         });
 
         test("handles invalid locales gracefully", async () => {
             const input = `\
-xx:InvalidLocale|Some description
+xx::InvalidLocale|Some description
 ---
-ru:ФрэндТех|Описание задачи%en:FriendTech|Task description\
+ru::ФрэндТех|Описание задачи%en::FriendTech|Task description\
 `;
             const result = parseTasksInputToMergedMap(input);
             expect(result.tasksByLocale.size).toBe(1);
-            expect(result.tasksByLocale.get("ru:ФрэндТех%en:FriendTech"))
-                .toBe("ru:Описание задачи%en:Task description");
+            expect(result.tasksByLocale.get("ru::ФрэндТех%en::FriendTech"))
+                .toBe("ru::Описание задачи%en::Task description");
             expect(result.errors).toContain("Invalid locale 'xx' in task block 1");
         });
 
         test("handles empty task blocks", async () => {
             const input = `\
-ru:ФрэндТех|Описание задачи%en:FriendTech|Task description
+ru::ФрэндТех|Описание задачи%en::FriendTech|Task description
 ---
 ---
-ru:Другая задача|Другое описание%en:Another task|Another description\
+ru::Другая задача|Другое описание%en::Another task|Another description\
 `;
             const result = parseTasksInputToMergedMap(input);
             expect(result.tasksByLocale.size).toBe(2);
@@ -55,12 +55,12 @@ ru:Другая задача|Другое описание%en:Another task|Anoth
 
         test("handles input with only one task", async () => {
             const input = "\
-ru:ФрэндТех|Описание задачи%en:FriendTech|Task description\
+ru::ФрэндТех|Описание задачи%en::FriendTech|Task description\
 ";
             const result = parseTasksInputToMergedMap(input);
             expect(result.tasksByLocale.size).toBe(1);
-            expect(result.tasksByLocale.get("ru:ФрэндТех%en:FriendTech"))
-                .toBe("ru:Описание задачи%en:Task description");
+            expect(result.tasksByLocale.get("ru::ФрэндТех%en::FriendTech"))
+                .toBe("ru::Описание задачи%en::Task description");
             expect(result.errors.length).toBe(0);
         });
 
@@ -68,7 +68,7 @@ ru:ФрэндТех|Описание задачи%en:FriendTech|Task description
             const input = `\
 Invalid data
 ---
-ru:ФрэндТех|Описание задачи%en:FriendTech|Task description\
+ru::ФрэндТех|Описание задачи%en::FriendTech|Task description\
 `;
             const result = parseTasksInputToMergedMap(input);
             expect(result.tasksByLocale.size).toBe(1);
@@ -78,8 +78,8 @@ ru:ФрэндТех|Описание задачи%en:FriendTech|Task description
 
     describe("parseLocaledText", () => {
         test("parses valid localized text", async () => {
-            const input = "ru:ФрэндТех%en:FriendTech";
-            const input2 = "ru:subtaskName1&subtaskDescription1%en:subtaskName1&subtaskDescription1";
+            const input = "ru::ФрэндТех%en::FriendTech";
+            const input2 = "ru::subtaskName1&subtaskDescription1%en::subtaskName1&subtaskDescription1";
             const result = parseLocaledText(input);
             expect(result.size).toBe(2);
             expect(result.get(Locales.RU)).toBe("ФрэндТех");
@@ -87,19 +87,19 @@ ru:ФрэндТех|Описание задачи%en:FriendTech|Task description
         });
 
         test("throws error for invalid locale in localized text", async () => {
-            const input = "xx:InvalidLocale%en:FriendTech";
+            const input = "xx::InvalidLocale%en::FriendTech";
             expect(() => parseLocaledText(input)).toThrow("Invalid locale 'xx' in localized text");
         });
 
         test("handles single locale localized text", async () => {
-            const input = "ru:ФрэндТех";
+            const input = "ru::ФрэндТех";
             const result = parseLocaledText(input);
             expect(result.size).toBe(1);
             expect(result.get(Locales.RU)).toBe("ФрэндТех");
         });
 
         test("handles extra whitespace in localized text", async () => {
-            const input = " ru : ФрэндТех % en : FriendTech ";
+            const input = " ru :: ФрэндТех % en :: FriendTech ";
             const result = parseLocaledText(input);
             expect(result.size).toBe(2);
             expect(result.get(Locales.RU)).toBe("ФрэндТех");
