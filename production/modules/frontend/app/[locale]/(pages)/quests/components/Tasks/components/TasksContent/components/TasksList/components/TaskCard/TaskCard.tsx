@@ -6,19 +6,6 @@ import { TaskInfo } from "./components/TaskInfo";
 import styles from "./TaskCard.module.scss";
 import { useLocale } from "next-intl";
 import { Locales, parseLocaledText } from "starton-periphery";
-import { Subtask } from "@/types";
-
-function localizeSubtasks(subtasks: Subtask[], locale: string): Subtask[] {
-  return subtasks.map((subtask) => {
-    const localizedNameMap = parseLocaledText(subtask.name);
-    const localizedDescMap = parseLocaledText(subtask.description);
-
-    return {
-      name: localizedNameMap.get(locale as Locales) || subtask.name,
-      description: localizedDescMap.get(locale as Locales) || subtask.description,
-    };
-  });
-}
 
 export function TaskCard({ task }: TaskCardProps) {
   const locale = useLocale();
@@ -48,7 +35,7 @@ export function TaskCard({ task }: TaskCardProps) {
           <DisclosurePanel static style={{ width: "100%" }}>
             {({ open }) => (
               <SubTasks 
-                subTasks={localizeSubtasks(task.description, locale)} 
+                subTasks={parseLocaledText(task.description).get(locale as Locales) || task.description} 
                 open={open} 
                 disabled={task.completed}
               />

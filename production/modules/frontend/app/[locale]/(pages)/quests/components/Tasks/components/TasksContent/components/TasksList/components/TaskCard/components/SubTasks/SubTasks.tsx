@@ -5,6 +5,7 @@ import { QuestIcon } from "@/icons";
 import { Label } from "@/common/Label";
 import { Box } from "@mui/material";
 import { useSubTasks } from "./hooks/useSubTasks";
+import { parseSubtasks } from "starton-periphery";
 
 export function SubTasks({ subTasks, open, disabled }: SubTasksProps) {
   const { renderTextWithLinks } = useSubTasks(disabled);
@@ -27,7 +28,7 @@ export function SubTasks({ subTasks, open, disabled }: SubTasksProps) {
     >
       <Grid container padding="0 12px 14px 12px" gap={1}>
         <Grid container flexDirection="column">
-          {subTasks.map((_, index) => (
+          {parseSubtasks(subTasks).map((_, index) => (
             <QuestIcon 
               key={index} 
               variant={index === 0 ? "first" : index === subTasks.length - 1 ? "last" : "middle"} 
@@ -41,7 +42,7 @@ export function SubTasks({ subTasks, open, disabled }: SubTasksProps) {
           size="grow"
           justifyContent="space-between"
         >
-          {subTasks.map((subTask, index) => (
+          {parseSubtasks(subTasks).map((subTask, index) => (
             <Grid 
               key={index} 
               container 
