@@ -5,6 +5,7 @@ import { logger } from "../../logger";
 
 export async function handleStartCommand(ctx: CommandContext<MyContext>): Promise<void> {
     try {
+        await ctx.conversation.exit();
         await ctx.reply(getReplyText("start"), {
             parse_mode: "HTML",
         });
