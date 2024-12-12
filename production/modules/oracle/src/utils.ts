@@ -35,7 +35,7 @@ export function analyzeLaunchTrend(
         { totalBuys: BigInt(0), totalSells: BigInt(0) }
     );
     const delta = totalBuys - totalSells;
-    return { trend: delta > 0n ? LaunchTrend.Bullish : LaunchTrend.Bearish, delta };
+    return { trend: delta >= 0n ? LaunchTrend.Bullish : LaunchTrend.Bearish, delta };
 }
 
 export function greeting() {

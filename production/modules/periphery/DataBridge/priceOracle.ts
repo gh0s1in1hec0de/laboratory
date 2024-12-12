@@ -117,7 +117,8 @@ export function calculateUserRewardAmount(
     // MappedRewardPools => rewardAmount
     rewardPoolSupply: Coins
 ): Coins {
-    return userClaimAmount * rewardPoolSupply / launchSupply;
+    // 20 percent goes to pool so only 80% can be distributed
+    return userClaimAmount * rewardPoolSupply / (launchSupply * 8n / 10n);
 }
 
 /**
@@ -134,6 +135,5 @@ export function calculateUserRewardAmount(
  */
 export function unwrapInitialValue(y: number, haveReferral: boolean = false): number {
     const referralFactor = haveReferral ? 0.95 : 1;
-    const x = y / referralFactor / 0.99;
-    return x;
+    return y / referralFactor / 0.99;
 }

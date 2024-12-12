@@ -1,20 +1,17 @@
 import { beforeAll, describe, test } from "bun:test";
 import { Address } from "@ton/core";
 
-describe("Database", () => {
-
+describe("Addresses", () => {
     beforeAll(async () => {
 
     });
-    test("Add mock data to the database", async () => {
+    test("Is address?", async () => {
         let isAddress = true;
         try {
-            Address.parse("0QBXsUwWZ6K9fXs_zpp0UANP58PO1do2B91Vve7qKCg9GXWw");
+            Address.parse("0x90C293D9b084Ded40A6f1Aa0B3D34c628a1E04e8");
         } catch (e) {
             isAddress = false;
         }
         console.log(`is address: ${isAddress}`);
-        console.log(Address.parse("0QBXsUwWZ6K9fXs_zpp0UANP58PO1do2B91Vve7qKCg9GXWw").toRawString());
     });
-
 });
