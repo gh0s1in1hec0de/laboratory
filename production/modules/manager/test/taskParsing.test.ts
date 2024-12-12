@@ -2,12 +2,40 @@ import { parseTasksInputToMergedMap } from "../src/bot/handlers/common.ts";
 import { Locales, parseLocaledText } from "starton-periphery";
 import { beforeAll, describe, test, expect } from "bun:test";
 
+// export function formatTime(totalSeconds: number) {
+//     const days = Math.floor(totalSeconds / (3600 * 24));
+//     const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+//     const minutes = Math.floor((totalSeconds % 3600) / 60);
+//     const secs = totalSeconds % 60;
+
+//     return {
+//         days: String(days).padStart(2, "0"),
+//         hours: String(hours).padStart(2, "0"),
+//         minutes: String(minutes).padStart(2, "0"),
+//         seconds: String(secs).padStart(2, "0"),
+//     };
+// }
+
 describe("Task Parsing", () => {
     beforeAll(async () => {
         // Set up any required test configurations or dependencies here
     });
 
     describe("parseTasksInputToMergedMap", () => {
+        // test("test format time", async () => {
+        //     const timings = {
+        //         "endTime": 1734076106,
+        //         "startTime": 1733941166,
+        //         "wlRoundEndTime": 1733941826,
+        //         "publicRoundEndTime": 1733942186,
+        //         "creatorRoundEndTime": 1733941466
+        //     };
+        //     const { phase, nextPhaseIn } = getCurrentSalePhase(timings);
+        //     console.log(nextPhaseIn);
+        //     // const { days, hours, minutes, seconds } = formatTime(nextPhaseIn || 0);
+        //     const { days, hours, minutes, seconds } = formatTime(timings.endTime - Math.floor(Date.now() / 1000));
+        //     console.log(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+        // });
         test("parses valid input with multiple tasks", async () => {
             const input = `\
 ru::ФрэндТех|Описание задачи%en::FriendTech|Task description
