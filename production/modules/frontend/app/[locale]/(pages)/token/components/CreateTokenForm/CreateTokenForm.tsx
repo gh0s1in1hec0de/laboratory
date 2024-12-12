@@ -27,6 +27,7 @@ export function CreateTokenForm() {
     toggleIsErrorToast,
     isSuccessToast,
     toggleIsSuccessToast,
+    callerData,
   } = useCreateToken();
 
   return (
@@ -59,7 +60,7 @@ export function CreateTokenForm() {
               severity={isErrorToast ? "error" : "success"}
               toggleOpen={isErrorToast ? toggleIsErrorToast : toggleIsSuccessToast}
             />
-            <SubmitButton />
+            <SubmitButton callerData={callerData} />
           </Grid>
         </Form>
       </Formik>

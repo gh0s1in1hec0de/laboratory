@@ -4,8 +4,9 @@ import { TonProvider } from "@/providers/ton";
 import Grid from "@mui/material/Grid2";
 import { useTranslations } from "next-intl";
 import { CreateTokenButton } from "./components/CreateTokenButton";
+import { Caller } from "starton-periphery";
 
-export function SubmitButton() {
+export function SubmitButton({ callerData }: { callerData: Caller | null }) {
   const t = useTranslations("Token.submitButton");
 
   return (
@@ -16,7 +17,7 @@ export function SubmitButton() {
     >
       <TonProvider>
         <CustomConnectButton
-          successChildren={<CreateTokenButton />}
+          successChildren={<CreateTokenButton callerData={callerData} />}
           fullWidth
           showDropdown={false}
         />

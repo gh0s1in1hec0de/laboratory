@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { FormikHelpers } from "formik";
 import { CreateTokenFormFields } from "./types";
-import { launchService } from "@/services";
-import { jettonToNano, toPct, TxRequestBuilder } from "starton-periphery";
+import { launchService, userService } from "@/services";
+import { Caller, jettonToNano, toPct, TxRequestBuilder } from "starton-periphery";
 import { useRouter } from "next/navigation";
 import { useTonConnectUI } from "@tonconnect/ui-react";
 import { LAUNCH_ERROR } from "@/errors/launch/launch";
@@ -18,6 +18,7 @@ export function useCreateToken() {
   const [errorText, setErrorText] = useState<string | null>(null);
   const [isErrorToast, toggleIsErrorToast] = useToggle(false);
   const [isSuccessToast, toggleIsSuccessToast] = useToggle(false);
+  const [callerData, setCallerData] = useState<Caller | null>(null);
   const [tonConnectUI] = useTonConnectUI();
   const router = useRouter();
   const locale = useLocale();
@@ -27,6 +28,9 @@ export function useCreateToken() {
     (async () => {
       try {        
         if (creator) {
+          const callerData = await userService.getCaller(creator);
+          setCallerData(callerData);
+
           const tokenLaunch = await launchService.getCurrentToken({
             creator,
           });
@@ -110,5 +114,6 @@ export function useCreateToken() {
     toggleIsErrorToast,
     isSuccessToast,
     toggleIsSuccessToast,
+    callerData,
   };
 }

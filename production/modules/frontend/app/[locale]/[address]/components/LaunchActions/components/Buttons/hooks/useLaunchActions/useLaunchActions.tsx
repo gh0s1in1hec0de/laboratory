@@ -86,8 +86,8 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
     }
   }
 
-  function onClickRedirectRoDeDust(masterAddress: string) {
-    window.open(`https://dedust.io/swap/TON/${Address.parse(masterAddress).toString()}`, "_blank");
+  function onClickRedirectRoDeDust(launchData: GetCertainLaunchResponse) {
+    window.open(`https://app.ston.fi/swap/ton/${launchData?.metadata?.symbol?.toLowerCase()}?referral_address=${process.env.NEXT_PUBLIC_PULL_REFERRAL_ADDRESS}&referral_percent=${process.env.NEXT_PUBLIC_REFERRAL_PERCENT}`, "_blank");
   }
 
   function renderContent() {
@@ -185,7 +185,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
                   <CustomButton
                     fullWidth
                     padding="10px 0px"
-                    onClick={() => onClickRedirectRoDeDust(launchData.postDeployEnrollmentStats?.deployedJetton.masterAddress || "")}
+                    onClick={() => onClickRedirectRoDeDust(launchData)}
                     background="gray"
                   >
                     <Grid
