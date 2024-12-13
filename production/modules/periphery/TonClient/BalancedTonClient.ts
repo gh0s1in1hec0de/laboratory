@@ -41,8 +41,10 @@ export class BalancedTonClient {
     private activeLaunchesNumber: number;
     private rateLimiter: RateLimiter;
     private readonly network: Network;
+    private limitPerSecond: number;
 
     constructor(network: Network, apiKeys: string[], limitPerSecond: number) {
+        this.limitPerSecond = limitPerSecond;
         this.rateLimiter = new RateLimiter(limitPerSecond);
         this.activeLaunchesNumber = 0;
         this.currentKeyIndex = 0;
@@ -75,8 +77,8 @@ export class BalancedTonClient {
     }
 
     delayValue() {
-        // Are you ready for dumb code? TODO Rewrite this shame
-        return this.activeLaunchesNumber < 10 ? 15 : 30;
+        // if total amount of requests per second needed > limit per second
+        return this.activeLaunchesNumber * 5 > this.limitPerSecond ? 30 : 15;
     }
 
     // Limited to 100 transactions per request by TonCenter;

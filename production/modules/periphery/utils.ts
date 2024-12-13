@@ -7,7 +7,7 @@ import { ok as assert } from "assert";
 
 export type UnixTimeSeconds = number;
 
-export function parseTokenLaunchTimings(tokenLaunchStorage: DeprecatedTokenLaunchStorage | TokenLaunchStorageV1, pollingDuration: number = 2 * 86400): TokenLaunchTimings {
+export function parseTokenLaunchTimings(tokenLaunchStorage: DeprecatedTokenLaunchStorage | TokenLaunchStorageV1, pollingDuration: number = 6 * 86400): TokenLaunchTimings {
     return {
         startTime: tokenLaunchStorage.saleState.general.startTime,
         creatorRoundEndTime: tokenLaunchStorage.saleState.creatorRound.endTime,

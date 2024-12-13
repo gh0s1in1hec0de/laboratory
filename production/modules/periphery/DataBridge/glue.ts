@@ -1,14 +1,14 @@
 import { parseGetConfigResponse, parseMoneyFlows, } from "../chainMessageParsers";
 import { GetConfigResponse, MoneyFlows, TokenLaunchTimings } from "../types";
 import { jettonFromNano, UnixTimeSeconds } from "../utils";
-import { Coins, GlobalVersions } from "../standards";
 import { Address, fromNano, toNano } from "@ton/core";
+import { Coins, GlobalVersions } from "../standards";
 import { TonClient4 } from "@ton/ton";
 import {
-    CreatorPriceConfig,
     getCreatorAmountOut,
     getPublicAmountOut,
-    SyntheticReserves,
+    CreatorPriceConfig,
+    SyntheticReserves, getAmountOutMock,
 } from "./priceOracle";
 
 export enum SalePhase {
@@ -102,8 +102,9 @@ export function getAmountOut(
     if (phase === SalePhase.CREATOR && (data as CreatorPriceConfig).wlRoundFutJetLimit !== undefined)
         return getCreatorAmountOut(version, value, data as CreatorPriceConfig);
 
+    // Just getting pure value for price
     if (phase === SalePhase.PUBLIC && (data as SyntheticReserves).syntheticTonReserve !== undefined)
-        return getPublicAmountOut(data as SyntheticReserves, version, value, withReferral);
+        return getAmountOutMock(value, (data as SyntheticReserves).syntheticTonReserve, (data as SyntheticReserves).syntheticJetReserve);
 
     console.log(`Input: `);
     console.log(`Phase: ${phase}`);

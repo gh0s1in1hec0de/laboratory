@@ -111,7 +111,7 @@ export async function handleMaybeClaimRequest(request: ClaimRequest) {
                             .storeMaybeRef()
                             // At least 0.015 TON, what is x3 from average simple transfer fee
                             .storeCoins(valuePerTransfer * 3n / 10n)
-                            .storeMaybeRef(beginCell().storeUint(0, 32).storeStringTail("starton rewards $v$").endCell())
+                            .storeMaybeRef(beginCell().storeUint(0, 32).storeStringTail("Starton rewards").endCell())
                             .endCell()
                     }),
                 });
@@ -124,7 +124,6 @@ export async function handleMaybeClaimRequest(request: ClaimRequest) {
 
             let tryNumber = 0;
             while (tryNumber < 3) {
-                await delay(tryNumber * 8);
                 try {
                     await balancedTonClient.execute(() =>
                         wallet.sendBatch(keyPair.secretKey,
@@ -134,8 +133,19 @@ export async function handleMaybeClaimRequest(request: ClaimRequest) {
                             DEFAULT_TIMEOUT,
                         )
                     );
-                    logger().info(`successfully sent rewards to user ${user.toRawString()}${requestType !== "t" ? ` ; launch ${Address.parse(requestType).toRawString()}` : ""}`);
-                    break;
+                    await delay(60);
+                    const hasBeenProcessed = await balancedTonClient.execute(() =>
+                        wallet.getProcessed(highloadQueryId, false)
+                    );
+                    if (hasBeenProcessed) {
+                        logger().info(`successfully sent rewards to user ${user.toRawString()}${requestType !== "t" ? ` ; launch ${Address.parse(requestType).toRawString()}` : ""}`);
+                        break;
+                    }
+                    // All the attempts to send tokens to user has failed at some reason, so we refund 'em
+                    if (tryNumber === 3) {
+                        logger().error(`all 3 attempts to send rewards to user ${user.toRawString()} has failed, running refund...`);
+                        return refund(request);
+                    }
                 } catch (e) {
                     logger().error(`failed to send rewards to user ${user.toRawString()} with error`, e);
                 }
@@ -153,7 +163,7 @@ export async function handleMaybeClaimRequest(request: ClaimRequest) {
 
 export async function refund(
     { user, attachedValue }: ClaimRequest
-) {
+): Promise<void> {
     const { keyPair, wallet, queryIdManager } = await walletData();
     const highloadQueryId = await queryIdManager.getNextCached();
 

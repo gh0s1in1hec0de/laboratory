@@ -216,7 +216,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: StoredTokenLaunch, launchA
                 logger().info(`token launch updates handler for ${launch.address} is self-terminated`);
                 break;
             } // 10 mins interval if we passed the end time
-            const delayTime = endTimeMs - Date.now() > 86_400_000 ? balancedTonClient.delayValue() : 600;
+            const delayTime = endTimeMs - Date.now() > (3 * 86_400_000) ? balancedTonClient.delayValue() : 600;
             logger().debug(`operations for ${launch.address} was recorded successfully - waiting for ${delayTime} seconds`);
             await delay(delayTime);
         } catch (e) {

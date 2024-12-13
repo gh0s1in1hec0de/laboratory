@@ -8,8 +8,12 @@ import type {
     GetCertainLaunchRequest,
     GetRisingStarResponse,
 } from "starton-periphery";
+import { Address } from "@ton/ton";
 
 export async function getLaunchesChunk(req: GetLaunchesChunkRequest): Promise<GetLaunchesChunkResponse> {
+    if (!(Object.values(LaunchSortParameters).includes(req.orderBy) && Object.values(SortingOrder).includes(req.order))) {
+        throw new CommonServerError(666, "No SQL injections on my watch, parasite");
+    }
     return await db.getSortedTokenLaunches(
         { ...req, search: req.search?.replace(/\+/g, " ") ?? "" }
     ) ?? { launchesChunk: [], hasMore: false };
@@ -20,6 +24,12 @@ export async function getCertainLaunch(
     { creator, address, metadataUri }: GetCertainLaunchRequest
 ): Promise<GetCertainLaunchResponse> {
     if (!creator && !address && !metadataUri) throw new CommonServerError(400, "At least one parameter must be provided");
+    try {
+        creator || address ? Address.parse((creator ?? address)!) : metadataUri!.startsWith("https://storage.starton.pro");
+    } catch (e) {
+        throw new CommonServerError(666, "No SQL injections on my watch, parasite");
+    }
+
     const launch = await db.getLaunch({ creator, address, metadataUri });
     if (!launch) throw new CommonServerError(500, "Launch not found");
 

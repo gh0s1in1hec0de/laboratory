@@ -1,6 +1,8 @@
 ;; external
 
 const op::dedust_swap = 0xe3a0d482;
+const op::stofi_v1_swap = 0x25938561;
+const op::stofi_v2_swap = 0x6664de2a;
 
 ;; common
 
