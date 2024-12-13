@@ -96,6 +96,10 @@
 
     if (op == op::mint) {
         throw_unless(error::not_owner, equal_slices_bits(sender_address, admin_address));
+        ;; As we expect this operation to be called only once
+        throw_if(error::already_minted, total_supply > 0);
+
+
         slice to_address = in_msg_body~load_msg_addr();
         check_same_workchain(to_address);
         int ton_amount = in_msg_body~load_coins();

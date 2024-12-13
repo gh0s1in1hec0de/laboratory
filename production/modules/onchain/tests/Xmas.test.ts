@@ -18,8 +18,8 @@ import {
 // Use `determine event timings` for convenience.
 
 
-const START = 1733653286;
-const END = 1734085286;
+const START = 1734252408;
+const END = 1734684408;
 
 describe("Marry Christmas and happy New Year!", () => {
     let blockchain: Blockchain;
