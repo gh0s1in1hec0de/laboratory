@@ -1,8 +1,8 @@
 import { formatTime } from "@/utils";
 import { useEffect, useLayoutEffect, useState } from "react";
 
-export function useLaunchTimer(initialSeconds: number | null, isLoading?: boolean) {
-  const [currentSeconds, setCurrentSeconds] = useState(initialSeconds || 0);
+export function useLaunchTimer(initialSeconds: number, isLoading?: boolean) {
+  const [currentSeconds, setCurrentSeconds] = useState(initialSeconds);
   const [isMounted, setIsMounted] = useState(false);
 
   useLayoutEffect(() => {

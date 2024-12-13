@@ -7,13 +7,17 @@ import {
   MoneyFlows,
   Network,
   SalePhase,
+  Caller,
   getCurrentWlRate
 } from "starton-periphery";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
-import { Address } from "@ton/core";
+import { Address, toNano } from "@ton/core";
 import { TonClient4 } from "@ton/ton";
 import { useEffect, useState } from "react";
 import { UseLaunchPriceProps } from "./types";
+import { userService } from "@/services/user";
+import { CALLER_ADDRESS } from "@/constants";
+import { localStorageWrapper } from "@/utils";
 
 export function useLaunchPrice({
   launchAddress,
@@ -24,10 +28,14 @@ export function useLaunchPrice({
   const { phase } = getCurrentSalePhase(timings);
   const [configData, setConfigData] = useState<GetConfigResponse & MoneyFlows | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [callerData, setCallerData] = useState<Caller | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
+        const callerData = await userService.getCaller(localStorageWrapper.get(CALLER_ADDRESS));
+        setCallerData(callerData);
+
         const tonClient = new TonClient4({
           endpoint: await getHttpV4Endpoint({ network: process.env.NEXT_PUBLIC_NETWORK as Network }),
         });
@@ -89,6 +97,8 @@ export function useLaunchPrice({
         version,
         SalePhase.PUBLIC,
         { syntheticJetReserve, syntheticTonReserve },
+        process.env.NEXT_PUBLIC_NETWORK === "testnet" ? toNano("0.25") : toNano("10"),
+        !!callerData?.invitedBy
       );
 
       setPrice(calculatePrice(jettons));

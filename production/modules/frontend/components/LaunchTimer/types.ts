@@ -1,5 +1,5 @@
 export interface LaunchTimerProps {
-  initialSeconds: number | null;
+  initialSeconds: number;
   fullPageLoader?: boolean;
   isLoading?: boolean;
 }

@@ -52,7 +52,7 @@ export function CurrentToken({ launchData }: CurrentTokenProps) {
             />
 
             <LaunchTimer
-              initialSeconds={getCurrentSalePhase(launchData.timings).nextPhaseIn}
+              initialSeconds={getCurrentSalePhase(launchData.timings).nextPhaseIn || 0}
             />
           </Grid>
         </>

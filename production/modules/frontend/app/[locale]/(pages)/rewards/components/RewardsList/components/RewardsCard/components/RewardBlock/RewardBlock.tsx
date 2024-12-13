@@ -61,7 +61,7 @@ export function RewardBlock({
           <Label
             // todo: заменить если цены отъебнут
             // label={`${jettonFromNano(displayValue || 0)} $${rewardPool.metadata.symbol ?? "UNKNWN"}`}
-            label={`${toCorrectAmount({ amount: Number(jettonFromNano(displayValue || 0)), locale: locale as "en" | "ru" })} $${rewardPool.metadata.symbol ?? "UNKNWN"}`}
+            label={`~${toCorrectAmount({ amount: Number(jettonFromNano(displayValue || 0)), locale: locale as "en" | "ru" })} $${rewardPool.metadata.symbol ?? "UNKNWN"}`}
             variantSize="regular14"
             variantColor="gray"
             cropped
