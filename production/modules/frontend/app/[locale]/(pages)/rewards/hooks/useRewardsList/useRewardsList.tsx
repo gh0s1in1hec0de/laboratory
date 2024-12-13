@@ -1,4 +1,5 @@
 import {
+  Caller,
   GetRewardJettonBalancesResponse,
   GetRewardPoolsResponse,
   GetUserBalancesResponse
@@ -17,12 +18,18 @@ export function useRewardsList({ selectedTab }: UseRewardsListProps) {
   const [rewardPools, setRewardPools] = useState<GetRewardPoolsResponse>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
+  const [callerData, setCallerData] = useState<Caller | null>(null);
   // const t = useTranslations("Rewards");
 
   async function fetchClaims() {
+    const creator = localStorageWrapper.get(CALLER_ADDRESS);
+
     try {
+      const callerData = await userService.getCaller(creator);
+      setCallerData(callerData);
+
       const response = await userService.getBalances({
-        user: Address.parse(localStorageWrapper.get(CALLER_ADDRESS)).toRawString(),
+        user: Address.parse(creator).toRawString(),
         // user: Address.parse("0:264c72e581e5f8481be5c3b169bd2c1e61950d2f72086d241426849e1ebfe4c5").toRawString(),
       });
 
@@ -79,5 +86,6 @@ export function useRewardsList({ selectedTab }: UseRewardsListProps) {
     isLoading,
     errorText,
     rewardPools,
+    callerData,
   };
 }

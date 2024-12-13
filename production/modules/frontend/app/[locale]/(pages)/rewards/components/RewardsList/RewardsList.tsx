@@ -14,6 +14,7 @@ export function RewardsList({
   isLoading,
   errorText,
   rewardPools,
+  callerData,
 }: RewardsListProps) {
   const t = useTranslations("Rewards");
 
@@ -53,6 +54,7 @@ export function RewardsList({
                   key={key}
                   rewardPool={rewardPoolForKey}
                   extendedBalance={extendedBalance}
+                  callerData={callerData}
                 />
               );
             })}

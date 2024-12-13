@@ -2,15 +2,19 @@ import Grid from "@mui/material/Grid2";
 import { CustomAvatar } from "@/common/CustomAvatar";
 import { Label } from "@/common/Label";
 import { StarIcon } from "@/icons/common/StarIcon/StarIcon";
-import { ExtendedUserBalance } from "starton-periphery";
+import { unwrapInitialValue } from "starton-periphery";
 import { fromNano } from "@ton/core";
 import { useTranslations, useLocale } from "next-intl";
 import { toCorrectAmount } from "@/utils";
+import { LaunchInfoProps } from "./types";
 
-export function LaunchInfo(balance: ExtendedUserBalance) {
+export function LaunchInfo({
+  balance,
+  callerData
+}: LaunchInfoProps) {
   const t = useTranslations("Rewards");
   // const totalTons = Number(fromNano(5255500000000000)) + Number(fromNano(555550000000000));
-  const totalTons = Number(fromNano(balance.publicTons)) + Number(fromNano(balance.whitelistTons));
+  const totalTons = unwrapInitialValue(Number(fromNano(balance.publicTons)) + Number(fromNano(balance.whitelistTons)), !!callerData?.invitedBy);
   const locale = useLocale();
 
   return(

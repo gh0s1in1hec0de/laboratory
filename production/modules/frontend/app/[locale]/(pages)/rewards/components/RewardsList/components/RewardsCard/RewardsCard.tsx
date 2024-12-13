@@ -18,6 +18,7 @@ import { formatTime } from "@/utils";
 export function RewardsCard({
   extendedBalance,
   rewardPool,
+  callerData,
 }: RewardsCardProps) {
   const t = useTranslations("Rewards");
   const {
@@ -39,7 +40,7 @@ export function RewardsCard({
         padding={1.5}
         gap={1}
       >
-        <LaunchInfo {...extendedBalance} />
+        <LaunchInfo balance={extendedBalance} callerData={callerData} />
 
         <Grid container size={12} paddingTop={0.5}>
           <div style={{ width: "100%", height: "1px", backgroundColor: "var(--black-regular)" }} />
@@ -90,7 +91,7 @@ export function RewardsCard({
                   <Label
                     label={t("claimUntil")}
                     variantSize="regular14"
-                    variantColor="gray"
+                    variantColor="orange"
                   />
                 </Grid>
         

@@ -24,6 +24,7 @@ export default function Rewards() {
     errorText,
     rewardPools,
     rewardBalances,
+    callerData,
   } = useRewardsList({ selectedTab });
 
   return (
@@ -52,6 +53,7 @@ export default function Rewards() {
             isLoading={isLoading}
             errorText={errorText}
             rewardPools={rewardPools}
+            callerData={callerData}
           />
         ) : !rewardBalances ? (
           <Grid
