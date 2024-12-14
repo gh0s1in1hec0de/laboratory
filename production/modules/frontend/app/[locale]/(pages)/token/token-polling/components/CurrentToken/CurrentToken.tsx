@@ -8,9 +8,16 @@ import { CurrentTokenProps } from "./types";
 import { TonProvider } from "@/providers/ton";
 import { Label } from "@/common/Label";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export function CurrentToken({ launchData }: CurrentTokenProps) {
   const t = useTranslations("Token.currentToken");
+  const router = useRouter();
+
+  useEffect(() => {
+    router.refresh();
+  }, []);
 
   return (
     <Grid

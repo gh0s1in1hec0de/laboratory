@@ -23,12 +23,12 @@ async function main() {
     logger().info(`running in: ${getConfig().mode}`);
     startServer();
     
-    const { address, maybe_height } = ton.wallet;
-    if (maybe_height) {
-        const formatted = Address.parse(address).toRawString();
-        await db.setHeightForAddress(formatted, maybe_height, true);
-    }
-    scanForRequests().then();
+    // const { address, maybe_height } = ton.wallet;
+    // if (maybe_height) {
+    //     const formatted = Address.parse(address).toRawString();
+    //     await db.setHeightForAddress(formatted, maybe_height, true);
+    // }
+    // scanForRequests().then();
 }
 
 main().then();

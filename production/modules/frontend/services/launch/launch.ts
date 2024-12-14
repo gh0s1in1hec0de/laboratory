@@ -65,13 +65,7 @@ async function getCurrentToken({
     //     "decimals": "6",
     //     "description": "Only for the absolute Chads of crypto."
     //   },
-    //   "timings": {
-    //     "endTime": 1732804650,
-    //     "startTime": 1732752531,
-    //     "wlRoundEndTime": 1732774193,
-    //     "publicRoundEndTime": 1732798731,
-    //     "creatorRoundEndTime": 1732762389
-    //   },
+    //   "timings": {"endTime": 1734248531, "startTime": 1734195535, "wlRoundEndTime": 1734222479, "publicRoundEndTime": 1734236349, "creatorRoundEndTime": 1734209222},
     //   "totalSupply": BigInt(666666000000),
     //   "platformShare": 1.5,
     //   "minTonTreshold": BigInt(1000000000000),

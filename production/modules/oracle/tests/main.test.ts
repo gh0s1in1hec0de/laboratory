@@ -74,10 +74,10 @@ describe("launch sorter", () => {
     });
     afterAll(async () => await client.end());
 
-    test.skip("clean database", async () => {
+    test("clean database", async () => {
         await cleanDatabase(client, ["callers", "earnings_per_period", "tasks", "users_tasks_relations", "top_token_launch_config"]);
     });
-    test.skip("synthetic launch jettons", async () => {
+    test("synthetic launch jettons", async () => {
         for (let i = 0; i < 5; i++) {
             await upsertRewardJetton({
                 masterAddress: randomAddress().toRawString(),
@@ -89,7 +89,7 @@ describe("launch sorter", () => {
             }, client);
         }
     });
-    test.skip("extended launches data mock", async () => {
+    test("extended launches data mock", async () => {
         const now = Math.floor(Date.now() / 1000);
 
         for (let i = 0; i < metadataArray.length; i++) {

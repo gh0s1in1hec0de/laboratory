@@ -61,6 +61,5 @@ export function JoinNextWave() {
         </linearGradient>
       </defs>
     </svg>
-
   );
 }

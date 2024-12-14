@@ -26,16 +26,16 @@ async function main() {
     startServer();
 
     // Separated logic for  core and launches indexing for better flexibility
-    if (oracle.chief.maybe_height) {
-        await db.setHeightForAddress(Address.parse(oracle.chief.address).toRawString(), oracle.chief.maybe_height, true);
-    }
-    for (const { address, maybe_height, version } of oracle.cores) {
-        const formatted = Address.parse(address).toRawString();
-        if (maybe_height) await db.setHeightForAddress(formatted, maybe_height, true);
-        handleCoreUpdates(formatted, version).then();
-    }
-    spawnNewLaunchesScanners().then();
-    chiefScanning().then();
+    // if (oracle.chief.maybe_height) {
+    //     await db.setHeightForAddress(Address.parse(oracle.chief.address).toRawString(), oracle.chief.maybe_height, true);
+    // }
+    // for (const { address, maybe_height, version } of oracle.cores) {
+    //     const formatted = Address.parse(address).toRawString();
+    //     if (maybe_height) await db.setHeightForAddress(formatted, maybe_height, true);
+    //     handleCoreUpdates(formatted, version).then();
+    // }
+    // spawnNewLaunchesScanners().then();
+    // chiefScanning().then();
 }
 
 main().then();
