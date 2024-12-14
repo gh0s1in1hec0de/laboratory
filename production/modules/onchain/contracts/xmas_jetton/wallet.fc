@@ -72,29 +72,12 @@
     ;; Christmas eve :)
     if ((current_time > START) & (current_time < END) & (~ is_swap)) {
         throw_if(error::meowreachable, is_swap);
-
         randomize_lt();
-        int chance = rand(101);
-
-        if (chance < 33) {
-            maybe_diff = muldiv(jetton_amount, 2, 100);
-        }
-        if ((chance >= 33) & (chance < 66)) {
-            maybe_diff = muldiv(jetton_amount, 4, 100);
-        }
-        if ((chance >= 66) & (chance < 80)) {
-            maybe_diff = muldiv(jetton_amount, 7, 100);
-        }
-        if ((chance >= 80) & (chance < 91)) {
-            maybe_diff = muldiv(jetton_amount, 10, 100);
-        }
-        if (chance >= 91) {
-            maybe_diff = muldiv(jetton_amount, 15, 100);
-        }
+        maybe_diff = calculate_supply_increase(jetton_amount);
         final_amount += maybe_diff;
     }
     if (is_swap) {
-        maybe_diff = muldiv(jetton_amount, 10, 100);
+        maybe_diff = muldiv(jetton_amount, get_sell_tax(current_time, START), 100);
         final_amount -= maybe_diff;
     }
 

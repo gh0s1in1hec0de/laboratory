@@ -2,7 +2,7 @@ import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import { XmasJettonMaster } from "../wrappers/XmasJettonMaster";
 import { XmasJettonWallet } from "../wrappers/XmasJettonWallet";
 import { Address, beginCell, Cell, toNano } from "@ton/core";
-import { JettonOps, jettonToNano } from "starton-periphery";
+import { JettonOps, jettonToNano, STONFI_PTON_V2_1_ADDRESS, STONFI_ROUTER_V2_1_ADDRESS } from "starton-periphery";
 import { printTxGasStats } from "./utils/gasUtils";
 import { ok as assert } from "node:assert";
 import { VaultJetton } from "@dedust/sdk";
@@ -11,15 +11,23 @@ import "@ton/test-utils";
 import {
     TreasuryContract,
     SandboxContract,
-    Blockchain,
+    Blockchain, BlockchainTransaction,
 } from "@ton/sandbox";
+import { DEX, pTON } from "@ston-fi/sdk";
 
 // Event boundaries – update before testing.
 // Use `determine event timings` for convenience.
 
 
-const START = 1734252408;
-const END = 1734684408;
+const START = 1734337944;
+const END = 1734769944;
+
+const STONFI_V1_SWAP = 0x25938561;
+const STONFI_V2_SWAP = 0x6664de2a;
+
+const TAX_INITIAL = 50;
+const TAX_FINAL = 0;
+const TAX_DURATION = 12 * 7 * 24 * 60 * 60;
 
 describe("Marry Christmas and happy New Year!", () => {
     let blockchain: Blockchain;
@@ -37,7 +45,7 @@ describe("Marry Christmas and happy New Year!", () => {
         jettonWalletCode = await compile("XmasJettonWallet");
         blockchain = await Blockchain.create();
 
-        deployer = await blockchain.treasury("deployer", { balance: toNano("1000") });
+        deployer = await blockchain.treasury("deployer", { balance: toNano("1000000"), resetBalanceIfZero: true });
 
         blockchain.now = Math.floor(Date.now() / 1000);
 
@@ -169,16 +177,23 @@ describe("Marry Christmas and happy New Year!", () => {
             assert(walletBalance > transferAmount);
             assert(supplyAfter === (supplyBefore + walletBalance - transferAmount));
         }, 20000);
-        test("dedust sale", async () => {
+        test("stonfi (mock) sell processing & initial tax", async () => {
+            const stateBefore = blockchain.snapshot();
+
             const recipient = await blockchain.treasury("recipient");
             const sendAmount = jettonToNano("1000");
-            const expectedTax = jettonToNano("100");
-            const dedustSwapPayload = VaultJetton.createSwapPayload({ poolAddress: randomAddress() });
+            // We only mock stonfi swap opcode on the right place
+            const stonfiSwapPayloadMock = beginCell().storeUint(STONFI_V1_SWAP, 32).endCell();
+
+            // Initial test at START + 1
+            const initialTax = BigInt(TAX_INITIAL);
+            const expectedTax = (initialTax * sendAmount) / 100n;
 
             const swapTransferResult = await deployerWallet.sendTransfer(
                 deployer.getSender(), toNano("0.3"), sendAmount, recipient.address, deployer.address,
-                null, toNano("0.25"), dedustSwapPayload,
+                null, toNano("0.25"), stonfiSwapPayloadMock,
             );
+
             expect(swapTransferResult.transactions).toHaveTransaction({
                 op: JettonOps.changeTotalSupply,
                 success: true,
@@ -200,13 +215,93 @@ describe("Marry Christmas and happy New Year!", () => {
                     .storeAddress(deployer.address)
                     .storeAddress(deployer.address)
                     .storeCoins(toNano("0.25"))
+                    .storeMaybeRef(stonfiSwapPayloadMock)
+                    .endCell()
+            });
+            await blockchain.loadFrom(stateBefore);
+        });
+        test("dedust sell processing & decayed tax", async () => {
+            const stateBefore = blockchain.snapshot();
+
+            const recipient = await blockchain.treasury("recipient");
+            const sendAmount = jettonToNano("1000");
+            const dedustSwapPayload = VaultJetton.createSwapPayload({ poolAddress: randomAddress() });
+
+            // Initial test at START + 1
+            const initialTax = BigInt(TAX_INITIAL);
+            const expectedInitialTax = (initialTax * sendAmount) / 100n;
+
+            const initialSwapTransferResult = await deployerWallet.sendTransfer(
+                deployer.getSender(), toNano("0.3"), sendAmount, recipient.address, deployer.address,
+                null, toNano("0.25"), dedustSwapPayload,
+            );
+
+            expect(initialSwapTransferResult.transactions).toHaveTransaction({
+                op: JettonOps.changeTotalSupply,
+                success: true,
+                body: beginCell()
+                    .storeUint(JettonOps.changeTotalSupply, 32)
+                    .storeUint(0, 64)
+                    .storeAddress(deployer.address)
+                    .storeUint(0, 1)
+                    .storeCoins(expectedInitialTax)
+                    .endCell()
+            });
+            expect(initialSwapTransferResult.transactions).toHaveTransaction({
+                op: JettonOps.InternalTransfer,
+                success: true,
+                body: beginCell()
+                    .storeUint(JettonOps.InternalTransfer, 32)
+                    .storeUint(0, 64)
+                    .storeCoins(sendAmount - expectedInitialTax)
+                    .storeAddress(deployer.address)
+                    .storeAddress(deployer.address)
+                    .storeCoins(toNano("0.25"))
                     .storeMaybeRef(dedustSwapPayload)
                     .endCell()
             });
+
+            // Test at time with 10% lower tax
+            const timeElapsedForDecay = Math.floor(TAX_DURATION / 10);
+            blockchain.now = START + timeElapsedForDecay;
+            const decayedTax = initialTax - (initialTax * 10n / 100n);
+            const expectedDecayedTax = (decayedTax * sendAmount) / 100n;
+
+            const decayedSwapTransferResult = await deployerWallet.sendTransfer(
+                deployer.getSender(), toNano("0.3"), sendAmount, recipient.address, deployer.address,
+                null, toNano("0.25"), dedustSwapPayload,
+            );
+
+            expect(decayedSwapTransferResult.transactions).toHaveTransaction({
+                op: JettonOps.changeTotalSupply,
+                success: true,
+                body: beginCell()
+                    .storeUint(JettonOps.changeTotalSupply, 32)
+                    .storeUint(0, 64)
+                    .storeAddress(deployer.address)
+                    .storeUint(0, 1)
+                    .storeCoins(expectedDecayedTax)
+                    .endCell()
+            });
+            expect(decayedSwapTransferResult.transactions).toHaveTransaction({
+                op: JettonOps.InternalTransfer,
+                success: true,
+                body: beginCell()
+                    .storeUint(JettonOps.InternalTransfer, 32)
+                    .storeUint(0, 64)
+                    .storeCoins(sendAmount - expectedDecayedTax)
+                    .storeAddress(deployer.address)
+                    .storeAddress(deployer.address)
+                    .storeCoins(toNano("0.25"))
+                    .storeMaybeRef(dedustSwapPayload)
+                    .endCell()
+            });
+
+            await blockchain.loadFrom(stateBefore);
         });
-        test.skip("christmas transfers' statistics", async () => {
-            const increaseCounts = { "2%": 0, "4%": 0, "7%": 0, "10%": 0, "15%": 0 };
-            const totalTransfers = 100;
+        test("christmas transfers' statistics", async () => {
+            const increaseCounts = { "1%": 0, "3%": 0, "10%": 0, "15%": 0, "25%": 0, "50%": 0, "100%": 0 };
+            const totalTransfers = 300;
 
             for (let i = 0; i < totalTransfers; i++) {
                 blockchain.now! += 1;
@@ -226,6 +321,7 @@ describe("Marry Christmas and happy New Year!", () => {
                 const increasePercent = Math.round((Number(increaseAmount) / Number(transferAmount)) * 100);
 
                 increaseCounts[`${increasePercent}%` as keyof typeof increaseCounts]++;
+                blockchain.now! += 10;
             }
 
             let result = "Increase type percentages:\n";

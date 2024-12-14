@@ -1,15 +1,19 @@
 #include "../workchain.fc";
 #include "op_codes.fc";
 
-const START = 1734252408;
-const END = 1734684408;
+const START = 1734337944;
+const END = 1734769944;
+
+const TAX_INITIAL = 50;
+const TAX_FINAL = 0;
+const TAX_DURATION = 12 * 7 * 24 * 60 * 60;
 
 cell pack_jetton_wallet_data(int balance, slice owner_address, slice jetton_master_address) inline {
     return begin_cell()
-    .store_coins(balance)
-    .store_slice(owner_address)
-    .store_slice(jetton_master_address)
-    .end_cell();
+        .store_coins(balance)
+        .store_slice(owner_address)
+        .store_slice(jetton_master_address)
+        .end_cell();
 }
 
 cell calculate_jetton_wallet_state_init(slice owner_address, slice jetton_master_address, cell jetton_wallet_code) inline {
@@ -20,16 +24,16 @@ cell calculate_jetton_wallet_state_init(slice owner_address, slice jetton_master
     library:(Maybe ^Cell) = StateInit;
   -}
     return begin_cell()
-    .store_uint(0, 2) ;; 0b00 - No split_depth; No special
-    .store_maybe_ref(jetton_wallet_code)
-    .store_maybe_ref(
-        pack_jetton_wallet_data(
-            0, ;; balance
-            owner_address,
-            jetton_master_address)
-    )
-    .store_uint(0, 1) ;; Empty libraries
-    .end_cell();
+        .store_uint(0, 2) ;; 0b00 - No split_depth; No special
+        .store_maybe_ref(jetton_wallet_code)
+        .store_maybe_ref(
+            pack_jetton_wallet_data(
+                0, ;; balance
+                owner_address,
+                jetton_master_address)
+        )
+        .store_uint(0, 1) ;; Empty libraries
+        .end_cell();
 }
 
 slice calculate_jetton_wallet_address(cell state_init) inline {
@@ -38,11 +42,11 @@ slice calculate_jetton_wallet_address(cell state_init) inline {
     addr_std$10 anycast:(Maybe Anycast) workchain_id:int8 address:bits256  = MsgAddressInt;
     -}
     return begin_cell()
-    .store_uint(4, 3) ;; 0b100 = addr_std$10 tag; No anycast
-    .store_int(MY_WORKCHAIN, 8)
-    .store_uint(cell_hash(state_init), 256)
-    .end_cell()
-    .begin_parse();
+        .store_uint(4, 3) ;; 0b100 = addr_std$10 tag; No anycast
+        .store_int(MY_WORKCHAIN, 8)
+        .store_uint(cell_hash(state_init), 256)
+        .end_cell()
+        .begin_parse();
 }
 
 slice calculate_user_jetton_wallet_address(slice owner_address, slice jetton_master_address, cell jetton_wallet_code) inline {
@@ -56,4 +60,53 @@ slice calculate_user_jetton_wallet_address(slice owner_address, slice jetton_mas
         throw_unless(error::invalid_message, (remain_refs == 1) & (remain_bits == 1)); ;; we check that there is no excess in the slice
     }
     ;; else forward_payload in slice - arbitrary bits and refs
+}
+
+;; Xmas utils
+
+int calculate_supply_increase(int jetton_amount) inline {
+    int chance = rand(1001); ;; Adjusted range for fine-grained probabilities
+    int maybe_diff = 0;
+
+    if (chance < 650) {
+        ;; 65% chance for +1%
+        maybe_diff = muldiv(jetton_amount, 1, 100);
+    }
+    if ((chance >= 650) & (chance < 900)) {
+        ;; 25% chance for +3%
+        maybe_diff = muldiv(jetton_amount, 3, 100);
+    }
+    if ((chance >= 900) & (chance < 950)) {
+        ;; 5% chance for +10%
+        maybe_diff = muldiv(jetton_amount, 10, 100);
+    }
+    if ((chance >= 950) & (chance < 980)) {
+        ;; 3% chance for +15%
+        maybe_diff = muldiv(jetton_amount, 15, 100);
+    }
+    if ((chance >= 980) & (chance < 995)) {
+        ;; 1.5% chance for +25%
+        maybe_diff = muldiv(jetton_amount, 25, 100);
+    }
+    if ((chance >= 995) & (chance < 999)) {
+        ;; 0.4% chance for +50%
+        maybe_diff = muldiv(jetton_amount, 50, 100);
+    }
+    if (chance >= 999) {
+        ;; 0.1% chance for +100%
+        maybe_diff = muldiv(jetton_amount, 100, 100);
+    }
+    return maybe_diff;
+}
+
+int get_sell_tax(int current_time, int event_start_time) inline {
+    int time_elapsed = current_time - event_start_time;
+    ;; Just for optimization
+    if (time_elapsed >= TAX_DURATION) {
+        return TAX_FINAL;
+    }
+
+    ;; Calculate remaining tax
+    int tax_decay = TAX_INITIAL * time_elapsed / TAX_DURATION;
+    return TAX_INITIAL - tax_decay;
 }
