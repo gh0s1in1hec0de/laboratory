@@ -93,15 +93,17 @@ export function useLaunchPrice({
     const { wlRoundFutJetLimit, syntheticTonReserve, syntheticJetReserve, wlRoundTonInvestedTotal } = configData;
 
     if (phase === SalePhase.PUBLIC || phase === SalePhase.ENDED) {
+      const tons = process.env.NEXT_PUBLIC_NETWORK === "testnet" ? toNano("0.25") : toNano("10");
+
       const jettons = getAmountOut(
         version,
         SalePhase.PUBLIC,
         { syntheticJetReserve, syntheticTonReserve },
-        process.env.NEXT_PUBLIC_NETWORK === "testnet" ? toNano("0.25") : toNano("10"),
+        tons,
         !!callerData?.invitedBy
       );
 
-      setPrice(calculatePrice(jettons));
+      setPrice(calculatePrice(jettons, tons));
     }
 
     if (phase === SalePhase.WHITELIST) {
@@ -112,7 +114,7 @@ export function useLaunchPrice({
 
       setPrice(price);
     }
-  }, [configData, version, phase]);
+  }, [configData, version, phase, callerData]);
 
   return {
     price,

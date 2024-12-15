@@ -5,6 +5,7 @@ import { TxRequestBuilder } from "starton-periphery";
 import type { UseRefoundProps } from "./types";
 import { useTranslations } from "next-intl";
 import { useToggle } from "@/hooks";
+import { Address } from "@ton/core";
 
 export function useRefound({
   launchData,
@@ -25,7 +26,7 @@ export function useRefound({
       const transaction = TxRequestBuilder.refundMessage(
         launchData.version,
         {
-          launchAddress: launchData.address,
+          launchAddress: Address.parse(launchData.address ?? "").toRawString(),
           isCreator: launchData.creator === userAddress,
         }
       );

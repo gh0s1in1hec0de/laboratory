@@ -8,6 +8,9 @@ import { useTranslations } from "next-intl";
 import { TonProvider } from "@/providers/ton";
 import { RewardsListProps } from "./types";
 import { RewardsListSkeleton } from "./components/RewardsListSkeleton";
+import { CustomToast } from "@/common/CustomToast";
+import { useToggle } from "@/hooks";
+import { useMemo } from "react";
 
 export function RewardsList({
   extendedBalances,
@@ -17,6 +20,14 @@ export function RewardsList({
   callerData,
 }: RewardsListProps) {
   const t = useTranslations("Rewards");
+  const [openToast, toggleOpenToast] = useToggle(true);
+
+  const hasSuccessfulBalance = useMemo(() => {
+    if (!extendedBalances) return false;
+    return Object.values(extendedBalances).some(
+      (extendedBalance) => extendedBalance.isSuccessful === true
+    );
+  }, [extendedBalances]);
 
   return (
     <LoadingWrapper
@@ -58,6 +69,16 @@ export function RewardsList({
                 />
               );
             })}
+
+            {hasSuccessfulBalance && (
+              <CustomToast
+                open={openToast}
+                toggleOpen={toggleOpenToast}
+                text={t("claimRewardsToast")}
+                duration={10000}
+                severity="success"
+              />
+            )}
           </TonProvider>
         )}
       </Grid>

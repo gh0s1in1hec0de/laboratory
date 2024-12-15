@@ -515,6 +515,7 @@
 		}
 	},
 	"Rewards":{
+		"claimRewardsToast": "Claim your rewards while they are available! \n This is necessary for the system to work correctly.",
 		"title": "Your rewards",
 		"myContribution": "My Contribution",
 		"jettonsToClaimTitle": "Jettons to claim",

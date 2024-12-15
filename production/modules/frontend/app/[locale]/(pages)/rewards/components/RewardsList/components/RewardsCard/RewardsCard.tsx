@@ -66,7 +66,7 @@ export function RewardsCard({
                 variantColor="gray"
               />
               <Label
-                label={displayValue ? `~${Number(jettonFromNano(displayValue)).toFixed(2)}}` : t("dontHaveBalance")}
+                label={displayValue ? `~${Number(jettonFromNano(displayValue)).toFixed(2)}` : t("dontHaveBalance")}
                 variantSize="regular14"
               />
             </>
@@ -79,8 +79,8 @@ export function RewardsCard({
 
         {extendedBalance.isSuccessful ? (
           (() => {
-            const { days, hours, minutes } = formatTime(extendedBalance.timings.endTime - Math.floor(Date.now() / 1000));
-            
+            const { days, hours, minutes } = formatTime(extendedBalance.timings.endTime - Math.floor(Date.now() / 1000) < 0 ? 0 : extendedBalance.timings.endTime - Math.floor(Date.now() / 1000));
+
             return (
               <Grid
                 container
