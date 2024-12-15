@@ -56,7 +56,7 @@ export function LaunchPrice({
         </Grid>
 
         <Grid container>
-          {tradingStats?.trend === "bullish" ? (
+          {!tradingStats || tradingStats.trend === "bullish" ? (
             <ChartUpIcon />
           ) : (
             <ChartDownIcon />
