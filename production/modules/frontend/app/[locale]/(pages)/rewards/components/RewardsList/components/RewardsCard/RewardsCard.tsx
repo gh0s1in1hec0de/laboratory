@@ -66,7 +66,7 @@ export function RewardsCard({
                 variantColor="gray"
               />
               <Label
-                label={displayValue ? `~${Number(jettonFromNano(displayValue)).toFixed(2)}}` : t("dontHaveBalance")}
+                label={displayValue ? `~${Number(jettonFromNano(displayValue)).toFixed(2)}` : t("dontHaveBalance")}
                 variantSize="regular14"
               />
             </>

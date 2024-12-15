@@ -112,7 +112,7 @@ export function useLaunchPrice({
 
       setPrice(price);
     }
-  }, [configData, version, phase]);
+  }, [configData, version, phase, callerData]);
 
   return {
     price,
