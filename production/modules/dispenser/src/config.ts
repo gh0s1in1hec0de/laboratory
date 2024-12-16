@@ -24,7 +24,10 @@ type Config = {
             testnet: string[],
             mainnet: string[],
         },
-        jetton_transfer_fee: number,
+        fees: {
+            jetton_transfer_fee: bigint,
+            fee_per_call: bigint,
+        },
         wallet: {
             maybe_height: bigint | null,
             address: string,

@@ -1,4 +1,7 @@
 import { CommonServerError } from "starton-periphery";
+import { getConfig } from "../../../config";
+import { Address } from "@ton/core";
+import * as db from "../../../db";
 import type {
     GetRewardJettonBalancesResponse,
     GetRewardJettonBalancesRequest,
@@ -10,15 +13,13 @@ import type {
     MappedRewardPools,
     GetAmountRequest,
 } from "starton-periphery";
-import { getConfig } from "../../../config";
-import { Address } from "@ton/core";
-import * as db from "../../../db";
 
 // Returned stringified nano-tons user needs to attach to claim application
 export async function getAmount(
     { userAddress, tokenLaunch, }: GetAmountRequest,
 ): Promise<string> {
     const parsedUserAddress = Address.parse(userAddress);
+    const amountPerJettonTransfer = BigInt(getConfig().ton.fees.jetton_transfer_fee) + BigInt(getConfig().ton.fees.fee_per_call);
     if (tokenLaunch) {
         const parsedLaunchAddress = Address.parse(tokenLaunch);
         const launchRewardPositions = await db.getRewardPositions(
@@ -26,12 +27,12 @@ export async function getAmount(
         );
         if (!launchRewardPositions) throw new CommonServerError(400, `No rewards found for [${userAddress}, ${tokenLaunch}]`);
 
-        return (BigInt(launchRewardPositions.length) * BigInt(getConfig().ton.jetton_transfer_fee)).toString();
+        return (BigInt(launchRewardPositions.length) * amountPerJettonTransfer).toString();
     } else {
         const rewardJettonBalances = await db.getRewardJettonBalances(parsedUserAddress.toRawString());
         if (!rewardJettonBalances) throw new CommonServerError(400, `No rewards found for ${userAddress}`);
 
-        return (BigInt(rewardJettonBalances.length) * BigInt(getConfig().ton.jetton_transfer_fee)).toString();
+        return (BigInt(rewardJettonBalances.length) * amountPerJettonTransfer).toString();
     }
 }
 

@@ -27,7 +27,8 @@ export async function handleMaybeClaimRequest(request: ClaimRequest) {
                 logger().warn(`reward balances gone at some reason for user ${user}`);
                 return refund(request);
             }
-            if (attachedValue < BigInt(rewardBalances.length) * BigInt(getConfig().ton.jetton_transfer_fee)) {
+            const minValuePerTransfer = BigInt(getConfig().ton.fees.jetton_transfer_fee) + BigInt(getConfig().ton.fees.fee_per_call);
+            if (attachedValue < BigInt(rewardBalances.length) * minValuePerTransfer) {
                 logger().warn(`user ${user} sent not enough value to claim all the balances`);
                 return refund(request);
             }
@@ -42,7 +43,8 @@ export async function handleMaybeClaimRequest(request: ClaimRequest) {
                     [masterAddress]: rest
                 }), {}
             );
-            const valuePerTransfer = attachedValue / BigInt(rewardBalances.length);
+            const freeValue = attachedValue - (BigInt(getConfig().ton.fees.fee_per_call) * BigInt(rewardBalances.length));
+            const valuePerTransfer = freeValue / BigInt(rewardBalances.length);
             const queryId = Math.floor(Date.now() / 1000);
             for (const { rewardJetton, balance } of rewardBalances) {
                 actions.push({
@@ -58,9 +60,9 @@ export async function handleMaybeClaimRequest(request: ClaimRequest) {
                             .storeAddress(user)
                             .storeAddress(user)
                             .storeMaybeRef()
-                            // At least 0.015 TON, what is x3 from average simple transfer fee
-                            .storeCoins(valuePerTransfer * 3n / 10n)
-                            .storeMaybeRef(beginCell().storeUint(0, 32).storeStringTail("starton rewards $v$").endCell())
+                            // At least 0.01 TON, what is x2 from average simple transfer fee
+                            .storeCoins(valuePerTransfer / 5n)
+                            .storeMaybeRef(beginCell().storeUint(0, 32).storeStringTail("Starton rewards").endCell())
                             .endCell()
                     }),
                 });
@@ -78,7 +80,8 @@ export async function handleMaybeClaimRequest(request: ClaimRequest) {
                 logger().warn(`reward positions gone at some reason for user ${user}`);
                 return refund(request);
             }
-            if (attachedValue < BigInt(rewardPositions.length) * BigInt(getConfig().ton.jetton_transfer_fee)) {
+            const minValuePerTransfer = BigInt(getConfig().ton.fees.jetton_transfer_fee) + BigInt(getConfig().ton.fees.fee_per_call);
+            if (attachedValue < BigInt(rewardPositions.length) * minValuePerTransfer) {
                 logger().warn(`user ${user} sent not enough value to claim all the positions per launch ${launchAddress.toRawString()}`);
                 return refund(request);
             }
@@ -93,7 +96,8 @@ export async function handleMaybeClaimRequest(request: ClaimRequest) {
                     [masterAddress]: rest
                 }), {}
             );
-            const valuePerTransfer = attachedValue / BigInt(rewardPositions.length);
+            const freeValue = attachedValue - (BigInt(getConfig().ton.fees.fee_per_call) * BigInt(rewardPositions.length));
+            const valuePerTransfer = freeValue / BigInt(rewardPositions.length);
             const queryId = Math.floor(Date.now() / 1000);
             for (const { rewardJetton, balance } of rewardPositions) {
                 actions.push({
@@ -110,7 +114,7 @@ export async function handleMaybeClaimRequest(request: ClaimRequest) {
                             .storeAddress(user)
                             .storeMaybeRef()
                             // At least 0.015 TON, what is x3 from average simple transfer fee
-                            .storeCoins(valuePerTransfer * 3n / 10n)
+                            .storeCoins(valuePerTransfer / 5n)
                             .storeMaybeRef(beginCell().storeUint(0, 32).storeStringTail("Starton rewards").endCell())
                             .endCell()
                     }),
