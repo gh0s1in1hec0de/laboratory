@@ -127,7 +127,7 @@ export function useBuyToken({ launchAddress, version }: UseBuyTokenProps) {
       const transaction = TxRequestBuilder.creatorBuyoutMessage(
         {
           launchAddress: launchAddress,
-          amount: toNano(amount + fees[GlobalVersions.V1].creatorBuyout).toString(),
+          amount: (toNano(amount) + fees[GlobalVersions.V1].creatorBuyout).toString()
         },
       );
 
