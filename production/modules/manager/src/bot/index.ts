@@ -1,7 +1,7 @@
 import { type Conversation, type ConversationFlavor, conversations, createConversation } from "@grammyjs/conversations";
 import { hydrate, hydrateApi, type HydrateApiFlavor, type HydrateFlavor } from "@grammyjs/hydrate";
 import { commands, Conversations, getAdminFilter, getUnknownMsgReply } from "./constants";
-import { Api, Bot, type Context, InputFile, session, type SessionFlavor } from "grammy";
+import { Api, Bot, type Context, InlineKeyboard, session, type SessionFlavor } from "grammy";
 import { type RawAddressString, toSnakeCase } from "starton-periphery";
 import { getConfig } from "../config";
 import { logger } from "../logger";
@@ -114,7 +114,11 @@ export async function createMainBot(): Promise<Bot<BaseContext>> {
 
     maybeMainBot.command("start", async ctx =>
         await ctx.replyWithPhoto("https://storage.starton.pro/ipfs/QmWkV4B7KKwLzrtZ1umqTt7bBoeQDY4aTLjqqqWuHHFAYC", {
-            caption: "Press StartON to get into the new wave of launching tokens! ⏬",
+            caption: "Welcome to StartON!\n\nAre you ready to join the new wave of launching tokens?\n\nJoin us now, it's still early!\n\nPress StartON to start!",
+            reply_markup: new InlineKeyboard()
+                .url("StartON", "https://t.me/start_onbot/StartON")
+                .row()
+                .url("Join StartON Channel", "https://t.me/starton_en")
         })
     );
 
