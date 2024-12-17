@@ -2,7 +2,7 @@ import { EventEmitter } from "node:events";
 import { startServer } from "./server";
 import { getConfig } from "./config";
 import { logger } from "./logger";
-import { startManagerBot } from "./bot";
+import { startMainBot, startManagerBot } from "./bot";
 import dotenv from "dotenv";
 
 /* Plans on manager:
@@ -24,7 +24,7 @@ logger().debug(`db config: ${process.env.POSTGRES_DB} | ${process.env.POSTGRES_U
 async function main() {
     logger().info(`running in: ${getConfig().mode}`);
     startServer();
-    await startManagerBot();
+    await Promise.all([startManagerBot(), startMainBot()]);
 }
 
 main().then();
