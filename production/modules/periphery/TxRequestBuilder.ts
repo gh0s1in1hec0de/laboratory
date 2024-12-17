@@ -28,7 +28,7 @@ export class TxRequestBuilder {
         {
             coreAddress,
             queryId = Math.floor(Date.now()),
-            amount = toNano("1").toString()
+            amount = toNano("2").toString()
         }: {
             coreAddress: string,
             queryId?: number,

@@ -1,9 +1,9 @@
 import { type CommandContext } from "grammy";
 import { getReplyText } from "../constants";
-import type { MyContext } from "../index";
+import type { ManagerContext } from "../index";
 import { logger } from "../../logger";
 
-export async function handleStartCommand(ctx: CommandContext<MyContext>): Promise<void> {
+export async function handleStartCommand(ctx: CommandContext<ManagerContext>): Promise<void> {
     try {
         const activeConversations = await ctx.conversation.active();
         if (Object.keys(activeConversations).length > 0) await ctx.conversation.exit();

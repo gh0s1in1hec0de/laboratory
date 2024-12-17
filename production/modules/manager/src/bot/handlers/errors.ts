@@ -1,9 +1,9 @@
 import { BotError, GrammyError, HttpError } from "grammy";
-import type { MyContext } from "../index";
+import type { ManagerContext } from "../index";
 import { logger } from "../../logger";
 
-export async function handleBotError(err: BotError<MyContext>): Promise<void> {
-    const ctx: MyContext = err.ctx;
+export async function handleBotError(err: BotError<ManagerContext>): Promise<void> {
+    const ctx: ManagerContext = err.ctx;
     logger().error(`Error while handling update ${ctx.update.update_id}:`);
     const e = err.error;
     if (e instanceof GrammyError) {

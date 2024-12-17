@@ -1,6 +1,6 @@
 import { LaunchSortParameters, SortingOrder } from "starton-periphery";
 import { type CallbackQueryContext } from "grammy";
-import type { MyContext } from "../index";
+import type { ManagerContext } from "../index";
 import { logger } from "../../logger";
 import * as db from "../../db";
 import {
@@ -14,7 +14,7 @@ import {
 } from "../constants";
 
 async function handleListLaunches(
-    ctx: CallbackQueryContext<MyContext>,
+    ctx: CallbackQueryContext<ManagerContext>,
     paginationData: PaginationData,
 ): Promise<void> {
     try {
@@ -49,7 +49,7 @@ async function handleListLaunches(
     }
 }
 
-export async function handleListLaunchesCallback(ctx: CallbackQueryContext<MyContext>) {
+export async function handleListLaunchesCallback(ctx: CallbackQueryContext<ManagerContext>) {
     await ctx.answerCallbackQuery();
     await handleListLaunches(ctx, {
         ...initPaginationData,
@@ -57,7 +57,7 @@ export async function handleListLaunchesCallback(ctx: CallbackQueryContext<MyCon
     });
 }
 
-export async function handleLaunchesPaginationCallback(ctx: CallbackQueryContext<MyContext>) {
+export async function handleLaunchesPaginationCallback(ctx: CallbackQueryContext<ManagerContext>) {
     await ctx.answerCallbackQuery();
     const newPage = ctx.callbackQuery.data == "next_launches"
         ? ctx.session.launchesPage += 1

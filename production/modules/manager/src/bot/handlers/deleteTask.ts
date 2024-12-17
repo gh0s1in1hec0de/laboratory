@@ -1,5 +1,5 @@
 import type { StoredTask } from "starton-periphery";
-import type { MyContext, MyConversation } from "..";
+import type { ManagerContext, MyConversation } from "..";
 import { logger } from "../../logger";
 import * as db from "../../db";
 import {
@@ -9,7 +9,7 @@ import {
     getReplyText
 } from "../constants";
 
-export async function deleteTask(conversation: MyConversation, ctx: MyContext): Promise<void> {
+export async function deleteTask(conversation: MyConversation, ctx: ManagerContext): Promise<void> {
     await ctx.reply(getReplyText("deleteTaskRequest"),
         { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.deleteTask) }
     );

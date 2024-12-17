@@ -1,5 +1,5 @@
 import { type HearsContext, InlineKeyboard } from "grammy";
-import type { MyContext } from "./index";
+import type { ManagerContext } from "./index";
 import { getConfig } from "../config";
 import { Address } from "@ton/core";
 import {
@@ -150,7 +150,7 @@ export function getTasksReply(storedTasks: StoredTask[]): string {
     }).join("\n");
 }
 
-export async function getUnknownMsgReply(ctx: MyContext) {
+export async function getUnknownMsgReply(ctx: ManagerContext) {
     await ctx.reply(getReplyText("unknown"));
 }
 
@@ -208,7 +208,7 @@ export function getConfirmDeleteTaskConvKeyboard(): InlineKeyboard {
 /**
  * FILTERS
  */
-export async function getAdminFilter(ctx: MyContext | HearsContext<MyContext>): Promise<boolean> {
+export async function getAdminFilter(ctx: ManagerContext | HearsContext<ManagerContext>): Promise<boolean> {
     const { bot: { admins } } = getConfig();
     if (!admins.includes(ctx.from!.id)) {
         await ctx.reply("(⊙_⊙) Shutta f up, you are not an admin...");

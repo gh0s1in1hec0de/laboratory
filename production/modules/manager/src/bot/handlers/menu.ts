@@ -1,9 +1,9 @@
 import { getMenuKeyboard, getReplyText } from "../constants";
 import type { CommandContext } from "grammy";
-import type { MyContext } from "../index";
+import type { ManagerContext } from "../index";
 import { logger } from "../../logger";
 
-export async function handleMenuCommand(ctx: CommandContext<MyContext>): Promise<void> {
+export async function handleMenuCommand(ctx: CommandContext<ManagerContext>): Promise<void> {
     try {
         await ctx.reply(getReplyText("menu"), {
             parse_mode: "HTML",

@@ -1,4 +1,4 @@
-import type { MyContext, MyConversation } from "../index";
+import type { ManagerContext, MyConversation } from "../index";
 import type { RawAddressString } from "starton-periphery";
 import { logger } from "../../logger.ts";
 import { Address } from "@ton/ton";
@@ -14,7 +14,7 @@ import {
     getReplyText
 } from "../constants.ts";
 
-export async function listRewardPoolsPrelude(conversation: MyConversation, ctx: MyContext): Promise<void> {
+export async function listRewardPoolsPrelude(conversation: MyConversation, ctx: ManagerContext): Promise<void> {
     let formattedLaunchAddress: RawAddressString;
     while (true) {
         await ctx.reply("Please provide the launch address to display reward pools for:", {

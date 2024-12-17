@@ -1,5 +1,5 @@
 import type { CallbackQueryContext } from "grammy";
-import type { MyContext } from "../index";
+import type { ManagerContext } from "../index";
 import { logger } from "../../logger";
 import * as db from "../../db";
 import {
@@ -13,7 +13,7 @@ import {
 } from "../constants.ts";
 
 async function handleListRewardJettons(
-    ctx: CallbackQueryContext<MyContext>,
+    ctx: CallbackQueryContext<ManagerContext>,
     paginationData: PaginationData,
 ): Promise<void> {
     try {
@@ -40,7 +40,7 @@ async function handleListRewardJettons(
     }
 }
 
-export async function handleListRewardJettonsCallback(ctx: CallbackQueryContext<MyContext>) {
+export async function handleListRewardJettonsCallback(ctx: CallbackQueryContext<ManagerContext>) {
     await ctx.answerCallbackQuery();
     await handleListRewardJettons(ctx, {
         ...initPaginationData,
@@ -48,7 +48,7 @@ export async function handleListRewardJettonsCallback(ctx: CallbackQueryContext<
     });
 }
 
-export async function handleRewardJettonsPaginationCallback(ctx: CallbackQueryContext<MyContext>) {
+export async function handleRewardJettonsPaginationCallback(ctx: CallbackQueryContext<ManagerContext>) {
     await ctx.answerCallbackQuery();
     const newPage = ctx.callbackQuery.data == "next_reward_jettons"
         ? ctx.session.launchesPage += 1

@@ -1,5 +1,5 @@
 import type { CallbackQueryContext } from "grammy";
-import type { MyContext } from "../index";
+import type { ManagerContext } from "../index";
 import { logger } from "../../logger";
 import * as db from "../../db";
 import {
@@ -13,7 +13,7 @@ import {
 } from "../constants.ts";
 
 async function handleListRewardPools(
-    ctx: CallbackQueryContext<MyContext>,
+    ctx: CallbackQueryContext<ManagerContext>,
     paginationData: PaginationData,
 ): Promise<void> {
     try {
@@ -48,7 +48,7 @@ async function handleListRewardPools(
     }
 }
 
-export async function handleRewardPoolsPaginationCallback(ctx: CallbackQueryContext<MyContext>) {
+export async function handleRewardPoolsPaginationCallback(ctx: CallbackQueryContext<ManagerContext>) {
     await ctx.answerCallbackQuery();
     const newPage = ctx.callbackQuery.data == "next_reward_jettons"
         ? ctx.session.launchesPage += 1

@@ -1,10 +1,10 @@
 import { formatLink, jettonFromNano, type RawAddressString } from "starton-periphery";
 import { cancelConversationKeyboard, Conversations } from "../constants";
-import type { MyContext, MyConversation } from "../index";
+import type { ManagerContext, MyConversation } from "../index";
 import { Address } from "@ton/ton";
 import * as db from "../../db";
 
-export async function setRewardPool(conversation: MyConversation, ctx: MyContext): Promise<void> {
+export async function setRewardPool(conversation: MyConversation, ctx: ManagerContext): Promise<void> {
     await ctx.reply(
         "Please provide the launch and reward jetton addresses in this format: launch_address | reward_jetton_address",
         { reply_markup: cancelConversationKeyboard(Conversations.setRewardPool) }

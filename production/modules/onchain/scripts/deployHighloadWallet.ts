@@ -1,7 +1,7 @@
-import { DEFAULT_TIMEOUT, HighloadWalletV3Code, SUBWALLET_ID } from "starton-periphery";
+import { DEFAULT_TIMEOUT, SUBWALLET_ID } from "starton-periphery";
+import { HighloadWalletV3 } from "../wrappers/HighloadWalletV3";
 import { mnemonicNew, mnemonicToWalletKey } from "@ton/crypto";
 import { compile, NetworkProvider } from "@ton/blueprint";
-import { HighloadWalletV3 } from "../wrappers/HighloadWalletV3";
 import { promptBool } from "./ui-utils";
 import { toNano } from "@ton/core";
 

@@ -1,18 +1,18 @@
 import { getMenuKeyboard, getReplyText } from "../constants";
 import type { CallbackQueryContext } from "grammy";
-import type { MyContext } from "../index";
+import type { ManagerContext } from "../index";
 import { Address } from "@ton/core";
 import { Locales } from "starton-periphery";
 
 export async function handleEnterConversationCallback(
-    ctx: CallbackQueryContext<MyContext>,
+    ctx: CallbackQueryContext<ManagerContext>,
     conversationName: string
 ): Promise<void> {
     await ctx.answerCallbackQuery();
     await ctx.conversation.enter(conversationName);
 }
 
-export async function handleBackToMenuCallback(ctx: CallbackQueryContext<MyContext>) {
+export async function handleBackToMenuCallback(ctx: CallbackQueryContext<ManagerContext>) {
     await ctx.answerCallbackQuery();
     await ctx.callbackQuery.message!.editText(getReplyText("menu"), {
         parse_mode: "HTML",
@@ -22,7 +22,7 @@ export async function handleBackToMenuCallback(ctx: CallbackQueryContext<MyConte
 }
 
 export async function handleCancelConversationCallback(
-    ctx: CallbackQueryContext<MyContext>,
+    ctx: CallbackQueryContext<ManagerContext>,
     conversationName: string
 ) {
     await ctx.conversation.exit(conversationName);

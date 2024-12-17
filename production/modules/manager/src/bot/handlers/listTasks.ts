@@ -1,6 +1,6 @@
 import type { CallbackQueryContext } from "grammy";
 import { logger } from "../../logger";
-import type { MyContext } from "..";
+import type { ManagerContext } from "..";
 import * as db from "../../db";
 import {
     getPaginationKeyboard,
@@ -12,7 +12,7 @@ import {
 } from "../constants";
 
 async function handleListTasks(
-    ctx: CallbackQueryContext<MyContext>,
+    ctx: CallbackQueryContext<ManagerContext>,
     sortData: { page: number, limit: number },
 ): Promise<void> {
     try {
@@ -41,7 +41,7 @@ async function handleListTasks(
 }
 
 
-export async function handleListTasksCallback(ctx: CallbackQueryContext<MyContext>) {
+export async function handleListTasksCallback(ctx: CallbackQueryContext<ManagerContext>) {
     await ctx.answerCallbackQuery();
     await handleListTasks(ctx, {
         ...initPaginationData,
@@ -49,7 +49,7 @@ export async function handleListTasksCallback(ctx: CallbackQueryContext<MyContex
     });
 }
 
-export async function handleTasksPaginationCallback(ctx: CallbackQueryContext<MyContext>) {
+export async function handleTasksPaginationCallback(ctx: CallbackQueryContext<ManagerContext>) {
     await ctx.answerCallbackQuery();
     const newPage = ctx.callbackQuery.data == "next_tasks"
         ? ctx.session.tasksPage += 1

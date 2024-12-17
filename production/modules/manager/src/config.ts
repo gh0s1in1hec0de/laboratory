@@ -6,7 +6,8 @@ import fs from "fs";
 type Config = {
     mode: AppMode,
     bot: {
-        token: string,
+        manager_token: string,
+        main_token: string,
         admins: number[],
     },
     server: {

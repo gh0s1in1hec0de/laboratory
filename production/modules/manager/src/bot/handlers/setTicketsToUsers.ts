@@ -1,11 +1,11 @@
 import { cancelConversationKeyboard, Conversations, getReplyText } from "../constants";
-import type { MyContext, MyConversation } from "..";
+import type { ManagerContext, MyConversation } from "..";
 import { validateUserAddresses } from "./common";
 import { logger } from "../../logger";
 import { Address } from "@ton/core";
 import * as db from "../../db";
 
-export async function setTicketsToUsers(conversation: MyConversation, ctx: MyContext): Promise<void> {
+export async function setTicketsToUsers(conversation: MyConversation, ctx: ManagerContext): Promise<void> {
     await ctx.reply(
         getReplyText("setTicketsToUsers"),
         { parse_mode: "HTML", reply_markup: cancelConversationKeyboard(Conversations.setTicketsToUsers) }

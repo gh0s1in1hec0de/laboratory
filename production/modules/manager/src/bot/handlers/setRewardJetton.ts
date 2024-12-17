@@ -1,12 +1,12 @@
 import { formatLink, jettonFromNano, type JettonMetadata, parseJettonMetadata } from "starton-periphery";
 import { Conversations, cancelConversationKeyboard } from "../constants";
 import { Address, JettonMaster, JettonWallet } from "@ton/ton";
-import type { MyContext, MyConversation } from "..";
+import type { ManagerContext, MyConversation } from "..";
 import { balancedTonClient } from "../../client";
 import { getConfig } from "../../config";
 import * as db from "../../db";
 
-export async function setRewardJetton(conversation: MyConversation, ctx: MyContext): Promise<void> {
+export async function setRewardJetton(conversation: MyConversation, ctx: ManagerContext): Promise<void> {
     try {
         await ctx.reply(
             "Please provide the address of the jetton you wish to add^^",

@@ -34,72 +34,97 @@ export type SessionData = {
     launchAddress: RawAddressString | null,
 };
 
-export type MyContext = HydrateFlavor<Context> & ConversationFlavor & SessionFlavor<SessionData>;
+export type BaseContext = HydrateFlavor<Context> & ConversationFlavor;
+export type ManagerContext = BaseContext & SessionFlavor<SessionData>;
 type MyApi = HydrateApiFlavor<Api>;
-export type MyConversation = Conversation<MyContext>;
+export type MyConversation = Conversation<ManagerContext>;
 
-let maybeBot: Bot<MyContext> | null;
+let maybeManagerBot: Bot<ManagerContext> | null;
+let maybeMainBot: Bot<BaseContext> | null;
 
-export async function createBot(): Promise<Bot<MyContext>> {
-    const { bot: { token } } = getConfig();
+export async function createBot(): Promise<Bot<ManagerContext>> {
+    const { bot: { manager_token: token } } = getConfig();
 
-    maybeBot = new Bot<MyContext, MyApi>(token);
+    maybeManagerBot = new Bot<ManagerContext, MyApi>(token);
 
     function initial(): SessionData {
         return { launchesPage: 1, tasksPage: 1, launchAddress: null };
     }
 
-    maybeBot.use(session({ initial }));
-    maybeBot.use(conversations());
-    maybeBot.use(createConversation(listRewardPoolsPrelude));
-    maybeBot.use(createConversation(setTasksCompletions));
-    maybeBot.use(createConversation(setTicketsToUsers));
-    maybeBot.use(createConversation(setRewardJetton));
-    maybeBot.use(createConversation(setRewardPool));
-    maybeBot.use(createConversation(createTask));
-    maybeBot.use(createConversation(deleteTask));
-    maybeBot.use(hydrate());
-    maybeBot.api.config.use(hydrateApi());
+    maybeManagerBot.use(session({ initial }));
+    maybeManagerBot.use(conversations());
+    maybeManagerBot.use(createConversation(listRewardPoolsPrelude));
+    maybeManagerBot.use(createConversation(setTasksCompletions));
+    maybeManagerBot.use(createConversation(setTicketsToUsers));
+    maybeManagerBot.use(createConversation(setRewardJetton));
+    maybeManagerBot.use(createConversation(setRewardPool));
+    maybeManagerBot.use(createConversation(createTask));
+    maybeManagerBot.use(createConversation(deleteTask));
+    maybeManagerBot.use(hydrate());
+    maybeManagerBot.api.config.use(hydrateApi());
 
-    await maybeBot.api.setMyCommands(commands);
+    await maybeManagerBot.api.setMyCommands(commands);
 
-    maybeBot.command("start", handleStartCommand);
-    maybeBot.command("menu").filter(getAdminFilter, handleMenuCommand);
+    maybeManagerBot.command("start", handleStartCommand);
+    maybeManagerBot.command("menu").filter(getAdminFilter, handleMenuCommand);
 
-    maybeBot.callbackQuery("list_launches", handleListLaunchesCallback);
-    maybeBot.callbackQuery(["next_launches", "prev_launches", "reset_launches"], handleLaunchesPaginationCallback);
+    maybeManagerBot.callbackQuery("list_launches", handleListLaunchesCallback);
+    maybeManagerBot.callbackQuery(["next_launches", "prev_launches", "reset_launches"], handleLaunchesPaginationCallback);
 
-    maybeBot.callbackQuery("list_tasks", handleListTasksCallback);
-    maybeBot.callbackQuery(["next_tasks", "prev_tasks", "reset_tasks"], handleTasksPaginationCallback);
+    maybeManagerBot.callbackQuery("list_tasks", handleListTasksCallback);
+    maybeManagerBot.callbackQuery(["next_tasks", "prev_tasks", "reset_tasks"], handleTasksPaginationCallback);
 
-    maybeBot.callbackQuery("list_reward_jettons", handleListRewardJettonsCallback);
-    maybeBot.callbackQuery(["next_reward_jettons", "prev_reward_jettons", "reset_reward_jettons"], handleRewardJettonsPaginationCallback);
+    maybeManagerBot.callbackQuery("list_reward_jettons", handleListRewardJettonsCallback);
+    maybeManagerBot.callbackQuery(["next_reward_jettons", "prev_reward_jettons", "reset_reward_jettons"], handleRewardJettonsPaginationCallback);
 
-    maybeBot.callbackQuery(["next_reward_pools", "prev_reward_pools", "reset_reward_pools"], handleRewardPoolsPaginationCallback);
+    maybeManagerBot.callbackQuery(["next_reward_pools", "prev_reward_pools", "reset_reward_pools"], handleRewardPoolsPaginationCallback);
 
 
     for (const conversation of Object.values(Conversations)) {
-        maybeBot.callbackQuery(toSnakeCase(conversation), (ctx) => handleEnterConversationCallback(ctx, conversation));
-        maybeBot.callbackQuery(`cancel_conv_${toSnakeCase(conversation)}`, (ctx) => handleCancelConversationCallback(ctx, conversation));
+        maybeManagerBot.callbackQuery(toSnakeCase(conversation), (ctx) => handleEnterConversationCallback(ctx, conversation));
+        maybeManagerBot.callbackQuery(`cancel_conv_${toSnakeCase(conversation)}`, (ctx) => handleCancelConversationCallback(ctx, conversation));
     }
 
-    maybeBot.callbackQuery("back", handleBackToMenuCallback);
-    maybeBot.callbackQuery("nothing", async (ctx) => await ctx.answerCallbackQuery());
+    maybeManagerBot.callbackQuery("back", handleBackToMenuCallback);
+    maybeManagerBot.callbackQuery("nothing", async (ctx) => await ctx.answerCallbackQuery());
 
-    maybeBot.on("message", getUnknownMsgReply);
+    maybeManagerBot.on("message", getUnknownMsgReply);
 
-    maybeBot.catch(handleBotError);
+    maybeManagerBot.catch(handleBotError);
 
     logger().info("bot is running");
 
-    await maybeBot.start();
+    await maybeManagerBot.start();
 
-    return maybeBot;
+    return maybeManagerBot;
 }
 
-export async function startBot(): Promise<Bot<MyContext>> {
-    if (!maybeBot) {
-        maybeBot = await createBot();
-    }
-    return maybeBot;
+export async function startManagerBot(): Promise<Bot<ManagerContext>> {
+    if (!maybeManagerBot) maybeManagerBot = await createBot();
+    return maybeManagerBot;
+}
+
+// === Main bot draft === TODO: Finish this stuff
+export async function createMainBot(): Promise<Bot<BaseContext>> {
+    const {
+        bot: { main_token: token },
+    } = getConfig();
+
+    maybeMainBot = new Bot<BaseContext, MyApi>(token);
+
+    maybeMainBot.command("start", async ctx =>
+        await ctx.reply("Welcome to StartON!")
+    );
+
+    maybeMainBot.catch(e => logger().error("Main bot error: ", e));
+
+    logger().info("Main bot is running");
+
+    await maybeMainBot.start();
+    return maybeMainBot;
+}
+
+export async function startMainBot(): Promise<Bot<BaseContext>> {
+    if (!maybeMainBot) maybeMainBot = await createMainBot();
+    return maybeMainBot;
 }
