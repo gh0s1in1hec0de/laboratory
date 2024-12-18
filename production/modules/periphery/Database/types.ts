@@ -15,6 +15,7 @@ export type StoredUser = {
 }
 
 export type Caller = {
+    callerId: number,
     address: RawAddressString,
     invitedBy: RawAddressString | null,
     ticketBalance: number,

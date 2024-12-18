@@ -17,7 +17,7 @@ async function postConnectWallet(address: string, referral?: string): Promise<vo
   try {
     await managerService.post(USER_ROUTES.ConnectWallet, {
       address: Address.parse(address).toRawString(),
-      ...(referral ? { referral: Address.parse(referral).toRawString() } : {}),
+      ...(referral ? { referral: referral } : {}),
     });
   } catch (error) {
     console.error(USER_ERROR.ConnectWallet, error);

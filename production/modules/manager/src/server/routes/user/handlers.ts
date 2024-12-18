@@ -14,18 +14,18 @@ import type {
 } from "starton-periphery";
 
 export async function connectCallerWallet(
-    { address, referral, }: ConnectCallerWalletRequest
+    { address, referral }: ConnectCallerWalletRequest
 ): Promise<Caller | string> {
-    let maybeParsedReferral: RawAddressString | undefined = undefined;
+    let maybeParsedReferral: Caller | null = null;
     if (referral) {
         try {
-            maybeParsedReferral = Address.parse(referral).toRawString();
+            maybeParsedReferral = await db.getCallerById(Number(referral));
         } catch (e) {
             throw new CommonServerError(400, `invalid referral ${referral}`);
         }
     }
     const res = await db.connectWallet(
-        Address.parse(address).toRawString(), maybeParsedReferral,
+        Address.parse(address).toRawString(), maybeParsedReferral?.address,
     );
     return res ?? "user already exists";
 }
