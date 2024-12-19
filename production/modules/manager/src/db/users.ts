@@ -15,6 +15,18 @@ export async function getCaller(
     return res.length ? res[0] : null;
 }
 
+export async function getCallerById(
+    callerId: number,
+    client?: SqlClient
+): Promise<Caller | null> {
+    const res = await (client ?? globalClient)<Caller[]>`
+        SELECT *
+        FROM callers
+        WHERE caller_id = ${callerId}
+    `;
+    return res.length ? res[0] : null;
+}
+
 export async function connectWallet(
     callerAddress: RawAddressString,
     referral?: string,

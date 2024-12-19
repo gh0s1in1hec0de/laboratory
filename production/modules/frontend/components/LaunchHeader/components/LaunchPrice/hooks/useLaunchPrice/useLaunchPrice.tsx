@@ -33,9 +33,6 @@ export function useLaunchPrice({
   useEffect(() => {
     (async () => {
       try {
-        const callerData = await userService.getCaller(localStorageWrapper.get(CALLER_ADDRESS));
-        setCallerData(callerData);
-
         const tonClient = new TonClient4({
           endpoint: await getHttpV4Endpoint({ network: process.env.NEXT_PUBLIC_NETWORK as Network }),
         });
@@ -79,6 +76,8 @@ export function useLaunchPrice({
           syntheticJetReserve,
         });
 
+        const callerData = await userService.getCaller(localStorageWrapper.get(CALLER_ADDRESS));
+        setCallerData(callerData);
       } catch (error) {
         console.error("Error fetching config data (getContractData):", error);
       } finally {

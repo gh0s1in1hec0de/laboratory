@@ -27,9 +27,9 @@ export function useTokenPolling() {
   
             const { phase, nextPhaseIn } = getCurrentSalePhase(data.timings);
   
-            if (phase === SalePhase.NOT_STARTED && nextPhaseIn) {
+            if (phase === SalePhase.NOT_STARTED) {
               setIsLaunchCreated(true);
-              await new Promise((resolve) => setTimeout(resolve, nextPhaseIn));
+              await new Promise((resolve) => setTimeout(resolve, (nextPhaseIn ?? 0) * 1000));
               setIsLaunchCreated(false);
             }
   

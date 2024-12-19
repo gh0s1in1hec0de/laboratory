@@ -24,7 +24,7 @@ export function useConnectButton() {
     localStorageWrapper.set(CALLER_ADDRESS, address);
 
     try {
-      await userService.postConnectWallet(address, localStorageWrapper.get(REFERRAL) || "");
+      await userService.postConnectWallet(address, localStorageWrapper.get(REFERRAL));
       setTonWalletAddress(address);
       console.debug("Wallet connected!");
     } catch (error) {
@@ -158,15 +158,21 @@ export function useConnectButton() {
     toggleOpenToast();
   }
 
-  function handleCopyReferral(address: string) {
+  async function handleCopyReferral(address: string) {
     try {
-      retrieveLaunchParams();
-      navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_FRONTEND_MINIAPP_URL}?startapp=${Address.parse(address).toString()}`);
+      const callerData = await userService.getCaller(address);
+
+      try {
+        retrieveLaunchParams();
+        navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_FRONTEND_MINIAPP_URL}?startapp=${callerData.callerId}`);
+      } catch (error) {
+        navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_FRONTEND_BROWSER_URL}/?referral=${callerData.callerId}`);
+      } finally {
+        setToastText(t("Tasks.header.successCopyReferral"));
+        toggleOpenToast();
+      }
     } catch (error) {
-      navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_FRONTEND_BROWSER_URL}/?referral=${Address.parse(address).toRawString()}`);
-    } finally {
-      setToastText(t("Tasks.header.successCopyReferral"));
-      toggleOpenToast();
+      console.error(error);
     }
   }
 
