@@ -19,7 +19,8 @@ import {
   Network,
   SalePhase,
   TxRequestBuilder,
-  getApproximateClaimAmount,
+  getApproximateClaimAmountLegacy,
+  getApproximateClaimAmountOnchain,
   getContractData,
   getCurrentSalePhase,
 } from "starton-periphery";
@@ -45,45 +46,64 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
           endpoint: await getHttpV4Endpoint({ network: process.env.NEXT_PUBLIC_NETWORK as Network }),
         });
 
-        const {
-          creatorFutJetLeft,
-          creatorFutJetPriceReversed,
-          wlRoundFutJetLimit,
-          wlRoundTonLimit,
-          syntheticTonReserve,
-          syntheticJetReserve,
-          futJetDexAmount,
-          futJetPlatformAmount,
-          minTonForSaleSuccess,
-          creatorFutJetBalance,
-          publicRoundFutJetSold,
-          pubRoundFutJetLimit,
-          totalTonsCollected,
-          wlRoundTonInvestedTotal,
-        } = (await getContractData(
-          "All",
-          tonClient,
-          // Address.parse("0:0df3f01225907c46539c02c2fe9405b0816ec5c244a5119e37ed3c2ce00042b9")
-          Address.parse(extendedBalance.tokenLaunch),
-        )) as GetConfigResponse & MoneyFlows;
+        if (extendedBalance.timings.startTime < Number(process.env.NEXT_PUBLIC_MINOR_VERSION_TIME_SEPARATOR)) {
+          const {
+            creatorFutJetLeft,
+            creatorFutJetPriceReversed,
+            wlRoundFutJetLimit,
+            wlRoundTonLimit,
+            syntheticTonReserve,
+            syntheticJetReserve,
+            futJetDexAmount,
+            futJetPlatformAmount,
+            minTonForSaleSuccess,
+            creatorFutJetBalance,
+            publicRoundFutJetSold,
+            pubRoundFutJetLimit,
+            totalTonsCollected,
+            wlRoundTonInvestedTotal,
+          } = (await getContractData(
+            "All",
+            tonClient,
+            // Address.parse("0:0df3f01225907c46539c02c2fe9405b0816ec5c244a5119e37ed3c2ce00042b9")
+            Address.parse(extendedBalance.tokenLaunch),
+          )) as GetConfigResponse & MoneyFlows;
 
-        setConfigData({
-          wlRoundFutJetLimit,
-          wlRoundTonLimit,
-          creatorFutJetLeft,
-          creatorFutJetPriceReversed,
-          creatorFutJetBalance,
-          publicRoundFutJetSold,
-          pubRoundFutJetLimit,
-          totalTonsCollected,
-          wlRoundTonInvestedTotal,
-          futJetDexAmount,
-          futJetPlatformAmount,
-          minTonForSaleSuccess,
-          syntheticTonReserve,
-          syntheticJetReserve,
-        });
+          setConfigData({
+            wlRoundFutJetLimit,
+            wlRoundTonLimit,
+            creatorFutJetLeft,
+            creatorFutJetPriceReversed,
+            creatorFutJetBalance,
+            publicRoundFutJetSold,
+            pubRoundFutJetLimit,
+            totalTonsCollected,
+            wlRoundTonInvestedTotal,
+            futJetDexAmount,
+            futJetPlatformAmount,
+            minTonForSaleSuccess,
+            syntheticTonReserve,
+            syntheticJetReserve,
+          });
+        } else {
+          try {
+            const res = await getApproximateClaimAmountOnchain(
+              tonClient,
+              Address.parse(extendedBalance.tokenLaunch),
+              {
+                whitelistTons: extendedBalance.whitelistTons,
+                publicJettons: extendedBalance.jettons,
+                isCreator: extendedBalance.isCreator
+              }
+            );
 
+            setDisplayValue(res);
+          } catch (error) {
+            console.error("Error in getApproximateClaimAmountOnchain:", error);
+          } finally {
+            setIsLoading(false);
+          }
+        }
       } catch (error) {
         console.error("Error fetching config data (getContractData):", error);
       }
@@ -93,7 +113,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
   useEffect(() => {
     try {
       if (configData) {
-        const res = getApproximateClaimAmount(
+        const res = getApproximateClaimAmountLegacy(
           {
             creatorFutJetBalance: configData.creatorFutJetBalance,
             publicRoundFutJetSold: configData.publicRoundFutJetSold,
@@ -123,7 +143,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
         setDisplayValue(res);
       }
     } catch (error) {
-      console.error("Error in getApproximateClaimAmount:", error);
+      console.error("Error in getApproximateClaimAmountLegacy:", error);
     } finally {
       setIsLoading(false);
     }
@@ -240,7 +260,7 @@ export function useRewardsCard(extendedBalance: ExtendedUserBalance) {
             />
           </MainBox>
         );
-      } 
+      }
       if (!extendedBalance.isSuccessful) {
         return (
           <MainBox

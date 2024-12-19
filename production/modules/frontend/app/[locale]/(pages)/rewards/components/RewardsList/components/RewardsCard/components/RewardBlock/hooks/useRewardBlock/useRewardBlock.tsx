@@ -3,7 +3,7 @@ import {
   MoneyFlows,
   Network,
   getContractData,
-  getApproximateClaimAmount,
+  getApproximateClaimAmountLegacy,
   calculateUserRewardAmount,
 } from "starton-periphery";
 import { useEffect, useState } from "react";
@@ -74,7 +74,7 @@ export function useRewardBlock({
   useEffect(() => {
     try {
       if (configData) {
-        const res = getApproximateClaimAmount(
+        const res = getApproximateClaimAmountLegacy(
           {
             creatorFutJetBalance: configData.creatorFutJetBalance,
             publicRoundFutJetSold: configData.publicRoundFutJetSold,

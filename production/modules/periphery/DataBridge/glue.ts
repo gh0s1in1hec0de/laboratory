@@ -169,7 +169,7 @@ async function getConfig(
     return parseGetConfigResponse(reader);
 }
 
-async function getApproximateClaimAmountOnchain(
+export async function getApproximateClaimAmountOnchain(
     tonClient: TonClient4,
     contractAddress: Address,
     { whitelistTons, publicJettons, isCreator }: UserShare,

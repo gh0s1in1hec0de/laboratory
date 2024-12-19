@@ -8,10 +8,11 @@ import {
   Network,
   SalePhase,
   Caller,
-  getCurrentWlRate
+  getCurrentWlRate,
+  jettonFromNano
 } from "starton-periphery";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
-import { Address, toNano } from "@ton/core";
+import { Address, fromNano, toNano } from "@ton/core";
 import { TonClient4 } from "@ton/ton";
 import { useEffect, useState } from "react";
 import { UseLaunchPriceProps } from "./types";
@@ -89,7 +90,13 @@ export function useLaunchPrice({
   useEffect(() => {
     if (!configData) return;
 
-    const { wlRoundFutJetLimit, syntheticTonReserve, syntheticJetReserve, wlRoundTonInvestedTotal } = configData;
+    const { 
+      wlRoundFutJetLimit,
+      syntheticTonReserve,
+      syntheticJetReserve,
+      wlRoundTonInvestedTotal,
+      wlRoundTonLimit
+    } = configData;
 
     if (phase === SalePhase.PUBLIC || phase === SalePhase.ENDED) {
       const tons = process.env.NEXT_PUBLIC_NETWORK === "testnet" ? toNano("0.25") : toNano("10");
@@ -106,14 +113,19 @@ export function useLaunchPrice({
     }
 
     if (phase === SalePhase.WHITELIST) {
-      const price = getCurrentWlRate(
-        wlRoundFutJetLimit,
-        wlRoundTonInvestedTotal
-      );
-
-      setPrice(price);
+      if (timings.startTime < Number(process.env.NEXT_PUBLIC_MINOR_VERSION_TIME_SEPARATOR)) {
+        const price = getCurrentWlRate(
+          wlRoundFutJetLimit,
+          wlRoundTonInvestedTotal
+        );
+  
+        setPrice(price);
+      } else {
+        const price = Number(fromNano(wlRoundTonLimit)) / Number(jettonFromNano(wlRoundFutJetLimit));
+        setPrice(price);
+      }
     }
-  }, [configData, version, phase, callerData]);
+  }, [configData, version, phase, callerData, timings.startTime]);
 
   return {
     price,

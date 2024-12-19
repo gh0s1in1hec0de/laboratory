@@ -79,7 +79,7 @@ export function useCreateToken() {
 
       const transaction = TxRequestBuilder.createLaunch(
         {
-          coreAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
+          coreAddress: process.env.NEXT_PUBLIC_CORE_ADDRESS!,
         },
         {
           totalSupply: jettonToNano(values.totalSupply),

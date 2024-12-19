@@ -83,7 +83,12 @@ export function LaunchHeader({
         showHolders={showHolders}
       />
 
-      {showBIO && <LaunchLinks linksArray={linksArray} getLaunchLink={handleCopyLaunchLink}/>}
+      {showBIO && (
+        <LaunchLinks 
+          linksArray={linksArray}
+          getLaunchLink={handleCopyLaunchLink}
+        />
+      )}
 
       {showPrice && timings && version && (
         <LaunchPrice
