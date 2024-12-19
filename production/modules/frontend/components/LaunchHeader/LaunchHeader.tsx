@@ -6,6 +6,7 @@ import { LaunchLinks } from "./components/LaunchLinks";
 import { TwitterIcon, TelegramIcon, WebsiteIcon } from "@/icons";
 import { LaunchPrice } from "./components/LaunchPrice";
 import { retrieveLaunchParams } from "@telegram-apps/sdk-react";
+import { Address } from "@ton/core";
 
 export function LaunchHeader({
   avatarSrc,
@@ -17,7 +18,6 @@ export function LaunchHeader({
   xLink,
   telegramLink,
   websiteLink,
-  getLaunchLink,
   showPrice,
   launchAddress,
   timings,
@@ -28,7 +28,7 @@ export function LaunchHeader({
   async function handleCopyLaunchLink() {
     try {
       retrieveLaunchParams();
-      navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_FRONTEND_MINIAPP_URL}?startapp=launch_${launchAddress}`);
+      navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_FRONTEND_MINIAPP_URL}?startapp=launch_${Address.parse(launchAddress || "").toString()}`);
     } catch (error) {
       const currentUrl = window.location.href;
   
