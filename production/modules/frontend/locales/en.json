@@ -161,6 +161,7 @@
 			"balance": "Your balance",
 			"copyAddress": "Copy Address",
 			"copyReferral": "Copy referral link",
+			"copyReferralLoading": "Copying...",
 			"error": "Oops, something went wrong... Please reload the page or try again later.",
 			"drawer": {
 				"firstParagraph": {

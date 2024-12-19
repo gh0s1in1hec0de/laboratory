@@ -31,7 +31,7 @@ export function CustomConnectButton({
     handleCopyReferral,
     openToast,
     toggleOpenToast,
-    toastText
+    toastText,
   } = useConnectButton();
   const t = useTranslations("Tasks.header");
 
@@ -62,7 +62,7 @@ export function CustomConnectButton({
                 },
                 ...(!copyReferralButton ? [{
                   label: "Tasks.header.copyReferral",
-                  onClick: () => handleCopyReferral(tonWalletAddress),
+                  onClick: () => handleCopyReferral(),
                 }] : []),
                 {
                   label: "Tasks.header.disconnectWallet",
@@ -76,7 +76,7 @@ export function CustomConnectButton({
             <CustomButton
               padding="10px 0"
               fullWidth={fullWidth}
-              onClick={() => handleCopyReferral(tonWalletAddress)}
+              onClick={() => handleCopyReferral()}
             >
               <Grid
                 container
