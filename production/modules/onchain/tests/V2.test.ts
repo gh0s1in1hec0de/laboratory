@@ -1,9 +1,26 @@
 import { estimateBodyFwdFeeWithReverseCheck, forwardStateInitOverhead, printTxGasStats } from "./utils/gasUtils";
 import {
-    REFERRAL_PAYMENT_PERCENT, PURCHASE_FEE_PERCENT, validateValueMock, jettonFromNano, getCreatorAmountOut,
-    getPublicAmountOut, getApproximateClaimAmount, packLaunchConfigV2ToCell, jettonToNano, toPct,
-    JETTON_MIN_TRANSFER_FEE, MAX_WL_ROUND_TON_LIMIT, PERCENTAGE_DENOMINATOR, REFUND_FEE_PERCENT,
-    BalanceUpdateMode, TokensLaunchOps, LaunchConfigV2, UserVaultOps, CoreOps, GlobalVersions,
+    REFERRAL_PAYMENT_PERCENT,
+    PURCHASE_FEE_PERCENT,
+    validateValueMock,
+    jettonFromNano,
+    getCreatorAmountOut,
+    getPublicAmountOut,
+    getApproximateClaimAmount,
+    packLaunchConfigV2ToCell,
+    jettonToNano,
+    toPct,
+    JETTON_MIN_TRANSFER_FEE,
+    MAX_WL_ROUND_TON_LIMIT,
+    PERCENTAGE_DENOMINATOR,
+    REFUND_FEE_PERCENT,
+    BalanceUpdateMode,
+    TokensLaunchOps,
+    LaunchConfigV2,
+    UserVaultOps,
+    CoreOps,
+    GlobalVersions,
+    getApproximateClaimAmountLegacy,
 } from "starton-periphery";
 import {
     collectCellStats, computeFwdFees, getGasPrices, computeGasFee, formatValue,
@@ -1294,7 +1311,7 @@ describe("V2", () => {
             const config = await sampleTokenLaunch.getConfig();
             const queryId = 1n;
 
-            const expectedJettonAmount = getApproximateClaimAmount(
+            const expectedJettonAmount = getApproximateClaimAmountLegacy(
                 moneyFlows, config, { whitelistTons: wlTonBalance ?? 0n, jettons: jettonBalance ?? 0n }
             );
             const claimRequestResult = await sampleTokenLaunch.sendJettonClaimRequest({

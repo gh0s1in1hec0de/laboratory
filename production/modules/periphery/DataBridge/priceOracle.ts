@@ -1,16 +1,17 @@
-import { GetConfigResponse, MoneyFlows } from "../types";
+import { GetConfigResponse, MoneyFlows, SellingProgress } from "../types";
 import { Coins, GlobalVersions } from "../standards";
 import { fromNano, toNano } from "@ton/core";
 import { jettonFromNano } from "../utils";
 import { ok as assert } from "assert";
 import { fees } from "../fees";
+import { UserShare } from "./glue";
 
 // 10k TON
 export const MAX_WL_ROUND_TON_LIMIT = 100000n * toNano("1");
 export const PERCENTAGE_DENOMINATOR = 100000n;
 export const PURCHASE_FEE_PERCENT = 1n;
 export const REFUND_FEE_PERCENT = 3n;
-export const REFERRAL_PAYMENT_PERCENT = 5n;
+export const REFERRAL_PAYMENT_PERCENT = 1n;
 
 export function validateValueMock(total: Coins, fee: Coins, percent: bigint): { purified: Coins, opn: Coins } {
     assert(fee < total, "not enough gas");
@@ -80,7 +81,7 @@ export function getPublicAmountOut(
     );
 }
 
-export function getApproximateClaimAmount(
+export function getApproximateClaimAmountLegacy(
     { publicRoundFutJetSold, wlRoundTonInvestedTotal, creatorFutJetBalance }: MoneyFlows,
     { pubRoundFutJetLimit, wlRoundFutJetLimit }: GetConfigResponse,
     // StoredUserBalance
@@ -99,6 +100,37 @@ export function getApproximateClaimAmount(
     if (isCreator) futJetRecipientTotalAmount += creatorFutJetBalance;
     return futJetRecipientTotalAmount;
 }
+
+export function getApproximateClaimAmount(
+    { publicRoundFutJetSold, wlRoundTonInvestedTotal, creatorFutJetBalance }: MoneyFlows,
+    { pubRoundFutJetLimit, futJetDexAmount, futJetPlatformAmount, wlRoundFutJetLimit }: GetConfigResponse,
+    { futJetTotalSupply, futJetInnerBalance }: SellingProgress,
+    { whitelistTons, publicJettons, isCreator }: UserShare,
+): Coins {
+    // Ensure balance consistency
+    const expectedInnerBalance = pubRoundFutJetLimit - publicRoundFutJetSold;
+    if (futJetInnerBalance - futJetDexAmount - futJetPlatformAmount !== expectedInnerBalance) throw new Error("Inconsistent balance state");
+    const boughtJettonsTotal = futJetTotalSupply - futJetInnerBalance;
+
+    let futJetRecipientAmount = publicJettons;
+
+    if (whitelistTons > 0n) {
+        const wlJettons = getWhitelistAmountOut(whitelistTons, wlRoundTonInvestedTotal, wlRoundFutJetLimit);
+        futJetRecipientAmount += wlJettons;
+    }
+    const leftoversUserJettonShare = futJetInnerBalance * futJetRecipientAmount / boughtJettonsTotal;
+    let futJetRecipientTotalAmount = futJetRecipientAmount + leftoversUserJettonShare;
+
+    if (isCreator) futJetRecipientTotalAmount += creatorFutJetBalance;
+
+    return futJetRecipientTotalAmount;
+}
+
+
+function getWhitelistAmountOut(wlTons: Coins, wlRoundTonInvestedTotal: Coins, wlRoundFutJetLimit: Coins): Coins {
+    return wlRoundFutJetLimit * wlTons  / wlRoundTonInvestedTotal;
+}
+
 
 /**
  * Calculates the reward amount a user should receive based on their claim.
@@ -134,6 +166,6 @@ export function calculateUserRewardAmount(
  * y = (x * 0.99) * 0.95 (if haveReferral is true) or y = x * 0.99 (if haveReferral is false).
  */
 export function unwrapInitialValue(y: number, haveReferral: boolean = false): number {
-    const referralFactor = haveReferral ? 0.95 : 1;
+    const referralFactor = haveReferral ? ((100 - Number(REFERRAL_PAYMENT_PERCENT)) / 100) : 1;
     return y / referralFactor / 0.99;
 }

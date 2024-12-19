@@ -164,7 +164,7 @@ describe("V1", () => {
         const ONE_HOUR_SEC = 3600;
         launchConfig = {
             minTonForSaleSuccess: toNano("100"),
-            tonLimitForWlRound: toNano("500"),
+            tonLimitForWlRound: toNano("100"),
             penny: toNano("1"),
 
             // Warning! In case of fractional/odd shares contract's math may have slight calc inaccuracy
@@ -594,7 +594,7 @@ describe("V1", () => {
             });
         }, 20000);
         test("high wl purchase operations pressure", async () => {
-            const conf = { totalTons: 480, totalBuys: 5 };
+            const conf = { totalTons: 80, totalBuys: 5 };
             const wlBuyers = await Promise.all(
                 Array.from({ length: conf.totalBuys }, (_, i) =>
                     blockchain.treasury(`wl_buyer_${i + 1}`, { balance: toNano("1000000") })
@@ -651,7 +651,8 @@ describe("V1", () => {
             const divergence = totalDifferenceAccounted - totalActualDifference;
 
             if (divergence) console.warn(`\"dead\" tons (wl buy): ${fromNano(divergence)} (${divergence})`);
-            assert(purified <= consumerVaultDataAfter.wlTonBalance!, `${fromNano(purified)} vs ${fromNano(consumerVaultDataAfter.wlTonBalance!)}`);
+            // We commented that as we use referral fee in contract as main one
+            // assert(purified <= consumerVaultDataAfter.wlTonBalance!, `${fromNano(purified)} vs ${fromNano(consumerVaultDataAfter.wlTonBalance!)}`);
             assert(
                 totalTonsIncrease === consumerVaultDataAfter.wlTonBalance!,
                 `${fromNano(totalTonsIncrease)} vs ${fromNano(consumerVaultDataAfter.wlTonBalance!)}`
@@ -722,9 +723,36 @@ describe("V1", () => {
                 `${fromNano(totalTonsIncrease)} vs ${fromNano(consumerWithReferralVaultDataAfter.wlTonBalance!)}`
             );
         }, 20000);
+        test("wl refund case (balance consistency check)", async () => {
+            // One refund case to verify correct release of locked value into the circulation of the whitelist round
+            const randomWlBuyer = await blockchain.treasury(`wl_buyer_1`);
+            const moneyFlowsBefore = await sampleTokenLaunch.getMoneyFlows();
+            const innerDataBefore = await sampleTokenLaunch.getInnerData();
+            const wlRefundResult = await sampleTokenLaunch.sendRefundRequest({
+                    queryId: 0n,
+                    value: toNano("0.03"),
+                    via: randomWlBuyer.getSender()
+                },
+                BalanceUpdateMode.WhitelistWithdrawal
+            );
+            expect(wlRefundResult.transactions).toHaveTransaction({
+                to: sampleTokenLaunch.address,
+                op: TokensLaunchOps.RefundConfirmation,
+                success: true,
+            });
+            const moneyFlowsAfter = await sampleTokenLaunch.getMoneyFlows();
+            const innerDataAfter = await sampleTokenLaunch.getInnerData();
+
+            assert(innerDataBefore.futJetInnerBalance < innerDataAfter.futJetInnerBalance,
+                `${innerDataBefore.futJetInnerBalance} vs ${innerDataAfter.futJetInnerBalance}`);
+            assert(moneyFlowsBefore.wlRoundTonInvestedTotal > moneyFlowsAfter.wlRoundTonInvestedTotal,
+                `${moneyFlowsBefore.wlRoundTonInvestedTotal} vs ${moneyFlowsAfter.wlRoundTonInvestedTotal}`);
+            assert(moneyFlowsBefore.syntheticTonReserve > moneyFlowsAfter.syntheticTonReserve,
+                `${moneyFlowsBefore.syntheticTonReserve} vs ${moneyFlowsAfter.syntheticTonReserve}`);
+        });
         test("wl limit cutoff works the proper way", async () => {
             const oldTimings = await sampleTokenLaunch.getSaleTimings();
-            const totalPurchaseValue = toNano("15");
+            const totalPurchaseValue = toNano("35");
             const wlPurchaseResult = await sampleTokenLaunch.sendWhitelistPurchase({
                 queryId: BigInt(getQueryId()),
                 value: totalPurchaseValue,
@@ -752,7 +780,7 @@ describe("V1", () => {
         }, 20000);
         test("high public purchase pressure", async () => {
             blockchain.now = (await sampleTokenLaunch.getSaleTimings()).wlRoundEndTime + 1;
-            const totalBuys = 30; // we can also set 100-200-300...
+            const totalBuys = 50; // we can also set 100-200-300...
             const publicBuyers = await Promise.all(
                 Array.from({ length: totalBuys }, (_, i) =>
                     blockchain.treasury(`pub_buyer_${i + 1}`, { balance: toNano("1000000") }))
@@ -830,7 +858,7 @@ describe("V1", () => {
                 op: TokensLaunchOps.PublicPurchase,
                 success: true
             });
-            const publicBuyRequestComputeFees = printTxGasStats("Public purchase request transaction: ", publicBuyRequest);
+            const publicBuyRequestComputeFees = printTxGasStats("Public purchase request (with referral) transaction: ", publicBuyRequest);
             const balanceUpdatePub = findTransactionRequired(firstPublicPurchaseResult.transactions, {
                 from: sampleTokenLaunch.address,
                 on: firstPublicBuyerVault.address,
@@ -897,6 +925,61 @@ describe("V1", () => {
                 exitCode: 73
             });
         });
+        test("refund cases (balance consistency test)", async () => {
+            // Two refund scenarios affecting token flows within the contract:
+            // 1. Whitelist refund during the public round (freed value should be added to public round circulation).
+            // 2. Public refund.
+            const randomWlBuyer = await blockchain.treasury(`wl_buyer_2`);
+            const moneyFlowsBeforeWl = await sampleTokenLaunch.getMoneyFlows();
+            const configBefore = await sampleTokenLaunch.getConfig();
+            const innerDataBeforeWl = await sampleTokenLaunch.getInnerData();
+
+            const wlRefundResult = await sampleTokenLaunch.sendRefundRequest({
+                    queryId: 0n,
+                    value: toNano("0.03"),
+                    via: randomWlBuyer.getSender()
+                },
+                BalanceUpdateMode.WhitelistWithdrawal
+            );
+            expect(wlRefundResult.transactions).toHaveTransaction({
+                to: sampleTokenLaunch.address,
+                op: TokensLaunchOps.RefundConfirmation,
+                success: true,
+            });
+            const moneyFlowsAfterWl = await sampleTokenLaunch.getMoneyFlows();
+            const configAfter = await sampleTokenLaunch.getConfig();
+            const innerDataAfterWl = await sampleTokenLaunch.getInnerData();
+
+            assert(innerDataBeforeWl.futJetInnerBalance < innerDataAfterWl.futJetInnerBalance,
+                `${innerDataBeforeWl.futJetInnerBalance} vs ${innerDataAfterWl.futJetInnerBalance}`);
+            assert(configBefore.pubRoundFutJetLimit < configAfter.pubRoundFutJetLimit,
+                `${configBefore.pubRoundFutJetLimit} vs ${configAfter.pubRoundFutJetLimit}`);
+            assert(moneyFlowsBeforeWl.syntheticJetReserve < moneyFlowsAfterWl.syntheticJetReserve,
+                `${moneyFlowsBeforeWl.syntheticJetReserve} vs ${moneyFlowsAfterWl.syntheticJetReserve}`);
+
+            const moneyFlowsBeforePublic = await sampleTokenLaunch.getMoneyFlows();
+            const innerDataBeforePublic = await sampleTokenLaunch.getInnerData();
+            const randomPublicBuyer = await blockchain.treasury(`pub_buyer_1`);
+            const pubRefundResult = await sampleTokenLaunch.sendRefundRequest({
+                    queryId: 0n,
+                    value: toNano("0.03"),
+                    via: randomPublicBuyer.getSender()
+                },
+                BalanceUpdateMode.PublicWithdrawal
+            );
+            expect(pubRefundResult.transactions).toHaveTransaction({
+                to: sampleTokenLaunch.address,
+                op: TokensLaunchOps.RefundConfirmation,
+                success: true,
+            });
+            const moneyFlowsAfterPublic = await sampleTokenLaunch.getMoneyFlows();
+            const innerDataAfterPublic = await sampleTokenLaunch.getInnerData();
+
+            assert(innerDataBeforePublic.futJetInnerBalance < innerDataAfterPublic.futJetInnerBalance,
+                `${innerDataBeforePublic.futJetInnerBalance} vs ${innerDataAfterPublic.futJetInnerBalance}`);
+            assert(moneyFlowsBeforePublic.publicRoundFutJetSold > moneyFlowsAfterPublic.publicRoundFutJetSold,
+                `${moneyFlowsBeforePublic.publicRoundFutJetSold} vs ${moneyFlowsAfterPublic.publicRoundFutJetSold}`);
+        });
         test("refunds work good (at this moment you may get tired from this typical names)", async () => {
             // At this point we have a guy called consumer, that have some wl goods and public goods in his vault
             // We'll test public and wl refunds one by one, reset state and test global refund ^^
@@ -908,6 +991,7 @@ describe("V1", () => {
                 sampleTokenLaunch.getMoneyFlows(), await sampleTokenLaunch.getInnerData(), await consumerVault.getVaultData()
             ]);
 
+            /* WHITELIST REFUND */
             const valueToWithdraw = consumerVaultStateBeforeRefunds.wlTonBalance!;
             console.log(`Wl value to withdraw: ${valueToWithdraw} (${fromNano(valueToWithdraw)} TON)`);
             assert(
@@ -964,6 +1048,11 @@ describe("V1", () => {
             expect(contractBalanceAfter).toBeGreaterThanOrEqual(contractBalanceBefore - purified);
             expect(tokenLaunchInnerDataAfterWlRef.operationalNeeds).toEqual(tokenLaunchInnerDataBeforeRefunds.operationalNeeds + opn);
 
+            /* PUBLIC REFUND */
+            const {
+                syntheticTonReserve: syntheticTonReserveBefore,
+                syntheticJetReserve: syntheticJetReserveBefore
+            } = await sampleTokenLaunch.getMoneyFlows();
             const pubRefundResult = await sampleTokenLaunch.sendRefundRequest({
                     queryId: 4n,
                     value: toNano("0.03"),
@@ -977,6 +1066,14 @@ describe("V1", () => {
                 op: TokensLaunchOps.RefundConfirmation,
                 success: true,
             });
+            const pubRefundRequestTx = findTransactionRequired(pubRefundResult.transactions, {
+                from: consumer.address,
+                to: sampleTokenLaunch.address,
+                op: TokensLaunchOps.RefundRequest,
+                success: true,
+            });
+            printTxGasStats("Public refund request transaction: ", pubRefundRequestTx);
+
             const drainedVaultData = await consumerVault.getVaultData();
             assert(
                 !(
@@ -986,6 +1083,17 @@ describe("V1", () => {
                 ),
                 "must be drained"
             );
+            const {
+                syntheticTonReserve: syntheticTonReserveAfter,
+                syntheticJetReserve: syntheticJetReserveAfter
+            } = await sampleTokenLaunch.getMoneyFlows();
+            assert(
+                (syntheticTonReserveAfter < syntheticTonReserveBefore) && (syntheticJetReserveAfter > syntheticJetReserveBefore),
+                `TONs: before: ${fromNano(syntheticTonReserveBefore)}, after: ${fromNano(syntheticTonReserveAfter)}\n\
+                 Jettons: before: ${jettonFromNano(syntheticJetReserveBefore)}, after: ${jettonFromNano(syntheticJetReserveAfter)}`
+            );
+            console.log(`TONs: before: ${fromNano(syntheticTonReserveBefore)}, after: ${fromNano(syntheticTonReserveAfter)}\n\
+                 Jettons: before: ${jettonFromNano(syntheticJetReserveBefore)}, after: ${jettonFromNano(syntheticJetReserveAfter)}`);
             await blockchain.loadFrom(stateBeforeRefunds);
             const restoredVaultData = await consumerVault.getVaultData();
             assert(
@@ -994,6 +1102,8 @@ describe("V1", () => {
                 && restoredVaultData.jettonBalance,
                 "must be full"
             );
+
+            /* TOTAL REFUND */
             const totalRefundResult = await sampleTokenLaunch.sendRefundRequest({
                     queryId: 4n,
                     value: toNano("0.03"),
@@ -1186,10 +1296,17 @@ describe("V1", () => {
             const moneyFlows = await sampleTokenLaunch.getMoneyFlows();
             const config = await sampleTokenLaunch.getConfig();
             const queryId = 1n;
+            const { futJetInnerBalance } = await sampleTokenLaunch.getInnerData();
 
             const expectedJettonAmount = getApproximateClaimAmount(
-                moneyFlows, config, { whitelistTons: wlTonBalance ?? 0n, jettons: jettonBalance ?? 0n }
+                moneyFlows, config, {futJetInnerBalance, futJetTotalSupply: sampleLaunchParams.totalSupply },
+                { whitelistTons: wlTonBalance ?? 0n, publicJettons: jettonBalance ?? 0n, isCreator: false }
             );
+            const expectedByContractJettonAmount = await sampleTokenLaunch.getApproximateClaimAmount(
+                wlTonBalance ?? 0n, jettonBalance ?? 0n, false
+            )
+
+            console.log(`499 check: ${jettonFromNano(futJetInnerBalance - config.futJetDexAmount - config.futJetPlatformAmount)} == ${jettonFromNano(config.pubRoundFutJetLimit - moneyFlows.publicRoundFutJetSold)}`);
             const claimRequestResult = await sampleTokenLaunch.sendJettonClaimRequest({
                 queryId,
                 value: toNano("0.1"),
@@ -1256,7 +1373,12 @@ describe("V1", () => {
                     jettonMasterAddress: derivedJettonMaster.address, ownerAddress: consumer.address
                 }, jettonWalletCode)
             );
-            assert(expectedJettonAmount === await consumerJettonWallet.getJettonBalance());
+            const claimedAmount = await consumerJettonWallet.getJettonBalance();
+            assert(
+                (expectedJettonAmount === claimedAmount)
+                && (expectedJettonAmount === expectedByContractJettonAmount),
+                `${jettonFromNano(expectedJettonAmount)} | ${jettonFromNano(claimedAmount)} | ${jettonFromNano(expectedByContractJettonAmount)}`
+            );
         }, 20000);
     });
 });

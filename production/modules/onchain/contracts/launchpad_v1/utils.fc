@@ -207,7 +207,7 @@ cell pack_fut_jet_master_data(int total_supply, slice admin, cell wallet_code, c
     return (jetton_master_stateinit, jetton_master_address);
 }
 
-cell simple_transfer(slice dest, int value, slice comment) {
+cell simple_transfer(slice dest, int value, slice comment) inline {
     builder msg = begin_cell()
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(dest)
@@ -220,7 +220,7 @@ cell simple_transfer(slice dest, int value, slice comment) {
     return msg.end_cell();
 }
 
-cell excesses_msg(int query_id, slice dest, int value) {
+cell excesses_msg(int query_id, slice dest, int value) inline {
     return begin_cell()
         .store_msg_flags_and_address_none(BOUNCEABLE)
         .store_slice(dest)

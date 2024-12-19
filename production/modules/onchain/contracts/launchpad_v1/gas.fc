@@ -26,7 +26,7 @@ const JETTON_MIN_TRANSFER_FEE = 50000000;
 const SIMPLE_TRANSFER_FEE =      6000000;
 
 ;; So I decided to round it just because I tired to change it evey time
-const CORE_STATE_BITS  = 50000;
+const CORE_STATE_BITS  = 52000;
 const CORE_STATE_CELLS = 150;
 ;; Use `loadAtMax` to measure
 const TOKEN_LAUNCH_STATE_BITS  = 50500;
@@ -47,7 +47,7 @@ const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
 ;; Fees
 const PURCHASE_FEE_PERCENT = 1;
 const REFUND_FEE_PERCENT = 3;
-const REFERRAL_PAYMENT_PERCENT = 5;
+const REFERRAL_PAYMENT_PERCENT = 1;
 
 ;; Gas
 ;; Gas constants are calculated in the main test suite.
@@ -106,18 +106,18 @@ int get_balance_update_gas_cost() inline_ref {
 }
 
 ;; As we don't have any external calls, we accounting only code execution fees
-const CREATOR_BUYOUT_GAS_CONSUMPTION = 14018;
+const CREATOR_BUYOUT_GAS_CONSUMPTION = 13880;
 (int, int) check_amount_is_enough_for_creator_buyout(int msg_value) impure inline {
     return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_BUYOUT_GAS_CONSUMPTION), PURCHASE_FEE_PERCENT);
 }
 
-const CREATOR_REFUND_GAS_CONSUMPTION = 15215;
+const CREATOR_REFUND_GAS_CONSUMPTION = 14730;
 (int, int) check_amount_is_enough_for_creator_refund(int msg_value) impure inline {
     return validate_value(msg_value, get_compute_fee(MY_WORKCHAIN, CREATOR_REFUND_GAS_CONSUMPTION), REFUND_FEE_PERCENT);
 }
 
 ;; === Whitelist Purchase ===
-const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 21416;
+const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 23350;
 (int, int) check_amount_is_enough_for_wl_purchase(int msg_value) impure inline {
     return validate_value(
         msg_value,
@@ -127,7 +127,7 @@ const WL_PURCHASE_REQUEST_GAS_CONSUMPTION = 21416;
 }
 
 ;; === Public Purchase ===
-const PUB_PURCHASE_GAS_CONSUMPTION = 21961;
+const PUB_PURCHASE_GAS_CONSUMPTION = 23795;
 (int, int) check_amount_is_enough_for_public_purchase(int msg_value) impure inline {
     return validate_value(
         msg_value,
@@ -138,7 +138,7 @@ const PUB_PURCHASE_GAS_CONSUMPTION = 21961;
 
 ;; === Refund ===
 const REFUND_REQUEST_GAS_CONSUMPTION = 14356;
-const REFUND_CONFIRMATION_GAS_CONSUMPTION = 19541;
+const REFUND_CONFIRMATION_GAS_CONSUMPTION = 19746;
 () check_amount_is_enough_for_refund(int msg_value) impure inline {
     int required_gas =
     get_compute_fee(MY_WORKCHAIN, REFUND_REQUEST_GAS_CONSUMPTION)
@@ -202,7 +202,7 @@ int get_claim_gas_cost() inline {
     + calculate_user_vault_min_storage_fee(TWO_MONTHS);
 }
 const CLAIM_REQUEST_GAS_CONSUMPTION = 15000;
-const CLAIM_CONFIRMATION_GAS_CONSUMPTION = 21000;
+const CLAIM_CONFIRMATION_GAS_CONSUMPTION = 21500;
 int check_amount_is_enough_for_jetton_claim(int msg_value) impure inline {
     int required_gas =
     get_compute_fee(MY_WORKCHAIN, CLAIM_REQUEST_GAS_CONSUMPTION)

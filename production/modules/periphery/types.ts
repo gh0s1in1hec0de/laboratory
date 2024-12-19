@@ -43,3 +43,8 @@ export type GetConfigResponse = {
     futJetPlatformAmount: Coins,
     minTonForSaleSuccess: Coins
 }
+
+export type SellingProgress = {
+    futJetTotalSupply: Coins,
+    futJetInnerBalance: Coins
+}

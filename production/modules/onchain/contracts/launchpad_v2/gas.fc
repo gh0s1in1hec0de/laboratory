@@ -51,7 +51,7 @@ const BALANCE_UPDATE_CELLS = 1; ;; body always in ref
 ;; Fees
 const PURCHASE_FEE_PERCENT = 1;
 const REFUND_FEE_PERCENT = 3;
-const REFERRAL_PAYMENT_PERCENT = 5;
+const REFERRAL_PAYMENT_PERCENT = 1;
 
 int calculate_core_min_storage_fee(int duration) inline {
     return get_storage_fee(MY_WORKCHAIN, duration, CORE_STATE_BITS, CORE_STATE_CELLS);

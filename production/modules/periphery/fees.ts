@@ -14,10 +14,10 @@ export type PrecalculatedFees = {
 // Define the fees object with specific types for each version
 export const fees: Record<GlobalVersions, PrecalculatedFees> = {
     [GlobalVersions.V1]: {
-        creatorBuyout: 5_575_200n,
+        creatorBuyout: 5_552_000n,
         creatorRefund: 10_000_000n,
-        wlPurchase: 17_000_000n,
-        pubPurchase: 17_000_000n,
+        wlPurchase: 18_000_000n,
+        pubPurchase: 18_050_000n,
         refund: 30_000_000n,
         claim: 80_000_000n
     },

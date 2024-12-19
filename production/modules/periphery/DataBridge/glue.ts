@@ -1,7 +1,7 @@
 import { parseGetConfigResponse, parseMoneyFlows, } from "../chainMessageParsers";
 import { GetConfigResponse, MoneyFlows, TokenLaunchTimings } from "../types";
 import { jettonFromNano, UnixTimeSeconds } from "../utils";
-import { Address, fromNano, toNano } from "@ton/core";
+import { Address, ContractProvider, fromNano, toNano } from "@ton/core";
 import { Coins, GlobalVersions } from "../standards";
 import { TonClient4 } from "@ton/ton";
 import {
@@ -17,6 +17,12 @@ export enum SalePhase {
     WHITELIST = "WHITELIST",
     PUBLIC = "PUBLIC",
     ENDED = "ENDED",
+}
+
+export type UserShare = {
+    whitelistTons: Coins,
+    publicJettons: Coins,
+    isCreator: boolean
 }
 
 export function getCurrentSalePhase(
@@ -162,6 +168,25 @@ async function getConfig(
     );
     return parseGetConfigResponse(reader);
 }
+
+async function getApproximateClaimAmountOnchain(
+    tonClient: TonClient4,
+    contractAddress: Address,
+    { whitelistTons, publicJettons, isCreator }: UserShare,
+    seqno ? : number,
+): Promise < Coins > {
+    let { reader } = await tonClient.runMethod(
+        seqno ?? (await getSeqno(tonClient)),
+        contractAddress,
+        "get_approximate_claim_amount",
+        [
+            { "type": "int", "value": whitelistTons },
+            { "type": "int", "value": publicJettons },
+            { "type": "int", "value": isCreator ? -1n : 0n }
+        ],
+    );
+    return reader.readBigNumber();
+};
 
 // mode: WHITELIST(STAR CLUB) - "Config" | PUBLIC - "MoneyFlows"
 export async function getContractData(

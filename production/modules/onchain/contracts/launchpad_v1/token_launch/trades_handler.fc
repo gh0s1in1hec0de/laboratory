@@ -8,6 +8,10 @@
 #include "tl_context.fc";
 #include "tl_storage.fc";
 
+int get_wl_amount_out(int tons_into) inline {
+    return muldiv(wl_round::const::fut_jet_limit, tons_into, wl_round::const::ton_limit);
+}
+
 () handle_creator_buyout(int query_id, int msg_value) impure inline {
     throw_unless(error::wrong_time, now() < creator_round::const::end_time);
     (int accessible_user_value, int opn) = check_amount_is_enough_for_creator_buyout(msg_value);
@@ -36,6 +40,7 @@
     }
 }
 
+;; We can omit fut_jet_inner_balance management here, as this function can be correctly called only in case of launch fail
 () handle_creator_refund() impure inline {
     throw_if(error::wrong_time, now() < public_round::const::end_time);
     throw_if(error::bad_request, (general_state::fut_jet_deployed_balance > 0));
@@ -70,11 +75,16 @@
         remainings = final_user_value - accessible_amount;
         final_user_value = accessible_amount;
 
-        int timeshift = wl_round::const::end_time - now();
-        if (timeshift > 120) {
-            wl_round::const::end_time -= timeshift;
-            public_round::const::end_time -= timeshift;
+
+        int public_round_duration = public_round::const::end_time - wl_round::const::end_time;
+        if (public_round_duration < 3600) {
+            public_round::const::end_time = now() + 45 + public_round_duration;
         }
+        if (public_round_duration > 3600) {
+            int shortened_duration = public_round::const::end_time / 3;
+            public_round::const::end_time = shortened_duration <= 86400 ? 86400 : shortened_duration;
+        }
+        wl_round::const::end_time = now() + 45;
     }
 
     general_state::total_tons_collected += final_user_value;
@@ -88,6 +98,9 @@
        this is the reason, why we don't use `ton_invested_total` for that purposes.
     -}
     public_round::synthetic_ton_reserve += final_user_value;
+    ;; We'll rely on this value due claim process
+    general_state::fut_jet_inner_balance -= get_wl_amount_out(final_user_value);
+
 
     if ((~ referral_not_provided) & (maybe_referral_payment > SIMPLE_TRANSFER_FEE)) {
         cell refferal_payment_msg = simple_transfer(maybe_referral, maybe_referral_payment, "r");
@@ -114,15 +127,25 @@
 
 () handle_public_purchase(int query_id, int attached_value, slice maybe_referral, slice sender_address) impure inline {
     throw_if(error::wrong_time, (now() < wl_round::const::end_time) | (now() >= public_round::const::end_time));
-    ;; creator's round remainings flows into public round here once :)
+
+    ;; Shifting all the leftovers to public rorund
     if (creator_round::fut_jet_left > 0) {
         public_round::const::fut_jet_limit += creator_round::fut_jet_left;
+        public_round::synthetic_jet_reserve += creator_round::fut_jet_left;
+
         creator_round::fut_jet_left = 0;
     }
-    ;; Balancing price
-    if (public_round::synthetic_ton_reserve < (wl_round::const::ton_limit / 5)) {
-        public_round::synthetic_ton_reserve = wl_round::const::ton_limit / 5;
+    int maybe_gap = wl_round::const::ton_limit - wl_round::ton_invested_total;
+    if (maybe_gap > 0) {
+        public_round::synthetic_ton_reserve *= 2; ;; TODO Test out
+        int wl_round_remaining = get_wl_amount_out(maybe_gap);
+        public_round::const::fut_jet_limit += wl_round_remaining;
+        public_round::synthetic_jet_reserve += wl_round_remaining;
+
+        wl_round::ton_invested_total = wl_round::const::ton_limit;
     }
+
+
     ;; `user_value_after_fee` is always more than 0
     (int accessible_user_value, int opn) = check_amount_is_enough_for_public_purchase(attached_value);
 
@@ -192,15 +215,24 @@
     int tons_to_refund = wl_tons + pub_tons;
 
     if (wl_tons > 0) {
-        wl_round::ton_invested_total -= wl_tons;
-        ;; If it is still WhiteList round
+        int restored_jettons = get_wl_amount_out(wl_tons);
+        general_state::fut_jet_inner_balance += restored_jettons;
         if (now() < wl_round::const::end_time) {
+            wl_round::ton_invested_total -= wl_tons;
             public_round::synthetic_ton_reserve -= wl_tons;
+        }
+        if ((now() > wl_round::const::end_time) & (now() < public_round::const::end_time)) {
+            public_round::const::fut_jet_limit += restored_jettons;
+            public_round::synthetic_jet_reserve += restored_jettons;
         }
     }
     if (jettons_to_charge_back > 0) {
         general_state::fut_jet_inner_balance += jettons_to_charge_back;
         public_round::fut_jet_sold -= jettons_to_charge_back;
+
+        int out_tons = get_amount_out(jettons_to_charge_back, public_round::synthetic_jet_reserve, public_round::synthetic_ton_reserve);
+        public_round::synthetic_jet_reserve += jettons_to_charge_back;
+        public_round::synthetic_ton_reserve -= out_tons;
     }
 
     general_state::total_tons_collected -= tons_to_refund;
@@ -235,18 +267,21 @@
 }
 
 () handle_jetton_claim_confirmation(int query_id, slice sender_address, int wl_tons, int jettons_to_send, slice recipient) impure inline {
+    throw_unless(error::inconsistent_balance_state, (general_state::fut_jet_inner_balance - config::const::fut_jet_dex_amount - config::const::fut_jet_platform_amount) == (public_round::const::fut_jet_limit - public_round::fut_jet_sold));
+
     (_, slice fut_jet_wallet_address, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
     verify_user_vault(user_vault_code, sender_address, recipient);
-    int fut_jet_recipient_total_amount = jettons_to_send;
 
+    int bought_jettons_total = config::const::fut_jet_total_supply - general_state::fut_jet_inner_balance;
+    int fut_jet_recipient_amount = jettons_to_send;
     if (wl_tons > 0) {
-        ;; public_round::const::fut_jet_limit already includes creator's remainings
-        int public_remainings = public_round::const::fut_jet_limit - public_round::fut_jet_sold;
-        int wl_round_fut_jet_final_amount = wl_round::const::fut_jet_limit + public_remainings;
-
-        int jetton_wl_share = muldiv(wl_round_fut_jet_final_amount, wl_tons, wl_round::ton_invested_total);
-        fut_jet_recipient_total_amount += jetton_wl_share;
+        int wl_jettons = get_wl_amount_out(wl_tons);
+        fut_jet_recipient_amount += wl_jettons;
     }
+    ;; As inner balance is leftovers, that we multiply by user share into total bought jetton amount
+    int leftovers_user_jetton_share = muldiv(general_state::fut_jet_inner_balance, fut_jet_recipient_amount, bought_jettons_total);
+    int fut_jet_recipient_total_amount = fut_jet_recipient_amount + leftovers_user_jetton_share;
+
     if (equal_slices_bits(recipient, this::const::creator_address)) {
         fut_jet_recipient_total_amount += creator_round::fut_jet_balance;
         creator_round::fut_jet_balance = 0;

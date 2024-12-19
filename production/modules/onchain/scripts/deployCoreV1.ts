@@ -16,7 +16,7 @@ export async function run(provider: NetworkProvider) {
     // The app's code is its configuration - shout out to suckless.org folks
     const launchConfig: LaunchConfigV1 = {
         minTonForSaleSuccess: toNano("1000"),
-        tonLimitForWlRound: toNano("5000"),
+        tonLimitForWlRound: toNano("1000"),
         penny: toNano("1"),
 
         jetWlLimitPct: toPct(18),

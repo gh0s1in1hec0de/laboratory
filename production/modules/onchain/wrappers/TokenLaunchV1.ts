@@ -228,13 +228,26 @@ export class TokenLaunchV1 implements Contract {
 
     async getInnerData(provider: ContractProvider): Promise<{
         futJetDeployedBalance: Coins,
+        futJetInnerBalance: Coins,
         operationalNeeds: Coins
     }> {
         let { stack } = await provider.get("get_inner_data", []);
         return {
             futJetDeployedBalance: stack.readBigNumber(),
+            futJetInnerBalance: stack.readBigNumber(),
             operationalNeeds: stack.readBigNumber(),
         };
+    }
+
+    async getApproximateClaimAmount(provider: ContractProvider, wlTons: Coins, publicJettons: Coins, isCreator: boolean): Promise<Coins> {
+        const res = (await provider.get("get_approximate_claim_amount",
+            [
+                { "type": "int", "value": wlTons },
+                { "type": "int", "value": publicJettons },
+                { "type": "int", "value": isCreator ? -1n : 0n }
+            ]
+        )).stack;
+        return res.readBigNumber();
     }
 
     static buildState(
