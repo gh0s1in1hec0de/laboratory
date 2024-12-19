@@ -61,7 +61,9 @@ export function useConnectButton() {
   
       // Проверка на startParam с префиксом "launch_" (приоритет редиректа)
       if (startParam && startParam.startsWith("launch_")) {
+        console.log("startParam", startParam);
         const launchAddress = startParam.replace("launch_", "");
+        window.history.replaceState(null, "", window.location.pathname);
         router.replace(`/${locale}/${Address.parse(launchAddress).toRawString()}`); // Выполняем редирект для launch_, независимо от реферала
         return; // Завершаем дальнейшую обработку
       }
