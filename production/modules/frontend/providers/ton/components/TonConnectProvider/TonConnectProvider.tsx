@@ -9,7 +9,7 @@ export function TonConnectProvider({ children }: PropsWithChildren) {
 
   return (
     <TonConnectUIProvider 
-      manifestUrl="https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json"
+      manifestUrl="https://storage.starton.pro/ipfs/QmXwVGsWL9yPtRFkUgPyosUuAPyveqNzYXH5v9gtY3RwdX"
       language={locale as Locales}
     > 
       {children}
