@@ -4,7 +4,7 @@ import { Manrope } from "next/font/google";
 import { getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
-import { LOCALES } from "@/constants";
+import { FAVICONS, LOCALES } from "@/constants";
 import "@/styles/globals.scss";
 import { YandexMetrika } from "@/components/YandexMetrika";
 import { Suspense } from "react";
@@ -45,6 +45,7 @@ export const metadata: Metadata = {
   //   title: "StartON - TON Launchpad",
   //   description: "Trade and launch tokens on the TON blockchain with StartON, a secure and fast platform.",
   // },
+  icons: FAVICONS,
   keywords: [
     "TON Blockchain", "Tokens", "Cryptocurrency", "Launchpad", "StartON", "Trading", "Blockchain", "Crypto tokens", "Decentralized finance", "TON trading"
   ],
@@ -58,9 +59,6 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <head>
-        {/* <GoogleAnalytics /> */}
-      </head>
       <body className={`${manrope.variable} ${manrope.className}`}>
         <Script id="metrika-counter" strategy="afterInteractive">
           {
@@ -83,14 +81,6 @@ export default async function RootLayout({
         </Suspense>
         <NextIntlClientProvider messages={messages}>
           <AppRouterCacheProvider options={{ key: "css", enableCssLayer: true }}>
-            {/* <noscript>
-              <iframe
-                src={`https://www.googletagmanager.com/ns.html?id=${process.env.NEXT_PUBLIC_GOOGLE_ANALYTIC_ID}`}
-                height="0"
-                width="0"
-                style={{ display: "none", visibility: "hidden" }}
-              ></iframe>
-            </noscript> */}
             <noscript>
               <div>
                 <img src={`https://mc.yandex.ru/watch/${process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID}`} style={{ position: "absolute", left: "-9999px" }} alt="" />
@@ -99,7 +89,6 @@ export default async function RootLayout({
             {children}
           </AppRouterCacheProvider>
         </NextIntlClientProvider>
-        {/* <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTIC_ID || ""} /> */}
       </body>
     </html>
   );

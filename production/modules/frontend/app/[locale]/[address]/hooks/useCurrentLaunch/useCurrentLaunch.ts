@@ -46,18 +46,30 @@ export function useCurrentLaunch(address: string) {
     })();
   }, []);
 
-  function getLaunchLink() {
-    try {
-      const currentUrl = window.location.href;
+  async function getLaunchLink() {
+    // try {
+    //   const currentUrl = window.location.href;
   
-      navigator.clipboard.writeText(currentUrl).then(() => {
-        console.log("URL copied to clipboard:", currentUrl);
-      }).catch((err) => {
-        console.error("Failed to copy URL to clipboard:", err);
-      });
-    } catch (error) {
-      console.error("An error occurred while copying the URL:", error);
-    }
+    //   navigator.clipboard.writeText(currentUrl).then(() => {
+    //     console.log("URL copied to clipboard:", currentUrl);
+    //   }).catch((err) => {
+    //     console.error("Failed to copy URL to clipboard:", err);
+    //   });
+    // } catch (error) {
+    //   console.error("An error occurred while copying the URL:", error);
+    // }
+    // try {
+    //   retrieveLaunchParams();
+    //   navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_FRONTEND_MINIAPP_URL}?startapp=launch_${launchData?.address}`);
+    // } catch (error) {
+    //   const currentUrl = window.location.href;
+  
+    //   navigator.clipboard.writeText(currentUrl).then(() => {
+    //     console.log("URL copied to clipboard:", currentUrl);
+    //   }).catch((err) => {
+    //     console.error("Failed to copy URL to clipboard:", err);
+    //   });
+    // }
   }
 
   return {

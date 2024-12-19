@@ -5,6 +5,7 @@ import { MainInfo } from "./components/MainInfo";
 import { LaunchLinks } from "./components/LaunchLinks";
 import { TwitterIcon, TelegramIcon, WebsiteIcon } from "@/icons";
 import { LaunchPrice } from "./components/LaunchPrice";
+import { retrieveLaunchParams } from "@telegram-apps/sdk-react";
 
 export function LaunchHeader({
   avatarSrc,
@@ -23,6 +24,21 @@ export function LaunchHeader({
   version,
   tradingStats
 }: LaunchHeaderProps) {
+
+  async function handleCopyLaunchLink() {
+    try {
+      retrieveLaunchParams();
+      navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_FRONTEND_MINIAPP_URL}?startapp=launch_${launchAddress}`);
+    } catch (error) {
+      const currentUrl = window.location.href;
+  
+      navigator.clipboard.writeText(currentUrl).then(() => {
+        console.log("URL copied to clipboard:", currentUrl);
+      }).catch((err) => {
+        console.error("Failed to copy URL to clipboard:", err);
+      });
+    }
+  }
 
   const linksArray: LaunchHeaderInfoProps[] = [
     {
@@ -61,7 +77,7 @@ export function LaunchHeader({
         showHolders={showHolders}
       />
 
-      {showBIO && <LaunchLinks linksArray={linksArray} getLaunchLink={getLaunchLink}/>}
+      {showBIO && <LaunchLinks linksArray={linksArray} getLaunchLink={handleCopyLaunchLink}/>}
 
       {showPrice && timings && version && (
         <LaunchPrice
