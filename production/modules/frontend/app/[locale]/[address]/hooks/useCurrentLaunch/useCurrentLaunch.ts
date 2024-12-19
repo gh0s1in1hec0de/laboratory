@@ -46,25 +46,10 @@ export function useCurrentLaunch(address: string) {
     })();
   }, []);
 
-  function getLaunchLink() {
-    try {
-      const currentUrl = window.location.href;
-  
-      navigator.clipboard.writeText(currentUrl).then(() => {
-        console.log("URL copied to clipboard:", currentUrl);
-      }).catch((err) => {
-        console.error("Failed to copy URL to clipboard:", err);
-      });
-    } catch (error) {
-      console.error("An error occurred while copying the URL:", error);
-    }
-  }
-
   return {
     launchData,
     isLoading,
     errorText,
-    getLaunchLink,
     balance
   };
 }

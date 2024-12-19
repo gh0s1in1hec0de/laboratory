@@ -25,7 +25,6 @@ export default function CurrentLaunch({
     isLoading,
     errorText,
     balance,
-    getLaunchLink
   } = useCurrentLaunch(decodeURIComponent(address));
 
   if (errorText) {
@@ -66,7 +65,6 @@ export default function CurrentLaunch({
               websiteLink={launchData.website}
               launchAddress={launchData.address}
               timings={launchData.timings}
-              getLaunchLink={getLaunchLink}
               version={launchData.version}
               tradingStats={launchData.tradingStats}
               showHolders
