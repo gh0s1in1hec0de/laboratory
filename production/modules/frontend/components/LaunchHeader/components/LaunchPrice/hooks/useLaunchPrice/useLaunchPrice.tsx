@@ -98,6 +98,22 @@ export function useLaunchPrice({
       wlRoundTonLimit
     } = configData;
 
+    let tempPrice = 0;
+
+    if (phase === SalePhase.WHITELIST) {
+      if (timings.startTime < Number(process.env.NEXT_PUBLIC_MINOR_VERSION_TIME_SEPARATOR)) {
+        tempPrice = getCurrentWlRate(
+          wlRoundFutJetLimit,
+          wlRoundTonInvestedTotal
+        );
+  
+        setPrice(tempPrice);
+      } else {
+        tempPrice = Number(fromNano(wlRoundTonLimit)) / Number(jettonFromNano(wlRoundFutJetLimit));
+        setPrice(tempPrice);
+      }
+    }
+
     if (phase === SalePhase.PUBLIC || phase === SalePhase.ENDED) {
       const tons = process.env.NEXT_PUBLIC_NETWORK === "testnet" ? toNano("0.25") : toNano("10");
 
@@ -108,23 +124,12 @@ export function useLaunchPrice({
         tons,
         !!callerData?.invitedBy
       );
+      
+      const publicRoundPrice = calculatePrice(jettons, tons);
 
-      setPrice(calculatePrice(jettons, tons));
+      setPrice(publicRoundPrice > tempPrice ? publicRoundPrice : tempPrice);
     }
 
-    if (phase === SalePhase.WHITELIST) {
-      if (timings.startTime < Number(process.env.NEXT_PUBLIC_MINOR_VERSION_TIME_SEPARATOR)) {
-        const price = getCurrentWlRate(
-          wlRoundFutJetLimit,
-          wlRoundTonInvestedTotal
-        );
-  
-        setPrice(price);
-      } else {
-        const price = Number(fromNano(wlRoundTonLimit)) / Number(jettonFromNano(wlRoundFutJetLimit));
-        setPrice(price);
-      }
-    }
   }, [configData, version, phase, callerData, timings.startTime]);
 
   return {

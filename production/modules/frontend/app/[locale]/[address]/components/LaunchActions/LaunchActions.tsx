@@ -41,14 +41,6 @@ export function LaunchActions({
           <RefundableDrawer />
         </Grid>
 
-        {/* todo: может добавить или нет */}
-        {/* <Label 
-          label={true ? t("connectWallet") : t("needStarTicket")} 
-          variantSize="regular16"
-          variantColor="gray"
-          paddingBottom={0.5}
-        /> */}
-
         <TonProvider>
           <CustomConnectButton
             successChildren={<Buttons launchData={launchData} />}
