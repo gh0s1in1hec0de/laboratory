@@ -8,7 +8,7 @@ import {
     JETTON_MIN_TRANSFER_FEE, MAX_WL_ROUND_TON_LIMIT, PERCENTAGE_DENOMINATOR, BASECHAIN,
     getPublicAmountOut, getApproximateClaimAmount, packLaunchConfigV1ToCell, toPct,
     validateValueMock, jettonFromNano, getCreatorAmountOut, getQueryId,
-    PURCHASE_FEE_PERCENT, REFERRAL_PAYMENT_PERCENT, REFUND_FEE_PERCENT, getWhitelistAmountOut,
+    PURCHASE_FEE_PERCENT, REFERRAL_PAYMENT_PERCENT, REFUND_FEE_PERCENT, getWhitelistAmountOut, getAmountOut, fees,
 } from "starton-periphery";
 import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import { getHttpV4Endpoint } from "@orbs-network/ton-access";
@@ -504,7 +504,7 @@ describe("V1", () => {
 
             expect(expectedCreatorBalance).toEqual(tokenLaunchState.creatorFutJetBalance + 1n); */
         }, 20000);
-        test.skip("creator corner buy", async () => {
+        test("creator corner buy", async () => {
             const tokenLaunchConfigBefore = await sampleTokenLaunch.getConfig();
             const jettonsLeftForCreator = tokenLaunchConfigBefore.creatorFutJetLeft;
             const valueLeftForCreator = jettonsLeftForCreator * MAX_WL_ROUND_TON_LIMIT / tokenLaunchConfigBefore.creatorFutJetPriceReversed;
@@ -593,7 +593,7 @@ describe("V1", () => {
                 exitCode: 400
             });
         }, 20000);
-        test.skip("high wl purchase operations pressure", async () => {
+        test("high wl purchase operations pressure", async () => {
             const conf = { totalTons: 80, totalBuys: 5 };
             const wlBuyers = await Promise.all(
                 Array.from({ length: conf.totalBuys }, (_, i) =>
@@ -613,13 +613,13 @@ describe("V1", () => {
                 blockchain.now! += 10;
             }
         }, 20000);
-        test.skip("wl purchase works correctly", async () => {
+        test("wl purchase works correctly", async () => {
             const [launchContractInstance, saleMoneyFlowBefore, innerDataBefore] = await Promise.all([
                 blockchain.getContract(sampleTokenLaunch.address), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData()
             ]);
             const contractBalanceBefore = launchContractInstance.balance;
 
-            const totalPurchaseValue = toNano("90");
+            const totalPurchaseValue = toNano("10");
             const wlPurchaseResult = await sampleTokenLaunch.sendWhitelistPurchase({
                 queryId: BigInt(getQueryId()),
                 value: totalPurchaseValue,
@@ -658,7 +658,7 @@ describe("V1", () => {
                 `${fromNano(totalTonsIncrease)} vs ${fromNano(consumerVaultDataAfter.wlTonBalance!)}`
             );
         }, 20000);
-        test.skip("wl purchase with referral works correctly", async () => {
+        test("wl purchase with referral works correctly", async () => {
             const [launchContractInstance, saleMoneyFlowBefore, innerDataBefore] = await Promise.all([
                 blockchain.getContract(sampleTokenLaunch.address), sampleTokenLaunch.getMoneyFlows(), sampleTokenLaunch.getInnerData()
             ]);
@@ -723,7 +723,7 @@ describe("V1", () => {
                 `${fromNano(totalTonsIncrease)} vs ${fromNano(consumerWithReferralVaultDataAfter.wlTonBalance!)}`
             );
         }, 20000);
-        test.skip("wl refund case (balance consistency check)", async () => {
+        test("wl refund case (balance consistency check)", async () => {
             // One refund case to verify correct release of locked value into the circulation of the whitelist round
             const randomWlBuyer = await blockchain.treasury(`wl_buyer_1`);
             const moneyFlowsBefore = await sampleTokenLaunch.getMoneyFlows();
@@ -750,7 +750,7 @@ describe("V1", () => {
             assert(moneyFlowsBefore.syntheticTonReserve > moneyFlowsAfter.syntheticTonReserve,
                 `${moneyFlowsBefore.syntheticTonReserve} vs ${moneyFlowsAfter.syntheticTonReserve}`);
         });
-        test.skip("wl limit cutoff works the proper way", async () => {
+        test("wl limit cutoff works the proper way", async () => {
             const oldTimings = await sampleTokenLaunch.getSaleTimings();
             const totalPurchaseValue = toNano("35");
             const wlPurchaseResult = await sampleTokenLaunch.sendWhitelistPurchase({
@@ -778,17 +778,38 @@ describe("V1", () => {
             const newTimings = await sampleTokenLaunch.getSaleTimings();
             assert(newTimings.wlRoundEndTime < oldTimings.wlRoundEndTime, "smartcontract must shift timings");
         }, 20000);
-        test.skip("high public purchase pressure", async () => {
+        test("price shift balance comparison", async () => {
             blockchain.now = (await sampleTokenLaunch.getSaleTimings()).wlRoundEndTime + 1;
+
+            const config = await sampleTokenLaunch.getConfig();
+            const wlRoundPrice = Number(fromNano(config.wlRoundTonLimit)) / Number(jettonFromNano(config.wlRoundFutJetLimit));
+
+            const value = toNano("5");
+            const shiftPurchaseRes = await sampleTokenLaunch.sendPublicPurchase({
+                queryId: 0n,
+                value,
+                via: consumer.getSender(),
+            });
+            expect(shiftPurchaseRes.transactions).toHaveTransaction({
+                from: consumer.address,
+                on: sampleTokenLaunch.address,
+                op: TokensLaunchOps.PublicPurchase,
+                success: true
+            });
+            const { jettonBalance } = await consumerVault.getVaultData();
+
+            const puRoundPrice = Number(fromNano(value)) / Number(jettonFromNano(jettonBalance!));
+            const priceIncreasePercent = ((puRoundPrice - wlRoundPrice) / wlRoundPrice) * 100;
+
+            console.log(`Price shift percents change: ${priceIncreasePercent.toFixed(2)}% (${wlRoundPrice.toFixed(10)} -> ${puRoundPrice.toFixed(10)})`);
+        });
+        test("high public purchase pressure", async () => {
             const totalBuys = 50; // we can also set 100-200-300...
             const publicBuyers = await Promise.all(
                 Array.from({ length: totalBuys }, (_, i) =>
                     blockchain.treasury(`pub_buyer_${i + 1}`, { balance: toNano("1000000") }))
             );
-
             const { pubRoundFutJetLimit } = await sampleTokenLaunch.getConfig();
-            const { publicRoundFutJetSold } = await sampleTokenLaunch.getMoneyFlows();
-            assert(!publicRoundFutJetSold, "there was no pub purchases before");
 
             const value = toNano("10");
             const purchaseLogs = [];
@@ -815,7 +836,6 @@ describe("V1", () => {
             );
             const vaultsData = await Promise.all(vaults.map((buyer) => buyer.getVaultData()));
 
-            console.log(`${3562 / (Number(jettonFromNano(sampleLaunchParams.totalSupply)) / 5)}`);
             console.log(
                 purchaseLogs.join("\n") +
                 "\n\n" +
@@ -825,9 +845,6 @@ describe("V1", () => {
             );
         }, 20000);
         test("public buys work the proper way", async () => {
-            // TODO remove
-            blockchain.now = (await sampleTokenLaunch.getSaleTimings()).wlRoundEndTime + 1;
-
             const secondPublicBuyer = await blockchain.treasury("public_buyer_2");
             const launchContractInstance = await blockchain.getContract(sampleTokenLaunch.address);
             const referral = await blockchain.treasury("referral");
@@ -930,7 +947,7 @@ describe("V1", () => {
                 exitCode: 73
             });
         });
-        test.skip("refund cases (balance consistency test)", async () => {
+        test("refund cases (balance consistency test)", async () => {
             // Two refund scenarios affecting token flows within the contract:
             // 1. Whitelist refund during the public round (freed value should be added to public round circulation).
             // 2. Public refund.
@@ -1237,7 +1254,7 @@ describe("V1", () => {
                 throw new Error("chief got less tokens than should");
             }
         }, 20000);
-        test.skip("jetton master on-chain state stats", async () => {
+        test("jetton master on-chain state stats", async () => {
             const smc = await blockchain.getContract(derivedJettonMaster.address);
             assert(smc.accountState, "Can't access jetton master's state");
             // Runtime doesn't see assert here lol
@@ -1296,7 +1313,7 @@ describe("V1", () => {
                 value: x => x! > opnBefore * 9n / 10n
             });
         });
-        test("claim works as it should", async () => {
+        test("claim works correctly", async () => {
             const { wlTonBalance, jettonBalance } = await consumerVault.getVaultData();
             const moneyFlows = await sampleTokenLaunch.getMoneyFlows();
             const config = await sampleTokenLaunch.getConfig();
@@ -1388,9 +1405,20 @@ describe("V1", () => {
             );
             console.log(`Claimed by consumer: ${jettonFromNano(consumerClaimedAmount)}`);
 
-            // We also have creator and public buyer #2 in our invertors list
+        }, 20000);
+        // This test should only run when most other tests are disabled,
+        // and it's certain that only three users participated, sharing the entire user allocation.
+        test.skip("the internal share calculation operates correctly", async () => {
+            const config = await sampleTokenLaunch.getConfig();
+            const consumerJettonWallet = blockchain.openContract(
+                JettonWallet.createFromConfig({
+                    jettonMasterAddress: derivedJettonMaster.address, ownerAddress: consumer.address
+                }, jettonWalletCode)
+            );
+            const consumerClaimedAmount = await consumerJettonWallet.getJettonBalance();
+
             const creatorClaimRequestResult = await sampleTokenLaunch.sendJettonClaimRequest({
-                queryId,
+                queryId: 0n,
                 value: toNano("0.1"),
                 via: creator.getSender()
             });
@@ -1409,7 +1437,7 @@ describe("V1", () => {
 
             const secondPublicBuyer = await blockchain.treasury("public_buyer_2");
             const publicBuyer2ClaimRequestResult = await sampleTokenLaunch.sendJettonClaimRequest({
-                queryId,
+                queryId: 0n,
                 value: toNano("0.1"),
                 via: secondPublicBuyer.getSender()
             });
@@ -1429,7 +1457,6 @@ describe("V1", () => {
 
             console.log(`Total jettons claimed: ${jettonFromNano(consumerClaimedAmount + creatorClaimedAmount + secondPublicBuyerClaimedAmount)},\
 \             free to sell supply: ${jettonFromNano(sampleLaunchParams.totalSupply - config.futJetDexAmount - config.futJetPlatformAmount)}`);
-
-        }, 20000);
+        });
     });
 });

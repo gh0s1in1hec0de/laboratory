@@ -8,9 +8,15 @@
 #include "tl_context.fc";
 #include "tl_storage.fc";
 
-int get_wl_amount_out(int tons_into) inline {
+int get_wl_amount_out(int tons_into) inline_ref {
     return muldiv(wl_round::const::fut_jet_limit, tons_into, wl_round::const::ton_limit);
 }
+
+;; int balance_reserves(int value) impure inline {
+;;     ;; Step 1: Calculate WL amount out for ONE_TON
+;;
+;;     return delta_reserve;
+;; }
 
 () handle_creator_buyout(int query_id, int msg_value) impure inline {
     throw_unless(error::wrong_time, now() < creator_round::const::end_time);
@@ -140,7 +146,6 @@ int get_wl_amount_out(int tons_into) inline {
 () handle_public_purchase(int query_id, int attached_value, slice maybe_referral, slice sender_address) impure inline {
     throw_if(error::wrong_time, (now() < wl_round::const::end_time) | (now() >= public_round::const::end_time));
 
-    ;; Shifting all the leftovers to public rorund
     if (creator_round::fut_jet_left > 0) {
         public_round::const::fut_jet_limit += creator_round::fut_jet_left;
         public_round::synthetic_jet_reserve += creator_round::fut_jet_left;
@@ -149,9 +154,6 @@ int get_wl_amount_out(int tons_into) inline {
     }
     int maybe_gap = wl_round::const::ton_limit - wl_round::ton_invested_total;
     if (maybe_gap > 0) {
-        public_round::synthetic_ton_reserve = public_round::synthetic_ton_reserve > 0 ?
-        public_round::synthetic_ton_reserve * 3 : wl_round::const::ton_limit;
-
         int wl_round_remaining = get_wl_amount_out(maybe_gap);
         public_round::const::fut_jet_limit += wl_round_remaining;
         public_round::synthetic_jet_reserve += wl_round_remaining;
@@ -159,13 +161,20 @@ int get_wl_amount_out(int tons_into) inline {
         wl_round::ton_invested_total = wl_round::const::ton_limit;
     }
 
-
     ;; `user_value_after_fee` is always more than 0
     (int accessible_user_value, int opn) = check_amount_is_enough_for_public_purchase(attached_value);
 
     int referral_not_provided = equal_slices_bits(maybe_referral, address_none());
     int final_user_value = referral_not_provided ? accessible_user_value : muldiv(accessible_user_value, 100 - REFERRAL_PAYMENT_PERCENT, 100);
     int maybe_referral_payment = referral_not_provided ? 0 : muldiv(accessible_user_value, REFERRAL_PAYMENT_PERCENT, 100);
+
+    ;; BALANCING RESERVES
+    int wl_amount = get_wl_amount_out(final_user_value);
+    int amm_amount = get_amount_out(final_user_value, public_round::synthetic_ton_reserve, public_round::synthetic_jet_reserve);
+    if (amm_amount > wl_amount) {
+        int diff = amm_amount * 10200 / wl_amount;
+        public_round::synthetic_ton_reserve = muldiv(public_round::synthetic_ton_reserve, diff, 10000);
+    }
 
     int res_jettons = get_amount_out(final_user_value, public_round::synthetic_ton_reserve, public_round::synthetic_jet_reserve);
 

@@ -1,9 +1,4 @@
-import {
-    type RawAddressString,
-    type Coins,
-    BURN_ADDR,
-    Network,
-} from "starton-periphery";
+import { type RawAddressString, type Coins, BURN_ADDR, Network, } from "starton-periphery";
 import { type SenderArguments, Address, SendMode } from "@ton/ton";
 import { internal as internal_relaxed, toNano } from "@ton/core";
 import { JettonWalletMessageBuilder } from "../messageBuilder";

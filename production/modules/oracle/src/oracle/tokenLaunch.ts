@@ -94,6 +94,7 @@ async function handleTokenLaunchUpdates(tokenLaunch?: StoredTokenLaunch, launchA
                     } as UserAction);
                 }
                 if (op === TokensLaunchOps.CreatorBuyout) {
+                    await db.storeUserBalance(inMsgSender.toRawString(), launch.address, {});
                     const configResponse = await balancedTonClient.execute(
                         c => c.runMethod(Address.parse(launch.address), "get_config", []), true
                     );
@@ -154,7 +155,6 @@ async function handleTokenLaunchUpdates(tokenLaunch?: StoredTokenLaunch, launchA
                     // Then we'll look for following operation: balanceUpdate
                     if (op === UserVaultOps.balanceUpdate) {
                         const { mode, tons, futureJettons } = parseBalanceUpdate(msgBodyData);
-                        if (mode === BalanceUpdateMode.CreatorBuyoutDummy) await db.storeUserBalance(inMsgSender.toRawString(), launch.address, {});
                         if (![BalanceUpdateMode.PublicDeposit, BalanceUpdateMode.WhitelistDeposit].includes(mode)) continue;
                         logger().debug(`launch ${launch.address}: new operation ${op} - [${fromNano(tons)}; ${jettonFromNano(futureJettons)}]`);
 
