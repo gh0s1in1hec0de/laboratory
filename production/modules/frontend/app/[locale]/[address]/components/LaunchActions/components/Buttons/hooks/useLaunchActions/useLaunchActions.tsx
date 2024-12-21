@@ -86,8 +86,12 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
     }
   }
 
-  function onClickRedirectRoDeDust(launchData: GetCertainLaunchResponse) {
+  function onClickRedirectToStonFi(launchData: GetCertainLaunchResponse) {
     window.open(`https://app.ston.fi/swap/ton/${launchData?.metadata?.symbol?.toLowerCase()}?referral_address=${process.env.NEXT_PUBLIC_PULL_REFERRAL_ADDRESS}&referral_percent=${process.env.NEXT_PUBLIC_REFERRAL_PERCENT}`, "_blank");
+  }
+
+  function onClickRedirectToChart(launchData: GetCertainLaunchResponse) {
+    window.open(`https://dexscreener.com/ton/${Address.parse(launchData.dexData?.poolAddress || "").toString()}`, "_blank");
   }
 
   function renderContent() {
@@ -185,7 +189,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
                   <CustomButton
                     fullWidth
                     padding="10px 0px"
-                    onClick={() => onClickRedirectRoDeDust(launchData)}
+                    onClick={() => onClickRedirectToStonFi(launchData)}
                     background="gray"
                   >
                     <Grid
@@ -204,6 +208,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
                   <CustomButton
                     fullWidth
                     padding="10px 0px"
+                    onClick={() => onClickRedirectToChart(launchData)}
                     background="gray"
                   >
                     <Grid
