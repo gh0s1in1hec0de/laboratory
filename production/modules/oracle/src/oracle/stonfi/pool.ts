@@ -1,15 +1,23 @@
-import { type RawAddressString, type DexData, type Coins, BURN_ADDR, } from "starton-periphery";
+import {
+    type RawAddressString,
+    type Coins,
+    BURN_ADDR,
+    Network,
+} from "starton-periphery";
 import { type SenderArguments, Address, SendMode } from "@ton/ton";
 import { internal as internal_relaxed, toNano } from "@ton/core";
 import { JettonWalletMessageBuilder } from "../messageBuilder";
 import { balancedTonClient } from "../client";
 import { chiefWalletData } from "../highload";
+import { currentNetwork } from "../../config";
 import { DEX, pTON } from "@ston-fi/sdk";
 import { logger } from "../../logger";
 import * as db from "../../db";
 import {
-    STONFI_ROUTER_V2_1_ADDRESS,
-    STONFI_PTON_V2_1_ADDRESS,
+    STONFI_ROUTER_V2_1_ADDRESS_MAINNET,
+    STONFI_ROUTER_V2_1_ADDRESS_TESTNET,
+    STONFI_PTON_V2_1_ADDRESS_MAINNET,
+    STONFI_PTON_V2_1_ADDRESS_TESTNET,
     DEFAULT_TIMEOUT,
     SUBWALLET_ID,
     delay,
@@ -21,12 +29,13 @@ export async function createStonfiPoolForJetton(
     launchAddress: RawAddressString
 ): Promise<void> {
     try {
-        const router = await balancedTonClient.execute(c => c.open(DEX.v2_1.Router.create(STONFI_ROUTER_V2_1_ADDRESS)));
+        const router = await balancedTonClient.execute(c =>
+            c.open(DEX.v2_2.Router.create(currentNetwork() === Network.Mainnet ? STONFI_ROUTER_V2_1_ADDRESS_MAINNET : STONFI_ROUTER_V2_1_ADDRESS_TESTNET)));
         const { keyPair, wallet, queryIdManager } = await chiefWalletData();
         const [depositLiquidityQID, lpBurnQID] = await Promise.all(
             [...Array(2).keys()].map(async () => await queryIdManager.getNextCached())
         );
-        const pTon = pTON.v2_1.create(STONFI_PTON_V2_1_ADDRESS);
+        const pTon = pTON.v2_1.create(currentNetwork() === Network.Mainnet ? STONFI_PTON_V2_1_ADDRESS_MAINNET : STONFI_PTON_V2_1_ADDRESS_TESTNET);
 
         const pool = await balancedTonClient.execute(() => router.getPool(
             { token0: jetton.masterAddress, token1: pTon.address, }

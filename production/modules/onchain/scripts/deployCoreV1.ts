@@ -11,21 +11,21 @@ export async function run(provider: NetworkProvider) {
     const jettonMasterCode = await compile("JettonMaster");
     const jettonWalletCode = await compile("JettonWallet");
 
-    const chief = Address.parse("EQAYJrN51bJAPh-AMqaz1TQz4lv1hdTtftb7zOJ9l0b-SOpL");
+    const chief = Address.parse("0QCkmYN_RSz4qhhHEV3ralAbUfssRM59lqxbXeh5W5oCrYHO");
 
     // The app's code is its configuration - shout out to suckless.org folks
     const launchConfig: LaunchConfigV1 = {
-        minTonForSaleSuccess: toNano("1000"),
-        tonLimitForWlRound: toNano("1000"),
-        penny: toNano("1"),
+        minTonForSaleSuccess: toNano("4"),
+        tonLimitForWlRound: toNano("4"),
+        penny: toNano("0.1"),
 
         jetWlLimitPct: toPct(18),
         jetPubLimitPct: toPct(38),
         jetDexSharePct: toPct(20),
 
         creatorRoundDurationSec: 300,
-        wlRoundDurationSec: 86400,
-        pubRoundDurationSec: 3 * 86400,
+        wlRoundDurationSec: 360,
+        pubRoundDurationSec: 360,
     };
     const core = provider.open(
         CoreV1.createFromState(

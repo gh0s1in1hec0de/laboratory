@@ -4,8 +4,11 @@ export type RawAddressString = string;
 export type LamportTime = bigint;
 export type Coins = bigint;
 
-export const STONFI_ROUTER_V2_1_ADDRESS = "kQALh-JBBIKK7gr0o4AVf9JZnEsFndqO0qTCyT-D-yBsWk0v";
-export const STONFI_PTON_V2_1_ADDRESS = "kQACS30DNoUQ7NfApPvzh7eBmSZ9L4ygJ-lkNWtba8TQT-Px";
+export const STONFI_ROUTER_V2_1_ADDRESS_TESTNET = "kQALh-JBBIKK7gr0o4AVf9JZnEsFndqO0qTCyT-D-yBsWk0v";
+export const STONFI_PTON_V2_1_ADDRESS_TESTNET = "kQACS30DNoUQ7NfApPvzh7eBmSZ9L4ygJ-lkNWtba8TQT-Px";
+
+export const STONFI_ROUTER_V2_1_ADDRESS_MAINNET = "EQBigMnbY4NU1uwdvzertV5mv_yI7282R-ffW7XZFWPEVRDG";
+export const STONFI_PTON_V2_1_ADDRESS_MAINNET = "EQBnGWMCf3-FZZq1W4IWcWiGAc3PHuZ0_H-7sad2oY00o83S";
 
 export const TESTNET_FACTORY_ADDR = Address.parse("EQAROb_l-1yGMKjPGUmc0tNjYOsXTKTsucXmhh2Fm9y98z7Y");
 export const BURN_ADDR = Address.parse("EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c");
@@ -67,7 +70,8 @@ export enum BalanceUpdateMode {
     PublicDeposit = 2,
     WhitelistWithdrawal = 3,
     PublicWithdrawal = 4,
-    TotalWithdrawal = 5
+    TotalWithdrawal = 5,
+    CreatorBuyoutDummy = 6
 }
 
 export const UTIL_JET_SEND_MODE_SIZE = 4;

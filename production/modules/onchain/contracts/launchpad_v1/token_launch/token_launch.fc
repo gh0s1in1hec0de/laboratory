@@ -236,19 +236,22 @@ slice get_user_vault_address(slice user_address) method_id {
 
 int get_approximate_claim_amount(int wl_tons, int public_jettons, int is_creator) method_id {
     load_data();
-    int bought_jettons_total = config::const::fut_jet_total_supply - general_state::fut_jet_inner_balance;
+    int not_for_sale_supply = config::const::fut_jet_dex_amount + config::const::fut_jet_platform_amount;
+    int leftovers_after_sale = general_state::fut_jet_inner_balance - not_for_sale_supply;
+    int bought_jettons_total = config::const::fut_jet_total_supply - general_state::fut_jet_inner_balance - creator_round::fut_jet_balance;
+
     int fut_jet_recipient_amount = public_jettons;
     if (wl_tons > 0) {
         int wl_jettons = get_wl_amount_out(wl_tons);
         fut_jet_recipient_amount += wl_jettons;
     }
-
-    int leftovers_user_jetton_share = muldiv(general_state::fut_jet_inner_balance, fut_jet_recipient_amount, bought_jettons_total);
+    int leftovers_user_jetton_share = muldiv(leftovers_after_sale, fut_jet_recipient_amount, bought_jettons_total);
     int fut_jet_recipient_total_amount = fut_jet_recipient_amount + leftovers_user_jetton_share;
 
     if (is_creator) {
         fut_jet_recipient_total_amount += creator_round::fut_jet_balance;
     }
+
     return fut_jet_recipient_total_amount;
 }
 

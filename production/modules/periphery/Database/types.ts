@@ -131,13 +131,22 @@ export type StoredUserBalance = {
 };
 
 // Helpers and periphery
-export const balanceUpdateModeToUserActionType: { [key in BalanceUpdateMode]: UserActionType } = {
-    [BalanceUpdateMode.WhitelistDeposit]: UserActionType.WhiteListBuy,
-    [BalanceUpdateMode.PublicDeposit]: UserActionType.PublicBuy,
-    [BalanceUpdateMode.WhitelistWithdrawal]: UserActionType.WhitelistRefund,
-    [BalanceUpdateMode.PublicWithdrawal]: UserActionType.PublicRefund,
-    [BalanceUpdateMode.TotalWithdrawal]: UserActionType.TotalRefund,
-};
+export function balanceUpdateModeToUserActionType(mode: BalanceUpdateMode): UserActionType {
+    switch (mode) {
+        case BalanceUpdateMode.WhitelistDeposit:
+            return UserActionType.WhiteListBuy;
+        case BalanceUpdateMode.PublicDeposit:
+            return UserActionType.PublicBuy;
+        case BalanceUpdateMode.WhitelistWithdrawal:
+            return UserActionType.WhitelistRefund;
+        case BalanceUpdateMode.PublicWithdrawal:
+            return UserActionType.PublicRefund;
+        case BalanceUpdateMode.TotalWithdrawal:
+            return UserActionType.TotalRefund;
+        default:
+            throw new Error(`Unreachable code touched: ${mode} shouldn't take part in logic anywhere`);
+    }
+}
 
 export type WhitelistRelations = {
     tokenLaunch: string,

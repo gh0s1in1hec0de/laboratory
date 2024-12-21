@@ -15,6 +15,7 @@ int get_wl_amount_out(int tons_into) inline {
 () handle_creator_buyout(int query_id, int msg_value) impure inline {
     throw_unless(error::wrong_time, now() < creator_round::const::end_time);
     (int accessible_user_value, int opn) = check_amount_is_enough_for_creator_buyout(msg_value);
+    (_, _, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
 
     int cretor_value_limit = muldiv(creator_round::fut_jet_left, MAX_WL_ROUND_TON_LIMIT, creator_round::const::fut_jet_price_reversed);
     int maybe_creator_remainings = 0;
@@ -33,6 +34,17 @@ int get_wl_amount_out(int tons_into) inline {
     general_state::total_tons_collected += accessible_user_value;
     general_state::fut_jet_inner_balance -= jettons_amount;
     this::operational_needs += opn;
+
+    cell msg = build_balance_update_message(
+        user_vault_code,
+        query_id,
+        get_balance_update_gas_cost(),
+        this::const::creator_address,
+        BALANCE_UPD_CREATOR_BUYOUT_DUMMY,
+        0,
+        0
+    );
+    send_raw_message(msg, SEND_MODE_REGULAR | SEND_MODE_BOUNCE_ON_ACTION_FAIL);
 
     if (maybe_creator_remainings > 0) {
         cell excesses = excesses_msg(query_id, this::const::creator_address, maybe_creator_remainings);
@@ -137,7 +149,9 @@ int get_wl_amount_out(int tons_into) inline {
     }
     int maybe_gap = wl_round::const::ton_limit - wl_round::ton_invested_total;
     if (maybe_gap > 0) {
-        public_round::synthetic_ton_reserve *= 2; ;; TODO Test out
+        public_round::synthetic_ton_reserve = public_round::synthetic_ton_reserve > 0 ?
+        public_round::synthetic_ton_reserve * 3 : wl_round::const::ton_limit;
+
         int wl_round_remaining = get_wl_amount_out(maybe_gap);
         public_round::const::fut_jet_limit += wl_round_remaining;
         public_round::synthetic_jet_reserve += wl_round_remaining;
@@ -267,26 +281,29 @@ int get_wl_amount_out(int tons_into) inline {
 }
 
 () handle_jetton_claim_confirmation(int query_id, slice sender_address, int wl_tons, int jettons_to_send, slice recipient) impure inline {
-    throw_unless(error::inconsistent_balance_state, (general_state::fut_jet_inner_balance - config::const::fut_jet_dex_amount - config::const::fut_jet_platform_amount) == (public_round::const::fut_jet_limit - public_round::fut_jet_sold));
+    int not_for_sale_supply = config::const::fut_jet_dex_amount + config::const::fut_jet_platform_amount;
+    int leftovers_after_sale = general_state::fut_jet_inner_balance - not_for_sale_supply;
+    ;; ! Both (total supply and inner balance incude not_for_sale_supply
+    int bought_jettons_total = config::const::fut_jet_total_supply - general_state::fut_jet_inner_balance - creator_round::fut_jet_balance;
 
     (_, slice fut_jet_wallet_address, _, _, _, cell user_vault_code) = unpack_tools(this::tools);
     verify_user_vault(user_vault_code, sender_address, recipient);
 
-    int bought_jettons_total = config::const::fut_jet_total_supply - general_state::fut_jet_inner_balance;
     int fut_jet_recipient_amount = jettons_to_send;
     if (wl_tons > 0) {
         int wl_jettons = get_wl_amount_out(wl_tons);
         fut_jet_recipient_amount += wl_jettons;
     }
     ;; As inner balance is leftovers, that we multiply by user share into total bought jetton amount
-    int leftovers_user_jetton_share = muldiv(general_state::fut_jet_inner_balance, fut_jet_recipient_amount, bought_jettons_total);
+    int leftovers_user_jetton_share = muldiv(leftovers_after_sale, fut_jet_recipient_amount, bought_jettons_total);
     int fut_jet_recipient_total_amount = fut_jet_recipient_amount + leftovers_user_jetton_share;
 
-    if (equal_slices_bits(recipient, this::const::creator_address)) {
+    if (equal_slices_bits(recipient, this::const::creator_address) & (creator_round::fut_jet_left != 111111)) {
         fut_jet_recipient_total_amount += creator_round::fut_jet_balance;
-        creator_round::fut_jet_balance = 0;
+        creator_round::fut_jet_left = 111111;
     }
 
+    throw_if(error::balance_lack, general_state::fut_jet_deployed_balance < fut_jet_recipient_total_amount);
     general_state::fut_jet_deployed_balance -= fut_jet_recipient_total_amount;
     cell transfer_msg = build_jetton_transfer_msg(
         query_id,

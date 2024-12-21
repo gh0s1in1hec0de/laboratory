@@ -102,23 +102,22 @@ export function getApproximateClaimAmountLegacy(
 }
 
 export function getApproximateClaimAmount(
-    { publicRoundFutJetSold, wlRoundTonInvestedTotal, creatorFutJetBalance }: MoneyFlows,
-    { pubRoundFutJetLimit, futJetDexAmount, futJetPlatformAmount, wlRoundFutJetLimit }: GetConfigResponse,
+    { publicRoundFutJetSold, creatorFutJetBalance }: MoneyFlows,
+    { pubRoundFutJetLimit, futJetDexAmount, futJetPlatformAmount, wlRoundFutJetLimit, wlRoundTonLimit }: GetConfigResponse,
     { futJetTotalSupply, futJetInnerBalance }: SellingProgress,
     { whitelistTons, publicJettons, isCreator }: UserShare,
 ): Coins {
     // Ensure balance consistency
-    const expectedInnerBalance = pubRoundFutJetLimit - publicRoundFutJetSold;
-    if (futJetInnerBalance - futJetDexAmount - futJetPlatformAmount !== expectedInnerBalance) throw new Error("Inconsistent balance state");
-    const boughtJettonsTotal = futJetTotalSupply - futJetInnerBalance;
+    const notForSaleSupply = futJetDexAmount + futJetPlatformAmount;
+    const leftoversAfterSale = futJetInnerBalance - notForSaleSupply;
+    const boughtJettonsTotal = futJetTotalSupply - futJetInnerBalance - creatorFutJetBalance;
 
     let futJetRecipientAmount = publicJettons;
-
     if (whitelistTons > 0n) {
-        const wlJettons = getWhitelistAmountOut(whitelistTons, wlRoundTonInvestedTotal, wlRoundFutJetLimit);
+        const wlJettons = getWhitelistAmountOut(whitelistTons, wlRoundTonLimit, wlRoundFutJetLimit);
         futJetRecipientAmount += wlJettons;
     }
-    const leftoversUserJettonShare = futJetInnerBalance * futJetRecipientAmount / boughtJettonsTotal;
+    const leftoversUserJettonShare = leftoversAfterSale * futJetRecipientAmount / boughtJettonsTotal;
     let futJetRecipientTotalAmount = futJetRecipientAmount + leftoversUserJettonShare;
 
     if (isCreator) futJetRecipientTotalAmount += creatorFutJetBalance;
@@ -127,8 +126,8 @@ export function getApproximateClaimAmount(
 }
 
 
-function getWhitelistAmountOut(wlTons: Coins, wlRoundTonInvestedTotal: Coins, wlRoundFutJetLimit: Coins): Coins {
-    return wlRoundFutJetLimit * wlTons  / wlRoundTonInvestedTotal;
+export function getWhitelistAmountOut(wlTons: Coins, wlRoundTonLimit: Coins, wlRoundFutJetLimit: Coins): Coins {
+    return wlRoundFutJetLimit * wlTons  / wlRoundTonLimit;
 }
 
 

@@ -79,11 +79,13 @@ cell build_withdraw_confirmation_message(int is_refund?, int query_id, int wl_to
         cell msg = build_withdraw_confirmation_message(TRUE, query_id, wl_tons, pub_tons, jettons_to_restore, mode);
         send_raw_message(msg, answer_message_mode());
     }
+    if (mode == BALANCE_UPD_CREATOR_BUYOUT_DUMMY) {
+        ;; Actually do nothing
+    }
 }
 
 () handle_claim(int query_id) impure inline {
     ;; unreacheble as it should not exist then
-    throw_if(error::unreachable, this::wl_ton_balance + this::jetton_balance == 0);
     int wl_tons = this::wl_ton_balance;
     int pub_tons = this::public_ton_balance;
     int jettons_to_claim = this::jetton_balance;

@@ -2,7 +2,7 @@ import { findTransactionRequired, randomAddress } from "@ton/test-utils";
 import { XmasJettonMaster } from "../wrappers/XmasJettonMaster";
 import { XmasJettonWallet } from "../wrappers/XmasJettonWallet";
 import { Address, beginCell, Cell, toNano } from "@ton/core";
-import { JettonOps, jettonToNano, STONFI_PTON_V2_1_ADDRESS, STONFI_ROUTER_V2_1_ADDRESS } from "starton-periphery";
+import { JettonOps, jettonToNano, STONFI_PTON_V2_1_ADDRESS_TESTNET, STONFI_ROUTER_V2_1_ADDRESS_TESTNET } from "starton-periphery";
 import { printTxGasStats } from "./utils/gasUtils";
 import { ok as assert } from "node:assert";
 import { VaultJetton } from "@dedust/sdk";

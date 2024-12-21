@@ -1,6 +1,7 @@
-import type { ExtendedUserBalance, RawAddressString, } from "starton-periphery";
+import type { Coins, ExtendedUserBalance, RawAddressString, } from "starton-periphery";
 import type { SqlClient } from "./types";
 import { globalClient } from "./db";
+import { logger } from "../logger.ts";
 
 export async function getCallerBalances(
     address: RawAddressString, launch?: RawAddressString, client?: SqlClient
@@ -21,4 +22,20 @@ export async function getCallerBalances(
             ${launch ? c`AND ub.token_launch = ${launch}` : c``};
     `;
     return res.length ? res : null;
+}
+
+export async function storeUserBalance(
+    caller: RawAddressString,
+    tokenLaunch: RawAddressString,
+    { whitelistTons = 0n, publicTons = 0n, jettons = 0n }:
+    { whitelistTons?: Coins, publicTons?: Coins, jettons?: Coins },
+    client?: SqlClient
+): Promise<void> {
+    const res = await (client ?? globalClient)`
+        INSERT INTO user_balances
+            (caller, token_launch, whitelist_tons, public_tons, jettons)
+        VALUES (${caller}, ${tokenLaunch}, ${whitelistTons}, ${publicTons}, ${jettons})
+        RETURNING 1;
+    `;
+    if (res.length !== 1) logger().warn(`Exactly 1 row must be inserted, got: ${res.length}`);
 }

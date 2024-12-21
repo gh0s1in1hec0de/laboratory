@@ -95,6 +95,7 @@ describe("Addresses", () => {
         const filteredRouters = data.router_list.filter((router: any) =>
             router.pton_version === "2.1" &&
             router.major_version === 2 &&
+            router.minor_version === 2 &&
             router.pool_creation_enabled === true
         );
 
