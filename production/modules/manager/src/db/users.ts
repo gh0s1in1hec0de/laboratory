@@ -30,11 +30,12 @@ export async function getCallerById(
 export async function connectWallet(
     callerAddress: RawAddressString,
     referral?: string,
+    initialTicketBalance?: number,
     client?: SqlClient
 ): Promise<Caller | null> {
     const res = await (client ?? globalClient)<Caller[]>`
-        INSERT INTO callers (address, invited_by)
-        VALUES (${callerAddress}, ${referral ?? null})
+        INSERT INTO callers (address, invited_by, ticket_balance)
+        VALUES (${callerAddress}, ${referral ?? null}, ${initialTicketBalance ?? 2})
         ON CONFLICT DO NOTHING
         RETURNING *;
     `;
