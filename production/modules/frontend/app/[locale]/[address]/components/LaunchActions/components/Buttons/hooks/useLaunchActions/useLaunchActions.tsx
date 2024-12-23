@@ -88,7 +88,7 @@ export function useLaunchActions(launchData: GetCertainLaunchResponse) {
 
   function onClickRedirectToStonFi(launchData: GetCertainLaunchResponse) {
     // window.open(`https://app.ston.fi/swap/ton/${launchData?.metadata?.symbol?.toLowerCase()}?referral_address=${process.env.NEXT_PUBLIC_PULL_REFERRAL_ADDRESS}&referral_percent=${process.env.NEXT_PUBLIC_REFERRAL_PERCENT}`, "_blank");
-    window.open(`https://app.ston.fi/swap?chartVisible=false&ft=${Address.parse(launchData?.postDeployEnrollmentStats?.deployedJetton.masterAddress || "").toString()}&tt=TON`, "_blank");
+    window.open(`https://app.ston.fi/swap?chartVisible=false&ft=TON&tt=${Address.parse(launchData?.postDeployEnrollmentStats?.deployedJetton.masterAddress || "").toString()}`, "_blank");
   }
 
   function onClickRedirectToChart(launchData: GetCertainLaunchResponse) {
